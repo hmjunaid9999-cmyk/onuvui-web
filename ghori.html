@@ -1,0 +1,15 @@
+<div id="liveClock" style="padding: 10px; background: #222; color: #00ffcc; font-family: monospace; border-radius: 5px; font-weight: bold; text-align: center; font-size: 16px;">00:00:00 AM</div>
+
+<script>
+  function updateClock() {
+    var now = new Date();
+    var hours = now.getHours(), minutes = now.getMinutes(), seconds = now.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    document.getElementById('liveClock').innerText = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+</script>
