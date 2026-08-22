@@ -20,7 +20,6 @@
   }
   #adminScreen { display: none; }
 
-  /* ---- এডমিন হেডার ---- */
   header {
     position: relative;
     display: flex; align-items: center; justify-content: center;
@@ -35,23 +34,22 @@
     background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
   }
 
-  /* ---- ফোল্ডার সাইডবার ড্রয়ার ---- */
   #adminOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
   #adminOverlay.open { display: block; }
   #adminDrawer {
     position: fixed; top: 0; left: -240px; width: 240px; height: 100%;
-    background: #161b22; z-index: 201; transition: left 0.25s ease;
-    padding: 18px 14px; overflow-y: auto;
+    background: #161b22; z-index: 201; transition: left 0.25s ease; padding: 18px 14px; overflow-y: auto;
   }
   #adminDrawer.open { left: 0; }
   #adminDrawer .drawerHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   #adminDrawerCloseBtn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
-  .folderItem {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; margin-bottom: 4px;
-  }
+  .folderItem { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; margin-bottom: 4px; }
   .folderItem:hover, .folderItem.active { background: #21262d; }
-  .folderItem .folderIcon { font-size: 18px; }
+  .subFolderItem {
+    display: flex; align-items: center; gap: 8px; padding: 9px 10px 9px 26px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 2px; color: #9ca3af;
+  }
+  .subFolderItem:hover, .subFolderItem.active { background: #21262d; color: #fff; }
 
   main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
   .folderPanel { display: none; }
@@ -79,6 +77,12 @@
 
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
   .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
+
+  /* ---- কন্টেন্ট তালিকা কার্ড ---- */
+  .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+  .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
+  .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
+  .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
 </style>
 </head>
 <body>
@@ -99,13 +103,18 @@
 
     <div id="adminOverlay"></div>
     <div id="adminDrawer">
-      <div class="drawerHeader">
-        <strong>ফোল্ডার</strong>
-        <button id="adminDrawerCloseBtn">✕</button>
-      </div>
-      <div class="folderItem active" data-folder="theme"><span class="folderIcon">🎨</span> থিম</div>
-      <div class="folderItem" data-folder="users"><span class="folderIcon">👥</span> ইউজার</div>
-      <div class="folderItem" data-folder="video"><span class="folderIcon">🎬</span> ভিডিও</div>
+      <div class="drawerHeader"><strong>ফোল্ডার</strong><button id="adminDrawerCloseBtn">✕</button></div>
+
+      <div class="folderItem active" data-folder="theme"><span>🎨</span> থিম</div>
+
+      <div class="folderItem" data-folder="content"><span>📦</span> কন্টেন্ট</div>
+      <div class="subFolderItem active" data-subfolder="posts">📝 পোস্ট</div>
+      <div class="subFolderItem" data-subfolder="comments">💬 কমেন্ট</div>
+      <div class="subFolderItem" data-subfolder="replies">↩️ রিপ্লাই</div>
+      <div class="subFolderItem" data-subfolder="settings">⚙️ সেটিংস</div>
+
+      <div class="folderItem" data-folder="users"><span>👥</span> ইউজার</div>
+      <div class="folderItem" data-folder="video"><span>🎬</span> ভিডিও</div>
     </div>
 
     <header>
@@ -116,7 +125,7 @@
 
     <main>
 
-      <!-- ================= থিম ফোল্ডার (আগের সবকিছু এখানে) ================= -->
+      <!-- ================= থিম ফোল্ডার ================= -->
       <div class="folderPanel active" id="panel-theme">
         <div class="folderTitle">🎨 থিম</div>
 
@@ -178,13 +187,43 @@
         </div>
       </div>
 
-      <!-- ================= ইউজার ফোল্ডার (ভবিষ্যতের জন্য) ================= -->
+      <!-- ================= কন্টেন্ট ফোল্ডার: পোস্ট ================= -->
+      <div class="folderPanel" id="panel-content-posts">
+        <div class="folderTitle">📝 সকল পোস্ট</div>
+        <div id="postsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: কমেন্ট ================= -->
+      <div class="folderPanel" id="panel-content-comments">
+        <div class="folderTitle">💬 সকল কমেন্ট</div>
+        <div id="commentsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: রিপ্লাই ================= -->
+      <div class="folderPanel" id="panel-content-replies">
+        <div class="folderTitle">↩️ সকল রিপ্লাই</div>
+        <div id="repliesAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: সেটিংস ================= -->
+      <div class="folderPanel" id="panel-content-settings">
+        <div class="folderTitle">⚙️ কন্টেন্ট সেটিংস</div>
+        <div class="section">
+          <h2>প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
+          <input type="number" id="postsPerPage" placeholder="৫">
+          <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
+          <button class="sectionSaveBtn" data-section="postsPerPage">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusPostsPerPage"></div>
+        </div>
+      </div>
+
+      <!-- ================= ইউজার ফোল্ডার ================= -->
       <div class="folderPanel" id="panel-users">
         <div class="folderTitle">👥 ইউজার</div>
         <div class="comingSoon">শীঘ্রই এখানে ইউজার ম্যানেজমেন্ট যোগ করা হবে।</div>
       </div>
 
-      <!-- ================= ভিডিও ফোল্ডার (ভবিষ্যতের জন্য) ================= -->
+      <!-- ================= ভিডিও ফোল্ডার ================= -->
       <div class="folderPanel" id="panel-video">
         <div class="folderTitle">🎬 ভিডিও</div>
         <div class="comingSoon">শীঘ্রই এখানে ভিডিও ম্যানেজমেন্ট যোগ করা হবে।</div>
@@ -199,7 +238,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc
+    getFirestore, doc, getDoc, setDoc, collection, collectionGroup, query, orderBy, getDocs
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -231,11 +270,12 @@
   const cardColor = document.getElementById('cardColor');
   const textColor = document.getElementById('textColor');
   const maxWidth = document.getElementById('maxWidth');
+  const postsPerPage = document.getElementById('postsPerPage');
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
 
-  // ---- ফোল্ডার নেভিগেশন (ড্রয়ার) ----
+  // ---- নেভিগেশন ----
   const adminMenuToggle = document.getElementById('adminMenuToggle');
   const adminDrawerCloseBtn = document.getElementById('adminDrawerCloseBtn');
   const adminDrawer = document.getElementById('adminDrawer');
@@ -247,18 +287,42 @@
   adminDrawerCloseBtn.addEventListener('click', closeAdminDrawer);
   adminOverlay.addEventListener('click', closeAdminDrawer);
 
+  function showPanel(panelId) {
+    document.querySelectorAll('.folderPanel').forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  }
+
   document.querySelectorAll('.folderItem').forEach(item => {
     item.addEventListener('click', () => {
       const folder = item.getAttribute('data-folder');
-      document.querySelectorAll('.folderItem').forEach(f => f.classList.remove('active'));
-      document.querySelectorAll('.folderPanel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.folderItem, .subFolderItem').forEach(f => f.classList.remove('active'));
       item.classList.add('active');
-      document.getElementById('panel-' + folder).classList.add('active');
+      if (folder === 'content') {
+        document.querySelector('.subFolderItem[data-subfolder="posts"]').classList.add('active');
+        showPanel('panel-content-posts');
+        loadAdminPosts();
+      } else {
+        showPanel('panel-' + folder);
+      }
       closeAdminDrawer();
     });
   });
 
-  // ---- ১০ সারির গ্রিড তৈরি করা (মেনু, সাইডবার, ফুটারের জন্য) ----
+  document.querySelectorAll('.subFolderItem').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const sub = item.getAttribute('data-subfolder');
+      document.querySelectorAll('.folderItem, .subFolderItem').forEach(f => f.classList.remove('active'));
+      document.querySelector('.folderItem[data-folder="content"]').classList.add('active');
+      item.classList.add('active');
+      showPanel('panel-content-' + sub);
+      if (sub === 'posts') loadAdminPosts();
+      if (sub === 'comments' || sub === 'replies') loadAdminCommentsAndReplies();
+      closeAdminDrawer();
+    });
+  });
+
+  // ---- থিম গ্রিড তৈরি ----
   function buildGridRows(container, prefix) {
     for (let i = 0; i < 10; i++) {
       const row = document.createElement('div');
@@ -311,6 +375,7 @@
     cardColor.value = s.cardColor || '#161b22';
     textColor.value = s.textColor || '#ffffff';
     maxWidth.value = s.maxWidth || 640;
+    postsPerPage.value = s.postsPerPage || 5;
     fillGrid('menu', s.menuItems);
     fillGrid('sidebar', s.sidebarItems);
     fillGrid('footer', s.footerItems);
@@ -318,21 +383,14 @@
 
   async function saveSection(section, statusEl) {
     let data = {};
-    if (section === 'identity') {
-      data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
-    } else if (section === 'notice') {
-      data = { noticeText: noticeText.value.trim() };
-    } else if (section === 'colors') {
-      data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
-    } else if (section === 'width') {
-      data = { maxWidth: Number(maxWidth.value) || 640 };
-    } else if (section === 'menu') {
-      data = { menuItems: readGrid('menu') };
-    } else if (section === 'sidebar') {
-      data = { sidebarItems: readGrid('sidebar') };
-    } else if (section === 'footer') {
-      data = { footerItems: readGrid('footer') };
-    }
+    if (section === 'identity') data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
+    else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
+    else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
+    else if (section === 'width') data = { maxWidth: Number(maxWidth.value) || 640 };
+    else if (section === 'menu') data = { menuItems: readGrid('menu') };
+    else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
+    else if (section === 'footer') data = { footerItems: readGrid('footer') };
+    else if (section === 'postsPerPage') data = { postsPerPage: Number(postsPerPage.value) || 5 };
 
     try {
       await setDoc(doc(db, "settings", "site"), data, { merge: true });
@@ -349,10 +407,87 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const statusEl = document.getElementById('status' + section.charAt(0).toUpperCase() + section.slice(1));
-      saveSection(section, statusEl);
+      const idMap = { postsPerPage: 'PostsPerPage' };
+      const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
+      saveSection(section, document.getElementById(statusId));
     });
   });
+
+  // ---- কন্টেন্ট: সকল পোস্ট লোড ----
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  async function loadAdminPosts() {
+    const listEl = document.getElementById('postsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো পোস্ট নেই</div>'; return; }
+      listEl.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.authorEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
+        `;
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড (collectionGroup) ----
+  async function loadAdminCommentsAndReplies() {
+    const commentsListEl = document.getElementById('commentsAdminList');
+    const repliesListEl = document.getElementById('repliesAdminList');
+    commentsListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    repliesListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(query(collectionGroup(db, "comments"), orderBy("createdAt", "desc")));
+      const comments = [];
+      const replies = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        (d.replyToId ? replies : comments).push(d);
+      });
+
+      commentsListEl.innerHTML = comments.length ? '' : '<div class="listEmpty">কোনো কমেন্ট নেই</div>';
+      comments.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.email || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '').replace(/</g, '&lt;')}</div>
+        `;
+        commentsListEl.appendChild(card);
+      });
+
+      repliesListEl.innerHTML = replies.length ? '' : '<div class="listEmpty">কোনো রিপ্লাই নেই</div>';
+      replies.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.email || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '').replace(/</g, '&lt;')}</div>
+        `;
+        repliesListEl.appendChild(card);
+      });
+    } catch (e) {
+      commentsListEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + ' (ইনডেক্স তৈরি করার লিংক থাকলে সেটায় ক্লিক করুন)</div>';
+      repliesListEl.innerHTML = '';
+    }
+  }
 
   onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = 'none';
