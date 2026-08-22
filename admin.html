@@ -38,15 +38,16 @@
   textarea { resize: vertical; min-height: 60px; }
   .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
 
-  /* ---- গ্রিড টেবিল (মেনু/ফুটার বাটন) ---- */
-  .gridTable { display: flex; flex-direction: column; gap: 6px; }
+  /* ---- গ্রিড টেবিল (মেনু/সাইডবার/ফুটার বাটন) ---- */
+  .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
   .gridRow { display: flex; gap: 6px; align-items: center; }
   .gridRow span.rowNum { width: 18px; font-size: 11px; color: #6b7280; flex-shrink: 0; }
   .gridRow input.gridLabel { width: 38%; }
   .gridRow input.gridUrl { flex: 1; }
 
-  #saveBtn { width: 100%; padding: 10px; border-radius: 10px; font-size: 14px; margin-top: 6px; }
-  #saveStatus { text-align: center; font-size: 13px; margin-top: 10px; color: #4ade80; min-height: 16px; }
+  /* ---- প্রতিটা সেকশনের নিজস্ব Save বাটন ---- */
+  .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
+  .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
 </style>
 </head>
 <body>
@@ -74,12 +75,16 @@
         <h2>🏷️ লোগো ও সাইট নাম</h2>
         <div class="row"><label>লোগো URL</label><input type="text" id="logoUrl" placeholder="https://..."></div>
         <div class="row"><label>সাইট নাম</label><input type="text" id="siteName" placeholder="Onuvuti"></div>
+        <button class="sectionSaveBtn" data-section="identity">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusIdentity"></div>
       </div>
 
       <div class="section">
         <h2>📢 নোটিশ (স্ক্রলিং লেখা)</h2>
         <input type="text" id="noticeText" placeholder="এখানে নোটিশ লিখুন...">
         <div class="hint">এটা হোমপেজে ডান থেকে বামে ক্রমাগত চলতে থাকবে</div>
+        <button class="sectionSaveBtn" data-section="notice">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusNotice"></div>
       </div>
 
       <div class="section">
@@ -88,26 +93,41 @@
         <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
         <div class="row"><label>Card রং</label><input type="color" id="cardColor"></div>
         <div class="row"><label>টেক্সট রং</label><input type="color" id="textColor"></div>
+        <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusColors"></div>
       </div>
 
       <div class="section">
         <h2>📏 কনটেন্টের প্রস্থ</h2>
         <input type="number" id="maxWidth" placeholder="640">
+        <button class="sectionSaveBtn" data-section="width">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusWidth"></div>
       </div>
 
       <div class="section">
-        <h2>📋 মেনু বাটন (সর্বোচ্চ ১০টি)</h2>
+        <h2>📱 বাম সাইডবার মেনু (সর্বোচ্চ ১০টি)</h2>
+        <div class="gridTable" id="sidebarGridTable"></div>
+        <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
+        <button class="sectionSaveBtn" data-section="sidebar">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusSidebar"></div>
+      </div>
+
+      <div class="section">
+        <h2>📋 টপ মেনু বাটন (সর্বোচ্চ ১০টি)</h2>
         <div class="gridTable" id="menuGridTable"></div>
         <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
+        <button class="sectionSaveBtn" data-section="menu">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusMenu"></div>
       </div>
 
       <div class="section">
         <h2>⬇️ ফুটার বাটন (সর্বোচ্চ ১০টি)</h2>
         <div class="gridTable" id="footerGridTable"></div>
+        <div class="hint">ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে</div>
+        <button class="sectionSaveBtn" data-section="footer">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="statusFooter"></div>
       </div>
 
-      <button id="saveBtn">💾 সেভ করুন</button>
-      <div id="saveStatus"></div>
     </main>
   </div>
 
@@ -150,10 +170,10 @@
   const textColor = document.getElementById('textColor');
   const maxWidth = document.getElementById('maxWidth');
   const menuGridTable = document.getElementById('menuGridTable');
+  const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
-  const saveStatus = document.getElementById('saveStatus');
 
-  // ---- ১০ সারির গ্রিড তৈরি করা (মেনু ও ফুটারের জন্য) ----
+  // ---- ১০ সারির গ্রিড তৈরি করা (মেনু, সাইডবার, ফুটারের জন্য) ----
   function buildGridRows(container, prefix) {
     for (let i = 0; i < 10; i++) {
       const row = document.createElement('div');
@@ -167,6 +187,7 @@
     }
   }
   buildGridRows(menuGridTable, 'menu');
+  buildGridRows(sidebarGridTable, 'sidebar');
   buildGridRows(footerGridTable, 'footer');
 
   function readGrid(prefix) {
@@ -206,33 +227,47 @@
     textColor.value = s.textColor || '#ffffff';
     maxWidth.value = s.maxWidth || 640;
     fillGrid('menu', s.menuItems);
+    fillGrid('sidebar', s.sidebarItems);
     fillGrid('footer', s.footerItems);
   }
 
-  document.getElementById('saveBtn').addEventListener('click', async () => {
-    const data = {
-      logoUrl: logoUrl.value.trim(),
-      siteName: siteName.value.trim() || 'Onuvuti',
-      noticeText: noticeText.value.trim(),
-      primaryColor: primaryColor.value,
-      bgColor: bgColor.value,
-      cardColor: cardColor.value,
-      textColor: textColor.value,
-      maxWidth: Number(maxWidth.value) || 640,
-      menuItems: readGrid('menu'),
-      footerItems: readGrid('footer')
-    };
+  // ---- প্রতিটা সেকশন আলাদাভাবে সেভ করার ফাংশন ----
+  async function saveSection(section, statusEl) {
+    let data = {};
+    if (section === 'identity') {
+      data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
+    } else if (section === 'notice') {
+      data = { noticeText: noticeText.value.trim() };
+    } else if (section === 'colors') {
+      data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
+    } else if (section === 'width') {
+      data = { maxWidth: Number(maxWidth.value) || 640 };
+    } else if (section === 'menu') {
+      data = { menuItems: readGrid('menu') };
+    } else if (section === 'sidebar') {
+      data = { sidebarItems: readGrid('sidebar') };
+    } else if (section === 'footer') {
+      data = { footerItems: readGrid('footer') };
+    }
 
     try {
       await setDoc(doc(db, "settings", "site"), data, { merge: true });
-      saveStatus.style.color = '#4ade80';
-      saveStatus.textContent = '✅ সেভ হয়েছে!';
-      setTimeout(() => { saveStatus.textContent = ''; }, 2500);
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
     } catch (e) {
       console.error(e);
-      saveStatus.style.color = '#f87171';
-      saveStatus.textContent = 'এরর: ' + e.message;
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
     }
+  }
+
+  document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.getAttribute('data-section');
+      const statusEl = document.getElementById('status' + section.charAt(0).toUpperCase() + section.slice(1));
+      saveSection(section, statusEl);
+    });
   });
 
   onAuthStateChanged(auth, (user) => {

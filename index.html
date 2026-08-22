@@ -32,15 +32,20 @@
 
   #appScreen { display: none; }
 
-  /* ---- হেডার: লোগো + সাইট নাম ---- */
+  /* ---- হেডার: বাম দিকে ☰, মাঝখানে লোগো + সাইট নাম, ডানে লগ-আউট ---- */
   #siteHeader {
+    position: relative;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
   }
   #siteHeader img { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
   #siteHeader h1 { font-size: 19px; font-weight: bold; }
+  #sidebarToggleBtn {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px;
+  }
   #logoutBtn {
-    position: absolute; right: 14px; top: 14px;
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
   }
 
@@ -71,14 +76,32 @@
 
   main { padding: 20px 16px; max-width: var(--max-width); margin: 0 auto; }
 
-  /* ---- ফুটার গ্রিড বাটন ---- */
-  #footerGrid {
-    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-    padding: 16px; margin-top: 20px; border-top: 1px solid #262c36;
-  }
+  /* ---- ফুটার: সাইট নাম + গ্রিড বাটন ---- */
+  #footerSection { padding: 20px 16px; margin-top: 20px; border-top: 1px solid #262c36; text-align: center; }
+  #footerSiteName { font-size: 16px; font-weight: bold; margin-bottom: 12px; opacity: 0.9; }
+  #footerGrid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   #footerGrid a {
     background: #262c36; color: #fff; text-decoration: none;
     font-size: 12px; padding: 7px 12px; border-radius: 14px;
+  }
+
+  /* ---- বাম সাইডবার ড্রয়ার ---- */
+  #sidebarOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+  }
+  #sidebarOverlay.open { display: block; }
+  #sidebarDrawer {
+    position: fixed; top: 0; left: -260px; width: 260px; height: 100%;
+    background: var(--card-color); z-index: 101; transition: left 0.25s ease;
+    padding: 18px 14px; overflow-y: auto;
+  }
+  #sidebarDrawer.open { left: 0; }
+  #sidebarDrawer .drawerHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  #sidebarCloseBtn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+  #sidebarGrid { display: flex; flex-direction: column; gap: 8px; }
+  #sidebarGrid a {
+    display: block; background: #0d1117; color: #fff; text-decoration: none;
+    font-size: 13px; padding: 10px 12px; border-radius: 10px; border: 1px solid #262c36;
   }
 </style>
 </head>
@@ -92,12 +115,24 @@
     <div id="loginStatus"></div>
   </div>
 
-  <div id="appScreen" style="position:relative;">
-    <button id="logoutBtn">লগ আউট</button>
+  <div id="appScreen">
+
+    <div id="sidebarOverlay"></div>
+    <div id="sidebarDrawer">
+      <div class="drawerHeader">
+        <strong>মেনু</strong>
+        <button id="sidebarCloseBtn">✕</button>
+      </div>
+      <div id="sidebarGrid"></div>
+    </div>
+
     <div id="siteHeader">
+      <button id="sidebarToggleBtn">☰</button>
       <img id="siteLogo" src="" alt="">
       <h1 id="siteName">Onuvuti</h1>
+      <button id="logoutBtn">লগ আউট</button>
     </div>
+
     <div id="noticeBar"><span id="noticeText"></span></div>
     <div id="menuGrid"></div>
 
@@ -106,7 +141,10 @@
       <p style="color:#9ca3af; margin-top:8px;">এখানে ধীরে ধীরে আসল কনটেন্ট যোগ করা হবে।</p>
     </main>
 
-    <div id="footerGrid"></div>
+    <div id="footerSection">
+      <div id="footerSiteName"></div>
+      <div id="footerGrid"></div>
+    </div>
   </div>
 
 <script type="module">
@@ -143,6 +181,12 @@
   const noticeText = document.getElementById('noticeText');
   const menuGrid = document.getElementById('menuGrid');
   const footerGrid = document.getElementById('footerGrid');
+  const footerSiteName = document.getElementById('footerSiteName');
+  const sidebarGrid = document.getElementById('sidebarGrid');
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+  const sidebarDrawer = document.getElementById('sidebarDrawer');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
 
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
@@ -156,6 +200,12 @@
   });
 
   logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+
+  function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); }
+  function closeSidebar() { sidebarDrawer.classList.remove('open'); sidebarOverlay.classList.remove('open'); }
+  sidebarToggleBtn.addEventListener('click', openSidebar);
+  sidebarCloseBtn.addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
 
   function renderButtons(container, items) {
     container.innerHTML = '';
@@ -179,10 +229,12 @@
 
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
+    footerSiteName.textContent = s.siteName || 'Onuvuti';
     noticeText.textContent = s.noticeText || '';
 
     renderButtons(menuGrid, s.menuItems);
     renderButtons(footerGrid, s.footerItems);
+    renderButtons(sidebarGrid, s.sidebarItems);
   }
 
   function listenSettings() {
