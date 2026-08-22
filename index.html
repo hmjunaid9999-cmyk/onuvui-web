@@ -78,8 +78,6 @@
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
     padding: 10px; border-radius: 10px; font-size: 14px; min-height: 60px; resize: vertical; font-family: inherit;
   }
-  #photoInputWrap { display: none; margin-top: 10px; }
-  #photoPreview { max-width: 100%; border-radius: 10px; margin-top: 8px; display: none; }
   #posterColors { display: none; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .posterSwatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
   .posterSwatch.selected { border-color: #fff; }
@@ -194,15 +192,9 @@
       <div id="composer">
         <div id="composerTabs">
           <button class="active" data-mode="text">📝 টেক্সট</button>
-          <button data-mode="photo">🖼️ ছবি</button>
           <button data-mode="poster">🎨 পোস্টার</button>
         </div>
         <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
-
-        <div id="photoInputWrap">
-          <input type="file" id="photoInput" accept="image/*">
-          <img id="photoPreview">
-        </div>
 
         <div id="posterColors"></div>
         <div id="posterPreview"></div>
@@ -235,10 +227,6 @@
     query, orderBy, limit, startAfter, getDocs, getDoc, setDoc,
     serverTimestamp, arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-  import {
-    getStorage, ref, uploadBytes, getDownloadURL
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
-
   const firebaseConfig = {
     apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
     authDomain: "onuvuti-5c9e3.firebaseapp.com",
@@ -252,7 +240,6 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
-  const storage = getStorage(app);
   const provider = new GoogleAuthProvider();
 
   let currentUser = null;
@@ -283,9 +270,6 @@
   const sidebarOverlay = document.getElementById('sidebarOverlay');
 
   const composerText = document.getElementById('composerText');
-  const photoInputWrap = document.getElementById('photoInputWrap');
-  const photoInput = document.getElementById('photoInput');
-  const photoPreview = document.getElementById('photoPreview');
   const posterColorsEl = document.getElementById('posterColors');
   const posterPreview = document.getElementById('posterPreview');
   const submitPostBtn = document.getElementById('submitPostBtn');
@@ -369,7 +353,6 @@
       composerMode = btn.getAttribute('data-mode');
       document.querySelectorAll('#composerTabs button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      photoInputWrap.style.display = composerMode === 'photo' ? 'block' : 'none';
       posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
       posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
       if (composerMode === 'poster') updatePosterPreview();
@@ -385,14 +368,6 @@
     posterPreview.textContent = composerText.value || 'পোস্টারের লেখা এখানে দেখাবে';
   }
 
-  photoInput.addEventListener('change', () => {
-    const file = photoInput.files[0];
-    if (!file) { photoPreview.style.display = 'none'; return; }
-    const reader = new FileReader();
-    reader.onload = (e) => { photoPreview.src = e.target.result; photoPreview.style.display = 'block'; };
-    reader.readAsDataURL(file);
-  });
-
   // ---- পোস্ট সাবমিট ----
   submitPostBtn.addEventListener('click', async () => {
     if (!currentUser) { composerStatus.textContent = 'লগইন করুন'; return; }
@@ -400,21 +375,11 @@
 
     if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
     if (composerMode === 'poster' && !text) { composerStatus.textContent = 'পোস্টারের জন্য লেখা দিন'; return; }
-    if (composerMode === 'photo' && !photoInput.files[0] && !text) { composerStatus.textContent = 'ছবি বা লেখা দিন'; return; }
 
     submitPostBtn.disabled = true;
     composerStatus.textContent = 'পোস্ট হচ্ছে...';
 
     try {
-      let photoURL = null;
-      if (composerMode === 'photo' && photoInput.files[0]) {
-        const file = photoInput.files[0];
-        const path = 'posts/' + currentUser.uid + '/' + Date.now() + '_' + file.name;
-        const storageRef = ref(storage, path);
-        await uploadBytes(storageRef, file);
-        photoURL = await getDownloadURL(storageRef);
-      }
-
       const postData = {
         authorUid: currentUser.uid,
         authorName: currentUser.displayName || 'User',
@@ -422,7 +387,6 @@
         authorPhoto: currentUser.photoURL || '',
         type: composerMode,
         text: text,
-        photoURL: photoURL,
         posterColor: composerMode === 'poster' ? selectedPosterColor : null,
         likedBy: [],
         commentCount: 0,
@@ -432,8 +396,6 @@
       await addDoc(collection(db, "posts"), postData);
 
       composerText.value = '';
-      photoInput.value = '';
-      photoPreview.style.display = 'none';
       composerStatus.textContent = '✅ পোস্ট হয়েছে!';
       setTimeout(() => { composerStatus.textContent = ''; }, 2000);
       resetFeed();
@@ -520,9 +482,7 @@
     card.id = 'post-' + postId;
 
     let mediaHtml = '';
-    if (d.type === 'photo' && d.photoURL) {
-      mediaHtml = `<img class="postPhoto" src="${d.photoURL}">`;
-    } else if (d.type === 'poster') {
+    if (d.type === 'poster') {
       mediaHtml = `<div class="postPoster" style="background:${d.posterColor || '#4285F4'}">${escapeHtml(d.text)}</div>`;
     }
 
