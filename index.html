@@ -12,6 +12,8 @@
     --card-color: #161b22;
     --text-color: #ffffff;
     --max-width: 640px;
+    --composer-height: 100px;
+    --poster-height: 180px;
   }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
 
@@ -76,14 +78,14 @@
   #composerTabs button.active { background: var(--primary-color); color: #fff; }
   #composerText {
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
-    padding: 10px; border-radius: 10px; font-size: 14px; min-height: 100px; resize: vertical; font-family: inherit;
+    padding: 10px; border-radius: 10px; font-size: 14px; min-height: var(--composer-height); resize: vertical; font-family: inherit;
   }
   #posterColors { display: none; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .posterSwatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
   .posterSwatch.selected { border-color: #fff; }
   #posterPreview {
     display: none; margin-top: 10px; border-radius: 12px; padding: 50px 16px;
-    text-align: center; font-size: 18px; font-weight: bold; color: #fff; min-height: 180px;
+    text-align: center; font-size: 18px; font-weight: bold; color: #fff; min-height: var(--poster-height);
     align-items: center; justify-content: center;
   }
   #submitPostBtn {
@@ -108,7 +110,7 @@
   .postPhoto { max-width: 100%; border-radius: 10px; margin-bottom: 8px; }
   .postPoster {
     border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
-    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: 180px;
+    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: var(--poster-height);
     display: flex; align-items: center; justify-content: center; white-space: pre-wrap;
   }
   .postButtons { display: flex; flex-wrap: wrap; gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
@@ -318,6 +320,8 @@
     if (s.cardColor) root.setProperty('--card-color', s.cardColor);
     if (s.textColor) root.setProperty('--text-color', s.textColor);
     if (s.maxWidth) root.setProperty('--max-width', s.maxWidth + 'px');
+    if (s.composerHeight) root.setProperty('--composer-height', s.composerHeight + 'px');
+    if (s.posterHeight) root.setProperty('--poster-height', s.posterHeight + 'px');
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
     footerSiteName.textContent = s.siteName || 'Onuvuti';

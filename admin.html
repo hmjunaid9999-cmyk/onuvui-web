@@ -163,6 +163,14 @@
         </div>
 
         <div class="section">
+          <h2>📐 পোস্ট বক্সের সাইজ</h2>
+          <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
+          <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
+          <button class="sectionSaveBtn" data-section="boxSize">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusBoxSize"></div>
+        </div>
+
+        <div class="section">
           <h2>📱 বাম সাইডবার মেনু (সর্বোচ্চ ১০টি)</h2>
           <div class="gridTable" id="sidebarGridTable"></div>
           <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
@@ -270,6 +278,8 @@
   const cardColor = document.getElementById('cardColor');
   const textColor = document.getElementById('textColor');
   const maxWidth = document.getElementById('maxWidth');
+  const composerHeight = document.getElementById('composerHeight');
+  const posterHeight = document.getElementById('posterHeight');
   const postsPerPage = document.getElementById('postsPerPage');
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
@@ -375,6 +385,8 @@
     cardColor.value = s.cardColor || '#161b22';
     textColor.value = s.textColor || '#ffffff';
     maxWidth.value = s.maxWidth || 640;
+    composerHeight.value = s.composerHeight || 100;
+    posterHeight.value = s.posterHeight || 180;
     postsPerPage.value = s.postsPerPage || 5;
     fillGrid('menu', s.menuItems);
     fillGrid('sidebar', s.sidebarItems);
@@ -387,6 +399,7 @@
     else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
     else if (section === 'width') data = { maxWidth: Number(maxWidth.value) || 640 };
+    else if (section === 'boxSize') data = { composerHeight: Number(composerHeight.value) || 100, posterHeight: Number(posterHeight.value) || 180 };
     else if (section === 'menu') data = { menuItems: readGrid('menu') };
     else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
     else if (section === 'footer') data = { footerItems: readGrid('footer') };
@@ -407,7 +420,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { postsPerPage: 'PostsPerPage' };
+      const idMap = { postsPerPage: 'PostsPerPage', boxSize: 'BoxSize' };
       const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
       saveSection(section, document.getElementById(statusId));
     });
