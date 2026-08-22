@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onuvuti Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #fff; min-height: 100vh; }
+  #loginScreen, #deniedScreen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
+  }
+  #deniedScreen { display: none; }
+  h1 { font-size: 20px; margin-bottom: 10px; }
+  p { color: #9ca3af; font-size: 14px; margin-bottom: 24px; }
+  button {
+    background: #4285F4; color: #fff; border: none;
+    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+  #adminScreen { display: none; }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
+  }
+  #logoutBtn { background: #262c36; color: #f87171; padding: 8px 16px; border-radius: 16px; font-size: 13px; }
+  main { padding: 24px 18px; }
+</style>
+</head>
+<body>
+
+  <div id="loginScreen">
+    <h1>Onuvuti Admin Panel</h1>
+    <p>এডমিন অ্যাক্সেসের জন্য লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+  </div>
+
+  <div id="deniedScreen">
+    <h1>⛔ প্রবেশাধিকার নেই</h1>
+    <p>এই অ্যাকাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
+    <button id="logoutBtn2">লগ আউট</button>
+  </div>
+
+  <div id="adminScreen">
+    <header>
+      <span>🛠️ Admin Panel</span>
+      <button id="logoutBtn">লগ আউট</button>
+    </header>
+    <main>
+      <h1>এডমিন ড্যাশবোর্ড</h1>
+      <p style="color:#9ca3af; margin-top:8px;">এখানে ধীরে ধীরে ম্যানেজমেন্ট টুল যোগ করা হবে (পোস্ট, ইউজার, সেটিংস ইত্যাদি)।</p>
+    </main>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:d87ae40431210088df8b25",
+    measurementId: "G-WJ8N8XLPSZ"
+  };
+
+  // ⚠️ শুধু এই ইমেইলগুলোই এডমিন প্যানেলে ঢুকতে পারবে — এখানে নিজের জিমেইল বসান
+  const ADMIN_EMAILS = [
+    "hmjunaid9999@gmail.com"
+  ];
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginScreen = document.getElementById('loginScreen');
+  const deniedScreen = document.getElementById('deniedScreen');
+  const adminScreen = document.getElementById('adminScreen');
+
+  document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { console.error(e); alert('লগইন এরর: ' + e.message); }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+  document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+
+  onAuthStateChanged(auth, (user) => {
+    loginScreen.style.display = 'none';
+    deniedScreen.style.display = 'none';
+    adminScreen.style.display = 'none';
+
+    if (!user) {
+      loginScreen.style.display = 'flex';
+    } else if (ADMIN_EMAILS.includes(user.email)) {
+      adminScreen.style.display = 'block';
+    } else {
+      deniedScreen.style.display = 'flex';
+    }
+  });
+</script>
+</body>
+</html>
