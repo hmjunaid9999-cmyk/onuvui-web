@@ -6,57 +6,61 @@
 <title>Onuvuti App</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #0d1117;
-    color: #fff;
-    min-height: 100vh;
+  :root {
+    --primary-color: #4285F4;
+    --bg-color: #0d1117;
+    --card-color: #161b22;
+    --text-color: #ffffff;
+    --max-width: 640px;
   }
-  /* ---------- লগইন স্ক্রিন ---------- */
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
+
   #loginScreen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
-    text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
   }
-  #loginScreen img {
-    width: 84px; height: 84px; border-radius: 20px; margin-bottom: 18px;
-  }
+  #loginScreen img { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 18px; }
   #loginScreen h1 { font-size: 22px; margin-bottom: 6px; }
   #loginScreen p { color: #9ca3af; font-size: 14px; margin-bottom: 28px; }
   #googleLoginBtn {
     display: flex; align-items: center; gap: 10px;
-    background: #4285F4; color: #fff; border: none;
-    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold;
-    cursor: pointer;
+    background: var(--primary-color); color: #fff; border: none;
+    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
   }
   #googleLoginBtn:disabled { opacity: 0.6; }
   #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; min-height: 18px; }
 
-  /* ---------- মূল অ্যাপ ---------- */
   #appScreen { display: none; }
-  header {
+
+  /* ---- মেনু বার ---- */
+  #menuBar {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
+    padding: 14px 18px; background: var(--card-color); border-bottom: 1px solid #262c36;
+    flex-wrap: wrap; gap: 10px;
   }
-  header .userInfo { display: flex; align-items: center; gap: 10px; }
-  header img.avatar { width: 34px; height: 34px; border-radius: 50%; background: #333; }
-  header .userName { font-size: 14px; font-weight: bold; }
-  #logoutBtn {
-    background: #262c36; color: #f87171; border: none;
-    padding: 8px 16px; border-radius: 16px; font-size: 13px; cursor: pointer;
+  #menuBar .userInfo { display: flex; align-items: center; gap: 10px; }
+  #menuBar img.avatar { width: 34px; height: 34px; border-radius: 50%; background: #333; }
+  #menuLinks { display: flex; gap: 16px; flex-wrap: wrap; }
+  #menuLinks a { color: var(--text-color); text-decoration: none; font-size: 13px; opacity: 0.85; }
+  #logoutBtn { background: #262c36; color: #f87171; border: none; padding: 8px 16px; border-radius: 16px; font-size: 13px; cursor: pointer; }
+
+  /* ---- মূল লেআউট: কনটেন্ট + সাইডবার ---- */
+  #layout { display: flex; gap: 20px; max-width: var(--max-width); margin: 0 auto; padding: 20px 16px; flex-wrap: wrap; }
+  #mainContent { flex: 1; min-width: 0; }
+  #sidebar {
+    width: 220px; background: var(--card-color); border: 1px solid #262c36;
+    border-radius: 14px; padding: 16px; font-size: 13px; color: #c9d1d9; line-height: 1.6;
   }
-  main { padding: 24px 18px; }
-  main h2 { font-size: 18px; margin-bottom: 10px; }
-  main p { color: #9ca3af; font-size: 14px; line-height: 1.6; }
+
+  /* ---- ফুটার ---- */
+  #footerBar {
+    text-align: center; padding: 20px 16px; color: #6b7280; font-size: 12px;
+    border-top: 1px solid #262c36; margin-top: 20px;
+  }
 </style>
 </head>
 <body>
 
-  <!-- লগইন স্ক্রিন: প্রথমে এটাই দেখাবে -->
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
     <h1>Onuvuti App</h1>
@@ -65,19 +69,25 @@
     <div id="loginStatus"></div>
   </div>
 
-  <!-- মূল অ্যাপ স্ক্রিন: লগইনের পরেই দেখাবে -->
   <div id="appScreen">
-    <header>
+    <div id="menuBar">
       <div class="userInfo">
         <img class="avatar" id="userAvatar" src="" alt="">
-        <span class="userName" id="userName"></span>
+        <span id="userName"></span>
       </div>
+      <div id="menuLinks"></div>
       <button id="logoutBtn">লগ আউট</button>
-    </header>
-    <main>
-      <h2>স্বাগতম! 👋</h2>
-      <p>এখানে ধীরে ধীরে আসল কনটেন্ট, ফিচার যোগ করা হবে।</p>
-    </main>
+    </div>
+
+    <div id="layout">
+      <div id="mainContent">
+        <h2>স্বাগতম! 👋</h2>
+        <p style="color:#9ca3af; margin-top:8px;">এখানে ধীরে ধীরে আসল কনটেন্ট যোগ করা হবে।</p>
+      </div>
+      <div id="sidebar"></div>
+    </div>
+
+    <div id="footerBar"></div>
   </div>
 
 <script type="module">
@@ -85,6 +95,9 @@
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
@@ -98,6 +111,7 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
   const loginScreen = document.getElementById('loginScreen');
@@ -107,22 +121,50 @@
   const logoutBtn = document.getElementById('logoutBtn');
   const userAvatar = document.getElementById('userAvatar');
   const userName = document.getElementById('userName');
+  const menuLinks = document.getElementById('menuLinks');
+  const sidebar = document.getElementById('sidebar');
+  const footerBar = document.getElementById('footerBar');
 
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
     loginStatus.textContent = 'লগইন হচ্ছে...';
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
+    try { await signInWithPopup(auth, provider); }
+    catch (e) {
       console.error(e);
       loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
       loginBtn.disabled = false;
     }
   });
 
-  logoutBtn.addEventListener('click', async () => {
-    await signOut(auth);
-  });
+  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+
+  // ---- সাইট সেটিংস (রং, মেনু, সাইডবার, ফুটার) লাইভ শোনা হচ্ছে ----
+  function applySettings(s) {
+    if (!s) return;
+    const root = document.documentElement.style;
+    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
+    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
+    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
+    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    if (s.maxWidth) root.setProperty('--max-width', s.maxWidth + 'px');
+
+    menuLinks.innerHTML = '';
+    (s.menuItems || []).forEach(item => {
+      const a = document.createElement('a');
+      a.textContent = item.label;
+      a.href = item.url;
+      menuLinks.appendChild(a);
+    });
+
+    sidebar.innerHTML = (s.sidebarText || '').replace(/\n/g, '<br>');
+    footerBar.innerHTML = (s.footerText || '').replace(/\n/g, '<br>');
+  }
+
+  function listenSettings() {
+    onSnapshot(doc(db, "settings", "site"), (snap) => {
+      if (snap.exists()) applySettings(snap.data());
+    });
+  }
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -130,6 +172,7 @@
       appScreen.style.display = 'block';
       userAvatar.src = user.photoURL || '';
       userName.textContent = user.displayName || 'User';
+      listenSettings();
     } else {
       appScreen.style.display = 'none';
       loginScreen.style.display = 'flex';
