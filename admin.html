@@ -156,21 +156,6 @@
         </div>
 
         <div class="section">
-          <h2>📏 কনটেন্টের প্রস্থ</h2>
-          <input type="number" id="maxWidth" placeholder="640">
-          <button class="sectionSaveBtn" data-section="width">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusWidth"></div>
-        </div>
-
-        <div class="section">
-          <h2>📐 পোস্ট বক্সের সাইজ</h2>
-          <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
-          <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
-          <button class="sectionSaveBtn" data-section="boxSize">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusBoxSize"></div>
-        </div>
-
-        <div class="section">
           <h2>📱 বাম সাইডবার মেনু (সর্বোচ্চ ১০টি)</h2>
           <div class="gridTable" id="sidebarGridTable"></div>
           <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
@@ -220,8 +205,16 @@
           <h2>প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
           <input type="number" id="postsPerPage" placeholder="৫">
           <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
-          <button class="sectionSaveBtn" data-section="postsPerPage">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusPostsPerPage"></div>
+
+          <h2 style="margin-top:16px;">📏 কনটেন্টের প্রস্থ (px)</h2>
+          <input type="number" id="maxWidth" placeholder="640">
+
+          <h2 style="margin-top:16px;">📐 পোস্ট বক্সের সাইজ</h2>
+          <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
+          <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
+
+          <button class="sectionSaveBtn" data-section="contentSettings">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusContentSettings"></div>
         </div>
       </div>
 
@@ -398,12 +391,15 @@
     if (section === 'identity') data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
     else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
-    else if (section === 'width') data = { maxWidth: Number(maxWidth.value) || 640 };
-    else if (section === 'boxSize') data = { composerHeight: Number(composerHeight.value) || 100, posterHeight: Number(posterHeight.value) || 180 };
     else if (section === 'menu') data = { menuItems: readGrid('menu') };
     else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
     else if (section === 'footer') data = { footerItems: readGrid('footer') };
-    else if (section === 'postsPerPage') data = { postsPerPage: Number(postsPerPage.value) || 5 };
+    else if (section === 'contentSettings') data = {
+      postsPerPage: Number(postsPerPage.value) || 5,
+      maxWidth: Number(maxWidth.value) || 640,
+      composerHeight: Number(composerHeight.value) || 100,
+      posterHeight: Number(posterHeight.value) || 180
+    };
 
     try {
       await setDoc(doc(db, "settings", "site"), data, { merge: true });
@@ -420,7 +416,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { postsPerPage: 'PostsPerPage', boxSize: 'BoxSize' };
+      const idMap = { contentSettings: 'ContentSettings' };
       const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
       saveSection(section, document.getElementById(statusId));
     });
