@@ -146,6 +146,14 @@
         </div>
 
         <div class="section">
+          <h2>✍️ কম্পোজার লেখা</h2>
+          <div class="row"><label>টেক্সট বক্সের লেখা</label><input type="text" id="composerPlaceholder" placeholder="আপনার মনে কী চলছে?"></div>
+          <div class="row"><label>পোস্টারের লেখা</label><input type="text" id="posterPlaceholder" placeholder="পোস্টারের লেখা এখানে দেখাবে"></div>
+          <button class="sectionSaveBtn" data-section="composerLabels">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusComposerLabels"></div>
+        </div>
+
+        <div class="section">
           <h2>📱 বাম সাইডবার মেনু (সর্বোচ্চ ১০টি)</h2>
           <div class="gridTable" id="sidebarGridTable"></div>
           <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
@@ -266,6 +274,8 @@
   const logoUrl = document.getElementById('logoUrl');
   const siteName = document.getElementById('siteName');
   const noticeText = document.getElementById('noticeText');
+  const composerPlaceholder = document.getElementById('composerPlaceholder');
+  const posterPlaceholder = document.getElementById('posterPlaceholder');
   const primaryColor = document.getElementById('primaryColor');
   const bgColor = document.getElementById('bgColor');
   const cardColor = document.getElementById('cardColor');
@@ -373,6 +383,8 @@
     logoUrl.value = s.logoUrl || '';
     siteName.value = s.siteName || 'Onuvuti';
     noticeText.value = s.noticeText || '';
+    composerPlaceholder.value = s.composerPlaceholder || '';
+    posterPlaceholder.value = s.posterPlaceholder || '';
     primaryColor.value = s.primaryColor || '#4285F4';
     bgColor.value = s.bgColor || '#0d1117';
     cardColor.value = s.cardColor || '#161b22';
@@ -390,6 +402,10 @@
     let data = {};
     if (section === 'identity') data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
     else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
+    else if (section === 'composerLabels') data = {
+      composerPlaceholder: composerPlaceholder.value.trim(),
+      posterPlaceholder: posterPlaceholder.value.trim()
+    };
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
     else if (section === 'menu') data = { menuItems: readGrid('menu') };
     else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
@@ -416,7 +432,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { contentSettings: 'ContentSettings' };
+      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels' };
       const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
       saveSection(section, document.getElementById(statusId));
     });

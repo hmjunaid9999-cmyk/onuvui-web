@@ -250,6 +250,7 @@
   let allLoadedPosts = [];
   let composerMode = 'text';
   let selectedPosterColor = '#4285F4';
+  let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
 
   const POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
 
@@ -326,6 +327,8 @@
     siteName.textContent = s.siteName || 'Onuvuti';
     footerSiteName.textContent = s.siteName || 'Onuvuti';
     noticeText.textContent = s.noticeText || '';
+    composerText.placeholder = s.composerPlaceholder || 'আপনার মনে কী চলছে?';
+    posterPlaceholderText = s.posterPlaceholder || 'পোস্টারের লেখা এখানে দেখাবে';
     renderLinkButtons(menuGrid, s.menuItems);
     renderLinkButtons(footerGrid, s.footerItems);
     renderLinkButtons(sidebarGrid, s.sidebarItems);
@@ -369,7 +372,7 @@
 
   function updatePosterPreview() {
     posterPreview.style.background = selectedPosterColor;
-    posterPreview.textContent = composerText.value || 'পোস্টারের লেখা এখানে দেখাবে';
+    posterPreview.textContent = composerText.value || posterPlaceholderText;
   }
 
   // ---- পোস্ট সাবমিট ----
