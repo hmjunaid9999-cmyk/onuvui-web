@@ -275,6 +275,16 @@
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
 
+  // ---- কমেন্ট বক্স খোলা থাকলে বাকি পোস্ট লুকানো (ফোকাস মোড) ----
+  function enterCommentFocus(activeCard) {
+    postsList.querySelectorAll('.postCard').forEach(c => {
+      if (c !== activeCard) c.style.display = 'none';
+    });
+  }
+  function exitCommentFocus() {
+    postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
+  }
+
 
 
   // ---- এলিমেন্ট রেফারেন্স ----
@@ -564,7 +574,7 @@
       like: () => {
         const b = document.createElement('button');
         b.className = 'likeBtn' + (liked ? ' liked' : '');
-        b.innerHTML = `❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
+        b.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
         b.addEventListener('click', async () => {
           if (!currentUser) return;
           const postRef = doc(db, "posts", postId);
@@ -587,8 +597,10 @@
           if (show) {
             if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
             if (!openCommentSections.includes(commentsWrap)) openCommentSections.push(commentsWrap);
+            enterCommentFocus(card);
           } else {
             openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
+            exitCommentFocus();
           }
         });
         return b;
@@ -700,21 +712,23 @@
       const all = [];
       snap.forEach(c => all.push({ id: c.id, data: c.data() }));
       const topLevel = all.filter(c => !c.data.replyToId);
-      const repliesByParent = {};
+      const childrenByParent = {};
       all.filter(c => c.data.replyToId).forEach(c => {
-        if (!repliesByParent[c.data.replyToId]) repliesByParent[c.data.replyToId] = [];
-        repliesByParent[c.data.replyToId].push(c);
+        if (!childrenByParent[c.data.replyToId]) childrenByParent[c.data.replyToId] = [];
+        childrenByParent[c.data.replyToId].push(c);
       });
 
-      listEl.innerHTML = '';
-      topLevel.forEach(c => {
-        const row = buildCommentRow(postId, c.id, c.data, false, card);
-        listEl.appendChild(row);
+      function renderNode(c, depth) {
+        const row = buildCommentRow(postId, c.id, c.data, depth, card);
         const repliesListEl = row.querySelector('.repliesList');
-        (repliesByParent[c.id] || []).forEach(r => {
-          repliesListEl.appendChild(buildCommentRow(postId, r.id, r.data, true, card));
+        (childrenByParent[c.id] || []).forEach(child => {
+          repliesListEl.appendChild(renderNode(child, depth + 1));
         });
-      });
+        return row;
+      }
+
+      listEl.innerHTML = '';
+      topLevel.forEach(c => listEl.appendChild(renderNode(c, 0)));
 
       const cCountEl = card.querySelector('.commentCountEl');
       if (cCountEl) cCountEl.textContent = all.length;
@@ -740,12 +754,13 @@
     catch (e) { alert('কমেন্ট এরর: ' + e.message); }
   }
 
-  function buildCommentRow(postId, commentId, d, isReply, card) {
+  function buildCommentRow(postId, commentId, d, depth, card) {
     const isOwner = currentUser && d.uid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
+    const indent = Math.min(depth, 4) * 24;
     const row = document.createElement('div');
     row.className = 'commentRow';
-    if (isReply) row.style.marginLeft = '0';
+    row.style.marginLeft = indent + 'px';
 
     row.innerHTML = `
       <img src="${d.photoURL || ''}">
@@ -758,16 +773,15 @@
           <span>${timeAgo(d.createdAt)}</span>
           <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
           <button class="cCopyBtn">কপি</button>
-          ${!isReply ? '<button class="cReplyBtn">উত্তর দিন</button>' : ''}
+          <button class="cReplyBtn">উত্তর দিন</button>
           ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
           ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
         </div>
-        ${!isReply ? `
         <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
           <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
           <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
         </div>
-        <div class="repliesList"></div>` : ''}
+        <div class="repliesList"></div>
       </div>
     `;
 
@@ -865,6 +879,7 @@
     if (openCommentSections.length) {
       const wrap = openCommentSections.pop();
       wrap.style.display = 'none';
+      exitCommentFocus();
       rearmGuard();
       return;
     }
