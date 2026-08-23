@@ -275,14 +275,18 @@
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
 
-  // ---- কমেন্ট বক্স খোলা থাকলে বাকি পোস্ট লুকানো (ফোকাস মোড) ----
+  // ---- কমেন্ট বক্স খোলা থাকলে বাকি পোস্ট ও "আরও দেখুন" বাটন লুকানো (ফোকাস মোড) ----
+  let loadMoreBtnPrevDisplay = '';
   function enterCommentFocus(activeCard) {
     postsList.querySelectorAll('.postCard').forEach(c => {
       if (c !== activeCard) c.style.display = 'none';
     });
+    loadMoreBtnPrevDisplay = loadMoreBtn.style.display;
+    loadMoreBtn.style.display = 'none';
   }
   function exitCommentFocus() {
     postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
+    loadMoreBtn.style.display = loadMoreBtnPrevDisplay;
   }
 
 
