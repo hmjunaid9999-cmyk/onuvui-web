@@ -161,6 +161,11 @@
   #footerGrid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   #footerGrid a { background: #262c36; color: #fff; text-decoration: none; font-size: 12px; padding: 7px 12px; border-radius: 14px; }
 
+  #exitToast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #21262d; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
+  }
+
   #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
   #sidebarOverlay.open { display: block; }
   #sidebarDrawer {
@@ -232,6 +237,8 @@
     </div>
   </div>
 
+  <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
@@ -266,6 +273,7 @@
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
+  let openCommentSections = [];
 
 
 
@@ -576,7 +584,12 @@
         b.addEventListener('click', () => {
           const show = commentsWrap.style.display !== 'block';
           commentsWrap.style.display = show ? 'block' : 'none';
-          if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+          if (show) {
+            if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+            if (!openCommentSections.includes(commentsWrap)) openCommentSections.push(commentsWrap);
+          } else {
+            openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
+          }
         });
         return b;
       },
@@ -812,6 +825,7 @@
       appScreen.style.display = 'block';
       listenSettings();
       resetFeed();
+      initBackGuard();
     } else {
       appScreen.style.display = 'none';
       loginScreen.style.display = 'flex';
@@ -819,6 +833,57 @@
       loginStatus.textContent = '';
     }
   });
+
+  // ---- Back বাটন গার্ড: মেনু/কমেন্ট খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  let backGuardActive = false;
+  let backPressCount = 0;
+  let backPressTimer = null;
+  const exitToast = document.getElementById('exitToast');
+
+  function rearmGuard() {
+    history.pushState({ guard: true }, '', location.href);
+  }
+
+  function initBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
+    rearmGuard();
+    window.addEventListener('popstate', handleBack);
+  }
+
+  function handleBack() {
+    if (sidebarDrawer.classList.contains('open')) {
+      closeSidebar();
+      rearmGuard();
+      return;
+    }
+    const openMenu = document.querySelector('.postMenuDropdown.open');
+    if (openMenu) {
+      openMenu.classList.remove('open');
+      rearmGuard();
+      return;
+    }
+    if (openCommentSections.length) {
+      const wrap = openCommentSections.pop();
+      wrap.style.display = 'none';
+      rearmGuard();
+      return;
+    }
+
+    if (backPressCount === 0) {
+      backPressCount = 1;
+      exitToast.style.display = 'block';
+      rearmGuard();
+      backPressTimer = setTimeout(() => {
+        backPressCount = 0;
+        exitToast.style.display = 'none';
+      }, 2000);
+    } else {
+      clearTimeout(backPressTimer);
+      exitToast.style.display = 'none';
+      // দ্বিতীয়বার Back — গার্ড আর নতুন করে বসানো হচ্ছে না, তাই এবার স্বাভাবিকভাবে বের হয়ে যাবে
+    }
+  }
 </script>
 </body>
 </html>
