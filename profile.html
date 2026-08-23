@@ -65,6 +65,7 @@
   #profileEmail { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
   #profileBio { font-size: 13px; color: #ddd; white-space: pre-wrap; margin-bottom: 6px; line-height: 1.5; }
   #profileBioEmpty { font-size: 13px; color: #6b7280; font-style: italic; margin-bottom: 6px; }
+  #profileExtra { font-size: 12px; color: #9ca3af; margin-bottom: 6px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
   #profileJoined { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
   #editProfileBtn {
     background: #21262d; color: #fff; border: 1px solid #30363d; padding: 8px 18px;
@@ -91,6 +92,8 @@
     padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit;
   }
   .formRow textarea { resize: vertical; min-height: 70px; }
+  .formRow select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit; }
+  .readonlyNote { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
   #coverColors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
   .coverSwatch { width: 30px; height: 30px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
   .coverSwatch.selected { border-color: #fff; }
@@ -181,6 +184,7 @@
           <div id="profileEmail"></div>
           <div id="profileBio" style="display:none;"></div>
           <div id="profileBioEmpty" style="display:none;">এখনো কোনো বায়ো লেখা হয়নি</div>
+          <div id="profileExtra"></div>
           <div id="profileJoined"></div>
           <button id="editProfileBtn">✏️ প্রোফাইল এডিট করুন</button>
         </div>
@@ -202,17 +206,23 @@
   <div id="editOverlay">
     <div id="editModal">
       <h2>প্রোফাইল এডিট করুন</h2>
-      <div class="formRow">
-        <label>নাম</label>
-        <input type="text" id="editName" placeholder="আপনার নাম">
-      </div>
-      <div class="formRow">
-        <label>প্রোফাইল ছবির URL</label>
-        <input type="text" id="editAvatar" placeholder="https://...">
-      </div>
+      <div class="readonlyNote">নাম ও প্রোফাইল ছবি আপনার Google অ্যাকাউন্ট থেকে অটোমেটিক নেওয়া হয় — এটা Google অ্যাকাউন্টে বদলালে এখানেও বদলে যাবে।</div>
       <div class="formRow">
         <label>বায়ো</label>
         <textarea id="editBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." maxlength="200"></textarea>
+      </div>
+      <div class="formRow">
+        <label>লিঙ্গ</label>
+        <select id="editGender">
+          <option value="">নির্বাচন করুন</option>
+          <option value="male">পুরুষ</option>
+          <option value="female">মহিলা</option>
+          <option value="other">অন্যান্য</option>
+        </select>
+      </div>
+      <div class="formRow">
+        <label>জন্ম তারিখ</label>
+        <input type="date" id="editBirthday">
       </div>
       <div class="formRow">
         <label>কভার রং</label>
@@ -268,6 +278,7 @@
   const profileEmail = document.getElementById('profileEmail');
   const profileBio = document.getElementById('profileBio');
   const profileBioEmpty = document.getElementById('profileBioEmpty');
+  const profileExtra = document.getElementById('profileExtra');
   const profileJoined = document.getElementById('profileJoined');
   const statPosts = document.getElementById('statPosts');
   const statLikes = document.getElementById('statLikes');
@@ -278,9 +289,9 @@
   const editCancelBtn = document.getElementById('editCancelBtn');
   const editSaveBtn = document.getElementById('editSaveBtn');
   const editStatus = document.getElementById('editStatus');
-  const editName = document.getElementById('editName');
-  const editAvatar = document.getElementById('editAvatar');
   const editBio = document.getElementById('editBio');
+  const editGender = document.getElementById('editGender');
+  const editBirthday = document.getElementById('editBirthday');
   const coverColorsEl = document.getElementById('coverColors');
 
   const postsLoading = document.getElementById('postsLoading');
@@ -331,30 +342,38 @@
     return 'যোগদান: ' + months[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  // ---- ইউজার প্রোফাইল লোড/তৈরি ----
+  // ---- ইউজার প্রোফাইল লোড/তৈরি (নাম ও ছবি সবসময় Google অ্যাকাউন্ট থেকে সিঙ্ক হয়) ----
   async function ensureUserProfile(user) {
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
+    const syncedFields = {
+      name: user.displayName || 'User',
+      photoURL: user.photoURL || '',
+      email: user.email || ''
+    };
     if (snap.exists()) {
-      myProfile = snap.data();
-      await setDoc(ref, {
-        email: user.email || '',
-        authName: user.displayName || '',
-        authPhoto: user.photoURL || ''
-      }, { merge: true });
+      myProfile = { ...snap.data(), ...syncedFields };
+      await setDoc(ref, syncedFields, { merge: true });
     } else {
       myProfile = {
-        name: user.displayName || 'User',
-        email: user.email || '',
-        photoURL: user.photoURL || '',
-        authName: user.displayName || '',
-        authPhoto: user.photoURL || '',
+        ...syncedFields,
         bio: '',
+        gender: '',
+        birthday: '',
         coverColor: '#4285F4',
         createdAt: serverTimestamp()
       };
       await setDoc(ref, myProfile);
     }
+  }
+
+  const GENDER_LABELS = { male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য' };
+
+  function formatBirthday(str) {
+    if (!str) return '';
+    const [y, m, d] = str.split('-');
+    const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+    return d + ' ' + months[Number(m) - 1] + ' ' + y;
   }
 
   function renderProfile() {
@@ -373,14 +392,18 @@
       profileBio.style.display = 'none';
       profileBioEmpty.style.display = 'block';
     }
+    const extras = [];
+    if (myProfile.gender && GENDER_LABELS[myProfile.gender]) extras.push('🚻 ' + GENDER_LABELS[myProfile.gender]);
+    if (myProfile.birthday) extras.push('🎂 ' + formatBirthday(myProfile.birthday));
+    profileExtra.textContent = extras.join('   ');
     profileJoined.textContent = formatJoinDate(myProfile.createdAt);
   }
 
   // ---- এডিট প্রোফাইল মোডাল ----
   editProfileBtn.addEventListener('click', () => {
-    editName.value = myProfile.name || currentUser.displayName || '';
-    editAvatar.value = myProfile.photoURL || currentUser.photoURL || '';
     editBio.value = myProfile.bio || '';
+    editGender.value = myProfile.gender || '';
+    editBirthday.value = myProfile.birthday || '';
     selectedCoverColor = myProfile.coverColor || '#4285F4';
     document.querySelectorAll('.coverSwatch').forEach(s => {
       s.classList.toggle('selected', s.style.background === hexToRgbStr(selectedCoverColor));
@@ -406,9 +429,9 @@
     editStatus.textContent = 'সেভ হচ্ছে...';
     try {
       const data = {
-        name: editName.value.trim() || currentUser.displayName || 'User',
-        photoURL: editAvatar.value.trim() || currentUser.photoURL || '',
         bio: editBio.value.trim(),
+        gender: editGender.value,
+        birthday: editBirthday.value,
         coverColor: selectedCoverColor
       };
       await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
@@ -470,9 +493,7 @@
 
     card.innerHTML = `
       <div class="postHeader">
-        <img class="avatar" src="${d.authorPhoto || ''}">
         <div>
-          <div class="pName">${escapeHtml(d.authorName)}</div>
           <div class="pTime">${timeAgo(d.createdAt)}</div>
         </div>
         <div class="postMenuWrap">
