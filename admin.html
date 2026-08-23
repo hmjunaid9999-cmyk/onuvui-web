@@ -91,6 +91,19 @@
   }
   .pickerChip.selected .badge { display: flex; }
 
+  /* ---- কালার পিকার ---- */
+  .colorSwatchPick {
+    position: relative; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+    border: 2px solid transparent; flex-shrink: 0;
+  }
+  .colorSwatchPick.selected { border-color: #fff; }
+  .colorSwatchPick .badge {
+    display: none; position: absolute; top: -6px; right: -6px;
+    background: #fff; color: #111; width: 18px; height: 18px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .colorSwatchPick.selected .badge { display: flex; }
+
   /* ---- কন্টেন্ট তালিকা কার্ড ---- */
   .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
@@ -257,6 +270,14 @@
         </div>
 
         <div class="section">
+          <h2>🎨 পোস্টার রং বাছাই করুন (৭টি)</h2>
+          <div class="hint">নিচের প্যালেট থেকে ঠিক ৭টা রং বাছাই করুন — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
+          <div class="buttonPicker" id="posterColorPicker"></div>
+          <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusPosterColors"></div>
+        </div>
+
+        <div class="section">
           <h2>🎨 রং</h2>
           <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
           <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
@@ -373,6 +394,55 @@
 
   const bottomPicker = createPicker('bottomButtonPicker');
   const menuPicker = createPicker('menuButtonPicker');
+
+  // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
+  const COLOR_PALETTE = [
+    '#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9',
+    '#F97316', '#22C55E', '#EF4444', '#A855F7', '#06B6D4', '#F43F5E', '#84CC16', '#3B82F6',
+    '#D946EF', '#FACC15', '#10B981', '#6366F1', '#F472B6', '#0EA5E9', '#EAB308', '#DC2626',
+    '#7C3AED', '#059669', '#DB2777', '#2563EB', '#CA8A04', '#16A34A', '#9333EA', '#0891B2',
+    '#65A30D', '#E11D48', '#4F46E5', '#0D9488'
+  ];
+  const MAX_POSTER_COLORS = 7;
+
+  function createColorPicker(containerId, maxCount) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    COLOR_PALETTE.forEach(color => {
+      const sw = document.createElement('div');
+      sw.className = 'colorSwatchPick';
+      sw.style.background = color;
+      sw.dataset.color = color;
+      sw.innerHTML = `<span class="badge"></span>`;
+      sw.addEventListener('click', () => {
+        const idx = order.indexOf(color);
+        if (idx === -1) {
+          if (order.length >= maxCount) { alert('সর্বোচ্চ ' + maxCount + 'টি রং বাছাই করা যাবে'); return; }
+          order.push(color);
+        } else {
+          order.splice(idx, 1);
+        }
+        refresh();
+      });
+      container.appendChild(sw);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.colorSwatchPick').forEach(sw => {
+        const idx = order.indexOf(sw.dataset.color);
+        if (idx === -1) { sw.classList.remove('selected'); }
+        else { sw.classList.add('selected'); sw.querySelector('.badge').textContent = idx + 1; }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).slice(0, maxCount); refresh(); }
+    };
+  }
+
+  const posterColorPicker = createColorPicker('posterColorPicker', MAX_POSTER_COLORS);
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
@@ -485,6 +555,7 @@
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
+    posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
     fillGrid('menu', s.menuItems);
     fillGrid('sidebar', s.sidebarItems);
     fillGrid('footer', s.footerItems);
@@ -501,6 +572,11 @@
     else if (section === 'postButtonsLayout') data = { postButtonsJustify: postButtonsJustify.value };
     else if (section === 'bottomButtons') data = { bottomButtons: bottomPicker.getOrder() };
     else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
+    else if (section === 'posterColors') {
+      const colors = posterColorPicker.getOrder();
+      if (colors.length !== MAX_POSTER_COLORS) { alert('অনুগ্রহ করে ঠিক ৭টা রং বাছাই করুন (এখন ' + colors.length + 'টা বাছাই করা আছে)'); return; }
+      data = { posterColors: colors };
+    }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
     else if (section === 'menu') data = { menuItems: readGrid('menu') };
     else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };

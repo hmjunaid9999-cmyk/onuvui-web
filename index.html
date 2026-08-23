@@ -265,8 +265,9 @@
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
+  const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
 
-  const POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
+
 
   // ---- এলিমেন্ট রেফারেন্স ----
   const loginScreen = document.getElementById('loginScreen');
@@ -341,6 +342,7 @@
 
     if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
     if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+    if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
     if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
@@ -361,18 +363,23 @@
   }
 
   // ---- কম্পোজার: মোড পরিবর্তন ----
-  POSTER_COLORS.forEach(color => {
-    const sw = document.createElement('div');
-    sw.className = 'posterSwatch';
-    sw.style.background = color;
-    sw.addEventListener('click', () => {
-      selectedPosterColor = color;
-      document.querySelectorAll('.posterSwatch').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-      updatePosterPreview();
+  function buildPosterSwatches(colors) {
+    posterColorsEl.innerHTML = '';
+    (colors && colors.length ? colors : DEFAULT_POSTER_COLORS).forEach((color, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'posterSwatch' + (i === 0 ? ' selected' : '');
+      sw.style.background = color;
+      sw.addEventListener('click', () => {
+        selectedPosterColor = color;
+        document.querySelectorAll('.posterSwatch').forEach(s => s.classList.remove('selected'));
+        sw.classList.add('selected');
+        updatePosterPreview();
+      });
+      posterColorsEl.appendChild(sw);
     });
-    posterColorsEl.appendChild(sw);
-  });
+    selectedPosterColor = (colors && colors.length ? colors : DEFAULT_POSTER_COLORS)[0];
+  }
+  buildPosterSwatches(DEFAULT_POSTER_COLORS);
 
   document.querySelectorAll('#composerTabs button').forEach(btn => {
     btn.addEventListener('click', () => {
