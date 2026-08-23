@@ -102,10 +102,22 @@
 
   /* ---- পোস্ট ফিড ---- */
   .postCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-  .postHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .postHeader img { width: 32px; height: 32px; border-radius: 50%; background: #333; }
+  .postHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: relative; }
+  .postHeader img.avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; }
   .postHeader .pName { font-size: 13px; font-weight: bold; }
   .postHeader .pTime { font-size: 11px; color: #6b7280; }
+  .postMenuWrap { margin-left: auto; position: relative; }
+  .postMenuBtn { background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px; }
+  .postMenuDropdown {
+    display: none; position: absolute; right: 0; top: 30px; background: #21262d; border: 1px solid #30363d;
+    border-radius: 10px; min-width: 140px; z-index: 10; overflow: hidden;
+  }
+  .postMenuDropdown.open { display: block; }
+  .postMenuDropdown button {
+    display: block; width: 100%; text-align: left; background: none; border: none; color: #fff;
+    padding: 10px 12px; font-size: 12px; cursor: pointer;
+  }
+  .postMenuDropdown button:hover { background: #30363d; }
   .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
   .postPhoto { max-width: 100%; border-radius: 10px; margin-bottom: 8px; }
   .postPoster {
@@ -495,10 +507,19 @@
 
     card.innerHTML = `
       <div class="postHeader">
-        <img src="${d.authorPhoto || ''}">
+        <img class="avatar" src="${d.authorPhoto || ''}">
         <div>
           <div class="pName">${escapeHtml(d.authorName)}</div>
           <div class="pTime">${timeAgo(d.createdAt)}</div>
+        </div>
+        <div class="postMenuWrap">
+          <button class="postMenuBtn">⋮</button>
+          <div class="postMenuDropdown">
+            <button class="copyLinkBtn">🔗 লিংক কপি</button>
+            <button class="shareBtn">📤 শেয়ার</button>
+            ${isOwner ? '<button class="editBtn">✏️ এডিট</button>' : ''}
+            ${isOwner ? '<button class="deleteBtn">🗑️ ডিলিট</button>' : ''}
+          </div>
         </div>
       </div>
       ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
@@ -507,10 +528,6 @@
         <button class="likeBtn ${liked ? 'liked' : ''}">❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)</button>
         <button class="commentToggleBtn">💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)</button>
         <button class="copyTextBtn">📋 টেক্সট কপি</button>
-        <button class="copyLinkBtn">🔗 লিংক কপি</button>
-        <button class="shareBtn">📤 শেয়ার</button>
-        ${isOwner ? '<button class="editBtn">✏️ এডিট</button>' : ''}
-        ${isOwner ? '<button class="deleteBtn">🗑️ ডিলিট</button>' : ''}
       </div>
       <div class="postStatus"></div>
       <div class="commentsWrap">
@@ -524,6 +541,17 @@
 
     const statusEl = card.querySelector('.postStatus');
     function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
+
+    // থ্রি-ডট মেনু খোলা/বন্ধ
+    const menuBtn = card.querySelector('.postMenuBtn');
+    const menuDropdown = card.querySelector('.postMenuDropdown');
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuDropdown) el.classList.remove('open'); });
+      menuDropdown.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
+    menuDropdown.addEventListener('click', (e) => e.stopPropagation());
 
     // লাইক
     card.querySelector('.likeBtn').addEventListener('click', async () => {
@@ -554,12 +582,14 @@
 
     // কপি লিংক
     card.querySelector('.copyLinkBtn').addEventListener('click', async () => {
+      menuDropdown.classList.remove('open');
       try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
       catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
     });
 
     // শেয়ার
     card.querySelector('.shareBtn').addEventListener('click', async () => {
+      menuDropdown.classList.remove('open');
       if (navigator.share) {
         try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {}
       } else {
@@ -571,6 +601,7 @@
     const editBtn = card.querySelector('.editBtn');
     if (editBtn) {
       editBtn.addEventListener('click', () => {
+        menuDropdown.classList.remove('open');
         const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
         if (newText === null) return;
         updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
@@ -583,6 +614,7 @@
     const deleteBtn = card.querySelector('.deleteBtn');
     if (deleteBtn) {
       deleteBtn.addEventListener('click', async () => {
+        menuDropdown.classList.remove('open');
         if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
         try {
           await deleteDoc(doc(db, "posts", postId));
