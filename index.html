@@ -14,6 +14,7 @@
     --max-width: 640px;
     --composer-height: 100px;
     --poster-height: 180px;
+    --post-buttons-justify: space-evenly;
   }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
 
@@ -125,7 +126,7 @@
     font-weight: bold; color: #fff; margin-bottom: 8px; min-height: var(--poster-height);
     display: flex; align-items: center; justify-content: center; white-space: pre-wrap;
   }
-  .postButtons { display: flex; justify-content: space-evenly; gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
+  .postButtons { display: flex; justify-content: var(--post-buttons-justify); gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
   .postButtons button {
     background: #21262d; color: #c9d1d9; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; cursor: pointer;
   }
@@ -335,6 +336,7 @@
     if (s.maxWidth) root.setProperty('--max-width', s.maxWidth + 'px');
     if (s.composerHeight) root.setProperty('--composer-height', s.composerHeight + 'px');
     if (s.posterHeight) root.setProperty('--poster-height', s.posterHeight + 'px');
+    if (s.postButtonsJustify) root.setProperty('--post-buttons-justify', s.postButtonsJustify);
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
     footerSiteName.textContent = s.siteName || 'Onuvuti';
