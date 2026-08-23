@@ -817,7 +817,6 @@
     return row;
   }
 
-  // ---- অথ স্টেট ----
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     if (user) {
@@ -881,7 +880,6 @@
     } else {
       clearTimeout(backPressTimer);
       exitToast.style.display = 'none';
-      // দ্বিতীয়বার Back — গার্ড আর নতুন করে বসানো হচ্ছে না, তাই এবার স্বাভাবিকভাবে বের হয়ে যাবে
     }
   }
 </script>

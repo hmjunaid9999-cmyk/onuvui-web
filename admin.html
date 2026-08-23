@@ -109,6 +109,11 @@
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
   .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
   .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
+
+  #exitToast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #21262d; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
+  }
 </style>
 </head>
 <body>
@@ -302,6 +307,8 @@
 
     </main>
   </div>
+
+  <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -559,6 +566,7 @@
     fillGrid('menu', s.menuItems);
     fillGrid('sidebar', s.sidebarItems);
     fillGrid('footer', s.footerItems);
+    return s;
   }
 
   async function saveSection(section, statusEl) {
@@ -695,10 +703,49 @@
     } else if (ADMIN_EMAILS.includes(user.email)) {
       adminScreen.style.display = 'block';
       loadSettings();
+      initBackGuard();
     } else {
       deniedScreen.style.display = 'flex';
     }
   });
+
+  // ---- Back বাটন গার্ড: ড্রয়ার খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  let backGuardActive = false;
+  let backPressCount = 0;
+  let backPressTimer = null;
+  const exitToast = document.getElementById('exitToast');
+
+  function rearmGuard() {
+    history.pushState({ guard: true }, '', location.href);
+  }
+
+  function initBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
+    rearmGuard();
+    window.addEventListener('popstate', handleBack);
+  }
+
+  function handleBack() {
+    if (adminDrawer.classList.contains('open')) {
+      closeAdminDrawer();
+      rearmGuard();
+      return;
+    }
+
+    if (backPressCount === 0) {
+      backPressCount = 1;
+      exitToast.style.display = 'block';
+      rearmGuard();
+      backPressTimer = setTimeout(() => {
+        backPressCount = 0;
+        exitToast.style.display = 'none';
+      }, 2000);
+    } else {
+      clearTimeout(backPressTimer);
+      exitToast.style.display = 'none';
+    }
+  }
 </script>
 </body>
 </html>
