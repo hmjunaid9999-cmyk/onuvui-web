@@ -78,6 +78,19 @@
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
   .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
 
+  /* ---- বাটন পিকার (চিপ) ---- */
+  .buttonPicker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .pickerChip {
+    display: flex; align-items: center; gap: 6px; background: #0d1117; border: 1px solid #30363d;
+    color: #9ca3af; padding: 8px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
+  }
+  .pickerChip.selected { background: #4285F4; color: #fff; border-color: #4285F4; }
+  .pickerChip .badge {
+    display: none; background: #fff; color: #4285F4; width: 16px; height: 16px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .pickerChip.selected .badge { display: flex; }
+
   /* ---- কন্টেন্ট তালিকা কার্ড ---- */
   .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
@@ -224,9 +237,25 @@
             <option value="flex-start">বাম দিকে জড়ো</option>
             <option value="center">মাঝখানে জড়ো</option>
           </select>
-          <div class="hint">প্রতিটা পোস্টের নিচের ৩টা বাটন (লাইক, কমেন্ট, টেক্সট কপি) কীভাবে সাজানো থাকবে</div>
+          <div class="hint">প্রতিটা পোস্টের নিচের বাটনগুলো কীভাবে সাজানো থাকবে</div>
           <button class="sectionSaveBtn" data-section="postButtonsLayout">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusPostButtonsLayout"></div>
+        </div>
+
+        <div class="section">
+          <h2>👇 নিচের বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে</div>
+          <div class="buttonPicker" id="bottomButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="bottomButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusBottomButtons"></div>
+        </div>
+
+        <div class="section">
+          <h2>⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে</div>
+          <div class="buttonPicker" id="menuButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="menuButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusMenuButtons"></div>
         </div>
 
         <div class="section">
@@ -299,6 +328,53 @@
   const posterHeight = document.getElementById('posterHeight');
   const postsPerPage = document.getElementById('postsPerPage');
   const postButtonsJustify = document.getElementById('postButtonsJustify');
+
+  // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
+  const BUTTON_LABELS = {
+    like: '❤️ লাইক', comment: '💬 কমেন্ট', copyText: '📋 টেক্সট কপি',
+    copyLink: '🔗 লিংক কপি', share: '📤 শেয়ার', edit: '✏️ এডিট', delete: '🗑️ ডিলিট'
+  };
+  const BUTTON_KEYS = Object.keys(BUTTON_LABELS);
+
+  function createPicker(containerId) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    BUTTON_KEYS.forEach(key => {
+      const chip = document.createElement('div');
+      chip.className = 'pickerChip';
+      chip.dataset.key = key;
+      chip.innerHTML = `<span class="badge"></span><span>${BUTTON_LABELS[key]}</span>`;
+      chip.addEventListener('click', () => {
+        const idx = order.indexOf(key);
+        if (idx === -1) order.push(key);
+        else order.splice(idx, 1);
+        refresh();
+      });
+      container.appendChild(chip);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.pickerChip').forEach(chip => {
+        const key = chip.dataset.key;
+        const idx = order.indexOf(key);
+        if (idx === -1) {
+          chip.classList.remove('selected');
+        } else {
+          chip.classList.add('selected');
+          chip.querySelector('.badge').textContent = idx + 1;
+        }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).filter(k => BUTTON_KEYS.includes(k)); refresh(); }
+    };
+  }
+
+  const bottomPicker = createPicker('bottomButtonPicker');
+  const menuPicker = createPicker('menuButtonPicker');
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
@@ -409,6 +485,8 @@
     posterHeight.value = s.posterHeight || 180;
     postsPerPage.value = s.postsPerPage || 5;
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
+    bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
+    menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
     fillGrid('menu', s.menuItems);
     fillGrid('sidebar', s.sidebarItems);
     fillGrid('footer', s.footerItems);
@@ -423,6 +501,8 @@
       posterPlaceholder: posterPlaceholder.value.trim()
     };
     else if (section === 'postButtonsLayout') data = { postButtonsJustify: postButtonsJustify.value };
+    else if (section === 'bottomButtons') data = { bottomButtons: bottomPicker.getOrder() };
+    else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
     else if (section === 'menu') data = { menuItems: readGrid('menu') };
     else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
@@ -449,7 +529,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout' };
+      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons' };
       const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
       saveSection(section, document.getElementById(statusId));
     });

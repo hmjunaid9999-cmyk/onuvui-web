@@ -264,6 +264,7 @@
   let composerMode = 'text';
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
+  let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
 
   const POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
 
@@ -337,6 +338,10 @@
     if (s.composerHeight) root.setProperty('--composer-height', s.composerHeight + 'px');
     if (s.posterHeight) root.setProperty('--poster-height', s.posterHeight + 'px');
     if (s.postButtonsJustify) root.setProperty('--post-buttons-justify', s.postButtonsJustify);
+
+    if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
+    if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+    if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
     footerSiteName.textContent = s.siteName || 'Onuvuti';
@@ -516,21 +521,12 @@
         </div>
         <div class="postMenuWrap">
           <button class="postMenuBtn">⋮</button>
-          <div class="postMenuDropdown">
-            <button class="copyLinkBtn">🔗 লিংক কপি</button>
-            <button class="shareBtn">📤 শেয়ার</button>
-            ${isOwner ? '<button class="editBtn">✏️ এডিট</button>' : ''}
-            ${isOwner ? '<button class="deleteBtn">🗑️ ডিলিট</button>' : ''}
-          </div>
+          <div class="postMenuDropdown"></div>
         </div>
       </div>
       ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
       ${mediaHtml}
-      <div class="postButtons">
-        <button class="likeBtn ${liked ? 'liked' : ''}">❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)</button>
-        <button class="commentToggleBtn">💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)</button>
-        <button class="copyTextBtn">📋 টেক্সট কপি</button>
-      </div>
+      <div class="postButtons"></div>
       <div class="postStatus"></div>
       <div class="commentsWrap">
         <div class="commentForm">
@@ -544,87 +540,127 @@
     const statusEl = card.querySelector('.postStatus');
     function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
 
-    // থ্রি-ডট মেনু খোলা/বন্ধ
-    const menuBtn = card.querySelector('.postMenuBtn');
-    const menuDropdown = card.querySelector('.postMenuDropdown');
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuDropdown) el.classList.remove('open'); });
-      menuDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
-    menuDropdown.addEventListener('click', (e) => e.stopPropagation());
+    const bottomContainer = card.querySelector('.postButtons');
+    const menuContainer = card.querySelector('.postMenuDropdown');
+    const menuBtn0 = card.querySelector('.postMenuBtn');
 
-    // লাইক
-    card.querySelector('.likeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const postRef = doc(db, "posts", postId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-      // লোকাল ডাটা আপডেট + রি-রেন্ডার
-      if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
-      else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-      renderPosts();
-    });
-
-    // কমেন্ট টগল
-    const commentsWrap = card.querySelector('.commentsWrap');
-    let commentsLoaded = false;
-    card.querySelector('.commentToggleBtn').addEventListener('click', () => {
-      const show = commentsWrap.style.display !== 'block';
-      commentsWrap.style.display = show ? 'block' : 'none';
-      if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
-    });
-
-    // কপি টেক্সট
-    card.querySelector('.copyTextBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
-    });
-
-    // কপি লিংক
-    card.querySelector('.copyLinkBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
-    });
-
-    // শেয়ার
-    card.querySelector('.shareBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      if (navigator.share) {
-        try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {}
-      } else {
-        try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {}
-      }
-    });
-
-    // এডিট (শুধু মালিক)
-    const editBtn = card.querySelector('.editBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        menuDropdown.classList.remove('open');
-        const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-          d.text = newText; renderPosts();
-        }).catch(e => alert('এরর: ' + e.message));
-      });
-    }
-
-    // ডিলিট (শুধু মালিক)
-    const deleteBtn = card.querySelector('.deleteBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', async () => {
-        menuDropdown.classList.remove('open');
-        if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
-        try {
-          await deleteDoc(doc(db, "posts", postId));
-          allLoadedPosts = allLoadedPosts.filter(p => p.id !== postId);
+    // ---- প্রতিটা বাটনের সংজ্ঞা (কোথায় বসবে সেটা settings থেকে ঠিক হবে) ----
+    const buttonDefs = {
+      like: () => {
+        const b = document.createElement('button');
+        b.className = 'likeBtn' + (liked ? ' liked' : '');
+        b.innerHTML = `❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
+        b.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const postRef = doc(db, "posts", postId);
+          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+          await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+          if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
+          else d.likedBy = [...(d.likedBy || []), currentUser.uid];
           renderPosts();
-        } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      },
+      comment: () => {
+        const b = document.createElement('button');
+        b.className = 'commentToggleBtn';
+        b.innerHTML = `💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)`;
+        let commentsLoaded = false;
+        b.addEventListener('click', () => {
+          const show = commentsWrap.style.display !== 'block';
+          commentsWrap.style.display = show ? 'block' : 'none';
+          if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+        });
+        return b;
+      },
+      copyText: () => {
+        const b = document.createElement('button');
+        b.className = 'copyTextBtn';
+        b.textContent = '📋 টেক্সট কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      copyLink: () => {
+        const b = document.createElement('button');
+        b.className = 'copyLinkBtn';
+        b.textContent = '🔗 লিংক কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      share: () => {
+        const b = document.createElement('button');
+        b.className = 'shareBtn';
+        b.textContent = '📤 শেয়ার';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (navigator.share) { try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {} }
+          else { try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {} }
+        });
+        return b;
+      },
+      edit: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'editBtn';
+        b.textContent = '✏️ এডিট';
+        b.addEventListener('click', () => {
+          menuContainer.classList.remove('open');
+          const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
+          if (newText === null) return;
+          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => { d.text = newText; renderPosts(); })
+            .catch(e => alert('এরর: ' + e.message));
+        });
+        return b;
+      },
+      delete: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'deleteBtn';
+        b.textContent = '🗑️ ডিলিট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "posts", postId));
+            allLoadedPosts = allLoadedPosts.filter(p => p.id !== postId);
+            renderPosts();
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      }
+    };
+
+    function placeButtons(order, container) {
+      (order || []).forEach(key => {
+        const factory = buttonDefs[key];
+        if (!factory) return;
+        const el = factory();
+        if (el) container.appendChild(el);
       });
     }
+
+    placeButtons(buttonOrder.bottom, bottomContainer);
+    placeButtons(buttonOrder.menu, menuContainer);
+
+    // থ্রি-ডট মেনু খোলা/বন্ধ
+    menuBtn0.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuContainer) el.classList.remove('open'); });
+      menuContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuContainer.classList.remove('open'));
+    menuContainer.addEventListener('click', (e) => e.stopPropagation());
+
+    // কমেন্ট বক্স রেফারেন্স (comment বাটনের ফাংশনে ব্যবহৃত হবে)
+    const commentsWrap = card.querySelector('.commentsWrap');
 
     // কমেন্ট সাবমিট
     card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
