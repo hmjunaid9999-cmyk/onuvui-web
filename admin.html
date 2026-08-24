@@ -50,6 +50,11 @@
     border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 2px; color: #9ca3af;
   }
   .subFolderItem:hover, .subFolderItem.active { background: #21262d; color: #fff; }
+  .drawerBackRow {
+    display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 10px;
+    padding-bottom: 14px; border-bottom: 1px solid #262c36; font-weight: bold; font-size: 14px; cursor: pointer;
+  }
+  .drawerBackRow:hover { color: #9ca3af; }
 
   main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
   .folderPanel { display: none; }
@@ -136,16 +141,7 @@
     <div id="adminDrawer">
       <div class="drawerHeader"><strong>ফোল্ডার</strong><button id="adminDrawerCloseBtn">✕</button></div>
 
-      <div class="folderItem active" data-folder="theme"><span>🎨</span> থিম</div>
-
-      <div class="folderItem" data-folder="content"><span>📦</span> কন্টেন্ট</div>
-      <div class="subFolderItem active" data-subfolder="posts">📝 পোস্ট</div>
-      <div class="subFolderItem" data-subfolder="comments">💬 কমেন্ট</div>
-      <div class="subFolderItem" data-subfolder="replies">↩️ রিপ্লাই</div>
-      <div class="subFolderItem" data-subfolder="settings">⚙️ সেটিংস</div>
-
-      <div class="folderItem" data-folder="users"><span>👥</span> ইউজার</div>
-      <div class="folderItem" data-folder="video"><span>🎬</span> ভিডিও</div>
+      <div id="drawerListEl"></div>
     </div>
 
     <header>
@@ -460,7 +456,11 @@
   const adminDrawer = document.getElementById('adminDrawer');
   const adminOverlay = document.getElementById('adminOverlay');
 
-  function openAdminDrawer() { adminDrawer.classList.add('open'); adminOverlay.classList.add('open'); }
+  function openAdminDrawer() {
+    adminDrawer.classList.add('open'); adminOverlay.classList.add('open');
+    navStack = findAncestorStack(activePathKeys);
+    renderDrawerLevel();
+  }
   function closeAdminDrawer() { adminDrawer.classList.remove('open'); adminOverlay.classList.remove('open'); }
   adminMenuToggle.addEventListener('click', openAdminDrawer);
   adminDrawerCloseBtn.addEventListener('click', closeAdminDrawer);
@@ -471,35 +471,75 @@
     document.getElementById(panelId).classList.add('active');
   }
 
-  document.querySelectorAll('.folderItem').forEach(item => {
-    item.addEventListener('click', () => {
-      const folder = item.getAttribute('data-folder');
-      document.querySelectorAll('.folderItem, .subFolderItem').forEach(f => f.classList.remove('active'));
-      item.classList.add('active');
-      if (folder === 'content') {
-        document.querySelector('.subFolderItem[data-subfolder="posts"]').classList.add('active');
-        showPanel('panel-content-posts');
-        loadAdminPosts();
-      } else {
-        showPanel('panel-' + folder);
-      }
-      closeAdminDrawer();
-    });
-  });
+  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ — যত ইচ্ছা নতুন ফোল্ডার/সাব-ফোল্ডার যোগ করলে
+  //      এই একটামাত্র জায়গায় (FOLDER_TREE) শুধু একটা এন্ট্রি বসালেই বাকি সব (নেভিগেশন, ব্যাক বাটন,
+  //      active হাইলাইট, ইনডেন্ট) নিজে থেকে কাজ করবে — আলাদা করে কোনো কোড লেখা লাগবে না) ----
+  const FOLDER_TREE = [
+    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
+    { key: 'content', icon: '📦', label: 'কন্টেন্ট', children: [
+        { key: 'posts', icon: '📝', label: 'পোস্ট', panel: 'panel-content-posts', onShow: () => loadAdminPosts() },
+        { key: 'comments', icon: '💬', label: 'কমেন্ট', panel: 'panel-content-comments', onShow: () => loadAdminCommentsAndReplies() },
+        { key: 'replies', icon: '↩️', label: 'রিপ্লাই', panel: 'panel-content-replies', onShow: () => loadAdminCommentsAndReplies() },
+        { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' }
+      ]
+    },
+    { key: 'users', icon: '👥', label: 'ইউজার', panel: 'panel-users' },
+    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video' }
+  ];
 
-  document.querySelectorAll('.subFolderItem').forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const sub = item.getAttribute('data-subfolder');
-      document.querySelectorAll('.folderItem, .subFolderItem').forEach(f => f.classList.remove('active'));
-      document.querySelector('.folderItem[data-folder="content"]').classList.add('active');
-      item.classList.add('active');
-      showPanel('panel-content-' + sub);
-      if (sub === 'posts') loadAdminPosts();
-      if (sub === 'comments' || sub === 'replies') loadAdminCommentsAndReplies();
-      closeAdminDrawer();
+  const drawerListEl = document.getElementById('drawerListEl');
+  const virtualRoot = { key: 'root', label: '', children: FOLDER_TREE };
+  let navStack = [virtualRoot];       // বর্তমানে ড্রয়ারে কোন লেভেলে আছি (root থেকে path)
+  let activePathKeys = ['theme'];     // বর্তমানে কোন প্যানেলটা সক্রিয় (default: থিম, HTML-এ panel-theme active দেওয়া আছে)
+
+  function findAncestorStack(pathKeys) {
+    // activePathKeys থেকে তার প্যারেন্ট ফোল্ডারগুলোর chain বের করে, যাতে ড্রয়ার আবার খুললে
+    // ঠিক সেই লেভেলেই খোলে যেখানে ইউজার আগে ছিল
+    let level = FOLDER_TREE;
+    const stack = [virtualRoot];
+    for (let i = 0; i < pathKeys.length - 1; i++) {
+      const node = level.find(n => n.key === pathKeys[i]);
+      if (!node) break;
+      stack.push(node);
+      level = node.children || [];
+    }
+    return stack;
+  }
+
+  function renderDrawerLevel() {
+    const level = navStack[navStack.length - 1];
+    const depth = navStack.length - 1; // 0 = root
+    drawerListEl.innerHTML = '';
+
+    if (depth > 0) {
+      const backRow = document.createElement('div');
+      backRow.className = 'drawerBackRow';
+      backRow.innerHTML = `<span>←</span> ${level.label}`;
+      backRow.addEventListener('click', () => { navStack.pop(); renderDrawerLevel(); });
+      drawerListEl.appendChild(backRow);
+    }
+
+    level.children.forEach(node => {
+      const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+      const isActiveLeaf = !hasChildren && activePathKeys[activePathKeys.length - 1] === node.key;
+      const el = document.createElement('div');
+      el.className = (depth === 0 ? 'folderItem' : 'subFolderItem') + (isActiveLeaf ? ' active' : '');
+      if (depth > 0) el.style.paddingLeft = (26 + (depth - 1) * 16) + 'px';
+      el.innerHTML = `<span>${node.icon}</span> ${node.label}` + (hasChildren ? '<span style="margin-left:auto; color:#6b7280;">›</span>' : '');
+      el.addEventListener('click', () => {
+        if (hasChildren) {
+          navStack.push(node);
+          renderDrawerLevel();
+        } else {
+          activePathKeys = navStack.slice(1).map(n => n.key).concat(node.key);
+          showPanel(node.panel);
+          if (node.onShow) node.onShow();
+          closeAdminDrawer();
+        }
+      });
+      drawerListEl.appendChild(el);
     });
-  });
+  }
 
   // ---- থিম গ্রিড তৈরি ----
   function buildGridRows(container, prefix) {
