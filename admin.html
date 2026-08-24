@@ -768,6 +768,12 @@
 
   function handleBack() {
     if (adminDrawer.classList.contains('open')) {
+      if (navStack.length > 1) {
+        navStack.pop();
+        renderDrawerLevel();
+        rearmGuard();
+        return;
+      }
       closeAdminDrawer();
       rearmGuard();
       return;
