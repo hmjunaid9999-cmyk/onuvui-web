@@ -271,8 +271,8 @@
         </div>
 
         <div class="section">
-          <h2>🎨 পোস্টার রং বাছাই করুন (৭টি)</h2>
-          <div class="hint">নিচের প্যালেট থেকে ঠিক ৭টা রং বাছাই করুন — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
+          <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
+          <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
           <div class="buttonPicker" id="posterColorPicker"></div>
           <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusPosterColors"></div>
@@ -406,7 +406,6 @@
     '#7C3AED', '#059669', '#DB2777', '#2563EB', '#CA8A04', '#16A34A', '#9333EA', '#0891B2',
     '#65A30D', '#E11D48', '#4F46E5', '#0D9488'
   ];
-  const MAX_POSTER_COLORS = 7;
 
   function createColorPicker(containerId, maxCount) {
     const container = document.getElementById(containerId);
@@ -445,7 +444,7 @@
     };
   }
 
-  const posterColorPicker = createColorPicker('posterColorPicker', MAX_POSTER_COLORS);
+  const posterColorPicker = createColorPicker('posterColorPicker', COLOR_PALETTE.length);
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
@@ -622,7 +621,7 @@
     else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
     else if (section === 'posterColors') {
       const colors = posterColorPicker.getOrder();
-      if (colors.length !== MAX_POSTER_COLORS) { alert('অনুগ্রহ করে ঠিক ৭টা রং বাছাই করুন (এখন ' + colors.length + 'টা বাছাই করা আছে)'); return; }
+      if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
       data = { posterColors: colors };
     }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
