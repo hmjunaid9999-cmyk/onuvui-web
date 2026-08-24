@@ -1,400 +1,97 @@
-<div id="video-playlist-container" style="max-width:600px; margin:auto; font-family:Roboto, Arial, sans-serif; background:#0f0f0f; color:#fff; padding:10px; border-radius:8px;">
-<div style="display:flex; align-items:center; margin-bottom:15px; background:#222; border-radius:20px; padding:5px 15px; border:1px solid #333;">
-<svg style="width:18px; height:18px; fill:#aaa; margin-right:10px;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-<input type="text" id="video-search" placeholder="Search videos..." onkeyup="searchVideos()" style="width:100%; background:transparent; border:none; outline:none; color:#fff; font-size:15px;">
-</div>
-<div id="video-box" style="position:relative; background:#000; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px;">
-<iframe id="active-video" src="" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allowfullscreen></iframe>
-<div id="ad-overlay" style="display:none; position:absolute; top:0; left:0; width:100%; padding:8px 12px; background:rgba(0,0,0,0.55); color:#fff; flex-direction:row; justify-content:space-between; align-items:center; z-index:9999; box-sizing:border-box;">
-<div style="display:flex; align-items:center; gap:10px;">
-  <span style="font-size:12px; background:#333; padding:2px 8px; border-radius:3px;">Ad</span>
-  <p id="ad-timer-text" style="font-size:13px; color:#ddd; margin:0;">Ad ends in <span id="cd-time">10</span>s</p>
-</div>
-<button id="skip-btn" style="display:none; padding:6px 14px; background:#fff; color:#000; border:0; cursor:pointer; font-size:13px; font-weight:bold; border-radius:2px;" onclick="closeAd()">Skip Ad</button>
-</div>
-</div>
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ভিডিও</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0d1117;color:#fff;font-family:Arial,sans-serif}#app{max-width:900px;margin:auto;padding-bottom:75px}
+header{position:sticky;top:0;z-index:5;text-align:center;padding:14px;background:#161b22;border-bottom:1px solid #30363d}main{padding:15px}
+.search{background:#161b22;border:1px solid #30363d;border-radius:22px;padding:9px 13px;margin-bottom:15px}.search input{width:90%;background:none;border:0;outline:0;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.card{background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden}.thumb{aspect-ratio:16/9;background:#000}.thumb img{width:100%;height:100%;object-fit:cover}.body{padding:9px}.title{font-size:14px;font-weight:bold}.muted{font-size:11px;color:#999;margin-top:5px}
+#player{display:none}.video{position:relative;background:#000;aspect-ratio:16/9;border-radius:10px;overflow:hidden}.video iframe{position:absolute;width:100%;height:100%;border:0}
+.info{padding-top:12px}.actions{display:flex;gap:12px;flex-wrap:wrap;border-block:1px solid #30363d;padding:10px 0;margin-top:10px}.actions button{background:none;border:0;color:#aaa}
+.comments{display:none;margin-top:12px}.comments textarea{width:100%;background:#111;color:#fff;border:1px solid #333;padding:8px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#161b22;border-top:1px solid #30363d;z-index:10}nav div{max-width:900px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr)}nav button{background:none;border:0;color:#aaa;padding:9px;font-size:12px}nav button b{display:block;font-size:18px}
+.panel{display:none}.panel.active{display:block}.balance,.box{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px;margin-bottom:12px}.balance strong{display:block;font-size:24px;margin-top:5px}
+input,textarea{width:100%;background:#0d1117;color:#fff;border:1px solid #30363d;border-radius:7px;padding:9px;margin:6px 0 10px}label{font-size:12px;color:#aaa}.primary{width:100%;padding:10px;background:#4285f4;color:#fff;border:0;border-radius:7px}
+@media(min-width:700px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>🎬 ভিডিও</header>
+<main>
+<section id="home" class="panel active">
+<div class="search">🔎 <input id="search" placeholder="ভিডিও খুঁজুন..." oninput="render()"></div>
+<div id="grid" class="grid">লোড হচ্ছে...</div>
+</section>
 
-<div id="video-info" style="display:none; margin-top:12px;">
-  <h2 id="vi-title" style="font-size:16px; margin:0 0 6px 0; font-weight:600;"></h2>
-  <p id="vi-caption" style="font-size:13px; color:#ccc; margin:0 0 10px 0; white-space:pre-wrap;"></p>
-  <div style="display:flex; align-items:center; gap:16px; padding:8px 0; border-top:1px solid #222; border-bottom:1px solid #222; font-size:13px; color:#aaa;">
-    <span id="vi-views">👁 0</span>
-    <button id="vi-like-btn" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:13px; display:flex; align-items:center; gap:4px;">🤍 <span id="vi-like-count">0</span></button>
-    <button id="vi-comment-toggle" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:13px;">💬 <span id="vi-comment-count">0</span></button>
-    <button id="vi-share-btn" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:13px;">🔗 Share</button>
-    <button id="vi-copy-btn" style="background:none; border:none; color:#aaa; cursor:pointer; font-size:13px;">📋 Copy link</button>
-  </div>
-  <p id="vi-status" style="font-size:12px; color:#4CAF50; margin:6px 0 0 0; min-height:16px;"></p>
-
-  <div id="vi-comments-section" style="display:none; margin-top:14px;">
-    <div id="vi-comment-form" style="display:none; margin-bottom:12px;">
-      <textarea id="vi-comment-input" rows="2" placeholder="একটি কমেন্ট লিখুন..." style="width:100%; box-sizing:border-box; padding:8px; border-radius:6px; border:1px solid #333; background:#1a1a1a; color:#fff; resize:vertical; font-size:13px;"></textarea>
-      <button id="vi-comment-submit" style="margin-top:6px; background:#4285F4; color:#fff; border:none; padding:7px 16px; border-radius:5px; cursor:pointer; font-size:13px; font-weight:bold;">পোস্ট করুন</button>
-    </div>
-    <p id="vi-comment-login-note" style="display:none; font-size:12px; color:#888;">কমেন্ট করতে লগইন করুন।</p>
-    <div id="vi-comments-list" style="display:flex; flex-direction:column; gap:10px;"></div>
-  </div>
+<section id="player" class="panel">
+<div class="video"><iframe id="frame" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>
+<div class="info"><h2 id="title"></h2><p id="caption" style="color:#ccc"></p>
+<div class="actions">
+<button id="like">🤍 <span id="likes">0</span></button>
+<button id="comment">💬 <span id="commentsCount">0</span></button>
+<button id="share">🔗 Share</button><button id="copy">📋 Copy link</button>
+<span>👁 <span id="views">0</span></span>
 </div>
+<div id="commentBox" class="comments"><textarea id="commentText" rows="2" placeholder="একটি কমেন্ট লিখুন..."></textarea><button class="primary" onclick="postComment()">পোস্ট করুন</button><div id="commentList"></div></div>
+</div></section>
 
-<div style="margin-top:20px;">
-<h3 style="font-size:16px; margin-bottom:12px; font-weight:500; color:#fff;">Up next</h3>
-<ul id="playlist-links" style="list-style:none; padding:0; margin:0;">
-<li style="color:#888; font-size:13px;">লোড হচ্ছে...</li>
-</ul>
-</div>
+<section id="ad" class="panel">
+<div class="balance">Point Balance<strong id="adPoints">0 Point</strong></div>
+<div class="box"><h3>📢 বিজ্ঞাপন যোগ করুন</h3>
+<label>বিজ্ঞাপনের Title</label><input id="adTitle">
+<label>YouTube/Facebook Embed URL</label><input id="adUrl">
+<label>Point বাজেট</label><input id="adBudget" type="number" min="1">
+<button class="primary" onclick="alert('Payment Request ও secure Point deduction Firebase backend final করার পর চালু হবে।')">বিজ্ঞাপন জমা দিন</button>
+</div></section>
+
+<section id="my" class="panel">
+<div class="balance">Point Balance<strong id="myPoints">0 Point</strong></div>
+<div class="box">আপনার যুক্ত করা ভিডিও ও বিজ্ঞাপন এখানে থাকবে। Edit থাকবে না; View/Click statistics ও Delete থাকবে।</div>
+<div id="myList"></div></section>
+
+<section id="add" class="panel">
+<div class="balance">Point Balance<strong id="addPoints">0 Point</strong></div>
+<div class="box"><h3>➕ ভিডিও যোগ করুন</h3>
+<label>ভিডিওর Title</label><input id="newTitle">
+<label>YouTube/Facebook Embed URL</label><input id="newUrl">
+<label>Caption</label><textarea id="newCaption"></textarea>
+<button class="primary" onclick="alert('Secure Point deduction backend ও Firebase Rules final করার পর ভিডিও যুক্ত করার কাজ সক্রিয় হবে।')">ভিডিও যুক্ত করুন</button>
+<p style="font-size:11px;color:#888">প্রতি ভিডিওর Point cost পরে Admin Panel থেকে নির্ধারণ করা হবে। Balance কম হলে server-side validation-এ submit বন্ধ থাকবে।</p>
+</div></section>
+</main>
+<nav><div>
+<button onclick="panel('ad',this)"><b>📢</b>বিজ্ঞাপন</button>
+<button class="active" onclick="panel('my',this)"><b>🎬</b>মাই ভিডিও</button>
+<button onclick="panel('add',this)"><b>➕</b>অ্যাড ভিডিও</button>
+</div></nav>
 </div>
 
 <script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import {
-    getFirestore, collection, query, orderBy, limit, getDocs, doc, getDoc, setDoc,
-    addDoc, deleteDoc, serverTimestamp, increment, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
-    authDomain: "onuvuti-5c9e3.firebaseapp.com",
-    projectId: "onuvuti-5c9e3",
-    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
-    messagingSenderId: "846713879232",
-    appId: "1:846713879232:web:d87ae40431210088df8b25",
-    measurementId: "G-WJ8N8XLPSZ"
-  };
-
-  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  let globalAds = [];
-  let adDelayMs = 180000;
-  let skipDelaySec = 10;
-
-  let adTimeout, countdownTimer;
-  let mainVideoUrl = "";
-  let adIndex = 0;
-  let videoStartTime = 0;
-  let adShownForThisVideo = false;
-  let adStartTime = 0;
-  let adDurationSoFar = 0;
-
-  let currentUser = null;
-  let currentVideoId = null;
-  let currentVideoLiked = false;
-  let commentsUnsub = null;
-  let statsUnsub = null;
-
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    updateCommentFormVisibility();
-    if (currentVideoId) refreshLikeState();
-  });
-
-  function extractYouTubeId(url) {
-    const m = url.match(/embed\/([a-zA-Z0-9_-]+)/);
-    return m ? m[1] : null;
-  }
-
-  async function loadPlaylist() {
-    const listEl = document.getElementById('playlist-links');
-    try {
-      const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
-      const snap = await getDocs(q);
-      if (snap.empty) {
-        listEl.innerHTML = '<li style="color:#888; font-size:13px;">\u098f\u0996\u09a8\u09cb \u0995\u09cb\u09a8\u09cb \u09ad\u09bf\u09a1\u09bf\u0993 \u09af\u09cb\u0997 \u0995\u09b0\u09be \u09b9\u09af\u09bc\u09a8\u09bf\u0964</li>';
-        return;
-      }
-      listEl.innerHTML = '';
-      let firstId = null;
-      snap.forEach((docSnap) => {
-        if (!firstId) firstId = docSnap.id;
-        const data = docSnap.data();
-        const id = docSnap.id;
-        const videoUrl = data.videoUrl || '';
-        const title = data.title || 'Untitled';
-        const channelName = data.channelName || 'Channel Name';
-        const ytId = extractYouTubeId(videoUrl);
-        const thumbnail = data.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : '');
-
-        const li = document.createElement('li');
-        li.style.marginBottom = '12px';
-        li.setAttribute('data-title', title);
-        li.innerHTML = `
-          <div style="display:flex; cursor:pointer; gap:12px; align-items:center;" data-id="${id}">
-            <div style="width:120px; height:68px; background:#222; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-              <img src="${thumbnail}" style="width:100%; height:100%; object-fit:cover;" alt="Thumbnail">
-            </div>
-            <div style="flex-grow:1; overflow:hidden;">
-              <h4 style="font-size:14px; margin:0 0 4px 0; color:#f1f1f1; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${title}</h4>
-              <span style="font-size:12px; color:#aaa;">${channelName}</span>
-            </div>
-          </div>`;
-        li.querySelector('[data-id]').addEventListener('click', function () {
-          playVideoById(this.getAttribute('data-id'));
-        });
-        listEl.appendChild(li);
-      });
-
-      const params = new URLSearchParams(location.search);
-      const vParam = params.get('v');
-      if (vParam) {
-        playVideoById(vParam);
-      } else if (firstId) {
-        playVideoById(firstId);
-      }
-    } catch (e) {
-      console.error("\u09aa\u09cd\u09b2\u09c7\u09b2\u09bf\u09b8\u09cd\u099f \u09b2\u09cb\u09a1 \u098f\u09b0\u09b0:", e);
-      listEl.innerHTML = '<li style="color:#d9534f; font-size:13px;">\u09ad\u09bf\u09a1\u09bf\u0993 \u09b2\u09cb\u09a1 \u0995\u09b0\u09a4\u09c7 \u09b8\u09ae\u09b8\u09cd\u09af\u09be: ' + (e && e.message ? e.message : String(e)) + '</li>';
-    }
-  }
-
-  async function loadAdSettings() {
-    try {
-      const ref = doc(db, "settings", "ads");
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
-        if (Array.isArray(data.adUrls) && data.adUrls.length > 0) globalAds = data.adUrls;
-        if (typeof data.adDelaySeconds === 'number') adDelayMs = data.adDelaySeconds * 1000;
-        if (typeof data.skipDelaySeconds === 'number') skipDelaySec = data.skipDelaySeconds;
-      }
-    } catch (e) {
-      console.error("\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u09b8\u09c7\u099f\u09bf\u0982\u09b8 \u09b2\u09cb\u09a1 \u098f\u09b0\u09b0:", e);
-    }
-  }
-
-  async function playVideoById(id) {
-    try {
-      const snap = await getDoc(doc(db, "videos", id));
-      if (!snap.exists()) return;
-      const data = snap.data();
-      currentVideoId = id;
-      playVideo(data.videoUrl || '');
-
-      document.getElementById('video-info').style.display = 'block';
-      document.getElementById('vi-title').textContent = data.title || '';
-      document.getElementById('vi-caption').textContent = data.caption || '';
-      document.getElementById('vi-status').textContent = '';
-
-      await bumpViewCount(id);
-      subscribeStats(id);
-      refreshLikeState();
-      subscribeComments(id);
-      updateCommentFormVisibility();
-    } catch (e) {
-      console.error("\u09ad\u09bf\u09a1\u09bf\u0993 \u09b2\u09cb\u09a1 \u098f\u09b0\u09b0:", e);
-    }
-  }
-
-  function playVideo(url) {
-    mainVideoUrl = url;
-    videoStartTime = Date.now();
-    adShownForThisVideo = false;
-    adDurationSoFar = 0;
-
-    document.getElementById('active-video').src = url;
-    document.getElementById('ad-overlay').style.display = 'none';
-
-    clearTimeout(adTimeout);
-    clearInterval(countdownTimer);
-    adTimeout = setTimeout(function () {
-      if (!adShownForThisVideo) triggerAd();
-    }, adDelayMs);
-  }
-
-  async function bumpViewCount(id) {
-    try {
-      await setDoc(doc(db, "videos", id, "stats", "counts"), {
-        viewCount: increment(1)
-      }, { merge: true });
-    } catch (e) {
-      console.error("\u09ad\u09bf\u0989 \u0995\u09be\u0989\u09a8\u09cd\u099f \u098f\u09b0\u09b0:", e);
-    }
-  }
-
-  function subscribeStats(id) {
-    if (statsUnsub) statsUnsub();
-    statsUnsub = onSnapshot(doc(db, "videos", id, "stats", "counts"), (snap) => {
-      const d = snap.exists() ? snap.data() : {};
-      document.getElementById('vi-views').textContent = '\ud83d\udc41 ' + (d.viewCount || 0);
-      document.getElementById('vi-like-count').textContent = d.likeCount || 0;
-    });
-  }
-
-  async function refreshLikeState() {
-    const likeBtn = document.getElementById('vi-like-btn');
-    if (!currentUser || !currentVideoId) {
-      currentVideoLiked = false;
-      likeBtn.firstChild.textContent = '\ud83e\udd0d ';
-      return;
-    }
-    try {
-      const likeSnap = await getDoc(doc(db, "videos", currentVideoId, "likes", currentUser.uid));
-      currentVideoLiked = likeSnap.exists();
-      likeBtn.firstChild.textContent = (currentVideoLiked ? '\u2764\ufe0f ' : '\ud83e\udd0d ');
-    } catch (e) {
-      console.error("\u09b2\u09be\u0987\u0995 \u09b8\u09cd\u099f\u09cd\u09af\u09be\u099f\u09be\u09b8 \u098f\u09b0\u09b0:", e);
-    }
-  }
-
-  document.getElementById('vi-like-btn').addEventListener('click', async () => {
-    if (!currentUser) {
-      document.getElementById('vi-status').textContent = '\u09b2\u09be\u0987\u0995 \u09a6\u09bf\u09a4\u09c7 \u09b2\u0997\u0987\u09a8 \u0995\u09b0\u09c1\u09a8\u0964';
-      return;
-    }
-    if (!currentVideoId) return;
-    const likeRef = doc(db, "videos", currentVideoId, "likes", currentUser.uid);
-    const statsRef = doc(db, "videos", currentVideoId, "stats", "counts");
-    try {
-      if (currentVideoLiked) {
-        await deleteDoc(likeRef);
-        await setDoc(statsRef, { likeCount: increment(-1) }, { merge: true });
-      } else {
-        await setDoc(likeRef, { likedAt: serverTimestamp() });
-        await setDoc(statsRef, { likeCount: increment(1) }, { merge: true });
-      }
-      refreshLikeState();
-    } catch (e) {
-      console.error("\u09b2\u09be\u0987\u0995 \u098f\u09b0\u09b0:", e);
-    }
-  });
-
-  function currentVideoPermalink() {
-    const url = new URL(location.href);
-    url.searchParams.set('v', currentVideoId || '');
-    return url.toString();
-  }
-
-  document.getElementById('vi-share-btn').addEventListener('click', async () => {
-    const link = currentVideoPermalink();
-    const title = document.getElementById('vi-title').textContent;
-    if (navigator.share) {
-      try { await navigator.share({ title, url: link }); } catch (e) {}
-    } else {
-      await navigator.clipboard.writeText(link);
-      document.getElementById('vi-status').textContent = '\u09b2\u09bf\u0982\u0995 \u0995\u09aa\u09bf \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u2713';
-    }
-  });
-
-  document.getElementById('vi-copy-btn').addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(currentVideoPermalink());
-      document.getElementById('vi-status').textContent = '\u09b2\u09bf\u0982\u0995 \u0995\u09aa\u09bf \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u2713';
-    } catch (e) {
-      document.getElementById('vi-status').textContent = '\u0995\u09aa\u09bf \u0995\u09b0\u09a4\u09c7 \u09b8\u09ae\u09b8\u09cd\u09af\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7\u0964';
-    }
-  });
-
-  document.getElementById('vi-comment-toggle').addEventListener('click', () => {
-    const sec = document.getElementById('vi-comments-section');
-    sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
-  });
-
-  function updateCommentFormVisibility() {
-    const formEl = document.getElementById('vi-comment-form');
-    const noteEl = document.getElementById('vi-comment-login-note');
-    if (currentUser) {
-      formEl.style.display = 'block';
-      noteEl.style.display = 'none';
-    } else {
-      formEl.style.display = 'none';
-      noteEl.style.display = 'block';
-    }
-  }
-
-  function subscribeComments(id) {
-    if (commentsUnsub) commentsUnsub();
-    const q = query(collection(db, "videos", id, "comments"), orderBy("createdAt", "desc"), limit(50));
-    commentsUnsub = onSnapshot(q, (snap) => {
-      document.getElementById('vi-comment-count').textContent = snap.size;
-      const listEl = document.getElementById('vi-comments-list');
-      listEl.innerHTML = '';
-      snap.forEach((c) => {
-        const d = c.data();
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; gap:10px;';
-        row.innerHTML = `
-          <img src="${d.photoURL || ''}" style="width:32px; height:32px; border-radius:50%; flex-shrink:0; background:#333;" alt="">
-          <div>
-            <div style="font-size:13px; font-weight:bold;">${d.name || 'User'}</div>
-            <div style="font-size:13px; color:#ddd;">${(d.text || '').replace(/</g, '&lt;')}</div>
-          </div>`;
-        listEl.appendChild(row);
-      });
-    });
-  }
-
-  document.getElementById('vi-comment-submit').addEventListener('click', async () => {
-    if (!currentUser || !currentVideoId) return;
-    const input = document.getElementById('vi-comment-input');
-    const text = input.value.trim();
-    if (!text) return;
-    try {
-      await addDoc(collection(db, "videos", currentVideoId, "comments"), {
-        text,
-        uid: currentUser.uid,
-        name: currentUser.displayName || '',
-        photoURL: currentUser.photoURL || '',
-        createdAt: serverTimestamp()
-      });
-      input.value = '';
-    } catch (e) {
-      console.error("\u0995\u09ae\u09c7\u09a8\u09cd\u099f \u098f\u09b0\u09b0:", e);
-    }
-  });
-
-  function triggerAd() {
-    if (!globalAds || globalAds.length === 0) return;
-    adShownForThisVideo = true;
-    adStartTime = Date.now();
-    document.getElementById('active-video').src = globalAds[adIndex] + "?autoplay=1";
-    adIndex = (adIndex + 1) % globalAds.length;
-
-    let adOverlay = document.getElementById('ad-overlay');
-    let skipBtn = document.getElementById('skip-btn');
-    let timerText = document.getElementById('ad-timer-text');
-    adOverlay.style.display = 'flex';
-    skipBtn.style.display = 'none';
-
-    let timeLeft = skipDelaySec;
-    document.getElementById('cd-time').textContent = timeLeft;
-    timerText.innerHTML = 'Ad ends in <span id="cd-time">' + timeLeft + '</span> seconds...';
-
-    clearInterval(countdownTimer);
-    countdownTimer = setInterval(function () {
-      timeLeft--;
-      let timeSpan = document.getElementById('cd-time');
-      if (timeSpan) timeSpan.textContent = timeLeft;
-      if (timeLeft <= 0) {
-        clearInterval(countdownTimer);
-        timerText.textContent = "Ad finished!";
-        skipBtn.style.display = 'block';
-      }
-    }, 1000);
-  }
-
-  window.closeAd = function () {
-    document.getElementById('ad-overlay').style.display = 'none';
-    let adDurationSeconds = Math.floor((Date.now() - adStartTime) / 1000);
-    adDurationSoFar += adDurationSeconds;
-    let totalElapsed = Math.floor((Date.now() - videoStartTime) / 1000);
-    let videoCurrentTime = totalElapsed - adDurationSoFar;
-    let separator = mainVideoUrl.includes('?') ? '&' : '?';
-    let resumeUrl = mainVideoUrl + separator + "start=" + videoCurrentTime + "&autoplay=1";
-    document.getElementById('active-video').src = resumeUrl;
-    document.getElementById('ad-timer-text').innerHTML = 'Ad ends in <span id="cd-time">' + skipDelaySec + '</span> seconds...';
-  };
-
-  window.searchVideos = function () {
-    let input = document.getElementById('video-search').value.toLowerCase();
-    let list = document.getElementById('playlist-links');
-    let items = list.getElementsByTagName('li');
-    for (let i = 0; i < items.length; i++) {
-      let title = (items[i].getAttribute('data-title') || '').toLowerCase();
-      items[i].style.display = title.includes(input) ? "" : "none";
-    }
-  };
-
-  loadAdSettings();
-  loadPlaylist();
+import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import{getFirestore,collection,query,orderBy,getDocs,doc,getDoc,setDoc,increment,deleteDoc,addDoc,serverTimestamp,onSnapshot,limit}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};
+const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);
+let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub,commentsUnsub;
+const $=id=>document.getElementById(id), esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+onAuthStateChanged(auth,u=>{user=u;balance()});
+async function load(){try{let s=await getDocs(query(collection(db,"videos"),orderBy("createdAt","desc"),limit(60)));arr=s.docs.map(x=>({id:x.id,d:x.data()}));render()}catch(e){$("grid").textContent="ভিডিও লোড করা যাচ্ছে না: "+e.message}}
+window.render=()=>{let t=$("search").value.toLowerCase();$("grid").innerHTML="";let a=arr.filter(x=>(x.d.title||"").toLowerCase().includes(t));if(!a.length){$("grid").innerHTML="<div>কোনো ভিডিও নেই।</div>";return}a.forEach(x=>{let d=x.d,id=x.id,y=(d.videoUrl||"").match(/(?:embed\/|youtu\.be\/|v=)([A-Za-z0-9_-]{6,})/),im=d.thumbnail||(y?`https://img.youtube.com/vi/${y[1]}/hqdefault.jpg`:""),c=document.createElement("div");c.className="card";c.innerHTML=`<div class="thumb">${im?`<img src="${esc(im)}">`:""}</div><div class="body"><div class="title">${esc(d.title||"Untitled")}</div><div class="muted">${esc(d.channelName||"Onuvuti")} · 👁 ${d.viewCount||0}</div></div>`;c.onclick=()=>openVideo(id);$("grid").append(c)})};
+async function openVideo(id){let s=await getDoc(doc(db,"videos",id));if(!s.exists())return;vid=id;data=s.data();$("home").classList.remove("active");$("player").classList.add("active");$("title").textContent=data.title||"";$("caption").textContent=data.caption||"";$("frame").src=data.videoUrl||"";await setDoc(doc(db,"videos",id,"stats","counts"),{viewCount:increment(1)},{merge:true});subscribeStats();subscribeComments();likeState()}
+function subscribeStats(){if(statsUnsub)statsUnsub();statsUnsub=onSnapshot(doc(db,"videos",vid,"stats","counts"),s=>{let d=s.exists()?s.data():{};$("views").textContent=d.viewCount||0;$("likes").textContent=d.likeCount||0;$("commentsCount").textContent=d.commentCount||0})}
+async function likeState(){if(!user)return;liked=(await getDoc(doc(db,"videos",vid,"likes",user.uid))).exists();$("like").firstChild.textContent=liked?"❤️ ":"🤍 "}
+$("like").onclick=async()=>{if(!user)return alert("লাইক দিতে লগইন করুন।");let l=doc(db,"videos",vid,"likes",user.uid),s=doc(db,"videos",vid,"stats","counts");if(liked){await deleteDoc(l);await setDoc(s,{likeCount:increment(-1)},{merge:true})}else{await setDoc(l,{likedAt:serverTimestamp()});await setDoc(s,{likeCount:increment(1)},{merge:true})}likeState()};
+function subscribeComments(){if(commentsUnsub)commentsUnsub();commentsUnsub=onSnapshot(query(collection(db,"videos",vid,"comments"),orderBy("createdAt","desc"),limit(50)),s=>{$("commentsCount").textContent=s.size;$("commentList").innerHTML=s.docs.map(x=>{let d=x.data();return`<p class="box"><b>${esc(d.name||"User")}</b><br>${esc(d.text||"")}</p>`}).join("")})}
+window.postComment=async()=>{if(!user)return alert("কমেন্ট করতে লগইন করুন।");let t=$("commentText").value.trim();if(!t)return;await addDoc(collection(db,"videos",vid,"comments"),{text:t,uid:user.uid,name:user.displayName||"User",photoURL:user.photoURL||"",createdAt:serverTimestamp()});$("commentText").value=""};
+$("comment").onclick=()=>{$("commentBox").style.display=$("commentBox").style.display==="block"?"none":"block"};
+$("copy").onclick=async()=>{await navigator.clipboard.writeText(location.origin+location.pathname+"?v="+vid);alert("লিংক কপি হয়েছে ✓")};
+$("share").onclick=async()=>{let u=location.origin+location.pathname+"?v="+vid;if(navigator.share)await navigator.share({title:data?.title||"Video",url:u});else{await navigator.clipboard.writeText(u);alert("লিংক কপি হয়েছে ✓")}};
+window.panel=(id,b)=>{document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");balance()};
+async function balance(){let n=0;if(user){try{let s=await getDoc(doc(db,"users",user.uid));if(s.exists())n=Number(s.data().points??s.data().balance??0)}catch(e){}}["adPoints","myPoints","addPoints"].forEach(x=>$(x).textContent=n+" Point")}
+load();let p=new URLSearchParams(location.search).get("v");if(p)setTimeout(()=>openVideo(p),800);
 </script>
+</body></html>
