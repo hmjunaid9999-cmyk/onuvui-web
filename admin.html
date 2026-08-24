@@ -779,6 +779,14 @@
       return;
     }
 
+    // ড্রয়ার বন্ধ থাকলেও, বর্তমান পেজটা যদি কোনো ফোল্ডারের ভেতরের হয় (যেমন কন্টেন্ট → পোস্ট),
+    // তাহলে সরাসরি বের না করে আগে সেই ফোল্ডারের লিস্টে (একধাপ উপরে) ফিরিয়ে নিয়ে যাও
+    if (activePathKeys.length > 1) {
+      openAdminDrawer();
+      rearmGuard();
+      return;
+    }
+
     if (backPressCount === 0) {
       backPressCount = 1;
       exitToast.style.display = 'block';
