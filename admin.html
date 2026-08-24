@@ -398,7 +398,7 @@
   const bottomPicker = createPicker('bottomButtonPicker');
   const menuPicker = createPicker('menuButtonPicker');
 
-  // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
+  // ---- পোস্টার রং পিকার ----
   const COLOR_PALETTE = [
     '#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9',
     '#F97316', '#22C55E', '#EF4444', '#A855F7', '#06B6D4', '#F43F5E', '#84CC16', '#3B82F6',
@@ -470,9 +470,7 @@
     document.getElementById(panelId).classList.add('active');
   }
 
-  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ — যত ইচ্ছা নতুন ফোল্ডার/সাব-ফোল্ডার যোগ করলে
-  //      এই একটামাত্র জায়গায় (FOLDER_TREE) শুধু একটা এন্ট্রি বসালেই বাকি সব (নেভিগেশন, ব্যাক বাটন,
-  //      active হাইলাইট, ইনডেন্ট) নিজে থেকে কাজ করবে — আলাদা করে কোনো কোড লেখা লাগবে না) ----
+  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ) ----
   const FOLDER_TREE = [
     { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
     { key: 'content', icon: '📦', label: 'কন্টেন্ট', children: [
@@ -488,12 +486,10 @@
 
   const drawerListEl = document.getElementById('drawerListEl');
   const virtualRoot = { key: 'root', label: '', children: FOLDER_TREE };
-  let navStack = [virtualRoot];       // বর্তমানে ড্রয়ারে কোন লেভেলে আছি (root থেকে path)
-  let activePathKeys = ['theme'];     // বর্তমানে কোন প্যানেলটা সক্রিয় (default: থিম, HTML-এ panel-theme active দেওয়া আছে)
+  let navStack = [virtualRoot];
+  let activePathKeys = ['theme'];
 
   function findAncestorStack(pathKeys) {
-    // activePathKeys থেকে তার প্যারেন্ট ফোল্ডারগুলোর chain বের করে, যাতে ড্রয়ার আবার খুললে
-    // ঠিক সেই লেভেলেই খোলে যেখানে ইউজার আগে ছিল
     let level = FOLDER_TREE;
     const stack = [virtualRoot];
     for (let i = 0; i < pathKeys.length - 1; i++) {
@@ -507,7 +503,7 @@
 
   function renderDrawerLevel() {
     const level = navStack[navStack.length - 1];
-    const depth = navStack.length - 1; // 0 = root
+    const depth = navStack.length - 1;
     drawerListEl.innerHTML = '';
 
     if (depth > 0) {
@@ -690,7 +686,7 @@
     }
   }
 
-  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড (collectionGroup) ----
+  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড ----
   async function loadAdminCommentsAndReplies() {
     const commentsListEl = document.getElementById('commentsAdminList');
     const repliesListEl = document.getElementById('repliesAdminList');
@@ -748,7 +744,7 @@
     }
   });
 
-  // ---- Back বাটন গার্ড: ড্রয়ার খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  // ---- Back বাটন গার্ড ----
   let backGuardActive = false;
   let backPressCount = 0;
   let backPressTimer = null;
@@ -778,8 +774,6 @@
       return;
     }
 
-    // ড্রয়ার বন্ধ থাকলেও, বর্তমান পেজটা যদি কোনো ফোল্ডারের ভেতরের হয় (যেমন কন্টেন্ট → পোস্ট),
-    // তাহলে সরাসরি বের না করে আগে সেই ফোল্ডারের লিস্টে (একধাপ উপরে) ফিরিয়ে নিয়ে যাও
     if (activePathKeys.length > 1) {
       openAdminDrawer();
       rearmGuard();
