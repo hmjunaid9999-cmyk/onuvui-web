@@ -120,6 +120,13 @@
   }
   .postMenuDropdown button:hover { background: #30363d; }
   .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+  .postText.collapsed {
+    display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .readMoreBtn {
+    display: block; width: 100%; background: none; border: none; color: var(--primary-color);
+    padding: 4px 0 8px; text-align: left; font-size: 12px; font-weight: bold; cursor: pointer;
+  }
   .postPhoto { max-width: 100%; border-radius: 10px; margin-bottom: 8px; }
   .postPoster {
     border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
@@ -266,6 +273,7 @@
 
   let currentUser = null;
   let postsPerPage = 5;
+  let postReadMoreLines = 8;
   let lastVisibleDoc = null;
   let allLoadedPosts = [];
   let composerMode = 'text';
@@ -329,7 +337,11 @@
       loginBtn.disabled = false;
     }
   });
-  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  logoutBtn.addEventListener('click', async () => {
+    const confirmed = confirm('আপনি কি লগ আউট করতে চান?');
+    if (!confirmed) return;
+    await signOut(auth);
+  });
 
   // ---- সাইডবার ----
   function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); }
@@ -364,6 +376,11 @@
 
     if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
     if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+    if (Number.isFinite(Number(s.postReadMoreLines)) && Number(s.postReadMoreLines) >= 1) {
+      postReadMoreLines = Math.max(1, Math.floor(Number(s.postReadMoreLines)));
+    } else {
+      postReadMoreLines = 8;
+    }
     if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
     if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
@@ -553,7 +570,7 @@
           <div class="postMenuDropdown"></div>
         </div>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
+      ${d.type !== 'poster' && d.text ? `<div class="postText postTextContent">${escapeHtml(d.text)}</div><button class="readMoreBtn" style="display:none;">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
       <div class="postButtons"></div>
       <div class="postStatus"></div>
@@ -568,6 +585,37 @@
 
     const statusEl = card.querySelector('.postStatus');
     function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
+
+    // ---- টেক্সট পোস্ট: নির্ধারিত লাইনের পরে "আরও পড়ুন" ----
+    const postTextEl = card.querySelector('.postTextContent');
+    const readMoreBtn = card.querySelector('.readMoreBtn');
+    if (postTextEl && readMoreBtn) {
+      const lineHeight = parseFloat(getComputedStyle(postTextEl).lineHeight) || 22.4;
+      postTextEl.classList.add('collapsed');
+      postTextEl.style.webkitLineClamp = String(postReadMoreLines);
+
+      requestAnimationFrame(() => {
+        const collapsedHeight = lineHeight * postReadMoreLines;
+        if (postTextEl.scrollHeight > collapsedHeight + 1) {
+          readMoreBtn.style.display = 'block';
+          readMoreBtn.addEventListener('click', () => {
+            const expanded = !postTextEl.classList.contains('collapsed');
+            if (expanded) {
+              postTextEl.classList.add('collapsed');
+              postTextEl.style.webkitLineClamp = String(postReadMoreLines);
+              readMoreBtn.textContent = 'আরও পড়ুন';
+            } else {
+              postTextEl.classList.remove('collapsed');
+              postTextEl.style.webkitLineClamp = 'unset';
+              readMoreBtn.textContent = 'সংক্ষেপে দেখুন';
+            }
+          });
+        } else {
+          postTextEl.classList.remove('collapsed');
+          postTextEl.style.webkitLineClamp = 'unset';
+        }
+      });
+    }
 
     const bottomContainer = card.querySelector('.postButtons');
     const menuContainer = card.querySelector('.postMenuDropdown');

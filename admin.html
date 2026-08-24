@@ -77,7 +77,7 @@
   .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
   .gridRow { display: flex; gap: 6px; align-items: center; }
   .gridRow span.rowNum { width: 18px; font-size: 11px; color: #6b7280; flex-shrink: 0; }
-  .gridRow input.gridLabel { width: 19%; }
+  .gridRow input.gridLabel { width: 38%; }
   .gridRow input.gridUrl { flex: 1; }
 
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
@@ -271,6 +271,17 @@
         </div>
 
         <div class="section">
+          <h2>📖 টেক্সট পোস্টের "আরও পড়ুন"</h2>
+          <label for="postReadMoreLines" style="display:block; font-size:13px; color:#9ca3af; margin-bottom:8px;">
+            কত লাইনের পরে "আরও পড়ুন" বাটনটি আসবে?
+          </label>
+          <input type="number" id="postReadMoreLines" min="1" step="1" placeholder="8">
+          <div class="hint">হোমপেজের টেক্সট পোস্টে এই সংখ্যক লাইন দেখানোর পর "আরও পড়ুন" বাটন দেখা যাবে।</div>
+          <button class="sectionSaveBtn" data-section="postReadMoreLines">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusPostReadMoreLines"></div>
+        </div>
+
+        <div class="section">
           <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
           <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
           <div class="buttonPicker" id="posterColorPicker"></div>
@@ -349,6 +360,7 @@
   const composerHeight = document.getElementById('composerHeight');
   const posterHeight = document.getElementById('posterHeight');
   const postsPerPage = document.getElementById('postsPerPage');
+  const postReadMoreLines = document.getElementById('postReadMoreLines');
   const postButtonsJustify = document.getElementById('postButtonsJustify');
 
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
@@ -398,7 +410,7 @@
   const bottomPicker = createPicker('bottomButtonPicker');
   const menuPicker = createPicker('menuButtonPicker');
 
-  // ---- পোস্টার রং পিকার ----
+  // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
   const COLOR_PALETTE = [
     '#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9',
     '#F97316', '#22C55E', '#EF4444', '#A855F7', '#06B6D4', '#F43F5E', '#84CC16', '#3B82F6',
@@ -470,7 +482,9 @@
     document.getElementById(panelId).classList.add('active');
   }
 
-  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ) ----
+  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ — যত ইচ্ছা নতুন ফোল্ডার/সাব-ফোল্ডার যোগ করলে
+  //      এই একটামাত্র জায়গায় (FOLDER_TREE) শুধু একটা এন্ট্রি বসালেই বাকি সব (নেভিগেশন, ব্যাক বাটন,
+  //      active হাইলাইট, ইনডেন্ট) নিজে থেকে কাজ করবে — আলাদা করে কোনো কোড লেখা লাগবে না) ----
   const FOLDER_TREE = [
     { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
     { key: 'content', icon: '📦', label: 'কন্টেন্ট', children: [
@@ -486,10 +500,12 @@
 
   const drawerListEl = document.getElementById('drawerListEl');
   const virtualRoot = { key: 'root', label: '', children: FOLDER_TREE };
-  let navStack = [virtualRoot];
-  let activePathKeys = ['theme'];
+  let navStack = [virtualRoot];       // বর্তমানে ড্রয়ারে কোন লেভেলে আছি (root থেকে path)
+  let activePathKeys = ['theme'];     // বর্তমানে কোন প্যানেলটা সক্রিয় (default: থিম, HTML-এ panel-theme active দেওয়া আছে)
 
   function findAncestorStack(pathKeys) {
+    // activePathKeys থেকে তার প্যারেন্ট ফোল্ডারগুলোর chain বের করে, যাতে ড্রয়ার আবার খুললে
+    // ঠিক সেই লেভেলেই খোলে যেখানে ইউজার আগে ছিল
     let level = FOLDER_TREE;
     const stack = [virtualRoot];
     for (let i = 0; i < pathKeys.length - 1; i++) {
@@ -503,7 +519,7 @@
 
   function renderDrawerLevel() {
     const level = navStack[navStack.length - 1];
-    const depth = navStack.length - 1;
+    const depth = navStack.length - 1; // 0 = root
     drawerListEl.innerHTML = '';
 
     if (depth > 0) {
@@ -575,8 +591,13 @@
     try { await signInWithPopup(auth, provider); }
     catch (e) { console.error(e); alert('লগইন এরর: ' + e.message); }
   });
-  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-  document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+  function confirmAdminLogout() {
+    const confirmed = confirm('আপনি কি লগ আউট করতে চান?');
+    if (!confirmed) return;
+    signOut(auth);
+  }
+  document.getElementById('logoutBtn').addEventListener('click', confirmAdminLogout);
+  document.getElementById('logoutBtn2').addEventListener('click', confirmAdminLogout);
 
   async function loadSettings() {
     const snap = await getDoc(doc(db, "settings", "site"));
@@ -594,6 +615,7 @@
     composerHeight.value = s.composerHeight || 100;
     posterHeight.value = s.posterHeight || 180;
     postsPerPage.value = s.postsPerPage || 5;
+    postReadMoreLines.value = s.postReadMoreLines || 8;
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
@@ -630,6 +652,9 @@
       composerHeight: Number(composerHeight.value) || 100,
       posterHeight: Number(posterHeight.value) || 180
     };
+    else if (section === 'postReadMoreLines') data = {
+      postReadMoreLines: Math.max(1, Number(postReadMoreLines.value) || 8)
+    };
 
     try {
       await setDoc(doc(db, "settings", "site"), data, { merge: true });
@@ -646,7 +671,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons' };
+      const idMap = { contentSettings: 'ContentSettings', postReadMoreLines: 'PostReadMoreLines', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons' };
       const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
       saveSection(section, document.getElementById(statusId));
     });
@@ -686,7 +711,7 @@
     }
   }
 
-  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড ----
+  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড (collectionGroup) ----
   async function loadAdminCommentsAndReplies() {
     const commentsListEl = document.getElementById('commentsAdminList');
     const repliesListEl = document.getElementById('repliesAdminList');
@@ -744,7 +769,7 @@
     }
   });
 
-  // ---- Back বাটন গার্ড ----
+  // ---- Back বাটন গার্ড: ড্রয়ার খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
   let backGuardActive = false;
   let backPressCount = 0;
   let backPressTimer = null;
@@ -774,6 +799,8 @@
       return;
     }
 
+    // ড্রয়ার বন্ধ থাকলেও, বর্তমান পেজটা যদি কোনো ফোল্ডারের ভেতরের হয় (যেমন কন্টেন্ট → পোস্ট),
+    // তাহলে সরাসরি বের না করে আগে সেই ফোল্ডারের লিস্টে (একধাপ উপরে) ফিরিয়ে নিয়ে যাও
     if (activePathKeys.length > 1) {
       openAdminDrawer();
       rearmGuard();
