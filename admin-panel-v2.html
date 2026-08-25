@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onuvuti Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #fff; min-height: 100vh; }
+  #loginScreen, #deniedScreen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
+  }
+  #deniedScreen { display: none; }
+  h1 { font-size: 20px; margin-bottom: 10px; }
+  p { color: #9ca3af; font-size: 14px; margin-bottom: 24px; }
+  button {
+    background: #4285F4; color: #fff; border: none;
+    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+  #adminScreen { display: none; }
+
+  header {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
+  }
+  #adminMenuToggle {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
+  }
+  #logoutBtn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
+  }
+
+  #adminOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; }
+  #adminOverlay.open { display: block; }
+  #adminDrawer {
+    position: fixed; top: 0; left: -240px; width: 240px; height: 100%;
+    background: #161b22; z-index: 201; transition: left 0.25s ease; padding: 18px 14px; overflow-y: auto;
+  }
+  #adminDrawer.open { left: 0; }
+  #adminDrawer .drawerHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  #adminDrawerCloseBtn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+  .folderItem { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 10px; cursor: pointer; font-size: 14px; margin-bottom: 4px; }
+  .folderItem:hover, .folderItem.active { background: #21262d; }
+  .subFolderItem {
+    display: flex; align-items: center; gap: 8px; padding: 9px 10px 9px 26px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; margin-bottom: 2px; color: #9ca3af;
+  }
+  .subFolderItem:hover, .subFolderItem.active { background: #21262d; color: #fff; }
+  .drawerBackRow {
+    display: flex; align-items: center; gap: 10px; padding: 10px; margin-bottom: 10px;
+    padding-bottom: 14px; border-bottom: 1px solid #262c36; font-weight: bold; font-size: 14px; cursor: pointer;
+  }
+  .drawerBackRow:hover { color: #9ca3af; }
+
+  main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
+  .folderPanel { display: none; }
+  .folderPanel.active { display: block; }
+  .folderTitle { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+  .comingSoon { text-align: center; color: #6b7280; font-size: 14px; padding: 60px 0; }
+
+  .section { background: #161b22; border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .section h2 { font-size: 15px; margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .row label { width: 110px; font-size: 13px; color: #9ca3af; flex-shrink: 0; }
+  .row input[type="color"] { width: 44px; height: 32px; border: none; border-radius: 6px; background: none; }
+  input[type="number"], input[type="text"], textarea {
+    flex: 1; width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
+
+  .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .gridRow { display: flex; gap: 6px; align-items: center; }
+  .gridRow span.rowNum { width: 18px; font-size: 11px; color: #6b7280; flex-shrink: 0; }
+  .gridRow input.gridLabel { width: 38%; }
+  .gridRow input.gridUrl { flex: 1; }
+
+  .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
+  .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
+
+  /* ---- বাটন পিকার (চিপ) ---- */
+  .buttonPicker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .pickerChip {
+    display: flex; align-items: center; gap: 6px; background: #0d1117; border: 1px solid #30363d;
+    color: #9ca3af; padding: 8px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
+  }
+  .pickerChip.selected { background: #4285F4; color: #fff; border-color: #4285F4; }
+  .pickerChip .badge {
+    display: none; background: #fff; color: #4285F4; width: 16px; height: 16px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .pickerChip.selected .badge { display: flex; }
+
+  /* ---- কালার পিকার ---- */
+  .colorSwatchPick {
+    position: relative; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+    border: 2px solid transparent; flex-shrink: 0;
+  }
+  .colorSwatchPick.selected { border-color: #fff; }
+  .colorSwatchPick .badge {
+    display: none; position: absolute; top: -6px; right: -6px;
+    background: #fff; color: #111; width: 18px; height: 18px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .colorSwatchPick.selected .badge { display: flex; }
+
+  /* ---- কন্টেন্ট তালিকা কার্ড ---- */
+  .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+  .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
+  .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
+  .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
+
+  #exitToast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #21262d; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
+  }
+</style>
+</head>
+<body>
+
+  <div id="loginScreen">
+    <h1>Onuvuti Admin Panel</h1>
+    <p>এডমিন অ্যাক্সেসের জন্য লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+  </div>
+
+  <div id="deniedScreen">
+    <h1>⛔ প্রবেশাধিকার নেই</h1>
+    <p>এই অ্যাকাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
+    <button id="logoutBtn2">লগ আউট</button>
+  </div>
+
+  <div id="adminScreen">
+
+    <div id="adminOverlay"></div>
+    <div id="adminDrawer">
+      <div class="drawerHeader"><strong>ফোল্ডার</strong><button id="adminDrawerCloseBtn">✕</button></div>
+
+      <div id="drawerListEl"></div>
+    </div>
+
+    <header>
+      <button id="adminMenuToggle">☰</button>
+      <span>🛠️ Admin Panel</span>
+      <button id="logoutBtn">লগ আউট</button>
+    </header>
+
+    <main>
+
+      <!-- ================= থিম ফোল্ডার ================= -->
+      <div class="folderPanel active" id="panel-theme">
+        <div class="folderTitle">🎨 থিম</div>
+
+        <div class="section">
+          <h2>🏷️ লোগো ও সাইট নাম</h2>
+          <div class="row"><label>লোগো URL</label><input type="text" id="logoUrl" placeholder="https://..."></div>
+          <div class="row"><label>সাইট নাম</label><input type="text" id="siteName" placeholder="Onuvuti"></div>
+          <button class="sectionSaveBtn" data-section="identity">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusIdentity"></div>
+        </div>
+
+        <div class="section">
+          <h2>📢 নোটিশ (স্ক্রলিং লেখা)</h2>
+          <input type="text" id="noticeText" placeholder="এখানে নোটিশ লিখুন...">
+          <div class="hint">এটা হোমপেজে ডান থেকে বামে ক্রমাগত চলতে থাকবে</div>
+          <button class="sectionSaveBtn" data-section="notice">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusNotice"></div>
+        </div>
+
+        <div class="section">
+          <h2>✍️ কম্পোজার লেখা</h2>
+          <div class="row"><label>টেক্সট বক্সের লেখা</label><input type="text" id="composerPlaceholder" placeholder="আপনার মনে কী চলছে?"></div>
+          <div class="row"><label>পোস্টারের লেখা</label><input type="text" id="posterPlaceholder" placeholder="পোস্টারের লেখা এখানে দেখাবে"></div>
+          <button class="sectionSaveBtn" data-section="composerLabels">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusComposerLabels"></div>
+        </div>
+
+        <div class="section">
+          <h2>📱 বাম সাইডবার মেনু (সর্বোচ্চ ১০টি)</h2>
+          <div class="gridTable" id="sidebarGridTable"></div>
+          <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
+          <button class="sectionSaveBtn" data-section="sidebar">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusSidebar"></div>
+        </div>
+
+        <div class="section">
+          <h2>📋 টপ মেনু বাটন (সর্বোচ্চ ১০টি)</h2>
+          <div class="gridTable" id="menuGridTable"></div>
+          <div class="hint">বাম ঘরে নাম/আইকন, ডান ঘরে লিংক — খালি রাখলে সেই বাটন দেখাবে না</div>
+          <button class="sectionSaveBtn" data-section="menu">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusMenu"></div>
+        </div>
+
+        <div class="section">
+          <h2>⬇️ ফুটার বাটন (সর্বোচ্চ ১০টি)</h2>
+          <div class="gridTable" id="footerGridTable"></div>
+          <div class="hint">ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে</div>
+          <button class="sectionSaveBtn" data-section="footer">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusFooter"></div>
+        </div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: পোস্ট ================= -->
+      <div class="folderPanel" id="panel-content-posts">
+        <div class="folderTitle">📝 সকল পোস্ট</div>
+        <div id="postsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: কমেন্ট ================= -->
+      <div class="folderPanel" id="panel-content-comments">
+        <div class="folderTitle">💬 সকল কমেন্ট</div>
+        <div id="commentsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: রিপ্লাই ================= -->
+      <div class="folderPanel" id="panel-content-replies">
+        <div class="folderTitle">↩️ সকল রিপ্লাই</div>
+        <div id="repliesAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      </div>
+
+      <!-- ================= কন্টেন্ট ফোল্ডার: সেটিংস ================= -->
+      <div class="folderPanel" id="panel-content-settings">
+        <div class="folderTitle">⚙️ কন্টেন্ট সেটিংস</div>
+        <div class="section">
+          <h2>প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
+          <input type="number" id="postsPerPage" placeholder="৫">
+          <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
+
+          <h2 style="margin-top:16px;">📏 কনটেন্টের প্রস্থ (px)</h2>
+          <input type="number" id="maxWidth" placeholder="640">
+
+          <h2 style="margin-top:16px;">📐 পোস্ট বক্সের সাইজ</h2>
+          <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
+          <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
+
+          <button class="sectionSaveBtn" data-section="contentSettings">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusContentSettings"></div>
+        </div>
+
+        <div class="section">
+          <h2>🔘 পোস্ট বাটন লেআউট</h2>
+          <select id="postButtonsJustify" style="width:100%; background:#0d1117; border:1px solid #30363d; color:#fff; padding:8px 10px; border-radius:8px; font-size:13px;">
+            <option value="space-evenly">সমান্তরাল</option>
+            <option value="flex-start">বামদিকে</option>
+            <option value="flex-end">ডান দিকে</option>
+          </select>
+          <div class="hint">প্রতিটা পোস্টের নিচের বাটনগুলো কীভাবে সাজানো থাকবে</div>
+          <button class="sectionSaveBtn" data-section="postButtonsLayout">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusPostButtonsLayout"></div>
+        </div>
+
+        <div class="section">
+          <h2>👇 নিচের বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে</div>
+          <div class="buttonPicker" id="bottomButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="bottomButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusBottomButtons"></div>
+        </div>
+
+        <div class="section">
+          <h2>⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে</div>
+          <div class="buttonPicker" id="menuButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="menuButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusMenuButtons"></div>
+        </div>
+
+        <div class="section">
+          <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
+          <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
+          <div class="buttonPicker" id="posterColorPicker"></div>
+          <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusPosterColors"></div>
+        </div>
+
+        <div class="section">
+          <h2>🎨 রং</h2>
+          <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
+          <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
+          <div class="row"><label>Card রং</label><input type="color" id="cardColor"></div>
+          <div class="row"><label>টেক্সট রং</label><input type="color" id="textColor"></div>
+          <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusColors"></div>
+        </div>
+      </div>
+
+      <!-- ================= ইউজার ফোল্ডার ================= -->
+      <div class="folderPanel" id="panel-users">
+        <div class="folderTitle">👥 ইউজার</div>
+        <div class="comingSoon">শীঘ্রই এখানে ইউজার ম্যানেজমেন্ট যোগ করা হবে।</div>
+      </div>
+
+      <!-- ================= ভিডিও ফোল্ডার ================= -->
+      <div class="folderPanel" id="panel-video">
+        <div class="folderTitle">🎬 ভিডিও</div>
+
+        <div class="section">
+          <h2>👤 একাউন্ট</h2>
+          <input type="text" id="accountSearch" placeholder="🔍 ইউনিক আইডি (UID) দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
+          <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+        </div>
+
+        <div class="section">
+          <h2>🪙 কয়েন সেটিংস</h2>
+          <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
+          <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
+          <div class="row"><label>প্রতি বিজ্ঞাপনের খরচ</label><input type="number" id="coinAdCost" placeholder="5"></div>
+          <div class="row"><label>বিজ্ঞাপন দেখলে পুরস্কার</label><input type="number" id="coinAdReward" placeholder="1"></div>
+          <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="coinSettingsStatus"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, collection, collectionGroup, query, orderBy, getDocs
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:d87ae40431210088df8b25",
+    measurementId: "G-WJ8N8XLPSZ"
+  };
+
+  const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginScreen = document.getElementById('loginScreen');
+  const deniedScreen = document.getElementById('deniedScreen');
+  const adminScreen = document.getElementById('adminScreen');
+
+  const logoUrl = document.getElementById('logoUrl');
+  const siteName = document.getElementById('siteName');
+  const noticeText = document.getElementById('noticeText');
+  const composerPlaceholder = document.getElementById('composerPlaceholder');
+  const posterPlaceholder = document.getElementById('posterPlaceholder');
+  const primaryColor = document.getElementById('primaryColor');
+  const bgColor = document.getElementById('bgColor');
+  const cardColor = document.getElementById('cardColor');
+  const textColor = document.getElementById('textColor');
+  const maxWidth = document.getElementById('maxWidth');
+  const composerHeight = document.getElementById('composerHeight');
+  const posterHeight = document.getElementById('posterHeight');
+  const postsPerPage = document.getElementById('postsPerPage');
+  const postButtonsJustify = document.getElementById('postButtonsJustify');
+
+  // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
+  const BUTTON_LABELS = {
+    like: '❤️ লাইক', comment: '💬 কমেন্ট', copyText: '📋 টেক্সট কপি',
+    copyLink: '🔗 লিংক কপি', share: '📤 শেয়ার', edit: '✏️ এডিট', delete: '🗑️ ডিলিট'
+  };
+  const BUTTON_KEYS = Object.keys(BUTTON_LABELS);
+
+  function createPicker(containerId) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    BUTTON_KEYS.forEach(key => {
+      const chip = document.createElement('div');
+      chip.className = 'pickerChip';
+      chip.dataset.key = key;
+      chip.innerHTML = `<span class="badge"></span><span>${BUTTON_LABELS[key]}</span>`;
+      chip.addEventListener('click', () => {
+        const idx = order.indexOf(key);
+        if (idx === -1) order.push(key);
+        else order.splice(idx, 1);
+        refresh();
+      });
+      container.appendChild(chip);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.pickerChip').forEach(chip => {
+        const key = chip.dataset.key;
+        const idx = order.indexOf(key);
+        if (idx === -1) {
+          chip.classList.remove('selected');
+        } else {
+          chip.classList.add('selected');
+          chip.querySelector('.badge').textContent = idx + 1;
+        }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).filter(k => BUTTON_KEYS.includes(k)); refresh(); }
+    };
+  }
+
+  const bottomPicker = createPicker('bottomButtonPicker');
+  const menuPicker = createPicker('menuButtonPicker');
+
+  // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
+  const COLOR_PALETTE = [
+    '#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9',
+    '#F97316', '#22C55E', '#EF4444', '#A855F7', '#06B6D4', '#F43F5E', '#84CC16', '#3B82F6',
+    '#D946EF', '#FACC15', '#10B981', '#6366F1', '#F472B6', '#0EA5E9', '#EAB308', '#DC2626',
+    '#7C3AED', '#059669', '#DB2777', '#2563EB', '#CA8A04', '#16A34A', '#9333EA', '#0891B2',
+    '#65A30D', '#E11D48', '#4F46E5', '#0D9488'
+  ];
+
+  function createColorPicker(containerId, maxCount) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    COLOR_PALETTE.forEach(color => {
+      const sw = document.createElement('div');
+      sw.className = 'colorSwatchPick';
+      sw.style.background = color;
+      sw.dataset.color = color;
+      sw.innerHTML = `<span class="badge"></span>`;
+      sw.addEventListener('click', () => {
+        const idx = order.indexOf(color);
+        if (idx === -1) {
+          if (order.length >= maxCount) { alert('সর্বোচ্চ ' + maxCount + 'টি রং বাছাই করা যাবে'); return; }
+          order.push(color);
+        } else {
+          order.splice(idx, 1);
+        }
+        refresh();
+      });
+      container.appendChild(sw);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.colorSwatchPick').forEach(sw => {
+        const idx = order.indexOf(sw.dataset.color);
+        if (idx === -1) { sw.classList.remove('selected'); }
+        else { sw.classList.add('selected'); sw.querySelector('.badge').textContent = idx + 1; }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).slice(0, maxCount); refresh(); }
+    };
+  }
+
+  const posterColorPicker = createColorPicker('posterColorPicker', COLOR_PALETTE.length);
+  const menuGridTable = document.getElementById('menuGridTable');
+  const sidebarGridTable = document.getElementById('sidebarGridTable');
+  const footerGridTable = document.getElementById('footerGridTable');
+
+  // ---- নেভিগেশন ----
+  const adminMenuToggle = document.getElementById('adminMenuToggle');
+  const adminDrawerCloseBtn = document.getElementById('adminDrawerCloseBtn');
+  const adminDrawer = document.getElementById('adminDrawer');
+  const adminOverlay = document.getElementById('adminOverlay');
+
+  function openAdminDrawer() {
+    adminDrawer.classList.add('open'); adminOverlay.classList.add('open');
+    navStack = findAncestorStack(activePathKeys);
+    renderDrawerLevel();
+  }
+  function closeAdminDrawer() { adminDrawer.classList.remove('open'); adminOverlay.classList.remove('open'); }
+  adminMenuToggle.addEventListener('click', openAdminDrawer);
+  adminDrawerCloseBtn.addEventListener('click', closeAdminDrawer);
+  adminOverlay.addEventListener('click', closeAdminDrawer);
+
+  function showPanel(panelId) {
+    document.querySelectorAll('.folderPanel').forEach(p => p.classList.remove('active'));
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  // ---- ড্রয়ার: ফোল্ডার-ট্রি (ডেটা-চালিত, রিকার্সিভ — যত ইচ্ছা নতুন ফোল্ডার/সাব-ফোল্ডার যোগ করলে
+  //      এই একটামাত্র জায়গায় (FOLDER_TREE) শুধু একটা এন্ট্রি বসালেই বাকি সব (নেভিগেশন, ব্যাক বাটন,
+  //      active হাইলাইট, ইনডেন্ট) নিজে থেকে কাজ করবে — আলাদা করে কোনো কোড লেখা লাগবে না) ----
+  const FOLDER_TREE = [
+    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
+    { key: 'content', icon: '📦', label: 'কন্টেন্ট', children: [
+        { key: 'posts', icon: '📝', label: 'পোস্ট', panel: 'panel-content-posts', onShow: () => loadAdminPosts() },
+        { key: 'comments', icon: '💬', label: 'কমেন্ট', panel: 'panel-content-comments', onShow: () => loadAdminCommentsAndReplies() },
+        { key: 'replies', icon: '↩️', label: 'রিপ্লাই', panel: 'panel-content-replies', onShow: () => loadAdminCommentsAndReplies() },
+        { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' }
+      ]
+    },
+    { key: 'users', icon: '👥', label: 'ইউজার', panel: 'panel-users' },
+    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video', onShow: () => { loadAccounts(); loadCoinSettings(); } }
+  ];
+
+  const drawerListEl = document.getElementById('drawerListEl');
+  const virtualRoot = { key: 'root', label: '', children: FOLDER_TREE };
+  let navStack = [virtualRoot];       // বর্তমানে ড্রয়ারে কোন লেভেলে আছি (root থেকে path)
+  let activePathKeys = ['theme'];     // বর্তমানে কোন প্যানেলটা সক্রিয় (default: থিম, HTML-এ panel-theme active দেওয়া আছে)
+
+  function findAncestorStack(pathKeys) {
+    // activePathKeys থেকে তার প্যারেন্ট ফোল্ডারগুলোর chain বের করে, যাতে ড্রয়ার আবার খুললে
+    // ঠিক সেই লেভেলেই খোলে যেখানে ইউজার আগে ছিল
+    let level = FOLDER_TREE;
+    const stack = [virtualRoot];
+    for (let i = 0; i < pathKeys.length - 1; i++) {
+      const node = level.find(n => n.key === pathKeys[i]);
+      if (!node) break;
+      stack.push(node);
+      level = node.children || [];
+    }
+    return stack;
+  }
+
+  function renderDrawerLevel() {
+    const level = navStack[navStack.length - 1];
+    const depth = navStack.length - 1; // 0 = root
+    drawerListEl.innerHTML = '';
+
+    if (depth > 0) {
+      const backRow = document.createElement('div');
+      backRow.className = 'drawerBackRow';
+      backRow.innerHTML = `<span>←</span> ${level.label}`;
+      backRow.addEventListener('click', () => { navStack.pop(); renderDrawerLevel(); });
+      drawerListEl.appendChild(backRow);
+    }
+
+    level.children.forEach(node => {
+      const hasChildren = Array.isArray(node.children) && node.children.length > 0;
+      const isActiveLeaf = !hasChildren && activePathKeys[activePathKeys.length - 1] === node.key;
+      const el = document.createElement('div');
+      el.className = (depth === 0 ? 'folderItem' : 'subFolderItem') + (isActiveLeaf ? ' active' : '');
+      if (depth > 0) el.style.paddingLeft = (26 + (depth - 1) * 16) + 'px';
+      el.innerHTML = `<span>${node.icon}</span> ${node.label}` + (hasChildren ? '<span style="margin-left:auto; color:#6b7280;">›</span>' : '');
+      el.addEventListener('click', () => {
+        if (hasChildren) {
+          navStack.push(node);
+          renderDrawerLevel();
+        } else {
+          activePathKeys = navStack.slice(1).map(n => n.key).concat(node.key);
+          showPanel(node.panel);
+          if (node.onShow) node.onShow();
+          closeAdminDrawer();
+        }
+      });
+      drawerListEl.appendChild(el);
+    });
+  }
+
+  // ---- থিম গ্রিড তৈরি ----
+  function buildGridRows(container, prefix) {
+    for (let i = 0; i < 10; i++) {
+      const row = document.createElement('div');
+      row.className = 'gridRow';
+      row.innerHTML = `
+        <span class="rowNum">${i + 1}</span>
+        <input type="text" class="gridLabel" id="${prefix}Label${i}" placeholder="নাম/আইকন">
+        <input type="text" class="gridUrl" id="${prefix}Url${i}" placeholder="লিংক">
+      `;
+      container.appendChild(row);
+    }
+  }
+  buildGridRows(menuGridTable, 'menu');
+  buildGridRows(sidebarGridTable, 'sidebar');
+  buildGridRows(footerGridTable, 'footer');
+
+  function readGrid(prefix) {
+    const items = [];
+    for (let i = 0; i < 10; i++) {
+      const label = document.getElementById(prefix + 'Label' + i).value.trim();
+      const url = document.getElementById(prefix + 'Url' + i).value.trim();
+      if (label) items.push({ label, url: url || '#' });
+    }
+    return items;
+  }
+
+  function fillGrid(prefix, items) {
+    (items || []).forEach((item, i) => {
+      if (i >= 10) return;
+      document.getElementById(prefix + 'Label' + i).value = item.label || '';
+      document.getElementById(prefix + 'Url' + i).value = item.url || '';
+    });
+  }
+
+  document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { console.error(e); alert('লগইন এরর: ' + e.message); }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+  document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+
+  async function loadSettings() {
+    const snap = await getDoc(doc(db, "settings", "site"));
+    const s = snap.exists() ? snap.data() : {};
+    logoUrl.value = s.logoUrl || '';
+    siteName.value = s.siteName || 'Onuvuti';
+    noticeText.value = s.noticeText || '';
+    composerPlaceholder.value = s.composerPlaceholder || '';
+    posterPlaceholder.value = s.posterPlaceholder || '';
+    primaryColor.value = s.primaryColor || '#4285F4';
+    bgColor.value = s.bgColor || '#0d1117';
+    cardColor.value = s.cardColor || '#161b22';
+    textColor.value = s.textColor || '#ffffff';
+    maxWidth.value = s.maxWidth || 640;
+    composerHeight.value = s.composerHeight || 100;
+    posterHeight.value = s.posterHeight || 180;
+    postsPerPage.value = s.postsPerPage || 5;
+    postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
+    bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
+    menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
+    posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
+    fillGrid('menu', s.menuItems);
+    fillGrid('sidebar', s.sidebarItems);
+    fillGrid('footer', s.footerItems);
+    return s;
+  }
+
+  async function saveSection(section, statusEl) {
+    let data = {};
+    if (section === 'identity') data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
+    else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
+    else if (section === 'composerLabels') data = {
+      composerPlaceholder: composerPlaceholder.value.trim(),
+      posterPlaceholder: posterPlaceholder.value.trim()
+    };
+    else if (section === 'postButtonsLayout') data = { postButtonsJustify: postButtonsJustify.value };
+    else if (section === 'bottomButtons') data = { bottomButtons: bottomPicker.getOrder() };
+    else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
+    else if (section === 'posterColors') {
+      const colors = posterColorPicker.getOrder();
+      if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
+      data = { posterColors: colors };
+    }
+    else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
+    else if (section === 'menu') data = { menuItems: readGrid('menu') };
+    else if (section === 'sidebar') data = { sidebarItems: readGrid('sidebar') };
+    else if (section === 'footer') data = { footerItems: readGrid('footer') };
+    else if (section === 'contentSettings') data = {
+      postsPerPage: Number(postsPerPage.value) || 5,
+      maxWidth: Number(maxWidth.value) || 640,
+      composerHeight: Number(composerHeight.value) || 100,
+      posterHeight: Number(posterHeight.value) || 180
+    };
+
+    try {
+      await setDoc(doc(db, "settings", "site"), data, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      console.error(e);
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  }
+
+  document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.getAttribute('data-section');
+      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons' };
+      const statusId = 'status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1)));
+      saveSection(section, document.getElementById(statusId));
+    });
+  });
+
+  // ---- কন্টেন্ট: সকল পোস্ট লোড ----
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ---- একাউন্ট (ভিডিও ফোল্ডার) ----
+  let allAccountsCache = [];
+
+  async function loadAccounts() {
+    const listEl = document.getElementById('accountsList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(collection(db, "users"));
+      allAccountsCache = [];
+      snap.forEach(docSnap => allAccountsCache.push({ id: docSnap.id, data: docSnap.data() }));
+      renderAccounts(allAccountsCache);
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  function renderAccounts(accounts) {
+    const listEl = document.getElementById('accountsList');
+    if (!accounts.length) { listEl.innerHTML = '<div class="listEmpty">কোনো একাউন্ট পাওয়া যায়নি</div>'; return; }
+    listEl.innerHTML = '';
+    accounts.forEach(({ id, data }) => {
+      const card = document.createElement('div');
+      card.className = 'listCard';
+      card.innerHTML = `
+        <div class="metaRow">
+          <span>${(data.name || 'নাম নেই').replace(/</g, '&lt;')}</span>
+        </div>
+        <div class="hint" style="margin-bottom:8px; word-break:break-all;">UID: ${id}${data.email ? ' • ' + data.email.replace(/</g, '&lt;') : ''}</div>
+        <div class="row"><label>বিজ্ঞাপন ব্যালেন্স</label><input type="number" class="adBalanceInput" value="${Number(data.adBalance || 0)}"></div>
+        <div class="row"><label>ভিডিও ব্যালেন্স</label><input type="number" class="videoBalanceInput" value="${Number(data.videoBalance || 0)}"></div>
+        <button class="sectionSaveBtn saveAccountBtn">💾 সেভ করুন</button>
+        <div class="sectionStatus"></div>
+      `;
+      card.querySelector('.saveAccountBtn').addEventListener('click', async () => {
+        const adVal = Number(card.querySelector('.adBalanceInput').value) || 0;
+        const videoVal = Number(card.querySelector('.videoBalanceInput').value) || 0;
+        const statusEl = card.querySelector('.sectionStatus');
+        try {
+          await setDoc(doc(db, "users", id), { adBalance: adVal, videoBalance: videoVal }, { merge: true });
+          statusEl.style.color = '#4ade80';
+          statusEl.textContent = '✅ সেভ হয়েছে!';
+          setTimeout(() => { statusEl.textContent = ''; }, 2000);
+        } catch (e) {
+          statusEl.style.color = '#f87171';
+          statusEl.textContent = 'এরর: ' + e.message;
+        }
+      });
+      listEl.appendChild(card);
+    });
+  }
+
+  document.getElementById('accountSearch').addEventListener('input', (e) => {
+    const term = e.target.value.trim().toLowerCase();
+    const filtered = term ? allAccountsCache.filter(a => a.id.toLowerCase().includes(term)) : allAccountsCache;
+    renderAccounts(filtered);
+  });
+
+  async function loadCoinSettings() {
+    const statusEl = document.getElementById('coinSettingsStatus');
+    try {
+      const snap = await getDoc(doc(db, "settings", "video"));
+      const d = snap.exists() ? snap.data() : {};
+      document.getElementById('coinUnitName').value = d.unitName || 'Coin';
+      document.getElementById('coinVideoCost').value = (typeof d.videoCost === 'number') ? d.videoCost : 100;
+      document.getElementById('coinAdCost').value = (typeof d.adCost === 'number') ? d.adCost : 5;
+      document.getElementById('coinAdReward').value = (typeof d.adRewardCoins === 'number') ? d.adRewardCoins : 1;
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'লোড এরর: ' + e.message;
+    }
+  }
+
+  document.getElementById('saveCoinSettingsBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('coinSettingsStatus');
+    const unitName = document.getElementById('coinUnitName').value.trim() || 'Coin';
+    const videoCost = Number(document.getElementById('coinVideoCost').value) || 0;
+    const adCost = Number(document.getElementById('coinAdCost').value) || 0;
+    const adRewardCoins = Number(document.getElementById('coinAdReward').value) || 0;
+    try {
+      await setDoc(doc(db, "settings", "video"), { unitName, videoCost, adCost, adRewardCoins }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  async function loadAdminPosts() {
+    const listEl = document.getElementById('postsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, "posts"), orderBy("createdAt", "desc")));
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো পোস্ট নেই</div>'; return; }
+      listEl.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.authorEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
+        `;
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  // ---- কন্টেন্ট: সকল কমেন্ট + রিপ্লাই লোড (collectionGroup) ----
+  async function loadAdminCommentsAndReplies() {
+    const commentsListEl = document.getElementById('commentsAdminList');
+    const repliesListEl = document.getElementById('repliesAdminList');
+    commentsListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    repliesListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(query(collectionGroup(db, "comments"), orderBy("createdAt", "desc")));
+      const comments = [];
+      const replies = [];
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        (d.replyToId ? replies : comments).push(d);
+      });
+
+      commentsListEl.innerHTML = comments.length ? '' : '<div class="listEmpty">কোনো কমেন্ট নেই</div>';
+      comments.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.email || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '').replace(/</g, '&lt;')}</div>
+        `;
+        commentsListEl.appendChild(card);
+      });
+
+      repliesListEl.innerHTML = replies.length ? '' : '<div class="listEmpty">কোনো রিপ্লাই নেই</div>';
+      replies.forEach(d => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>${d.email || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="bodyText">${(d.text || '').replace(/</g, '&lt;')}</div>
+        `;
+        repliesListEl.appendChild(card);
+      });
+    } catch (e) {
+      commentsListEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + ' (ইনডেক্স তৈরি করার লিংক থাকলে সেটায় ক্লিক করুন)</div>';
+      repliesListEl.innerHTML = '';
+    }
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    loginScreen.style.display = 'none';
+    deniedScreen.style.display = 'none';
+    adminScreen.style.display = 'none';
+
+    if (!user) {
+      loginScreen.style.display = 'flex';
+    } else if (ADMIN_EMAILS.includes(user.email)) {
+      adminScreen.style.display = 'block';
+      loadSettings();
+      initBackGuard();
+    } else {
+      deniedScreen.style.display = 'flex';
+    }
+  });
+
+  // ---- Back বাটন গার্ড: ড্রয়ার খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  let backGuardActive = false;
+  let backPressCount = 0;
+  let backPressTimer = null;
+  const exitToast = document.getElementById('exitToast');
+
+  function rearmGuard() {
+    history.pushState({ guard: true }, '', location.href);
+  }
+
+  function initBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
+    rearmGuard();
+    window.addEventListener('popstate', handleBack);
+  }
+
+  function handleBack() {
+    if (adminDrawer.classList.contains('open')) {
+      if (navStack.length > 1) {
+        navStack.pop();
+        renderDrawerLevel();
+        rearmGuard();
+        return;
+      }
+      closeAdminDrawer();
+      rearmGuard();
+      return;
+    }
+
+    // ড্রয়ার বন্ধ থাকলেও, বর্তমান পেজটা যদি কোনো ফোল্ডারের ভেতরের হয় (যেমন কন্টেন্ট → পোস্ট),
+    // তাহলে সরাসরি বের না করে আগে সেই ফোল্ডারের লিস্টে (একধাপ উপরে) ফিরিয়ে নিয়ে যাও
+    if (activePathKeys.length > 1) {
+      openAdminDrawer();
+      rearmGuard();
+      return;
+    }
+
+    if (backPressCount === 0) {
+      backPressCount = 1;
+      exitToast.style.display = 'block';
+      rearmGuard();
+      backPressTimer = setTimeout(() => {
+        backPressCount = 0;
+        exitToast.style.display = 'none';
+      }, 2000);
+    } else {
+      clearTimeout(backPressTimer);
+      exitToast.style.display = 'none';
+    }
+  }
+</script>
+</body>
+</html>
