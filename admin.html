@@ -298,7 +298,12 @@
       <!-- ================= ভিডিও ফোল্ডার ================= -->
       <div class="folderPanel" id="panel-video">
         <div class="folderTitle">🎬 ভিডিও</div>
-        <div class="comingSoon">শীঘ্রই এখানে ভিডিও ম্যানেজমেন্ট যোগ করা হবে।</div>
+
+        <div class="section">
+          <h2>👤 একাউন্ট</h2>
+          <input type="text" id="accountSearch" placeholder="🔍 ইউনিক আইডি (UID) দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
+          <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+        </div>
       </div>
 
     </main>
@@ -312,7 +317,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, collection, collectionGroup, query, orderBy, getDocs
+    getFirestore, doc, getDoc, setDoc, updateDoc, collection, collectionGroup, query, orderBy, getDocs
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -483,7 +488,7 @@
       ]
     },
     { key: 'users', icon: '👥', label: 'ইউজার', panel: 'panel-users' },
-    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video' }
+    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video', onShow: () => loadAccounts() }
   ];
 
   const drawerListEl = document.getElementById('drawerListEl');
@@ -667,6 +672,63 @@
     if (hrs < 24) return hrs + ' ঘণ্টা আগে';
     return Math.floor(hrs / 24) + ' দিন আগে';
   }
+
+  // ---- একাউন্ট (ভিডিও ফোল্ডার) ----
+  let allAccountsCache = [];
+
+  async function loadAccounts() {
+    const listEl = document.getElementById('accountsList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(collection(db, "users"));
+      allAccountsCache = [];
+      snap.forEach(docSnap => allAccountsCache.push({ id: docSnap.id, data: docSnap.data() }));
+      renderAccounts(allAccountsCache);
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  function renderAccounts(accounts) {
+    const listEl = document.getElementById('accountsList');
+    if (!accounts.length) { listEl.innerHTML = '<div class="listEmpty">কোনো একাউন্ট পাওয়া যায়নি</div>'; return; }
+    listEl.innerHTML = '';
+    accounts.forEach(({ id, data }) => {
+      const card = document.createElement('div');
+      card.className = 'listCard';
+      card.innerHTML = `
+        <div class="metaRow">
+          <span>${(data.name || 'নাম নেই').replace(/</g, '&lt;')}</span>
+        </div>
+        <div class="hint" style="margin-bottom:8px; word-break:break-all;">UID: ${id}${data.email ? ' • ' + data.email.replace(/</g, '&lt;') : ''}</div>
+        <div class="row"><label>বিজ্ঞাপন ব্যালেন্স</label><input type="number" class="adBalanceInput" value="${Number(data.adBalance || 0)}"></div>
+        <div class="row"><label>ভিডিও ব্যালেন্স</label><input type="number" class="videoBalanceInput" value="${Number(data.videoBalance || 0)}"></div>
+        <button class="sectionSaveBtn saveAccountBtn">💾 সেভ করুন</button>
+        <div class="sectionStatus"></div>
+      `;
+      card.querySelector('.saveAccountBtn').addEventListener('click', async () => {
+        const adVal = Number(card.querySelector('.adBalanceInput').value) || 0;
+        const videoVal = Number(card.querySelector('.videoBalanceInput').value) || 0;
+        const statusEl = card.querySelector('.sectionStatus');
+        try {
+          await setDoc(doc(db, "users", id), { adBalance: adVal, videoBalance: videoVal }, { merge: true });
+          statusEl.style.color = '#4ade80';
+          statusEl.textContent = '✅ সেভ হয়েছে!';
+          setTimeout(() => { statusEl.textContent = ''; }, 2000);
+        } catch (e) {
+          statusEl.style.color = '#f87171';
+          statusEl.textContent = 'এরর: ' + e.message;
+        }
+      });
+      listEl.appendChild(card);
+    });
+  }
+
+  document.getElementById('accountSearch').addEventListener('input', (e) => {
+    const term = e.target.value.trim().toLowerCase();
+    const filtered = term ? allAccountsCache.filter(a => a.id.toLowerCase().includes(term)) : allAccountsCache;
+    renderAccounts(filtered);
+  });
 
   async function loadAdminPosts() {
     const listEl = document.getElementById('postsAdminList');
