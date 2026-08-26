@@ -304,6 +304,16 @@
           <input type="text" id="accountSearch" placeholder="🔍 ইউনিক আইডি (UID) দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
           <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
         </div>
+
+        <div class="section">
+          <h2>🪙 কয়েন সেটিংস</h2>
+          <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
+          <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
+          <div class="row"><label>প্রতি বিজ্ঞাপনের খরচ</label><input type="number" id="coinAdCost" placeholder="5"></div>
+          <div class="row"><label>বিজ্ঞাপন দেখলে পুরস্কার</label><input type="number" id="coinAdReward" placeholder="1"></div>
+          <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="coinSettingsStatus"></div>
+        </div>
       </div>
 
     </main>
@@ -488,7 +498,7 @@
       ]
     },
     { key: 'users', icon: '👥', label: 'ইউজার', panel: 'panel-users' },
-    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video', onShow: () => loadAccounts() }
+    { key: 'video', icon: '🎬', label: 'ভিডিও', panel: 'panel-video', onShow: () => { loadAccounts(); loadCoinSettings(); } }
   ];
 
   const drawerListEl = document.getElementById('drawerListEl');
@@ -728,6 +738,38 @@
     const term = e.target.value.trim().toLowerCase();
     const filtered = term ? allAccountsCache.filter(a => a.id.toLowerCase().includes(term)) : allAccountsCache;
     renderAccounts(filtered);
+  });
+
+  async function loadCoinSettings() {
+    const statusEl = document.getElementById('coinSettingsStatus');
+    try {
+      const snap = await getDoc(doc(db, "settings", "video"));
+      const d = snap.exists() ? snap.data() : {};
+      document.getElementById('coinUnitName').value = d.unitName || 'Coin';
+      document.getElementById('coinVideoCost').value = (typeof d.videoCost === 'number') ? d.videoCost : 100;
+      document.getElementById('coinAdCost').value = (typeof d.adCost === 'number') ? d.adCost : 5;
+      document.getElementById('coinAdReward').value = (typeof d.adRewardCoins === 'number') ? d.adRewardCoins : 1;
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'লোড এরর: ' + e.message;
+    }
+  }
+
+  document.getElementById('saveCoinSettingsBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('coinSettingsStatus');
+    const unitName = document.getElementById('coinUnitName').value.trim() || 'Coin';
+    const videoCost = Number(document.getElementById('coinVideoCost').value) || 0;
+    const adCost = Number(document.getElementById('coinAdCost').value) || 0;
+    const adRewardCoins = Number(document.getElementById('coinAdReward').value) || 0;
+    try {
+      await setDoc(doc(db, "settings", "video"), { unitName, videoCost, adCost, adRewardCoins }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
   });
 
   async function loadAdminPosts() {
