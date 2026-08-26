@@ -7,173 +7,203 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --primary-color: #4285F4;
-    --bg-color: #0d1117;
-    --card-color: #161b22;
-    --text-color: #ffffff;
-    --max-width: 640px;
-    --poster-height: 180px;
+    --primary: #4285F4;
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #262c36;
+    --text: #f0f6fc;
+    --radius: 16px;
   }
-  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+  /* লগইন স্ক্রিন */
   #loginScreen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: 100vh; padding: 24px; text-align: center;
   }
-  #loginScreen img { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 18px; }
-  #loginScreen h1 { font-size: 22px; margin-bottom: 6px; }
-  #loginScreen p { color: #9ca3af; font-size: 14px; margin-bottom: 28px; }
+  #loginScreen img { width: 84px; height: 84px; border-radius: 24px; margin-bottom: 18px; box-shadow: 0 8px 24px rgba(66,133,244,0.3); }
+  #loginScreen h1 { font-size: 26px; font-weight: 700; }
+  #loginScreen p { color: #8b949e; font-size: 14px; margin: 6px 0 28px; }
   #googleLoginBtn {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--primary-color); color: #fff; border: none;
-    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
+    background: var(--primary); color: #fff; border: none;
+    padding: 14px 32px; border-radius: 40px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px;
   }
-  #googleLoginBtn:disabled { opacity: 0.6; }
-  #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; min-height: 18px; }
+  #googleLoginBtn:hover { transform: scale(1.02); background: #3b78e7; }
+  #loginStatus { margin-top: 14px; color: #f87171; font-size: 13px; min-height: 20px; }
 
+  /* অ্যাপ স্ক্রিন */
   #appScreen { display: none; }
 
+  /* হেডার */
   #siteHeader {
-    position: relative;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: var(--card); border-bottom: 1px solid var(--border);
   }
-  #siteHeader h1 { font-size: 17px; font-weight: bold; }
-  #backBtn {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
-    text-decoration: none;
+  #siteHeader .left { display: flex; align-items: center; gap: 12px; }
+  #siteHeader h1 { font-size: 18px; font-weight: 700; }
+  #backBtn, #logoutBtn {
+    background: none; border: none; color: var(--text); font-size: 14px; cursor: pointer;
   }
-  #logoutBtn {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
-  }
+  #logoutBtn { color: #f87171; font-weight: 500; }
 
-  main { padding: 16px; max-width: var(--max-width); margin: 0 auto; }
+  /* মেইন */
+  main { max-width: 720px; margin: 0 auto; padding: 16px; }
 
-  /* ---- প্রোফাইল কার্ড ---- */
+  /* প্রোফাইল কার্ড - প্রফেশনাল */
+  #profileCard {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; margin-bottom: 24px;
+  }
   #profileCover {
-    height: 90px; border-radius: 14px 14px 0 0; background: var(--primary-color);
+    height: 100px; background: var(--primary);
+    background: linear-gradient(135deg, #4285F4, #8B5CF6);
+    position: relative;
   }
-  #profileCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; margin-bottom: 18px; overflow: hidden; }
-  #profileBody { padding: 0 16px 16px; text-align: center; }
+  #profileBody {
+    padding: 0 20px 20px; text-align: center; margin-top: -40px;
+  }
   #profileAvatar {
-    width: 84px; height: 84px; border-radius: 50%; object-fit: cover; background: #333;
-    border: 4px solid var(--card-color); margin-top: -42px; margin-bottom: 10px;
+    width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+    border: 4px solid var(--card); background: #2d333b;
+    margin-bottom: 8px;
   }
-  #profileName { font-size: 18px; font-weight: bold; margin-bottom: 2px; }
-  #profileEmail { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
-  #profileBio { font-size: 13px; color: #ddd; white-space: pre-wrap; margin-bottom: 6px; line-height: 1.5; }
-  #profileBioEmpty { font-size: 13px; color: #6b7280; font-style: italic; margin-bottom: 6px; }
-  #profileExtra { font-size: 12px; color: #9ca3af; margin-bottom: 6px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  #profileJoined { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
-  #editProfileBtn {
-    background: #21262d; color: #fff; border: 1px solid #30363d; padding: 8px 18px;
-    border-radius: 20px; font-size: 13px; cursor: pointer;
-  }
-  #profileStats { display: flex; border-top: 1px solid #262c36; }
-  .statBox { flex: 1; text-align: center; padding: 12px 8px; }
-  .statBox .statNum { font-size: 16px; font-weight: bold; }
-  .statBox .statLabel { font-size: 11px; color: #9ca3af; margin-top: 2px; }
-  .statBox + .statBox { border-left: 1px solid #262c36; }
+  #profileName { font-size: 20px; font-weight: 700; }
+  #profileEmail { font-size: 13px; color: #8b949e; margin-bottom: 4px; }
+  #profileBio { font-size: 14px; color: #c9d1d9; white-space: pre-wrap; margin: 6px 0; }
+  #profileBioEmpty { font-size: 14px; color: #6b7280; font-style: italic; margin: 6px 0; }
+  #profileExtra { font-size: 13px; color: #8b949e; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 4px 0; }
+  #profileJoined { font-size: 12px; color: #6b7280; margin-bottom: 12px; }
 
-  /* ---- এডিট প্রোফাইল মোডাল ---- */
-  #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-end; justify-content: center; }
-  #editOverlay.open { display: flex; }
-  #editModal {
-    background: var(--card-color); width: 100%; max-width: var(--max-width); border-radius: 18px 18px 0 0;
-    padding: 18px 16px 24px; max-height: 85vh; overflow-y: auto;
+  .profile-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .profile-actions button {
+    background: #21262d; border: 1px solid var(--border); color: #fff;
+    padding: 8px 18px; border-radius: 30px; font-size: 13px; cursor: pointer;
+    transition: 0.15s;
   }
-  #editModal h2 { font-size: 16px; margin-bottom: 14px; }
-  .formRow { margin-bottom: 12px; }
-  .formRow label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 5px; }
-  .formRow input, .formRow textarea {
-    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
-    padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit;
-  }
-  .formRow textarea { resize: vertical; min-height: 70px; }
-  .formRow select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit; }
-  .readonlyNote { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
-  #coverColors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-  .coverSwatch { width: 30px; height: 30px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-  .coverSwatch.selected { border-color: #fff; }
-  #editModalBtns { display: flex; gap: 8px; margin-top: 6px; }
-  #editSaveBtn, #editCancelBtn {
-    flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; border: none;
-  }
-  #editSaveBtn { background: var(--primary-color); color: #fff; }
-  #editCancelBtn { background: #21262d; color: #ddd; }
-  #editSaveBtn:disabled { opacity: 0.6; }
-  #editStatus { font-size: 12px; text-align: center; margin-top: 8px; min-height: 15px; color: #4ade80; }
+  .profile-actions button:hover { background: #30363d; }
+  .profile-actions .follow-btn { background: var(--primary); border-color: var(--primary); }
+  .profile-actions .follow-btn.following { background: #21262d; border-color: var(--border); }
 
-  #postsHeading { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #ddd; }
-  #emptyPosts { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 0; }
-  #postsLoading { text-align: center; color: #6b7280; font-size: 13px; padding: 20px 0; }
+  /* স্ট্যাটস */
+  #profileStats {
+    display: flex; border-top: 1px solid var(--border); background: #0d1117;
+  }
+  .statBox { flex: 1; text-align: center; padding: 14px 8px; }
+  .statBox .statNum { font-size: 18px; font-weight: 700; }
+  .statBox .statLabel { font-size: 12px; color: #8b949e; margin-top: 2px; }
+  .statBox + .statBox { border-left: 1px solid var(--border); }
 
-  /* ---- পোস্ট কার্ড (index.html এর সাথে সামঞ্জস্যপূর্ণ) ---- */
-  .postCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-  .postHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: relative; }
-  .postHeader img.avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; }
-  .postHeader .pName { font-size: 13px; font-weight: bold; }
-  .postHeader .pTime { font-size: 11px; color: #6b7280; }
-  .postMenuWrap { margin-left: auto; position: relative; }
-  .postMenuBtn { background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px; }
-  .postMenuDropdown {
-    display: none; position: absolute; right: 0; top: 30px; background: #21262d; border: 1px solid #30363d;
-    border-radius: 10px; min-width: 140px; z-index: 10; overflow: hidden;
+  /* পোস্ট লিস্ট */
+  #postsHeading { font-size: 16px; font-weight: 600; margin: 20px 0 12px; color: #c9d1d9; }
+  #postsLoading { color: #6b7280; text-align: center; padding: 30px 0; }
+  #emptyPosts { text-align: center; color: #6b7280; padding: 40px 0; display: none; }
+
+  /* পোস্ট কার্ড */
+  .postCard {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 16px; transition: 0.15s;
   }
-  .postMenuDropdown.open { display: block; }
-  .postMenuDropdown button {
-    display: block; width: 100%; text-align: left; background: none; border: none; color: #fff;
-    padding: 10px 12px; font-size: 12px; cursor: pointer;
+  .postCard:hover { border-color: #3d444d; }
+
+  .postHeader {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
   }
-  .postMenuDropdown button:hover { background: #30363d; }
-  .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+  .postHeader .avatar-sm { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; background: #2d333b; }
+  .postHeader .pName { font-weight: 600; font-size: 14px; }
+  .postHeader .pTime { font-size: 12px; color: #6b7280; margin-left: auto; }
+
+  .postText { font-size: 15px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
   .postPoster {
-    border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
-    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: var(--poster-height);
-    display: flex; align-items: center; justify-content: center; white-space: pre-wrap;
+    border-radius: 12px; padding: 50px 16px; text-align: center; font-size: 18px;
+    font-weight: 700; color: #fff; margin-bottom: 10px; min-height: 140px;
+    display: flex; align-items: center; justify-content: center;
   }
-  .postButtons { display: flex; justify-content: space-evenly; gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
-  .postButtons button {
-    background: #21262d; color: #c9d1d9; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; cursor: pointer;
-  }
-  .postButtons button.liked { color: #f87171; }
-  .postStatus { font-size: 11px; color: #4ade80; margin-top: 6px; min-height: 14px; }
 
-  .commentsWrap { display: none; margin-top: 10px; border-top: 1px solid #262c36; padding-top: 10px; }
+  .post-actions {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px;
+  }
+  .post-actions .left-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .post-actions button {
+    background: transparent; color: #c9d1d9; border: none;
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+    transition: 0.1s; display: flex; align-items: center; gap: 4px;
+  }
+  .post-actions button:hover { background: #21262d; }
+  .post-actions button.liked { color: #f87171; }
+  .post-actions .view-count { font-size: 12px; color: #6b7280; }
+
+  .postStatus { font-size: 12px; color: #4ade80; min-height: 18px; margin-top: 4px; }
+
+  /* কমেন্ট */
+  .commentsWrap { display: none; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
   .commentForm { display: flex; gap: 8px; margin-bottom: 10px; }
   .commentForm textarea {
-    flex: 1; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 8px 10px;
-    border-radius: 10px; font-size: 13px; resize: vertical; min-height: 36px; font-family: inherit;
+    flex: 1; background: #0d1117; border: 1px solid var(--border); color: #fff;
+    padding: 8px 12px; border-radius: 12px; font-size: 13px; resize: vertical; min-height: 36px;
+    font-family: inherit;
   }
-  .commentForm button { background: var(--primary-color); color: #fff; border: none; padding: 0 14px; border-radius: 10px; font-size: 12px; }
-  .commentRow { display: flex; gap: 8px; margin-bottom: 10px; }
-  .commentRow img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
-  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; }
-  .commentBody .cName { font-size: 12px; font-weight: bold; }
+  .commentForm button {
+    background: var(--primary); color: #fff; border: none; padding: 0 16px;
+    border-radius: 30px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .commentRow { display: flex; gap: 10px; margin-bottom: 12px; }
+  .commentRow img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #2d333b; flex-shrink: 0; }
+  .commentBody { background: #0d1117; border-radius: 14px; padding: 8px 12px; flex: 1; }
+  .commentBody .cName { font-size: 12px; font-weight: 600; }
   .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
-  .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
-  .repliesList { margin-left: 36px; }
+  .commentMeta { font-size: 11px; color: #6b7280; margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .commentMeta button { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 11px; padding: 0; }
+  .repliesList { margin-left: 40px; }
+
+  /* এডিট মোডাল */
+  #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 200; align-items: flex-end; justify-content: center; }
+  #editOverlay.open { display: flex; }
+  #editModal {
+    background: var(--card); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0;
+    padding: 20px 18px 28px; max-height: 85vh; overflow-y: auto;
+  }
+  #editModal h2 { font-size: 18px; margin-bottom: 12px; }
+  .formRow { margin-bottom: 14px; }
+  .formRow label { display: block; font-size: 13px; color: #8b949e; margin-bottom: 4px; }
+  .formRow input, .formRow textarea, .formRow select {
+    width: 100%; background: #0d1117; border: 1px solid var(--border); color: #fff;
+    padding: 10px 12px; border-radius: 12px; font-size: 14px; font-family: inherit;
+  }
+  .formRow textarea { min-height: 70px; resize: vertical; }
+  #coverColors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .coverSwatch { width: 32px; height: 32px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; }
+  .coverSwatch.selected { border-color: #fff; }
+  #editModalBtns { display: flex; gap: 10px; margin-top: 8px; }
+  #editSaveBtn, #editCancelBtn {
+    flex: 1; padding: 12px; border-radius: 30px; font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+  }
+  #editSaveBtn { background: var(--primary); color: #fff; }
+  #editCancelBtn { background: #21262d; color: #ddd; }
+  #editStatus { font-size: 13px; text-align: center; margin-top: 8px; color: #4ade80; min-height: 18px; }
 </style>
 </head>
 <body>
 
+  <!-- লগইন -->
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
-    <h1>Onuvuti App</h1>
+    <h1>Onuvuti</h1>
     <p>প্রোফাইল দেখতে Google দিয়ে লগইন করুন</p>
     <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
     <div id="loginStatus"></div>
   </div>
 
+  <!-- অ্যাপ -->
   <div id="appScreen">
-    <div id="siteHeader">
-      <a href="index.html" id="backBtn">←</a>
-      <h1>প্রোফাইল</h1>
+    <header id="siteHeader">
+      <div class="left">
+        <button id="backBtn">←</button>
+        <h1>প্রোফাইল</h1>
+      </div>
       <button id="logoutBtn">লগ আউট</button>
-    </div>
+    </header>
 
     <main>
       <div id="profileCard">
@@ -183,42 +213,39 @@
           <div id="profileName"></div>
           <div id="profileEmail"></div>
           <div id="profileBio" style="display:none;"></div>
-          <div id="profileBioEmpty" style="display:none;">এখনো কোনো বায়ো লেখা হয়নি</div>
+          <div id="profileBioEmpty" style="display:none;">এখনো কোনো বায়ো নেই</div>
           <div id="profileExtra"></div>
           <div id="profileJoined"></div>
-          <button id="editProfileBtn">✏️ প্রোফাইল এডিট করুন</button>
+          <div class="profile-actions">
+            <button id="editProfileBtn">✏️ প্রোফাইল এডিট</button>
+            <button id="followBtn" class="follow-btn">+ ফলো করুন</button>
+          </div>
         </div>
         <div id="profileStats">
           <div class="statBox"><div class="statNum" id="statPosts">0</div><div class="statLabel">পোস্ট</div></div>
-          <div class="statBox"><div class="statNum" id="statLikes">0</div><div class="statLabel">প্রাপ্ত লাইক</div></div>
-          <div class="statBox"><div class="statNum" id="statComments">0</div><div class="statLabel">প্রাপ্ত কমেন্ট</div></div>
+          <div class="statBox"><div class="statNum" id="statFollowers">0</div><div class="statLabel">ফলোয়ার</div></div>
+          <div class="statBox"><div class="statNum" id="statFollowing">0</div><div class="statLabel">ফলোইং</div></div>
         </div>
       </div>
 
       <div id="postsHeading">📝 আমার পোস্ট</div>
       <div id="postsLoading">লোড হচ্ছে...</div>
-      <div id="emptyPosts" style="display:none;">আপনি এখনো কোনো পোস্ট করেননি</div>
+      <div id="emptyPosts">আপনি এখনো কোনো পোস্ট করেননি</div>
       <div id="myPostsList"></div>
     </main>
   </div>
 
-  <!-- ---- এডিট প্রোফাইল মোডাল ---- -->
+  <!-- এডিট মোডাল -->
   <div id="editOverlay">
     <div id="editModal">
-      <h2>প্রোফাইল এডিট করুন</h2>
-      <div class="readonlyNote">নাম ও প্রোফাইল ছবি আপনার Google অ্যাকাউন্ট থেকে অটোমেটিক নেওয়া হয় — এটা Google অ্যাকাউন্টে বদলালে এখানেও বদলে যাবে।</div>
+      <h2>✏️ প্রোফাইল এডিট</h2>
       <div class="formRow">
         <label>বায়ো</label>
-        <textarea id="editBio" placeholder="নিজের সম্পর্কে কিছু লিখুন..." maxlength="200"></textarea>
+        <textarea id="editBio" placeholder="নিজের সম্পর্কে লিখুন..." maxlength="200"></textarea>
       </div>
       <div class="formRow">
         <label>লিঙ্গ</label>
-        <select id="editGender">
-          <option value="">নির্বাচন করুন</option>
-          <option value="male">পুরুষ</option>
-          <option value="female">মহিলা</option>
-          <option value="other">অন্যান্য</option>
-        </select>
+        <select id="editGender"><option value="">নির্বাচন</option><option value="male">পুরুষ</option><option value="female">মহিলা</option><option value="other">অন্যান্য</option></select>
       </div>
       <div class="formRow">
         <label>জন্ম তারিখ</label>
@@ -237,14 +264,10 @@
   </div>
 
 <script type="module">
+  // ---------- Firebase ----------
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import {
-    getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs,
-    onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, arrayUnion, arrayRemove, serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs, onSnapshot, addDoc, updateDoc, deleteDoc, orderBy, arrayUnion, arrayRemove, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
@@ -252,266 +275,156 @@
     projectId: "onuvuti-5c9e3",
     storageBucket: "onuvuti-5c9e3.firebasestorage.app",
     messagingSenderId: "846713879232",
-    appId: "1:846713879232:web:d87ae40431210088df8b25",
-    measurementId: "G-WJ8N8XLPSZ"
+    appId: "1:846713879232:web:d87ae40431210088df8b25"
   };
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
 
-  let currentUser = null;
-  let myProfile = {};
-  const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
+  // ---------- DOM ----------
+  const $ = id => document.getElementById(id);
+  const loginScreen = $('loginScreen'), appScreen = $('appScreen');
+  const loginBtn = $('googleLoginBtn'), loginStatus = $('loginStatus'), logoutBtn = $('logoutBtn');
+  const profileCover = $('profileCover'), profileAvatar = $('profileAvatar'), profileName = $('profileName'), profileEmail = $('profileEmail');
+  const profileBio = $('profileBio'), profileBioEmpty = $('profileBioEmpty'), profileExtra = $('profileExtra'), profileJoined = $('profileJoined');
+  const statPosts = $('statPosts'), statFollowers = $('statFollowers'), statFollowing = $('statFollowing');
+  const editProfileBtn = $('editProfileBtn'), followBtn = $('followBtn');
+  const editOverlay = $('editOverlay'), editCancelBtn = $('editCancelBtn'), editSaveBtn = $('editSaveBtn'), editStatus = $('editStatus');
+  const editBio = $('editBio'), editGender = $('editGender'), editBirthday = $('editBirthday'), coverColorsEl = $('coverColors');
+  const postsLoading = $('postsLoading'), emptyPosts = $('emptyPosts'), myPostsList = $('myPostsList');
+
+  let currentUser = null, myProfile = {}, myPosts = [];
+  const COVER_COLORS = ['#4285F4','#EA4335','#34A853','#FBBC05','#8B5CF6','#EC4899','#111827','#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
-  const loginScreen = document.getElementById('loginScreen');
-  const appScreen = document.getElementById('appScreen');
-  const loginBtn = document.getElementById('googleLoginBtn');
-  const loginStatus = document.getElementById('loginStatus');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  const profileCover = document.getElementById('profileCover');
-  const profileAvatar = document.getElementById('profileAvatar');
-  const profileName = document.getElementById('profileName');
-  const profileEmail = document.getElementById('profileEmail');
-  const profileBio = document.getElementById('profileBio');
-  const profileBioEmpty = document.getElementById('profileBioEmpty');
-  const profileExtra = document.getElementById('profileExtra');
-  const profileJoined = document.getElementById('profileJoined');
-  const statPosts = document.getElementById('statPosts');
-  const statLikes = document.getElementById('statLikes');
-  const statComments = document.getElementById('statComments');
-
-  const editProfileBtn = document.getElementById('editProfileBtn');
-  const editOverlay = document.getElementById('editOverlay');
-  const editCancelBtn = document.getElementById('editCancelBtn');
-  const editSaveBtn = document.getElementById('editSaveBtn');
-  const editStatus = document.getElementById('editStatus');
-  const editBio = document.getElementById('editBio');
-  const editGender = document.getElementById('editGender');
-  const editBirthday = document.getElementById('editBirthday');
-  const coverColorsEl = document.getElementById('coverColors');
-
-  const postsLoading = document.getElementById('postsLoading');
-  const emptyPosts = document.getElementById('emptyPosts');
-  const myPostsList = document.getElementById('myPostsList');
-
-  COVER_COLORS.forEach(color => {
+  COVER_COLORS.forEach(c => {
     const sw = document.createElement('div');
-    sw.className = 'coverSwatch';
-    sw.style.background = color;
-    sw.addEventListener('click', () => {
-      selectedCoverColor = color;
-      document.querySelectorAll('.coverSwatch').forEach(s => s.classList.remove('selected'));
-      sw.classList.add('selected');
-    });
+    sw.className = 'coverSwatch'; sw.style.background = c;
+    sw.addEventListener('click', () => { selectedCoverColor = c; document.querySelectorAll('.coverSwatch').forEach(s => s.classList.remove('selected')); sw.classList.add('selected'); });
     coverColorsEl.appendChild(sw);
   });
 
-  // ---- লগইন/লগআউট ----
-  loginBtn.addEventListener('click', async () => {
-    loginBtn.disabled = true;
-    loginStatus.textContent = 'লগইন হচ্ছে...';
-    try { await signInWithPopup(auth, provider); }
-    catch (e) {
-      loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
-      loginBtn.disabled = false;
-    }
-  });
-  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  // ---------- ইউটিলিটি ----------
+  const escape = s => (s || '').replace(/</g, '&lt;');
+  const timeAgo = ts => {
+    if (!ts?.toDate) return '';
+    const diff = Date.now() - ts.toDate().getTime();
+    const m = Math.floor(diff/60000);
+    if (m<1) return 'এই মাত্র';
+    if (m<60) return m+'মি';
+    const h = Math.floor(m/60);
+    if (h<24) return h+'ঘ';
+    return Math.floor(h/24)+'দিন';
+  };
+  const formatDate = ts => { if(!ts?.toDate) return ''; const d = ts.toDate(); return 'যোগদান: '+['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'][d.getMonth()]+' '+d.getFullYear(); };
+  const genderLabel = { male:'পুরুষ', female:'মহিলা', other:'অন্যান্য' };
 
-  function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
-
-  function timeAgo(ts) {
-    if (!ts || !ts.toDate) return '';
-    const diffMs = Date.now() - ts.toDate().getTime();
-    const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return 'এই মাত্র';
-    if (mins < 60) return mins + ' মিনিট আগে';
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
-    return Math.floor(hrs / 24) + ' দিন আগে';
-  }
-
-  function formatJoinDate(ts) {
-    if (!ts || !ts.toDate) return '';
-    const d = ts.toDate();
-    const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-    return 'যোগদান: ' + months[d.getMonth()] + ' ' + d.getFullYear();
-  }
-
-  // ---- ইউজার প্রোফাইল লোড/তৈরি (নাম ও ছবি সবসময় Google অ্যাকাউন্ট থেকে সিঙ্ক হয়) ----
+  // ---------- প্রোফাইল ----------
   async function ensureUserProfile(user) {
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
-    const syncedFields = {
-      name: user.displayName || 'User',
-      photoURL: user.photoURL || '',
-      email: user.email || ''
-    };
+    const synced = { name: user.displayName || 'User', photoURL: user.photoURL || '', email: user.email || '' };
     if (snap.exists()) {
-      myProfile = { ...snap.data(), ...syncedFields };
-      await setDoc(ref, syncedFields, { merge: true });
+      myProfile = { ...snap.data(), ...synced };
+      await setDoc(ref, synced, { merge: true });
     } else {
-      myProfile = {
-        ...syncedFields,
-        bio: '',
-        gender: '',
-        birthday: '',
-        coverColor: '#4285F4',
-        createdAt: serverTimestamp()
-      };
+      myProfile = { ...synced, bio:'', gender:'', birthday:'', coverColor:'#4285F4', createdAt: serverTimestamp() };
       await setDoc(ref, myProfile);
     }
   }
 
-  const GENDER_LABELS = { male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য' };
-
-  function formatBirthday(str) {
-    if (!str) return '';
-    const [y, m, d] = str.split('-');
-    const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-    return d + ' ' + months[Number(m) - 1] + ' ' + y;
-  }
-
   function renderProfile() {
-    const displayName = myProfile.name || currentUser.displayName || 'User';
-    const displayPhoto = myProfile.photoURL || currentUser.photoURL || '';
-    const cover = myProfile.coverColor || '#4285F4';
-    profileCover.style.background = cover;
-    profileAvatar.src = displayPhoto;
-    profileName.textContent = displayName;
-    profileEmail.textContent = currentUser.email || '';
-    if (myProfile.bio && myProfile.bio.trim()) {
-      profileBio.style.display = 'block';
-      profileBioEmpty.style.display = 'none';
-      profileBio.textContent = myProfile.bio;
-    } else {
-      profileBio.style.display = 'none';
-      profileBioEmpty.style.display = 'block';
-    }
-    const extras = [];
-    if (myProfile.gender && GENDER_LABELS[myProfile.gender]) extras.push('🚻 ' + GENDER_LABELS[myProfile.gender]);
-    if (myProfile.birthday) extras.push('🎂 ' + formatBirthday(myProfile.birthday));
-    profileExtra.textContent = extras.join('   ');
-    profileJoined.textContent = formatJoinDate(myProfile.createdAt);
+    const p = myProfile;
+    profileCover.style.background = p.coverColor || '#4285F4';
+    profileAvatar.src = p.photoURL || '';
+    profileName.textContent = p.name || 'User';
+    profileEmail.textContent = currentUser?.email || '';
+    if (p.bio?.trim()) { profileBio.style.display='block'; profileBio.textContent=p.bio; profileBioEmpty.style.display='none'; }
+    else { profileBio.style.display='none'; profileBioEmpty.style.display='block'; }
+    let extra = [];
+    if (p.gender && genderLabel[p.gender]) extra.push('🚻 '+genderLabel[p.gender]);
+    if (p.birthday) { const [y,m,d]=p.birthday.split('-'); extra.push('🎂 '+d+' '+['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'][Number(m)-1]+' '+y); }
+    profileExtra.textContent = extra.join('   ');
+    profileJoined.textContent = formatDate(p.createdAt);
+    loadFollowStats();
+    checkFollowStatus();
   }
 
-  // ---- এডিট প্রোফাইল মোডাল ----
-  editProfileBtn.addEventListener('click', () => {
-    editBio.value = myProfile.bio || '';
-    editGender.value = myProfile.gender || '';
-    editBirthday.value = myProfile.birthday || '';
-    selectedCoverColor = myProfile.coverColor || '#4285F4';
-    document.querySelectorAll('.coverSwatch').forEach(s => {
-      s.classList.toggle('selected', s.style.background === hexToRgbStr(selectedCoverColor));
-    });
-    editStatus.textContent = '';
-    editOverlay.classList.add('open');
-  });
-  function hexToRgbStr(hex) {
-    const d = document.createElement('div');
-    d.style.color = hex;
-    document.body.appendChild(d);
-    const rgb = getComputedStyle(d).color;
-    document.body.removeChild(d);
-    return rgb;
-  }
-  editCancelBtn.addEventListener('click', () => editOverlay.classList.remove('open'));
-  editOverlay.addEventListener('click', (e) => { if (e.target === editOverlay) editOverlay.classList.remove('open'); });
-
-  editSaveBtn.addEventListener('click', async () => {
+  // ---------- ফলো সিস্টেম ----------
+  async function loadFollowStats() {
     if (!currentUser) return;
-    editSaveBtn.disabled = true;
-    editStatus.style.color = '#4ade80';
-    editStatus.textContent = 'সেভ হচ্ছে...';
-    try {
-      const data = {
-        bio: editBio.value.trim(),
-        gender: editGender.value,
-        birthday: editBirthday.value,
-        coverColor: selectedCoverColor
-      };
-      await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
-      myProfile = { ...myProfile, ...data };
-      renderProfile();
-      editStatus.textContent = '✅ সেভ হয়েছে!';
-      setTimeout(() => { editOverlay.classList.remove('open'); }, 700);
-    } catch (e) {
-      editStatus.style.color = '#f87171';
-      editStatus.textContent = 'এরর: ' + e.message;
-    }
-    editSaveBtn.disabled = false;
-  });
-
-  // ---- আমার পোস্ট লোড (equality filter only, client-side সর্ট — কম্পোজিট ইনডেক্স এড়াতে) ----
-  let myPosts = [];
-
-  async function loadMyPosts() {
-    postsLoading.style.display = 'block';
-    emptyPosts.style.display = 'none';
-    myPostsList.innerHTML = '';
-    try {
-      const q = query(collection(db, "posts"), where("authorUid", "==", currentUser.uid));
-      const snap = await getDocs(q);
-      myPosts = [];
-      snap.forEach(d => myPosts.push({ id: d.id, data: d.data() }));
-      myPosts.sort((a, b) => {
-        const ta = a.data.createdAt && a.data.createdAt.toDate ? a.data.createdAt.toDate().getTime() : 0;
-        const tb = b.data.createdAt && b.data.createdAt.toDate ? b.data.createdAt.toDate().getTime() : 0;
-        return tb - ta;
-      });
-
-      const totalLikes = myPosts.reduce((sum, p) => sum + (p.data.likedBy || []).length, 0);
-      const totalComments = myPosts.reduce((sum, p) => sum + (p.data.commentCount || 0), 0);
-      statPosts.textContent = myPosts.length;
-      statLikes.textContent = totalLikes;
-      statComments.textContent = totalComments;
-
-      postsLoading.style.display = 'none';
-      if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return; }
-      myPosts.forEach(p => myPostsList.appendChild(buildPostCard(p.id, p.data)));
-    } catch (e) {
-      postsLoading.textContent = 'এরর: ' + e.message;
-    }
+    const followersSnap = await getDocs(query(collection(db, "followers"), where("followingId", "==", currentUser.uid)));
+    const followingSnap = await getDocs(query(collection(db, "following"), where("followerId", "==", currentUser.uid)));
+    statFollowers.textContent = followersSnap.size;
+    statFollowing.textContent = followingSnap.size;
   }
 
-  function buildPostCard(postId, d) {
-    const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
-    const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
+  async function checkFollowStatus() {
+    if (!currentUser) return;
+    const q = query(collection(db, "followers"), where("followerId", "==", currentUser.uid), where("followingId", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    followBtn.textContent = snap.empty ? '+ ফলো করুন' : '✅ ফলোইং';
+    followBtn.classList.toggle('following', !snap.empty);
+  }
 
+  followBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const q = query(collection(db, "followers"), where("followerId", "==", currentUser.uid), where("followingId", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      await addDoc(collection(db, "followers"), { followerId: currentUser.uid, followingId: currentUser.uid, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "following"), { followerId: currentUser.uid, followingId: currentUser.uid, createdAt: serverTimestamp() });
+    } else {
+      snap.forEach(d => deleteDoc(d.ref));
+      const q2 = query(collection(db, "following"), where("followerId", "==", currentUser.uid), where("followingId", "==", currentUser.uid));
+      const snap2 = await getDocs(q2);
+      snap2.forEach(d => deleteDoc(d.ref));
+    }
+    loadFollowStats();
+    checkFollowStatus();
+  });
+
+  // ---------- পোস্ট লোড ----------
+  async function loadMyPosts() {
+    postsLoading.style.display='block'; emptyPosts.style.display='none'; myPostsList.innerHTML='';
+    const q = query(collection(db, "posts"), where("authorUid", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    myPosts = [];
+    snap.forEach(d => myPosts.push({ id: d.id, data: d.data() }));
+    myPosts.sort((a,b) => (b.data.createdAt?.toDate?.()||0) - (a.data.createdAt?.toDate?.()||0));
+    statPosts.textContent = myPosts.length;
+    postsLoading.style.display='none';
+    if (!myPosts.length) { emptyPosts.style.display='block'; return; }
+    myPosts.forEach(p => myPostsList.appendChild(buildPostCard(p.id, p.data)));
+  }
+
+  // ---------- পোস্ট কার্ড (ভিউ + লাইক + কমেন্ট + শেয়ার + কপি) ----------
+  function buildPostCard(postId, d) {
+    const liked = currentUser && (d.likedBy||[]).includes(currentUser.uid);
+    const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
     const card = document.createElement('div');
     card.className = 'postCard';
-    card.id = 'post-' + postId;
 
-    let mediaHtml = '';
-    if (d.type === 'poster') {
-      mediaHtml = `<div class="postPoster" style="background:${d.posterColor || '#4285F4'}">${escapeHtml(d.text)}</div>`;
-    }
+    let media = '';
+    if (d.type === 'poster') media = `<div class="postPoster" style="background:${d.posterColor||'#4285F4'}">${escape(d.text)}</div>`;
 
     card.innerHTML = `
       <div class="postHeader">
-        <div>
-          <div class="pTime">${timeAgo(d.createdAt)}</div>
-        </div>
-        <div class="postMenuWrap">
-          <button class="postMenuBtn">⋮</button>
-          <div class="postMenuDropdown">
-            <button class="copyLinkBtn">🔗 লিংক কপি</button>
-            <button class="shareBtn">📤 শেয়ার</button>
-            <button class="editBtn">✏️ এডিট</button>
-            <button class="deleteBtn">🗑️ ডিলিট</button>
-          </div>
-        </div>
+        <img class="avatar-sm" src="${d.authorPhotoURL||''}">
+        <span class="pName">${escape(d.authorName||'User')}</span>
+        <span class="pTime">${timeAgo(d.createdAt)}</span>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
-      ${mediaHtml}
-      <div class="postButtons">
-        <button class="likeBtn ${liked ? 'liked' : ''}">❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)</button>
-        <button class="commentToggleBtn">💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)</button>
-        <button class="copyTextBtn">📋 টেক্সট কপি</button>
+      ${d.type!=='poster' && d.text ? `<div class="postText">${escape(d.text)}</div>` : ''}
+      ${media}
+      <div class="post-actions">
+        <div class="left-actions">
+          <button class="likeBtn ${liked?'liked':''}">❤️ <span class="likeCount">${(d.likedBy||[]).length}</span></button>
+          <button class="commentToggleBtn">💬 <span class="commentCountEl">${d.commentCount||0}</span></button>
+          <button class="shareBtn">📤 শেয়ার</button>
+          <button class="copyLinkBtn">🔗 কপি লিংক</button>
+        </div>
+        <span class="view-count">👁️ ${d.viewCount||0}</span>
       </div>
       <div class="postStatus"></div>
       <div class="commentsWrap">
@@ -523,231 +436,170 @@
       </div>
     `;
 
-    const statusEl = card.querySelector('.postStatus');
-    function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
+    const status = card.querySelector('.postStatus');
+    const showStatus = msg => { status.textContent=msg; setTimeout(()=>status.textContent='',2000); };
 
-    const menuBtn = card.querySelector('.postMenuBtn');
-    const menuDropdown = card.querySelector('.postMenuDropdown');
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuDropdown) el.classList.remove('open'); });
-      menuDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
-    menuDropdown.addEventListener('click', (e) => e.stopPropagation());
-
+    // লাইক
     card.querySelector('.likeBtn').addEventListener('click', async () => {
       if (!currentUser) return;
-      const postRef = doc(db, "posts", postId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-      if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
-      else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-      const idx = myPosts.findIndex(p => p.id === postId);
-      if (idx > -1) myPosts[idx].data = d;
+      const ref = doc(db, "posts", postId);
+      const now = (d.likedBy||[]).includes(currentUser.uid);
+      await updateDoc(ref, { likedBy: now ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+      if (now) d.likedBy = (d.likedBy||[]).filter(u=>u!==currentUser.uid);
+      else d.likedBy = [...(d.likedBy||[]), currentUser.uid];
       card.replaceWith(buildPostCard(postId, d));
     });
 
-    const commentsWrap = card.querySelector('.commentsWrap');
-    let commentsLoaded = false;
-    card.querySelector('.commentToggleBtn').addEventListener('click', () => {
-      const show = commentsWrap.style.display !== 'block';
-      commentsWrap.style.display = show ? 'block' : 'none';
-      if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+    // কমেন্ট টগল
+    const wrap = card.querySelector('.commentsWrap');
+    let loaded=false;
+    card.querySelector('.commentToggleBtn').addEventListener('click', ()=>{
+      wrap.style.display = wrap.style.display==='block' ? 'none' : 'block';
+      if (!loaded) { loadComments(postId, card); loaded=true; }
     });
 
-    card.querySelector('.copyTextBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+    // শেয়ার
+    card.querySelector('.shareBtn').addEventListener('click', async ()=>{
+      if (navigator.share) try { await navigator.share({ text: d.text||'', url: postUrl }); } catch(e){}
+      else { try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি ✓'); } catch(e){} }
     });
 
-    card.querySelector('.copyLinkBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+    // কপি লিংক
+    card.querySelector('.copyLinkBtn').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি ✓'); } catch(e){ showStatus('কপি ব্যর্থ'); }
     });
 
-    card.querySelector('.shareBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      if (navigator.share) {
-        try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {}
-      } else {
-        try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {}
-      }
-    });
+    // ভিউ কাউন্ট (প্রতি ইউজার একবার)
+    if (currentUser) {
+      const viewRef = doc(db, "postViews", postId+'_'+currentUser.uid);
+      getDoc(viewRef).then(snap => {
+        if (!snap.exists()) {
+          setDoc(viewRef, { uid: currentUser.uid, postId, viewedAt: serverTimestamp() });
+          updateDoc(doc(db, "posts", postId), { viewCount: increment(1) });
+        }
+      }).catch(()=>{});
+    }
 
-    card.querySelector('.editBtn').addEventListener('click', () => {
-      menuDropdown.classList.remove('open');
-      const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
-      if (newText === null) return;
-      updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-        d.text = newText;
-        const idx = myPosts.findIndex(p => p.id === postId);
-        if (idx > -1) myPosts[idx].data = d;
-        card.replaceWith(buildPostCard(postId, d));
-      }).catch(e => alert('এরর: ' + e.message));
-    });
-
-    card.querySelector('.deleteBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
-      try {
-        await deleteDoc(doc(db, "posts", postId));
-        myPosts = myPosts.filter(p => p.id !== postId);
-        card.remove();
-        statPosts.textContent = myPosts.length;
-        if (myPosts.length === 0) emptyPosts.style.display = 'block';
-      } catch (e) { alert('এরর: ' + e.message); }
-    });
-
-    card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
+    // কমেন্ট সাবমিট
+    card.querySelector('.commentSubmitBtn').addEventListener('click', ()=>{
       const input = card.querySelector('.commentInput');
       postComment(postId, input.value, null, card);
-      input.value = '';
+      input.value='';
     });
 
     return card;
   }
 
+  // ---------- কমেন্ট ----------
   function loadComments(postId, card) {
-    const listEl = card.querySelector('.commentsListEl');
+    const list = card.querySelector('.commentsListEl');
     const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snap) => {
-      const all = [];
-      snap.forEach(c => all.push({ id: c.id, data: c.data() }));
-      const topLevel = all.filter(c => !c.data.replyToId);
-      const repliesByParent = {};
-      all.filter(c => c.data.replyToId).forEach(c => {
-        if (!repliesByParent[c.data.replyToId]) repliesByParent[c.data.replyToId] = [];
-        repliesByParent[c.data.replyToId].push(c);
-      });
-
-      listEl.innerHTML = '';
-      topLevel.forEach(c => {
+    onSnapshot(q, snap => {
+      const all=[]; snap.forEach(c=>all.push({id:c.id, data:c.data()}));
+      const top = all.filter(c=>!c.data.replyToId);
+      const replies = {};
+      all.filter(c=>c.data.replyToId).forEach(c=>{ if(!replies[c.data.replyToId]) replies[c.data.replyToId]=[]; replies[c.data.replyToId].push(c); });
+      list.innerHTML='';
+      top.forEach(c=>{
         const row = buildCommentRow(postId, c.id, c.data, false);
-        listEl.appendChild(row);
-        const repliesListEl = row.querySelector('.repliesList');
-        (repliesByParent[c.id] || []).forEach(r => {
-          repliesListEl.appendChild(buildCommentRow(postId, r.id, r.data, true));
-        });
+        list.appendChild(row);
+        const rlist = row.querySelector('.repliesList');
+        (replies[c.id]||[]).forEach(r => rlist.appendChild(buildCommentRow(postId, r.id, r.data, true)));
       });
-
-      const cCountEl = card.querySelector('.commentCountEl');
-      if (cCountEl) cCountEl.textContent = all.length;
-      updateDoc(doc(db, "posts", postId), { commentCount: all.length }).catch(() => {});
+      const el = card.querySelector('.commentCountEl');
+      if(el) el.textContent = all.length;
+      updateDoc(doc(db, "posts", postId), { commentCount: all.length }).catch(()=>{});
     });
   }
 
   async function postComment(postId, text, replyToId, card) {
     if (!currentUser) return;
-    const t = (text || '').trim();
-    if (!t) return;
-    const payload = {
-      uid: currentUser.uid,
-      name: myProfile.name || currentUser.displayName || 'User',
-      email: currentUser.email || '',
-      photoURL: myProfile.photoURL || currentUser.photoURL || '',
-      text: t,
-      likedBy: [],
-      createdAt: serverTimestamp()
-    };
+    const t=text.trim(); if(!t) return;
+    const payload = { uid: currentUser.uid, name: myProfile.name||currentUser.displayName||'User', email: currentUser.email||'', photoURL: myProfile.photoURL||currentUser.photoURL||'', text:t, likedBy:[], createdAt: serverTimestamp() };
     if (replyToId) payload.replyToId = replyToId;
-    try { await addDoc(collection(db, "posts", postId, "comments"), payload); }
-    catch (e) { alert('কমেন্ট এরর: ' + e.message); }
+    try { await addDoc(collection(db, "posts", postId, "comments"), payload); } catch(e){ alert('কমেন্ট এরর: '+e.message); }
   }
 
   function buildCommentRow(postId, commentId, d, isReply) {
-    const isOwner = currentUser && d.uid === currentUser.uid;
-    const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
     const row = document.createElement('div');
     row.className = 'commentRow';
-
     row.innerHTML = `
-      <img src="${d.photoURL || ''}">
+      <img src="${d.photoURL||''}">
       <div style="flex:1;">
         <div class="commentBody">
-          <div class="cName">${escapeHtml(d.name)}</div>
-          <div class="cText">${escapeHtml(d.text)}</div>
+          <div class="cName">${escape(d.name)}</div>
+          <div class="cText">${escape(d.text)}</div>
         </div>
         <div class="commentMeta">
           <span>${timeAgo(d.createdAt)}</span>
-          <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
           <button class="cCopyBtn">কপি</button>
-          ${!isReply ? '<button class="cReplyBtn">উত্তর দিন</button>' : ''}
-          ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
-          ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
+          ${!isReply ? '<button class="cReplyBtn">উত্তর</button>' : ''}
         </div>
-        ${!isReply ? `
-        <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
-          <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
-          <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
-        </div>
-        <div class="repliesList"></div>` : ''}
+        ${!isReply ? `<div class="replyForm" style="display:none; gap:6px; margin-top:6px;"><textarea class="replyInput" rows="1" placeholder="উত্তর..." style="flex:1; background:#0d1117; border:1px solid #262c36; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea><button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 12px;">পাঠান</button></div><div class="repliesList"></div>` : ''}
       </div>
     `;
-
-    row.querySelector('.cLikeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const ref2 = doc(db, "posts", postId, "comments", commentId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+    row.querySelector('.cCopyBtn').addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(d.text||''); } catch(e){}
     });
-
-    row.querySelector('.cCopyBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
-    });
-
-    const editBtn = row.querySelector('.cEditBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
-      });
-    }
-
-    const deleteBtn = row.querySelector('.cDeleteBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', async () => {
-        if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
-        try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
-        catch (e) { alert('এরর: ' + e.message); }
-      });
-    }
-
     const replyBtn = row.querySelector('.cReplyBtn');
-    if (replyBtn) {
-      const replyForm = row.querySelector('.replyForm');
-      replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
-      });
-      row.querySelector('.replySubmitBtn').addEventListener('click', () => {
+    if(replyBtn){
+      const form = row.querySelector('.replyForm');
+      replyBtn.addEventListener('click', ()=>{ form.style.display = form.style.display==='none' ? 'flex' : 'none'; });
+      row.querySelector('.replySubmitBtn').addEventListener('click', ()=>{
         const input = row.querySelector('.replyInput');
         postComment(postId, input.value, commentId, row.closest('.postCard'));
-        input.value = '';
-        replyForm.style.display = 'none';
+        input.value=''; form.style.display='none';
       });
     }
-
     return row;
   }
 
-  // ---- অথ স্টেট ----
-  onAuthStateChanged(auth, async (user) => {
+  // ---------- এডিট ----------
+  editProfileBtn.addEventListener('click', ()=>{
+    editBio.value = myProfile.bio||'';
+    editGender.value = myProfile.gender||'';
+    editBirthday.value = myProfile.birthday||'';
+    selectedCoverColor = myProfile.coverColor||'#4285F4';
+    document.querySelectorAll('.coverSwatch').forEach(s => s.classList.toggle('selected', s.style.background===selectedCoverColor || s.style.background===hexToRgb(selectedCoverColor)));
+    editStatus.textContent='';
+    editOverlay.classList.add('open');
+  });
+  const hexToRgb = h => { const d=document.createElement('div'); d.style.color=h; document.body.appendChild(d); const c=getComputedStyle(d).color; document.body.removeChild(d); return c; };
+  editCancelBtn.addEventListener('click', ()=>editOverlay.classList.remove('open'));
+  editSaveBtn.addEventListener('click', async ()=>{
+    if(!currentUser) return;
+    editSaveBtn.disabled=true; editStatus.textContent='সেভ হচ্ছে...';
+    try {
+      const data = { bio: editBio.value.trim(), gender: editGender.value, birthday: editBirthday.value, coverColor: selectedCoverColor };
+      await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
+      myProfile = { ...myProfile, ...data };
+      renderProfile();
+      editStatus.textContent='✅ সেভ হয়েছে!';
+      setTimeout(()=>editOverlay.classList.remove('open'), 700);
+    } catch(e){ editStatus.style.color='#f87171'; editStatus.textContent='এরর: '+e.message; }
+    editSaveBtn.disabled=false;
+  });
+
+  // ---------- অথ ----------
+  onAuthStateChanged(auth, async user => {
     currentUser = user;
-    if (user) {
-      loginScreen.style.display = 'none';
-      appScreen.style.display = 'block';
+    if(user){
+      loginScreen.style.display='none'; appScreen.style.display='block';
       await ensureUserProfile(user);
       renderProfile();
       loadMyPosts();
     } else {
-      appScreen.style.display = 'none';
-      loginScreen.style.display = 'flex';
-      loginBtn.disabled = false;
-      loginStatus.textContent = '';
+      appScreen.style.display='none'; loginScreen.style.display='flex';
+      loginBtn.disabled=false; loginStatus.textContent='';
     }
   });
+
+  loginBtn.addEventListener('click', async ()=>{
+    loginBtn.disabled=true; loginStatus.textContent='লগইন হচ্ছে...';
+    try { await signInWithPopup(auth, provider); } catch(e){ loginStatus.textContent='এরর: '+e.message; loginBtn.disabled=false; }
+  });
+  logoutBtn.addEventListener('click', async ()=>{ await signOut(auth); });
+  document.getElementById('backBtn').addEventListener('click', ()=> location.href='index.html');
 </script>
 </body>
 </html>
