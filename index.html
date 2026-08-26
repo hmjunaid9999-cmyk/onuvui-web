@@ -7,14 +7,17 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --primary: #4285F4;
-    --bg: #0d1117;
-    --card: #161b22;
-    --text: #ffffff;
-    --max-w: 640px;
+    --primary-color: #4285F4;
+    --bg-color: #0d1117;
+    --card-color: #161b22;
+    --text-color: #ffffff;
+    --max-width: 640px;
+    --composer-height: 100px;
+    --poster-height: 180px;
+    --post-buttons-justify: space-evenly;
   }
-  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
+
   #loginScreen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: 100vh; padding: 24px; text-align: center;
@@ -24,26 +27,30 @@
   #loginScreen p { color: #9ca3af; font-size: 14px; margin-bottom: 28px; }
   #googleLoginBtn {
     display: flex; align-items: center; gap: 10px;
-    background: var(--primary); color: #fff; border: none;
+    background: var(--primary-color); color: #fff; border: none;
     padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
   }
-  #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; }
-  
+  #googleLoginBtn:disabled { opacity: 0.6; }
+  #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; min-height: 18px; }
+
   #appScreen { display: none; }
-  
+
   #siteHeader {
-    position: relative; display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px; background: var(--card); border-bottom: 1px solid #262c36;
+    position: relative;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
   }
-  #siteHeader img { width: 38px; height: 38px; border-radius: 10px; }
+  #siteHeader img { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; }
   #siteHeader h1 { font-size: 19px; font-weight: bold; }
-  #sidebarToggleBtn, #logoutBtn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #fff; cursor: pointer;
+  #sidebarToggleBtn {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px;
   }
-  #sidebarToggleBtn { left: 14px; font-size: 22px; padding: 4px 8px; }
-  #logoutBtn { right: 14px; background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px; }
-  
+  #logoutBtn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
+  }
+
   #noticeBar {
     background: #1c2128; overflow: hidden; white-space: nowrap; padding: 8px 0;
     border-bottom: 1px solid #262c36;
@@ -54,45 +61,48 @@
     font-size: 13px; color: #facc15;
   }
   @keyframes scrollNotice { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-  
+
   #menuGrid {
     display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px;
-    background: var(--card); border-bottom: 1px solid #262c36;
+    background: var(--card-color); border-bottom: 1px solid #262c36;
   }
-  #menuGrid a { background: var(--primary); color: #fff; text-decoration: none; font-size: 12px; padding: 7px 12px; border-radius: 14px; }
-  
-  main { padding: 16px; max-width: var(--max-w); margin: 0 auto; }
-  
-  #composer { background: var(--card); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 16px; }
+  #menuGrid a { background: var(--primary-color); color: #fff; text-decoration: none; font-size: 12px; padding: 7px 12px; border-radius: 14px; }
+
+  main { padding: 16px; max-width: var(--max-width); margin: 0 auto; }
+
+  /* ---- পোস্ট কম্পোজার ---- */
+  #composer { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 16px; }
   #composerTabs { display: flex; gap: 6px; margin-bottom: 10px; }
   #composerTabs button {
     background: #21262d; color: #9ca3af; border: none; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer;
   }
-  #composerTabs button.active { background: var(--primary); color: #fff; }
+  #composerTabs button.active { background: var(--primary-color); color: #fff; }
   #composerText {
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
-    padding: 10px; border-radius: 10px; font-size: 14px; min-height: 80px; resize: vertical;
+    padding: 10px; border-radius: 10px; font-size: 14px; min-height: var(--composer-height); resize: vertical; font-family: inherit;
   }
   #posterColors { display: none; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .posterSwatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
   .posterSwatch.selected { border-color: #fff; }
   #posterPreview {
-    display: none; margin-top: 10px; border-radius: 12px; padding: 40px 16px;
-    text-align: center; font-size: 18px; font-weight: bold; color: #fff; min-height: 150px;
+    display: none; margin-top: 10px; border-radius: 12px; padding: 50px 16px;
+    text-align: center; font-size: 18px; font-weight: bold; color: #fff; min-height: var(--poster-height);
     align-items: center; justify-content: center;
   }
   #submitPostBtn {
-    margin-top: 10px; width: 100%; background: var(--primary); color: #fff; border: none;
+    margin-top: 10px; width: 100%; background: var(--primary-color); color: #fff; border: none;
     padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer;
   }
   #submitPostBtn:disabled { opacity: 0.6; }
-  
+
+  /* ---- সার্চ বার ---- */
   #searchBar {
-    width: 100%; background: var(--card); border: 1px solid #262c36; color: #fff;
+    width: 100%; background: var(--card-color); border: 1px solid #262c36; color: #fff;
     padding: 10px 14px; border-radius: 20px; font-size: 14px; margin-bottom: 16px;
   }
-  
-  .postCard { background: var(--card); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+
+  /* ---- পোস্ট ফিড ---- */
+  .postCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
   .postHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: relative; }
   .postHeader img.avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; }
   .postHeader .pName { font-size: 13px; font-weight: bold; }
@@ -110,730 +120,787 @@
   }
   .postMenuDropdown button:hover { background: #30363d; }
   .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+  .postPhoto { max-width: 100%; border-radius: 10px; margin-bottom: 8px; }
   .postPoster {
     border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
-    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: 150px;
+    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: var(--poster-height);
     display: flex; align-items: center; justify-content: center; white-space: pre-wrap;
   }
-  .postButtons { display: flex; gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; flex-wrap: wrap; }
+  .postButtons { display: flex; justify-content: var(--post-buttons-justify); gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
   .postButtons button {
     background: #21262d; color: #c9d1d9; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; cursor: pointer;
   }
   .postButtons button.liked { color: #f87171; }
   .postStatus { font-size: 11px; color: #4ade80; margin-top: 6px; min-height: 14px; }
-  
+
+  /* ---- কমেন্ট সেকশন ---- */
   .commentsWrap { display: none; margin-top: 10px; border-top: 1px solid #262c36; padding-top: 10px; }
   .commentForm { display: flex; gap: 8px; margin-bottom: 10px; }
   .commentForm textarea {
     flex: 1; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 8px 10px;
-    border-radius: 10px; font-size: 13px; resize: vertical; min-height: 36px;
+    border-radius: 10px; font-size: 13px; resize: vertical; min-height: 36px; font-family: inherit;
   }
-  .commentForm button { background: var(--primary); color: #fff; border: none; padding: 0 14px; border-radius: 10px; font-size: 12px; cursor: pointer; }
+  .commentForm button { background: var(--primary-color); color: #fff; border: none; padding: 0 14px; border-radius: 10px; font-size: 12px; }
   .commentRow { display: flex; gap: 8px; margin-bottom: 10px; }
   .commentRow img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
-  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; flex: 1; }
+  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; }
   .commentBody .cName { font-size: 12px; font-weight: bold; }
   .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
   .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
   .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
   .repliesList { margin-left: 36px; }
-  
+
   #loadMoreBtn {
-    display: block; width: 100%; background: var(--card); color: #fff; border: 1px solid #262c36;
+    display: block; width: 100%; background: var(--card-color); color: #fff; border: 1px solid #262c36;
     padding: 10px; border-radius: 12px; font-size: 13px; margin-top: 10px; cursor: pointer;
   }
   #loadMoreBtn:disabled { opacity: 0.5; }
-  
+
   #footerSection { padding: 12px 16px; margin-top: 8px; border-top: 1px solid #262c36; text-align: center; }
   #footerSiteName { font-size: 16px; font-weight: bold; margin-bottom: 12px; opacity: 0.9; }
   #footerGrid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   #footerGrid a { background: #262c36; color: #fff; text-decoration: none; font-size: 12px; padding: 7px 12px; border-radius: 14px; }
-  
+
+  #exitToast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: #21262d; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
+  }
+
   #sidebarOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; }
   #sidebarOverlay.open { display: block; }
   #sidebarDrawer {
     position: fixed; top: 0; left: -260px; width: 260px; height: 100%;
-    background: var(--card); z-index: 101; transition: left 0.25s ease; padding: 18px 14px; overflow-y: auto;
+    background: var(--card-color); z-index: 101; transition: left 0.25s ease; padding: 18px 14px; overflow-y: auto;
   }
   #sidebarDrawer.open { left: 0; }
   #sidebarDrawer .drawerHeader { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   #sidebarCloseBtn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
   #sidebarGrid { display: flex; flex-direction: column; gap: 8px; }
   #sidebarGrid a { display: block; background: #0d1117; color: #fff; text-decoration: none; font-size: 13px; padding: 10px 12px; border-radius: 10px; border: 1px solid #262c36; }
-  
-  #exitToast {
-    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-    background: #21262d; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
-  }
-  
-  @media (max-width: 480px) {
-    .postButtons { gap: 4px; }
-    .postButtons button { font-size: 10px; padding: 4px 8px; }
-  }
 </style>
 </head>
 <body>
 
-<div id="loginScreen">
-  <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
-  <h1>Onuvuti App</h1>
-  <p>চালিয়ে যেতে Google দিয়ে লগইন করুন</p>
-  <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
-  <div id="loginStatus"></div>
-</div>
-
-<div id="appScreen">
-  <div id="sidebarOverlay"></div>
-  <div id="sidebarDrawer">
-    <div class="drawerHeader"><strong>মেনু</strong><button id="sidebarCloseBtn">✕</button></div>
-    <div id="sidebarGrid"></div>
+  <div id="loginScreen">
+    <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
+    <h1>Onuvuti App</h1>
+    <p>চালিয়ে যেতে Google দিয়ে লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginStatus"></div>
   </div>
 
-  <div id="siteHeader">
-    <button id="sidebarToggleBtn">☰</button>
-    <img id="siteLogo" src="" alt="">
-    <h1 id="siteName">Onuvuti</h1>
-    <button id="logoutBtn">লগ আউট</button>
-  </div>
+  <div id="appScreen">
 
-  <div id="noticeBar"><span id="noticeText"></span></div>
-  <div id="menuGrid"></div>
-
-  <main>
-    <div id="composer">
-      <div id="composerTabs">
-        <button class="active" data-mode="text">📝 টেক্সট</button>
-        <button data-mode="poster">🎨 পোস্টার</button>
-      </div>
-      <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
-      <div id="posterColors"></div>
-      <div id="posterPreview"></div>
-      <button id="submitPostBtn">পোস্ট করুন</button>
-      <div class="postStatus" id="composerStatus"></div>
+    <div id="sidebarOverlay"></div>
+    <div id="sidebarDrawer">
+      <div class="drawerHeader"><strong>মেনু</strong><button id="sidebarCloseBtn">✕</button></div>
+      <div id="sidebarGrid"></div>
     </div>
 
-    <input type="text" id="searchBar" placeholder="🔍 পোস্ট খুঁজুন...">
-    <div id="postsList"></div>
-    <button id="loadMoreBtn" style="display:none;">আরও পোস্ট দেখুন</button>
-  </main>
+    <div id="siteHeader">
+      <button id="sidebarToggleBtn">☰</button>
+      <img id="siteLogo" src="" alt="">
+      <h1 id="siteName">Onuvuti</h1>
+      <button id="logoutBtn">লগ আউট</button>
+    </div>
 
-  <div id="footerSection">
-    <div id="footerSiteName"></div>
-    <div id="footerGrid"></div>
+    <div id="noticeBar"><span id="noticeText"></span></div>
+    <div id="menuGrid"></div>
+
+    <main>
+      <!-- ---- পোস্ট কম্পোজার ---- -->
+      <div id="composer">
+        <div id="composerTabs">
+          <button class="active" data-mode="text">📝 টেক্সট</button>
+          <button data-mode="poster">🎨 পোস্টার</button>
+        </div>
+        <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
+
+        <div id="posterColors"></div>
+        <div id="posterPreview"></div>
+
+        <button id="submitPostBtn">পোস্ট করুন</button>
+        <div class="postStatus" id="composerStatus"></div>
+      </div>
+
+      <!-- ---- সার্চ ---- -->
+      <input type="text" id="searchBar" placeholder="🔍 পোস্ট খুঁজুন...">
+
+      <!-- ---- পোস্ট ফিড ---- -->
+      <div id="postsList"></div>
+      <button id="loadMoreBtn" style="display:none;">আরও পোস্ট দেখুন</button>
+    </main>
+
+    <div id="footerSection">
+      <div id="footerSiteName"></div>
+      <div id="footerGrid"></div>
+    </div>
   </div>
-</div>
 
-<div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+  <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import {
-  getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc,
-  query, orderBy, limit, startAfter, getDocs, serverTimestamp,
-  arrayUnion, arrayRemove, writeBatch
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
-  authDomain: "onuvuti-5c9e3.firebaseapp.com",
-  projectId: "onuvuti-5c9e3",
-  storageBucket: "onuvuti-5c9e3.firebasestorage.app",
-  messagingSenderId: "846713879232",
-  appId: "1:846713879232:web:d87ae40431210088df8b25",
-  measurementId: "G-WJ8N8XLPSZ"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-let currentUser = null;
-let allPosts = [];
-let lastVisible = null;
-let postsPerPage = 5;
-let composerMode = 'text';
-let selectedColor = '#4285F4';
-let commentListeners = {};
-let focusedCards = [];
-let loadMoreBtnPrevDisplay = '';
-let backHandlerAttached = false;
-let backPressCount = 0;
-let backPressTimer = null;
-const DEFAULT_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
-
-const $ = id => document.getElementById(id);
-const loginScreen = $('loginScreen');
-const appScreen = $('appScreen');
-const loginBtn = $('googleLoginBtn');
-const loginStatus = $('loginStatus');
-const logoutBtn = $('logoutBtn');
-const postsList = $('postsList');
-const loadMoreBtn = $('loadMoreBtn');
-const searchBar = $('searchBar');
-const composerText = $('composerText');
-const submitBtn = $('submitPostBtn');
-const composerStatus = $('composerStatus');
-const posterColors = $('posterColors');
-const posterPreview = $('posterPreview');
-const sidebarDrawer = $('sidebarDrawer');
-const sidebarOverlay = $('sidebarOverlay');
-const exitToast = $('exitToast');
-
-// ========== SETTINGS ==========
-function buildSwatches(colors = DEFAULT_COLORS) {
-  posterColors.innerHTML = '';
-  colors.forEach((c, i) => {
-    const el = document.createElement('div');
-    el.className = 'posterSwatch' + (i === 0 ? ' selected' : '');
-    el.style.background = c;
-    el.onclick = () => {
-      selectedColor = c;
-      document.querySelectorAll('.posterSwatch').forEach(s => s.classList.remove('selected'));
-      el.classList.add('selected');
-      updatePreview();
-    };
-    posterColors.appendChild(el);
-  });
-  selectedColor = colors[0] || '#4285F4';
-}
-buildSwatches();
-
-function updatePreview() {
-  posterPreview.style.background = selectedColor;
-  posterPreview.textContent = composerText.value || 'পোস্টারের লেখা এখানে দেখাবে';
-}
-
-function renderLinks(container, items = []) {
-  container.innerHTML = '';
-  items.forEach(item => {
-    const a = document.createElement('a');
-    a.textContent = item.label || '';
-    a.href = item.url || '#';
-    container.appendChild(a);
-  });
-}
-
-function applySettings(s) {
-  if (!s) return;
-  const root = document.documentElement.style;
-  if (s.primaryColor) root.setProperty('--primary', s.primaryColor);
-  if (s.bgColor) root.setProperty('--bg', s.bgColor);
-  if (s.cardColor) root.setProperty('--card', s.cardColor);
-  if (s.textColor) root.setProperty('--text', s.textColor);
-  if (s.maxWidth) root.setProperty('--max-w', s.maxWidth + 'px');
-  if (s.posterColors) buildSwatches(s.posterColors);
-  if (s.logoUrl) $('siteLogo').src = s.logoUrl;
-  if (s.siteName) { $('siteName').textContent = s.siteName; $('footerSiteName').textContent = s.siteName; }
-  if (s.noticeText) $('noticeText').textContent = s.noticeText;
-  if (s.composerPlaceholder) composerText.placeholder = s.composerPlaceholder;
-  renderLinks($('menuGrid'), s.menuItems);
-  renderLinks($('footerGrid'), s.footerItems);
-  renderLinks($('sidebarGrid'), s.sidebarItems);
-  if (s.postsPerPage) postsPerPage = s.postsPerPage;
-}
-
-function listenSettings() {
-  onSnapshot(doc(db, "settings", "site"), snap => {
-    if (snap.exists()) applySettings(snap.data());
-  });
-}
-
-// ========== AUTH ==========
-loginBtn.onclick = async () => {
-  loginBtn.disabled = true;
-  loginStatus.textContent = 'লগইন হচ্ছে...';
-  try { await signInWithPopup(auth, provider); }
-  catch (e) { loginStatus.textContent = 'এরর: ' + e.message; loginBtn.disabled = false; }
-};
-logoutBtn.onclick = () => signOut(auth);
-
-// ========== SIDEBAR ==========
-const toggleSidebar = () => {
-  sidebarDrawer.classList.toggle('open');
-  sidebarOverlay.classList.toggle('open');
-};
-$('sidebarToggleBtn').onclick = toggleSidebar;
-$('sidebarCloseBtn').onclick = toggleSidebar;
-sidebarOverlay.onclick = toggleSidebar;
-
-// ========== COMPOSER ==========
-document.querySelectorAll('#composerTabs button').forEach(btn => {
-  btn.onclick = () => {
-    composerMode = btn.dataset.mode;
-    document.querySelectorAll('#composerTabs button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    posterColors.style.display = composerMode === 'poster' ? 'flex' : 'none';
-    posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
-    if (composerMode === 'poster') updatePreview();
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc,
+    query, orderBy, limit, startAfter, getDocs, getDoc, setDoc,
+    serverTimestamp, arrayUnion, arrayRemove
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:d87ae40431210088df8b25",
+    measurementId: "G-WJ8N8XLPSZ"
   };
-});
-composerText.oninput = () => { if (composerMode === 'poster') updatePreview(); };
 
-submitBtn.onclick = async () => {
-  if (!currentUser) { composerStatus.textContent = 'লগইন করুন'; return; }
-  const text = composerText.value.trim();
-  if (!text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
-  submitBtn.disabled = true;
-  composerStatus.textContent = 'পোস্ট হচ্ছে...';
-  try {
-    await addDoc(collection(db, "posts"), {
-      authorUid: currentUser.uid,
-      authorName: currentUser.displayName || 'User',
-      authorEmail: currentUser.email || '',
-      authorPhoto: currentUser.photoURL || '',
-      type: composerMode,
-      text: text,
-      posterColor: composerMode === 'poster' ? selectedColor : null,
-      likedBy: [],
-      commentCount: 0,
-      createdAt: serverTimestamp()
-    });
-    composerText.value = '';
-    composerStatus.textContent = '✅ পোস্ট হয়েছে!';
-    setTimeout(() => composerStatus.textContent = '', 2000);
-    resetFeed();
-  } catch (e) { composerStatus.textContent = 'এরর: ' + e.message; }
-  submitBtn.disabled = false;
-};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-// ========== TIME ==========
-function timeAgo(ts) {
-  if (!ts?.toDate) return '';
-  const diff = Date.now() - ts.toDate().getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return 'এই মাত্র';
-  if (m < 60) return m + ' মিনিট আগে';
-  const h = Math.floor(m / 60);
-  if (h < 24) return h + ' ঘণ্টা আগে';
-  return Math.floor(h / 24) + ' দিন আগে';
-}
+  let currentUser = null;
+  let postsPerPage = 5;
+  let lastVisibleDoc = null;
+  let allLoadedPosts = [];
+  let composerMode = 'text';
+  let selectedPosterColor = '#4285F4';
+  let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
+  let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
+  const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
+  let openCommentSections = [];
 
-function esc(str) { return (str || '').replace(/</g, '&lt;'); }
-
-// ========== COMMENT SYSTEM ==========
-async function deletePostWithComments(postId) {
-  const snap = await getDocs(collection(db, "posts", postId, "comments"));
-  const batch = writeBatch(db);
-  snap.forEach(d => batch.delete(d.ref));
-  batch.delete(doc(db, "posts", postId));
-  await batch.commit();
-}
-
-function renderComment(postId, commentId, data, depth = 0, card) {
-  const isOwner = currentUser && data.uid === currentUser.uid;
-  const liked = currentUser && (data.likedBy || []).includes(currentUser.uid);
-  const indent = Math.min(depth, 4) * 24;
-  
-  const row = document.createElement('div');
-  row.className = 'commentRow';
-  row.style.marginLeft = indent + 'px';
-  
-  row.innerHTML = `
-    <img src="${data.photoURL || ''}">
-    <div style="flex:1;">
-      <div class="commentBody">
-        <div class="cName">${esc(data.name)}</div>
-        <div class="cText">${esc(data.text)}</div>
-      </div>
-      <div class="commentMeta">
-        <span>${timeAgo(data.createdAt)}</span>
-        <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(data.likedBy || []).length}</span></button>
-        <button class="cCopyBtn">কপি</button>
-        <button class="cReplyBtn">উত্তর দিন</button>
-        ${isOwner ? `<button class="cEditBtn">এডিট</button><button class="cDeleteBtn">ডিলিট</button>` : ''}
-      </div>
-      <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
-        <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
-        <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px; cursor:pointer;">পাঠান</button>
-      </div>
-      <div class="repliesList"></div>
-    </div>
-  `;
-  
-  row.querySelector('.cLikeBtn').onclick = async () => {
-    if (!currentUser) return;
-    const ref = doc(db, "posts", postId, "comments", commentId);
-    const nowLiked = (data.likedBy || []).includes(currentUser.uid);
-    await updateDoc(ref, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-  };
-  
-  row.querySelector('.cCopyBtn').onclick = async () => {
-    try { await navigator.clipboard.writeText(`${data.name}: ${data.text}`); } catch(e) {}
-  };
-  
-  const replyForm = row.querySelector('.replyForm');
-  row.querySelector('.cReplyBtn').onclick = () => {
-    replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
-  };
-  row.querySelector('.replySubmitBtn').onclick = async () => {
-    const input = row.querySelector('.replyInput');
-    const text = input.value.trim();
-    if (!text || !currentUser) return;
-    await addDoc(collection(db, "posts", postId, "comments"), {
-      uid: currentUser.uid,
-      name: currentUser.displayName || 'User',
-      email: currentUser.email || '',
-      photoURL: currentUser.photoURL || '',
-      text: text,
-      replyToId: commentId,
-      likedBy: [],
-      createdAt: serverTimestamp()
-    });
-    input.value = '';
-    replyForm.style.display = 'none';
-  };
-  
-  const editBtn = row.querySelector('.cEditBtn');
-  if (editBtn) {
-    editBtn.onclick = () => {
-      const newText = prompt('কমেন্ট এডিট করুন:', data.text || '');
-      if (newText !== null) updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText });
-    };
-  }
-  
-  const delBtn = row.querySelector('.cDeleteBtn');
-  if (delBtn) {
-    delBtn.onclick = async () => {
-      if (!confirm('কমেন্ট ডিলিট?')) return;
-      await deleteDoc(doc(db, "posts", postId, "comments", commentId));
-    };
-  }
-  
-  return row;
-}
-
-function loadComments(postId, card) {
-  if (commentListeners[postId]) {
-    commentListeners[postId]();
-    delete commentListeners[postId];
-  }
-  
-  const listEl = card.querySelector('.commentsListEl');
-  const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
-  
-  commentListeners[postId] = onSnapshot(q, (snap) => {
-    const all = [];
-    snap.forEach(c => all.push({ id: c.id, data: c.data() }));
-    
-    const topLevel = all.filter(c => !c.data.replyToId);
-    const childrenMap = {};
-    all.filter(c => c.data.replyToId).forEach(c => {
-      if (!childrenMap[c.data.replyToId]) childrenMap[c.data.replyToId] = [];
-      childrenMap[c.data.replyToId].push(c);
-    });
-    
-    function renderTree(comments, depth = 0) {
-      const fragment = document.createDocumentFragment();
-      comments.forEach(c => {
-        const row = renderComment(postId, c.id, c.data, depth, card);
-        const replies = childrenMap[c.id] || [];
-        if (replies.length) {
-          row.querySelector('.repliesList').appendChild(renderTree(replies, depth + 1));
-        }
-        fragment.appendChild(row);
-      });
-      return fragment;
-    }
-    
-    listEl.innerHTML = '';
-    listEl.appendChild(renderTree(topLevel));
-    
-    const countEl = card.querySelector('.commentCountEl');
-    if (countEl) countEl.textContent = all.length;
-  });
-}
-
-// ========== FOCUS MANAGEMENT ==========
-function enterFocus(card) {
-  if (focusedCards.length === 0) {
+  // ---- কমেন্ট বক্স খোলা থাকলে বাকি পোস্ট ও "আরও দেখুন" বাটন লুকানো (ফোকাস মোড) ----
+  let loadMoreBtnPrevDisplay = '';
+  function enterCommentFocus(activeCard) {
     postsList.querySelectorAll('.postCard').forEach(c => {
-      if (c !== card) c.style.display = 'none';
+      if (c !== activeCard) c.style.display = 'none';
     });
     loadMoreBtnPrevDisplay = loadMoreBtn.style.display;
     loadMoreBtn.style.display = 'none';
   }
-  focusedCards.push(card);
-}
-
-function exitFocus(card) {
-  focusedCards = focusedCards.filter(c => c !== card);
-  if (focusedCards.length === 0) {
-    postsList.querySelectorAll('.postCard').forEach(c => c.style.display = '');
+  function exitCommentFocus() {
+    postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
     loadMoreBtn.style.display = loadMoreBtnPrevDisplay;
   }
-}
 
-// ========== POST RENDER ==========
-function buildPost(postId, data) {
-  const isOwner = currentUser && data.authorUid === currentUser.uid;
-  const liked = currentUser && (data.likedBy || []).includes(currentUser.uid);
-  const postUrl = location.href.split('#')[0] + '#post-' + postId;
-  
-  const card = document.createElement('div');
-  card.className = 'postCard';
-  card.id = 'post-' + postId;
-  
-  let media = '';
-  if (data.type === 'poster') {
-    media = `<div class="postPoster" style="background:${data.posterColor || '#4285F4'}">${esc(data.text)}</div>`;
-  }
-  
-  card.innerHTML = `
-    <div class="postHeader">
-      <img class="avatar" src="${data.authorPhoto || ''}">
-      <div>
-        <div class="pName">${esc(data.authorName)}</div>
-        <div class="pTime">${timeAgo(data.createdAt)}</div>
-      </div>
-      <div class="postMenuWrap">
-        <button class="postMenuBtn">⋮</button>
-        <div class="postMenuDropdown"></div>
-      </div>
-    </div>
-    ${data.type !== 'poster' && data.text ? `<div class="postText">${esc(data.text)}</div>` : ''}
-    ${media}
-    <div class="postButtons"></div>
-    <div class="postStatus"></div>
-    <div class="commentsWrap">
-      <div class="commentForm">
-        <textarea class="commentInput" rows="1" placeholder="কমেন্ট লিখুন..."></textarea>
-        <button class="commentSubmitBtn">পোস্ট</button>
-      </div>
-      <div class="commentsListEl"></div>
-    </div>
-  `;
-  
-  const status = card.querySelector('.postStatus');
-  const showStatus = msg => { status.textContent = msg; setTimeout(() => status.textContent = '', 2000); };
-  
-  const bottom = card.querySelector('.postButtons');
-  const menu = card.querySelector('.postMenuDropdown');
-  const menuBtn = card.querySelector('.postMenuBtn');
-  
-  const likeBtn = document.createElement('button');
-  likeBtn.className = liked ? 'liked' : '';
-  likeBtn.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(data.likedBy || []).length}</span>)`;
-  likeBtn.onclick = async () => {
-    if (!currentUser) return;
-    const ref = doc(db, "posts", postId);
-    const nowLiked = (data.likedBy || []).includes(currentUser.uid);
-    await updateDoc(ref, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-  };
-  bottom.appendChild(likeBtn);
-  
-  const commentBtn = document.createElement('button');
-  commentBtn.className = 'commentToggleBtn';
-  commentBtn.innerHTML = `💬 কমেন্ট (<span class="commentCountEl">${data.commentCount || 0}</span>)`;
-  let commentsLoaded = false;
-  const commentsWrap = card.querySelector('.commentsWrap');
-  commentBtn.onclick = () => {
-    const show = commentsWrap.style.display !== 'block';
-    commentsWrap.style.display = show ? 'block' : 'none';
-    if (show) {
-      if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
-      enterFocus(card);
-    } else {
-      if (commentListeners[postId]) { commentListeners[postId](); delete commentListeners[postId]; }
-      exitFocus(card);
+
+
+  // ---- এলিমেন্ট রেফারেন্স ----
+  const loginScreen = document.getElementById('loginScreen');
+  const appScreen = document.getElementById('appScreen');
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const loginStatus = document.getElementById('loginStatus');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const siteLogo = document.getElementById('siteLogo');
+  const siteName = document.getElementById('siteName');
+  const noticeText = document.getElementById('noticeText');
+  const menuGrid = document.getElementById('menuGrid');
+  const footerGrid = document.getElementById('footerGrid');
+  const footerSiteName = document.getElementById('footerSiteName');
+  const sidebarGrid = document.getElementById('sidebarGrid');
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+  const sidebarDrawer = document.getElementById('sidebarDrawer');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+  const composerText = document.getElementById('composerText');
+  const posterColorsEl = document.getElementById('posterColors');
+  const posterPreview = document.getElementById('posterPreview');
+  const submitPostBtn = document.getElementById('submitPostBtn');
+  const composerStatus = document.getElementById('composerStatus');
+  const searchBar = document.getElementById('searchBar');
+  const postsList = document.getElementById('postsList');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+  // ---- লগইন/লগআউট ----
+  loginBtn.addEventListener('click', async () => {
+    loginBtn.disabled = true;
+    loginStatus.textContent = 'লগইন হচ্ছে...';
+    try { await signInWithPopup(auth, provider); }
+    catch (e) {
+      console.error(e);
+      loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
+      loginBtn.disabled = false;
     }
-  };
-  bottom.appendChild(commentBtn);
-  
-  const copyBtn = document.createElement('button');
-  copyBtn.textContent = '📋 কপি';
-  copyBtn.onclick = async () => {
-    try { await navigator.clipboard.writeText(data.text || ''); showStatus('কপি হয়েছে ✓'); }
-    catch(e) { showStatus('কপি ব্যর্থ'); }
-  };
-  bottom.appendChild(copyBtn);
-  
-  // Menu
-  const copyLinkBtn = document.createElement('button');
-  copyLinkBtn.textContent = '🔗 লিংক কপি';
-  copyLinkBtn.onclick = async () => {
-    menu.classList.remove('open');
-    try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি ✓'); }
-    catch(e) { showStatus('কপি ব্যর্থ'); }
-  };
-  menu.appendChild(copyLinkBtn);
-  
-  if (isOwner) {
-    const editBtn = document.createElement('button');
-    editBtn.textContent = '✏️ এডিট';
-    editBtn.onclick = () => {
-      menu.classList.remove('open');
-      const newText = prompt('পোস্ট এডিট করুন:', data.text || '');
-      if (newText !== null) updateDoc(doc(db, "posts", postId), { text: newText });
-    };
-    menu.appendChild(editBtn);
-    
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '🗑️ ডিলিট';
-    delBtn.onclick = async () => {
-      menu.classList.remove('open');
-      if (!confirm('পোস্ট ডিলিট?')) return;
-      await deletePostWithComments(postId);
-      allPosts = allPosts.filter(p => p.id !== postId);
-      renderPosts();
-    };
-    menu.appendChild(delBtn);
-  }
-  
-  menuBtn.onclick = (e) => {
-    e.stopPropagation();
-    document.querySelectorAll('.postMenuDropdown.open').forEach(el => {
-      if (el !== menu) el.classList.remove('open');
+  });
+  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+
+  // ---- সাইডবার ----
+  function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); }
+  function closeSidebar() { sidebarDrawer.classList.remove('open'); sidebarOverlay.classList.remove('open'); }
+  sidebarToggleBtn.addEventListener('click', openSidebar);
+  sidebarCloseBtn.addEventListener('click', closeSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+
+  // ---- থিম সেটিংস প্রয়োগ ----
+  function renderLinkButtons(container, items) {
+    container.innerHTML = '';
+    (items || []).forEach(item => {
+      if (!item || !item.label) return;
+      const a = document.createElement('a');
+      a.textContent = item.label;
+      a.href = item.url || '#';
+      container.appendChild(a);
     });
-    menu.classList.toggle('open');
-  };
-  document.addEventListener('click', () => menu.classList.remove('open'));
-  
-  // Comment submit
-  card.querySelector('.commentSubmitBtn').onclick = () => {
-    const input = card.querySelector('.commentInput');
-    const text = input.value.trim();
-    if (!text || !currentUser) return;
-    addDoc(collection(db, "posts", postId, "comments"), {
+  }
+
+  function applySettings(s) {
+    if (!s) return;
+    const root = document.documentElement.style;
+    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
+    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
+    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
+    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    if (s.maxWidth) root.setProperty('--max-width', s.maxWidth + 'px');
+    if (s.composerHeight) root.setProperty('--composer-height', s.composerHeight + 'px');
+    if (s.posterHeight) root.setProperty('--poster-height', s.posterHeight + 'px');
+    if (s.postButtonsJustify) root.setProperty('--post-buttons-justify', s.postButtonsJustify);
+
+    if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
+    if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+    if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
+    if (allLoadedPosts.length) renderPosts();
+    siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
+    siteName.textContent = s.siteName || 'Onuvuti';
+    footerSiteName.textContent = s.siteName || 'Onuvuti';
+    noticeText.textContent = s.noticeText || '';
+    composerText.placeholder = s.composerPlaceholder || 'আপনার মনে কী চলছে?';
+    posterPlaceholderText = s.posterPlaceholder || 'পোস্টারের লেখা এখানে দেখাবে';
+    renderLinkButtons(menuGrid, s.menuItems);
+    renderLinkButtons(footerGrid, s.footerItems);
+    renderLinkButtons(sidebarGrid, s.sidebarItems);
+    postsPerPage = s.postsPerPage || 5;
+  }
+
+  function listenSettings() {
+    onSnapshot(doc(db, "settings", "site"), (snap) => {
+      if (snap.exists()) applySettings(snap.data());
+    });
+  }
+
+  // ---- কম্পোজার: মোড পরিবর্তন ----
+  function buildPosterSwatches(colors) {
+    posterColorsEl.innerHTML = '';
+    (colors && colors.length ? colors : DEFAULT_POSTER_COLORS).forEach((color, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'posterSwatch' + (i === 0 ? ' selected' : '');
+      sw.style.background = color;
+      sw.addEventListener('click', () => {
+        selectedPosterColor = color;
+        document.querySelectorAll('.posterSwatch').forEach(s => s.classList.remove('selected'));
+        sw.classList.add('selected');
+        updatePosterPreview();
+      });
+      posterColorsEl.appendChild(sw);
+    });
+    selectedPosterColor = (colors && colors.length ? colors : DEFAULT_POSTER_COLORS)[0];
+  }
+  buildPosterSwatches(DEFAULT_POSTER_COLORS);
+
+  document.querySelectorAll('#composerTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      composerMode = btn.getAttribute('data-mode');
+      document.querySelectorAll('#composerTabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
+      posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
+      if (composerMode === 'poster') updatePosterPreview();
+    });
+  });
+
+  composerText.addEventListener('input', () => {
+    if (composerMode === 'poster') updatePosterPreview();
+  });
+
+  function updatePosterPreview() {
+    posterPreview.style.background = selectedPosterColor;
+    posterPreview.textContent = composerText.value || posterPlaceholderText;
+  }
+
+  // ---- পোস্ট সাবমিট ----
+  submitPostBtn.addEventListener('click', async () => {
+    if (!currentUser) { composerStatus.textContent = 'লগইন করুন'; return; }
+    const text = composerText.value.trim();
+
+    if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
+    if (composerMode === 'poster' && !text) { composerStatus.textContent = 'পোস্টারের জন্য লেখা দিন'; return; }
+
+    submitPostBtn.disabled = true;
+    composerStatus.textContent = 'পোস্ট হচ্ছে...';
+
+    try {
+      const postData = {
+        authorUid: currentUser.uid,
+        authorName: currentUser.displayName || 'User',
+        authorEmail: currentUser.email || '',
+        authorPhoto: currentUser.photoURL || '',
+        type: composerMode,
+        text: text,
+        posterColor: composerMode === 'poster' ? selectedPosterColor : null,
+        likedBy: [],
+        commentCount: 0,
+        createdAt: serverTimestamp()
+      };
+
+      await addDoc(collection(db, "posts"), postData);
+
+      composerText.value = '';
+      composerStatus.textContent = '✅ পোস্ট হয়েছে!';
+      setTimeout(() => { composerStatus.textContent = ''; }, 2000);
+      resetFeed();
+    } catch (e) {
+      console.error(e);
+      composerStatus.textContent = 'এরর: ' + e.message;
+    }
+    submitPostBtn.disabled = false;
+  });
+
+  // ---- সময় দেখানো ----
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  function escapeHtml(str) {
+    return (str || '').replace(/</g, '&lt;');
+  }
+
+  // ---- পোস্ট ফিড লোড (পেজিনেশন সহ) ----
+  async function loadPosts(isFirstLoad) {
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = 'লোড হচ্ছে...';
+
+    let q;
+    if (isFirstLoad || !lastVisibleDoc) {
+      q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(postsPerPage));
+    } else {
+      q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastVisibleDoc), limit(postsPerPage));
+    }
+
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      loadMoreBtn.style.display = 'none';
+      loadMoreBtn.disabled = false;
+      return;
+    }
+    lastVisibleDoc = snap.docs[snap.docs.length - 1];
+
+    snap.forEach(docSnap => {
+      allLoadedPosts.push({ id: docSnap.id, data: docSnap.data() });
+    });
+
+    renderPosts();
+    loadMoreBtn.style.display = snap.docs.length < postsPerPage ? 'none' : 'block';
+    loadMoreBtn.disabled = false;
+    loadMoreBtn.textContent = 'আরও পোস্ট দেখুন';
+  }
+
+  function resetFeed() {
+    allLoadedPosts = [];
+    lastVisibleDoc = null;
+    postsList.innerHTML = '';
+    loadPosts(true);
+  }
+
+  loadMoreBtn.addEventListener('click', () => loadPosts(false));
+
+  searchBar.addEventListener('input', renderPosts);
+
+  function renderPosts() {
+    const searchTerm = searchBar.value.trim().toLowerCase();
+    postsList.innerHTML = '';
+
+    allLoadedPosts
+      .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm))
+      .forEach(p => postsList.appendChild(buildPostCard(p.id, p.data)));
+  }
+
+  function buildPostCard(postId, d) {
+    const isOwner = currentUser && d.authorUid === currentUser.uid;
+    const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
+    const postUrl = location.href.split('#')[0] + '#post-' + postId;
+
+    const card = document.createElement('div');
+    card.className = 'postCard';
+    card.id = 'post-' + postId;
+
+    let mediaHtml = '';
+    if (d.type === 'poster') {
+      mediaHtml = `<div class="postPoster" style="background:${d.posterColor || '#4285F4'}">${escapeHtml(d.text)}</div>`;
+    }
+
+    card.innerHTML = `
+      <div class="postHeader">
+        <img class="avatar" src="${d.authorPhoto || ''}">
+        <div>
+          <div class="pName">${escapeHtml(d.authorName)}</div>
+          <div class="pTime">${timeAgo(d.createdAt)}</div>
+        </div>
+        <div class="postMenuWrap">
+          <button class="postMenuBtn">⋮</button>
+          <div class="postMenuDropdown"></div>
+        </div>
+      </div>
+      ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
+      ${mediaHtml}
+      <div class="postButtons"></div>
+      <div class="postStatus"></div>
+      <div class="commentsWrap">
+        <div class="commentForm">
+          <textarea class="commentInput" rows="1" placeholder="কমেন্ট লিখুন..."></textarea>
+          <button class="commentSubmitBtn">পোস্ট</button>
+        </div>
+        <div class="commentsListEl"></div>
+      </div>
+    `;
+
+    const statusEl = card.querySelector('.postStatus');
+    function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
+
+    const bottomContainer = card.querySelector('.postButtons');
+    const menuContainer = card.querySelector('.postMenuDropdown');
+    const menuBtn0 = card.querySelector('.postMenuBtn');
+
+    // ---- প্রতিটা বাটনের সংজ্ঞা (কোথায় বসবে সেটা settings থেকে ঠিক হবে) ----
+    const buttonDefs = {
+      like: () => {
+        const b = document.createElement('button');
+        b.className = 'likeBtn' + (liked ? ' liked' : '');
+        b.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
+        b.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const postRef = doc(db, "posts", postId);
+          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+          await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+          if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
+          else d.likedBy = [...(d.likedBy || []), currentUser.uid];
+          renderPosts();
+        });
+        return b;
+      },
+      comment: () => {
+        const b = document.createElement('button');
+        b.className = 'commentToggleBtn';
+        b.innerHTML = `💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)`;
+        let commentsLoaded = false;
+        b.addEventListener('click', () => {
+          const show = commentsWrap.style.display !== 'block';
+          commentsWrap.style.display = show ? 'block' : 'none';
+          if (show) {
+            if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+            if (!openCommentSections.includes(commentsWrap)) openCommentSections.push(commentsWrap);
+            enterCommentFocus(card);
+          } else {
+            openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
+            exitCommentFocus();
+          }
+        });
+        return b;
+      },
+      copyText: () => {
+        const b = document.createElement('button');
+        b.className = 'copyTextBtn';
+        b.textContent = '📋 টেক্সট কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      copyLink: () => {
+        const b = document.createElement('button');
+        b.className = 'copyLinkBtn';
+        b.textContent = '🔗 লিংক কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      share: () => {
+        const b = document.createElement('button');
+        b.className = 'shareBtn';
+        b.textContent = '📤 শেয়ার';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (navigator.share) { try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {} }
+          else { try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {} }
+        });
+        return b;
+      },
+      edit: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'editBtn';
+        b.textContent = '✏️ এডিট';
+        b.addEventListener('click', () => {
+          menuContainer.classList.remove('open');
+          const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
+          if (newText === null) return;
+          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => { d.text = newText; renderPosts(); })
+            .catch(e => alert('এরর: ' + e.message));
+        });
+        return b;
+      },
+      delete: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'deleteBtn';
+        b.textContent = '🗑️ ডিলিট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "posts", postId));
+            allLoadedPosts = allLoadedPosts.filter(p => p.id !== postId);
+            renderPosts();
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      }
+    };
+
+    function placeButtons(order, container) {
+      (order || []).forEach(key => {
+        const factory = buttonDefs[key];
+        if (!factory) return;
+        const el = factory();
+        if (el) container.appendChild(el);
+      });
+    }
+
+    placeButtons(buttonOrder.bottom, bottomContainer);
+    placeButtons(buttonOrder.menu, menuContainer);
+
+    // থ্রি-ডট মেনু খোলা/বন্ধ
+    menuBtn0.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuContainer) el.classList.remove('open'); });
+      menuContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuContainer.classList.remove('open'));
+    menuContainer.addEventListener('click', (e) => e.stopPropagation());
+
+    // কমেন্ট বক্স রেফারেন্স (comment বাটনের ফাংশনে ব্যবহৃত হবে)
+    const commentsWrap = card.querySelector('.commentsWrap');
+
+    // কমেন্ট সাবমিট
+    card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
+      const input = card.querySelector('.commentInput');
+      postComment(postId, input.value, null, card);
+      input.value = '';
+    });
+
+    return card;
+  }
+
+  // ---- কমেন্ট লোড ও রেন্ডার ----
+  function loadComments(postId, card) {
+    const listEl = card.querySelector('.commentsListEl');
+    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snap) => {
+      const all = [];
+      snap.forEach(c => all.push({ id: c.id, data: c.data() }));
+      const topLevel = all.filter(c => !c.data.replyToId);
+      const childrenByParent = {};
+      all.filter(c => c.data.replyToId).forEach(c => {
+        if (!childrenByParent[c.data.replyToId]) childrenByParent[c.data.replyToId] = [];
+        childrenByParent[c.data.replyToId].push(c);
+      });
+
+      function renderNode(c, depth) {
+        const row = buildCommentRow(postId, c.id, c.data, depth, card);
+        const repliesListEl = row.querySelector('.repliesList');
+        (childrenByParent[c.id] || []).forEach(child => {
+          repliesListEl.appendChild(renderNode(child, depth + 1));
+        });
+        return row;
+      }
+
+      listEl.innerHTML = '';
+      topLevel.forEach(c => listEl.appendChild(renderNode(c, 0)));
+
+      const cCountEl = card.querySelector('.commentCountEl');
+      if (cCountEl) cCountEl.textContent = all.length;
+      updateDoc(doc(db, "posts", postId), { commentCount: all.length }).catch(() => {});
+    });
+  }
+
+  async function postComment(postId, text, replyToId, card) {
+    if (!currentUser) return;
+    const t = (text || '').trim();
+    if (!t) return;
+    const payload = {
       uid: currentUser.uid,
       name: currentUser.displayName || 'User',
       email: currentUser.email || '',
       photoURL: currentUser.photoURL || '',
-      text: text,
-      replyToId: null,
+      text: t,
       likedBy: [],
       createdAt: serverTimestamp()
+    };
+    if (replyToId) payload.replyToId = replyToId;
+    try { await addDoc(collection(db, "posts", postId, "comments"), payload); }
+    catch (e) { alert('কমেন্ট এরর: ' + e.message); }
+  }
+
+  function buildCommentRow(postId, commentId, d, depth, card) {
+    const isOwner = currentUser && d.uid === currentUser.uid;
+    const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
+    const indent = Math.min(depth, 4) * 24;
+    const row = document.createElement('div');
+    row.className = 'commentRow';
+    row.style.marginLeft = indent + 'px';
+
+    row.innerHTML = `
+      <img src="${d.photoURL || ''}">
+      <div style="flex:1;">
+        <div class="commentBody">
+          <div class="cName">${escapeHtml(d.name)}</div>
+          <div class="cText">${escapeHtml(d.text)}</div>
+        </div>
+        <div class="commentMeta">
+          <span>${timeAgo(d.createdAt)}</span>
+          <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
+          <button class="cCopyBtn">কপি</button>
+          <button class="cReplyBtn">উত্তর দিন</button>
+          ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
+          ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
+        </div>
+        <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
+          <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
+          <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
+        </div>
+        <div class="repliesList"></div>
+      </div>
+    `;
+
+    row.querySelector('.cLikeBtn').addEventListener('click', async () => {
+      if (!currentUser) return;
+      const ref2 = doc(db, "posts", postId, "comments", commentId);
+      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+      await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
     });
-    input.value = '';
-  };
-  
-  return card;
-}
 
-// ========== FEED ==========
-function renderPosts() {
-  const searchTerm = searchBar.value.trim().toLowerCase();
-  postsList.innerHTML = '';
-  const filtered = allPosts.filter(p => 
-    !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm)
-  );
-  filtered.forEach(p => postsList.appendChild(buildPost(p.id, p.data)));
-}
+    row.querySelector('.cCopyBtn').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
+    });
 
-async function loadPosts(isFirstLoad) {
-  loadMoreBtn.disabled = true;
-  loadMoreBtn.textContent = 'লোড হচ্ছে...';
-  
-  let q;
-  if (isFirstLoad || !lastVisible) {
-    q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(postsPerPage));
-  } else {
-    q = query(collection(db, "posts"), orderBy("createdAt", "desc"), startAfter(lastVisible), limit(postsPerPage));
-  }
-  
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    loadMoreBtn.style.display = 'none';
-    loadMoreBtn.disabled = false;
-    return;
-  }
-  lastVisible = snap.docs[snap.docs.length - 1];
-  snap.forEach(d => allPosts.push({ id: d.id, data: d.data() }));
-  renderPosts();
-  loadMoreBtn.style.display = snap.docs.length < postsPerPage ? 'none' : 'block';
-  loadMoreBtn.disabled = false;
-  loadMoreBtn.textContent = 'আরও পোস্ট দেখুন';
-}
-
-function resetFeed() {
-  allPosts = [];
-  lastVisible = null;
-  postsList.innerHTML = '';
-  loadPosts(true);
-}
-
-loadMoreBtn.onclick = () => loadPosts(false);
-searchBar.oninput = renderPosts;
-
-// ========== BACK BUTTON GUARD ==========
-function rearmGuard() {
-  history.pushState({ guard: true }, '', location.href);
-}
-
-function handleBack() {
-  if (sidebarDrawer.classList.contains('open')) {
-    toggleSidebar();
-    rearmGuard();
-    return;
-  }
-  const openMenu = document.querySelector('.postMenuDropdown.open');
-  if (openMenu) {
-    openMenu.classList.remove('open');
-    rearmGuard();
-    return;
-  }
-  if (focusedCards.length > 0) {
-    const card = focusedCards[focusedCards.length - 1];
-    const wrap = card.querySelector('.commentsWrap');
-    if (wrap) {
-      wrap.style.display = 'none';
-      if (commentListeners[card.id.replace('post-', '')]) {
-        commentListeners[card.id.replace('post-', '')]();
-        delete commentListeners[card.id.replace('post-', '')];
-      }
-      exitFocus(card);
+    const editBtn = row.querySelector('.cEditBtn');
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
+        if (newText === null) return;
+        updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
+      });
     }
-    rearmGuard();
-    return;
+
+    const deleteBtn = row.querySelector('.cDeleteBtn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', async () => {
+        if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
+        try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
+        catch (e) { alert('এরর: ' + e.message); }
+      });
+    }
+
+    const replyBtn = row.querySelector('.cReplyBtn');
+    if (replyBtn) {
+      const replyForm = row.querySelector('.replyForm');
+      replyBtn.addEventListener('click', () => {
+        replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
+      });
+      row.querySelector('.replySubmitBtn').addEventListener('click', () => {
+        const input = row.querySelector('.replyInput');
+        postComment(postId, input.value, commentId, card);
+        input.value = '';
+        replyForm.style.display = 'none';
+      });
+    }
+
+    return row;
   }
-  
-  if (backPressCount === 0) {
-    backPressCount = 1;
-    exitToast.style.display = 'block';
+
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+      loginScreen.style.display = 'none';
+      appScreen.style.display = 'block';
+      listenSettings();
+      resetFeed();
+      initBackGuard();
+    } else {
+      appScreen.style.display = 'none';
+      loginScreen.style.display = 'flex';
+      loginBtn.disabled = false;
+      loginStatus.textContent = '';
+    }
+  });
+
+  // ---- Back বাটন গার্ড: মেনু/কমেন্ট খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  let backGuardActive = false;
+  let backPressCount = 0;
+  let backPressTimer = null;
+  const exitToast = document.getElementById('exitToast');
+
+  function rearmGuard() {
+    history.pushState({ guard: true }, '', location.href);
+  }
+
+  function initBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
     rearmGuard();
-    backPressTimer = setTimeout(() => {
-      backPressCount = 0;
+    window.addEventListener('popstate', handleBack);
+  }
+
+  function handleBack() {
+    if (sidebarDrawer.classList.contains('open')) {
+      closeSidebar();
+      rearmGuard();
+      return;
+    }
+    const openMenu = document.querySelector('.postMenuDropdown.open');
+    if (openMenu) {
+      openMenu.classList.remove('open');
+      rearmGuard();
+      return;
+    }
+    if (openCommentSections.length) {
+      const wrap = openCommentSections.pop();
+      wrap.style.display = 'none';
+      exitCommentFocus();
+      rearmGuard();
+      return;
+    }
+
+    if (backPressCount === 0) {
+      backPressCount = 1;
+      exitToast.style.display = 'block';
+      rearmGuard();
+      backPressTimer = setTimeout(() => {
+        backPressCount = 0;
+        exitToast.style.display = 'none';
+      }, 2000);
+    } else {
+      clearTimeout(backPressTimer);
       exitToast.style.display = 'none';
-    }, 2000);
-  } else {
-    clearTimeout(backPressTimer);
-    exitToast.style.display = 'none';
-    backPressCount = 0;
-    // Allow exit
+    }
   }
-}
-
-function initBackGuard() {
-  if (backHandlerAttached) return;
-  backHandlerAttached = true;
-  window.addEventListener('popstate', handleBack);
-  rearmGuard();
-}
-
-// ========== AUTH STATE ==========
-onAuthStateChanged(auth, (user) => {
-  currentUser = user;
-  if (user) {
-    loginScreen.style.display = 'none';
-    appScreen.style.display = 'block';
-    listenSettings();
-    resetFeed();
-    initBackGuard();
-  } else {
-    appScreen.style.display = 'none';
-    loginScreen.style.display = 'flex';
-    loginBtn.disabled = false;
-    loginStatus.textContent = '';
-    // Cleanup comment listeners
-    Object.keys(commentListeners).forEach(key => {
-      commentListeners[key]();
-      delete commentListeners[key];
-    });
-  }
-});
 </script>
 </body>
 </html>
