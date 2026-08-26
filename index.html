@@ -586,7 +586,10 @@
           await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
           if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
           else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-          renderPosts();
+          // ---- শুধু এই বাটনটাই আপডেট, পুরো ফিড পুনর্নির্মাণ না করে (যাতে খোলা কমেন্ট বক্স অক্ষত থাকে) ----
+          const nowLikedState = (d.likedBy || []).includes(currentUser.uid);
+          b.className = 'likeBtn' + (nowLikedState ? ' liked' : '');
+          b.innerHTML = `${nowLikedState ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
         });
         return b;
       },
@@ -651,8 +654,14 @@
           menuContainer.classList.remove('open');
           const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
           if (newText === null) return;
-          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => { d.text = newText; renderPosts(); })
-            .catch(e => alert('এরর: ' + e.message));
+          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
+            d.text = newText;
+            // ---- শুধু এই কার্ডের টেক্সট আপডেট, পুরো ফিড পুনর্নির্মাণ না করে ----
+            const textEl = card.querySelector('.postText, .postTextContent');
+            if (textEl) textEl.textContent = newText;
+            const posterEl = card.querySelector('.postPoster');
+            if (posterEl) posterEl.textContent = newText;
+          }).catch(e => alert('এরর: ' + e.message));
         });
         return b;
       },
@@ -667,7 +676,8 @@
           try {
             await deleteDoc(doc(db, "posts", postId));
             allLoadedPosts = allLoadedPosts.filter(p => p.id !== postId);
-            renderPosts();
+            openCommentSections = openCommentSections.filter(w => w !== card.querySelector('.commentsWrap'));
+            card.remove();
           } catch (e) { alert('এরর: ' + e.message); }
         });
         return b;
