@@ -51,14 +51,19 @@
   .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
 
   .accCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
-  .accName { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
-  .accEmail { font-size: 12px; color: #9ca3af; margin-bottom: 4px; word-break: break-all; }
-  .accUid { font-size: 11px; color: #6b7280; margin-bottom: 12px; word-break: break-all; }
-  .accTabs { display: flex; background: #0d1117; border-radius: 10px; padding: 3px; margin-bottom: 12px; }
-  .accTabBtn { flex: 1; background: transparent; color: #9ca3af; padding: 7px; border-radius: 8px; font-size: 12px; font-weight: normal; }
-  .accTabBtn.active { background: #262c36; color: #fff; font-weight: bold; }
-  .accTabContent.hidden { display: none; }
-  .historyRow { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 12px; }
+  .accName { font-size: 15px; font-weight: bold; margin-bottom: 6px; }
+  .accCopyRow { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .accEmail { font-size: 12px; color: #9ca3af; word-break: break-all; flex: 1; }
+  .accUid { font-size: 11px; color: #6b7280; word-break: break-all; flex: 1; }
+  .copyBtn {
+    background: #21262d; color: #9ca3af; border: 1px solid #30363d; flex-shrink: 0;
+    padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: normal;
+  }
+  .copyBtn.copied { color: #4ade80; border-color: #4ade80; }
+  .accTabs { display: flex; background: #0d1117; border-radius: 10px; padding: 3px; margin-top: 10px; }
+  .accTabBtn { flex: 1; background: transparent; color: #9ca3af; padding: 9px; border-radius: 8px; font-size: 13px; font-weight: normal; }
+
+  .historyRow { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #21262d; font-size: 13px; }
   .historyRow:last-child { border-bottom: none; }
   .historyType { color: #d1d5db; }
   .historyDate { color: #6b7280; font-size: 11px; margin-top: 2px; }
@@ -81,6 +86,38 @@
   .modalActions { display: flex; gap: 10px; margin-top: 12px; }
   .modalActions button { flex: 1; padding: 9px; border-radius: 10px; font-size: 13px; }
   .modalCancelBtn { background: #262c36; color: #d1d5db; }
+
+  /* ফুলস্ক্রিন একাউন্ট ডিটেইল ভিউ (ব্যালেন্স / হিস্ট্রি) */
+  .fullScreenView {
+    position: fixed; inset: 0; background: #0d1117; z-index: 200;
+    display: none; flex-direction: column;
+  }
+  .fullScreenView.show { display: flex; }
+  .fsHeader {
+    display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+    background: #161b22; border-bottom: 1px solid #262c36; flex-shrink: 0;
+  }
+  .fsBackBtn { background: #262c36; color: #fff; padding: 7px 14px; border-radius: 14px; font-size: 13px; }
+  .fsTitleWrap { flex: 1; min-width: 0; }
+  .fsTitle { font-size: 15px; font-weight: bold; display: block; }
+  .fsSubtitle { font-size: 11px; color: #6b7280; display: block; margin-top: 2px; }
+  .fsBody { flex: 1; overflow-y: auto; padding: 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+
+  .balanceBigRow { display: flex; gap: 10px; margin-bottom: 16px; }
+  .balanceBigCard { flex: 1; background: #161b22; border: 1px solid #262c36; border-radius: 14px; padding: 16px 12px; text-align: center; }
+  .balanceBigLabel { font-size: 12px; color: #9ca3af; margin-bottom: 8px; }
+  .balanceBigValue { font-size: 24px; font-weight: bold; color: #4285F4; }
+
+  .historySection { background: #161b22; border: 1px solid #262c36; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+  .historySectionHeader {
+    width: 100%; background: transparent; color: #fff; text-align: left;
+    padding: 16px; font-size: 15px; font-weight: bold; display: flex;
+    justify-content: space-between; align-items: center; border-radius: 0;
+  }
+  .historySectionHeader .chev { transition: transform 0.2s; color: #6b7280; font-weight: normal; }
+  .historySectionHeader.open .chev { transform: rotate(180deg); }
+  .historySectionBody { padding: 0 16px 16px; }
+  .historySectionBody.hidden { display: none; }
 
   .swiperDots { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
   .dot { width: 7px; height: 7px; border-radius: 50%; background: #30363d; cursor: pointer; transition: background 0.2s, transform 0.2s; }
@@ -169,6 +206,17 @@
     </div>
   </div>
 
+  <div class="fullScreenView" id="accountDetailView">
+    <div class="fsHeader">
+      <button class="fsBackBtn" id="fsBackBtn">← ফিরে যান</button>
+      <div class="fsTitleWrap">
+        <span class="fsTitle" id="fsTitle"></span>
+        <span class="fsSubtitle" id="fsSubtitle"></span>
+      </div>
+    </div>
+    <div class="fsBody" id="fsBody"></div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
@@ -214,8 +262,22 @@
     adBalanceAdd: '🪙 বিজ্ঞাপন ব্যালেন্স যোগ হয়েছে',
     videoBalanceAdd: '🎬 ভিডিও ব্যালেন্স যোগ হয়েছে',
     adSpend: '📉 বিজ্ঞাপন থেকে খরচ হয়েছে',
-    adReward: '📈 বিজ্ঞাপন থেকে ইনকাম হয়েছে'
+    adReward: '📈 বিজ্ঞাপন থেকে ইনকাম হয়েছে',
+    videoSpend: '🎬 ভিডিও আপলোডে খরচ হয়েছে'
   };
+  // কোন হিস্ট্রি টাইপ কোন সেকশনে (পেমেন্ট / বিজ্ঞাপন / ভিডিও) দেখাবে তার ম্যাপিং
+  const HISTORY_CATEGORY = {
+    adBalanceAdd: 'payment',
+    videoBalanceAdd: 'payment',
+    adSpend: 'ad',
+    adReward: 'ad',
+    videoSpend: 'video'
+  };
+  const HISTORY_SECTIONS = [
+    { cat: 'payment', label: '💳 পেমেন্ট হিস্ট্রি' },
+    { cat: 'ad', label: '📢 বিজ্ঞাপন হিস্ট্রি' },
+    { cat: 'video', label: '🎬 ভিডিও হিস্ট্রি' }
+  ];
 
   function startAccountsListener() {
     const listEl = document.getElementById('accountsList');
@@ -242,6 +304,27 @@
     renderAccounts(filtered);
   }
 
+  function copyText(text, btnEl) {
+    const done = () => {
+      const original = btnEl.textContent;
+      btnEl.textContent = '✅';
+      btnEl.classList.add('copied');
+      setTimeout(() => { btnEl.textContent = original; btnEl.classList.remove('copied'); }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+    } else {
+      fallbackCopy(text, done);
+    }
+  }
+  function fallbackCopy(text, done) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(); } catch (e) { /* কপি ব্যর্থ হলে চুপচাপ থেমে যাবে */ }
+    document.body.removeChild(ta);
+  }
+
   function renderAccounts(accounts) {
     const listEl = document.getElementById('accountsList');
     if (!accounts.length) { listEl.innerHTML = '<div class="listEmpty">কোনো একাউন্ট পাওয়া যায়নি</div>'; return; }
@@ -249,115 +332,175 @@
     accounts.forEach(({ id, data }) => {
       const card = document.createElement('div');
       card.className = 'accCard';
+      const emailText = data.email || 'ইমেইল নেই';
       card.innerHTML = `
         <div class="accName">${(data.name || 'নাম নেই').replace(/</g, '&lt;')}</div>
-        <div class="accEmail">${data.email ? data.email.replace(/</g, '&lt;') : 'ইমেইল নেই'}</div>
-        <div class="accUid">UID: ${id}</div>
+        <div class="accCopyRow">
+          <span class="accEmail">${emailText.replace(/</g, '&lt;')}</span>
+          ${data.email ? '<button class="copyBtn" type="button">📋</button>' : ''}
+        </div>
+        <div class="accCopyRow">
+          <span class="accUid">UID: ${id}</span>
+          <button class="copyBtn" type="button">📋</button>
+        </div>
         <div class="accTabs">
-          <button class="accTabBtn historyTabBtn">🕘 হিস্ট্রি</button>
-          <button class="accTabBtn balanceTabBtn active">💰 ব্যালেন্স</button>
-        </div>
-        <div class="accTabContent balanceContent">
-          <div class="row"><label>বিজ্ঞাপন ব্যালেন্স</label><input type="number" class="adBalanceInput" value="${Number(data.adBalance || 0)}"></div>
-          <div class="row"><label>ভিডিও ব্যালেন্স</label><input type="number" class="videoBalanceInput" value="${Number(data.videoBalance || 0)}"></div>
-          <button class="sectionSaveBtn saveAccountBtn">💾 সেভ করুন</button>
-          <div class="sectionStatus"></div>
-        </div>
-        <div class="accTabContent historyContent hidden">
-          <div class="historyList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+          <button class="accTabBtn openHistoryBtn">🕘 হিস্ট্রি</button>
+          <button class="accTabBtn openBalanceBtn">💰 ব্যালেন্স</button>
         </div>
       `;
 
-      const historyBtn = card.querySelector('.historyTabBtn');
-      const balanceBtn = card.querySelector('.balanceTabBtn');
-      const historyContent = card.querySelector('.historyContent');
-      const balanceContent = card.querySelector('.balanceContent');
-      let historyLoaded = false;
+      const copyBtns = card.querySelectorAll('.copyBtn');
+      if (data.email) {
+        copyBtns[0].addEventListener('click', () => copyText(data.email, copyBtns[0]));
+        copyBtns[1].addEventListener('click', () => copyText(id, copyBtns[1]));
+      } else {
+        copyBtns[0].addEventListener('click', () => copyText(id, copyBtns[0]));
+      }
 
-      historyBtn.addEventListener('click', () => {
-        historyBtn.classList.add('active');
-        balanceBtn.classList.remove('active');
-        historyContent.classList.remove('hidden');
-        balanceContent.classList.add('hidden');
-        if (!historyLoaded) {
-          historyLoaded = true;
-          loadHistory(id, card.querySelector('.historyList'));
-        }
-      });
-      balanceBtn.addEventListener('click', () => {
-        balanceBtn.classList.add('active');
-        historyBtn.classList.remove('active');
-        balanceContent.classList.remove('hidden');
-        historyContent.classList.add('hidden');
-      });
-
-      card.querySelector('.saveAccountBtn').addEventListener('click', async () => {
-        const adInput = card.querySelector('.adBalanceInput');
-        const videoInput = card.querySelector('.videoBalanceInput');
-        const adVal = Number(adInput.value) || 0;
-        const videoVal = Number(videoInput.value) || 0;
-        const prevAd = Number(data.adBalance || 0);
-        const prevVideo = Number(data.videoBalance || 0);
-        const statusEl = card.querySelector('.sectionStatus');
-        try {
-          await setDoc(doc(db, "users", id), { adBalance: adVal, videoBalance: videoVal }, { merge: true });
-          // ব্যালেন্স যত বদলাবে, ততটুকুর একটা হিস্ট্রি এন্ট্রি সাথে সাথে সেভ হবে
-          const historyWrites = [];
-          if (adVal !== prevAd) {
-            historyWrites.push(addDoc(collection(db, "users", id, "history"), {
-              type: 'adBalanceAdd', amount: adVal - prevAd, createdAt: serverTimestamp()
-            }));
-          }
-          if (videoVal !== prevVideo) {
-            historyWrites.push(addDoc(collection(db, "users", id, "history"), {
-              type: 'videoBalanceAdd', amount: videoVal - prevVideo, createdAt: serverTimestamp()
-            }));
-          }
-          await Promise.all(historyWrites);
-          data.adBalance = adVal;
-          data.videoBalance = videoVal;
-          historyLoaded = false; // পরে হিস্ট্রি ট্যাবে গেলে নতুন এন্ট্রি সহ আবার লোড হবে
-          statusEl.style.color = '#4ade80';
-          statusEl.textContent = '✅ সেভ হয়েছে!';
-          setTimeout(() => { statusEl.textContent = ''; }, 2000);
-        } catch (e) {
-          statusEl.style.color = '#f87171';
-          statusEl.textContent = 'এরর: ' + e.message;
-        }
-      });
+      card.querySelector('.openBalanceBtn').addEventListener('click', () => openBalanceView(id, data));
+      card.querySelector('.openHistoryBtn').addEventListener('click', () => openHistoryView(id, data));
 
       listEl.appendChild(card);
     });
   }
 
-  async function loadHistory(uid, containerEl) {
-    containerEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
-    try {
-      const q = query(collection(db, "users", uid, "history"), orderBy("createdAt", "desc"), limit(5));
-      const snap = await getDocs(q);
-      if (snap.empty) {
-        containerEl.innerHTML = '<div class="listEmpty">কোনো হিস্ট্রি পাওয়া যায়নি</div>';
-        return;
+  // ---- ফুলস্ক্রিন: ব্যালেন্স ----
+  const fsView = document.getElementById('accountDetailView');
+  const fsTitle = document.getElementById('fsTitle');
+  const fsSubtitle = document.getElementById('fsSubtitle');
+  const fsBody = document.getElementById('fsBody');
+
+  function openFsView(name, uid) {
+    fsTitle.textContent = name || 'নাম নেই';
+    fsSubtitle.textContent = 'UID: ' + uid;
+    fsView.classList.add('show');
+  }
+  document.getElementById('fsBackBtn').addEventListener('click', () => {
+    fsView.classList.remove('show');
+    fsBody.innerHTML = '';
+  });
+
+  function openBalanceView(id, data) {
+    openFsView(data.name, id);
+    const adBal = Number(data.adBalance || 0);
+    const videoBal = Number(data.videoBalance || 0);
+    fsBody.innerHTML = `
+      <div class="balanceBigRow">
+        <div class="balanceBigCard">
+          <div class="balanceBigLabel">🪙 বিজ্ঞাপন ব্যালেন্স</div>
+          <div class="balanceBigValue" id="fsAdBalanceBig">${adBal}</div>
+        </div>
+        <div class="balanceBigCard">
+          <div class="balanceBigLabel">🎬 ভিডিও ব্যালেন্স</div>
+          <div class="balanceBigValue" id="fsVideoBalanceBig">${videoBal}</div>
+        </div>
+      </div>
+      <div class="section">
+        <h2>✏️ ব্যালেন্স এডিট করুন</h2>
+        <div class="row"><label>বিজ্ঞাপন ব্যালেন্স</label><input type="number" id="fsAdBalanceInput" value="${adBal}"></div>
+        <div class="row"><label>ভিডিও ব্যালেন্স</label><input type="number" id="fsVideoBalanceInput" value="${videoBal}"></div>
+        <button class="sectionSaveBtn" id="fsSaveBalanceBtn">💾 সেভ করুন</button>
+        <div class="sectionStatus" id="fsBalanceStatus"></div>
+      </div>
+    `;
+    document.getElementById('fsSaveBalanceBtn').addEventListener('click', async () => {
+      const adInput = document.getElementById('fsAdBalanceInput');
+      const videoInput = document.getElementById('fsVideoBalanceInput');
+      const adVal = Number(adInput.value) || 0;
+      const videoVal = Number(videoInput.value) || 0;
+      const prevAd = Number(data.adBalance || 0);
+      const prevVideo = Number(data.videoBalance || 0);
+      const statusEl = document.getElementById('fsBalanceStatus');
+      try {
+        await setDoc(doc(db, "users", id), { adBalance: adVal, videoBalance: videoVal }, { merge: true });
+        const historyWrites = [];
+        if (adVal !== prevAd) {
+          historyWrites.push(addDoc(collection(db, "users", id, "history"), {
+            type: 'adBalanceAdd', amount: adVal - prevAd, createdAt: serverTimestamp()
+          }));
+        }
+        if (videoVal !== prevVideo) {
+          historyWrites.push(addDoc(collection(db, "users", id, "history"), {
+            type: 'videoBalanceAdd', amount: videoVal - prevVideo, createdAt: serverTimestamp()
+          }));
+        }
+        await Promise.all(historyWrites);
+        data.adBalance = adVal;
+        data.videoBalance = videoVal;
+        document.getElementById('fsAdBalanceBig').textContent = adVal;
+        document.getElementById('fsVideoBalanceBig').textContent = videoVal;
+        statusEl.style.color = '#4ade80';
+        statusEl.textContent = '✅ সেভ হয়েছে!';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      } catch (e) {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = 'এরর: ' + e.message;
       }
-      containerEl.innerHTML = '';
-      snap.forEach(docSnap => {
-        const h = docSnap.data();
-        const amount = Number(h.amount || 0);
-        const dateStr = (h.createdAt && h.createdAt.toDate) ? h.createdAt.toDate().toLocaleString('bn-BD') : '—';
-        const row = document.createElement('div');
-        row.className = 'historyRow';
-        row.innerHTML = `
-          <div>
-            <div class="historyType">${HISTORY_LABELS[h.type] || h.type}</div>
-            <div class="historyDate">${dateStr}</div>
-          </div>
-          <div class="historyAmount ${amount >= 0 ? 'pos' : 'neg'}">${amount >= 0 ? '+' : ''}${amount}</div>
-        `;
-        containerEl.appendChild(row);
+    });
+  }
+
+  // ---- ফুলস্ক্রিন: হিস্ট্রি (পেমেন্ট / বিজ্ঞাপন / ভিডিও) ----
+  function openHistoryView(id, data) {
+    openFsView(data.name, id);
+    fsBody.innerHTML = HISTORY_SECTIONS.map(sec => `
+      <div class="historySection" data-cat="${sec.cat}">
+        <button type="button" class="historySectionHeader">
+          <span>${sec.label}</span><span class="chev">▾</span>
+        </button>
+        <div class="historySectionBody hidden"><div class="listEmpty">ট্যাপ করে দেখুন</div></div>
+      </div>
+    `).join('');
+
+    let allHistoryCache = null;
+
+    fsBody.querySelectorAll('.historySection').forEach(secEl => {
+      const header = secEl.querySelector('.historySectionHeader');
+      const body = secEl.querySelector('.historySectionBody');
+      const cat = secEl.dataset.cat;
+      let loaded = false;
+
+      header.addEventListener('click', async () => {
+        const isOpen = header.classList.toggle('open');
+        body.classList.toggle('hidden', !isOpen);
+        if (!isOpen || loaded) return;
+        loaded = true;
+        body.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+        try {
+          if (!allHistoryCache) {
+            const q = query(collection(db, "users", id, "history"), orderBy("createdAt", "desc"), limit(30));
+            const snap = await getDocs(q);
+            allHistoryCache = [];
+            snap.forEach(docSnap => allHistoryCache.push(docSnap.data()));
+          }
+          const entries = allHistoryCache.filter(h => HISTORY_CATEGORY[h.type] === cat).slice(0, 5);
+          renderHistoryEntries(body, entries);
+        } catch (e) {
+          body.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+        }
       });
-    } catch (e) {
-      containerEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    });
+  }
+
+  function renderHistoryEntries(containerEl, entries) {
+    if (!entries.length) {
+      containerEl.innerHTML = '<div class="listEmpty">কোনো হিস্ট্রি পাওয়া যায়নি</div>';
+      return;
     }
+    containerEl.innerHTML = '';
+    entries.forEach(h => {
+      const amount = Number(h.amount || 0);
+      const dateStr = (h.createdAt && h.createdAt.toDate) ? h.createdAt.toDate().toLocaleString('bn-BD') : '—';
+      const row = document.createElement('div');
+      row.className = 'historyRow';
+      row.innerHTML = `
+        <div>
+          <div class="historyType">${HISTORY_LABELS[h.type] || h.type}</div>
+          <div class="historyDate">${dateStr}</div>
+        </div>
+        <div class="historyAmount ${amount >= 0 ? 'pos' : 'neg'}">${amount >= 0 ? '+' : ''}${amount}</div>
+      `;
+      containerEl.appendChild(row);
+    });
   }
 
   document.getElementById('accountSearch').addEventListener('input', applyAccountFilter);
