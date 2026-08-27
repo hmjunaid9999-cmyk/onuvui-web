@@ -364,6 +364,33 @@
     });
   }
 
+  // ---- ফুলস্ক্রিন/মডাল ওভারলের জন্য ব্যাক বাটন হ্যান্ডলিং ----
+  // যখনই কোনো ওভারলে (ব্যালেন্স, হিস্ট্রি, একাউন্ট যোগ করার মডাল) খোলা হয়, একটা history state
+  // পুশ করা হয়। ফোনের ব্যাক বাটন বা "ফিরে যান" বাটনে চাপলে সেই state-টাই পপ হয়ে শুধু
+  // ওভারলেটা বন্ধ হয় — সরাসরি পেজ থেকে বের করে দেয় না।
+  let overlayStack = [];
+
+  function pushOverlay(name) {
+    overlayStack.push(name);
+    history.pushState({ onuvutiOverlay: name }, '');
+  }
+
+  function closeTopOverlayUI() {
+    if (!overlayStack.length) return;
+    history.back();
+  }
+
+  window.addEventListener('popstate', () => {
+    if (!overlayStack.length) return;
+    const name = overlayStack.pop();
+    if (name === 'fs') {
+      fsView.classList.remove('show');
+      fsBody.innerHTML = '';
+    } else if (name === 'addAccountModal') {
+      addAccountModal.classList.remove('show');
+    }
+  });
+
   // ---- ফুলস্ক্রিন: ব্যালেন্স ----
   const fsView = document.getElementById('accountDetailView');
   const fsTitle = document.getElementById('fsTitle');
@@ -374,11 +401,9 @@
     fsTitle.textContent = name || 'নাম নেই';
     fsSubtitle.textContent = 'UID: ' + uid;
     fsView.classList.add('show');
+    pushOverlay('fs');
   }
-  document.getElementById('fsBackBtn').addEventListener('click', () => {
-    fsView.classList.remove('show');
-    fsBody.innerHTML = '';
-  });
+  document.getElementById('fsBackBtn').addEventListener('click', closeTopOverlayUI);
 
   function openBalanceView(id, data) {
     openFsView(data.name, id);
@@ -515,12 +540,11 @@
     document.getElementById('newAccUid').value = '';
     document.getElementById('addAccountStatus').textContent = '';
     addAccountModal.classList.add('show');
+    pushOverlay('addAccountModal');
   });
-  document.getElementById('addAccountCancelBtn').addEventListener('click', () => {
-    addAccountModal.classList.remove('show');
-  });
+  document.getElementById('addAccountCancelBtn').addEventListener('click', closeTopOverlayUI);
   addAccountModal.addEventListener('click', (e) => {
-    if (e.target === addAccountModal) addAccountModal.classList.remove('show');
+    if (e.target === addAccountModal) closeTopOverlayUI();
   });
   document.getElementById('addAccountSaveBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('addAccountStatus');
@@ -540,7 +564,9 @@
       }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ একাউন্ট তৈরি হয়েছে!';
-      setTimeout(() => { addAccountModal.classList.remove('show'); }, 900);
+      setTimeout(() => {
+        if (overlayStack[overlayStack.length - 1] === 'addAccountModal') closeTopOverlayUI();
+      }, 900);
     } catch (e) {
       statusEl.style.color = '#f87171';
       statusEl.textContent = 'এরর: ' + e.message;
