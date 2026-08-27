@@ -49,6 +49,20 @@
   .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
   .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
+
+  .swiperDots { display: flex; justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #30363d; cursor: pointer; transition: background 0.2s, transform 0.2s; }
+  .dot.active { background: #4285F4; transform: scale(1.25); }
+
+  .swiperContainer { overflow: hidden; }
+  .swiperTrack {
+    display: flex; width: 200%;
+    transition: transform 0.3s ease;
+    touch-action: pan-y;
+  }
+  .swiperTrack.dragging { transition: none; }
+  .swiperPage { width: 50%; flex-shrink: 0; min-width: 0; }
+  .swiperPage .section { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -74,20 +88,35 @@
     <main>
       <div class="folderTitle">🎬 ভিডিও</div>
 
-      <div class="section">
-        <h2>👤 একাউন্ট</h2>
-        <input type="text" id="accountSearch" placeholder="🔍 ইউনিক আইডি (UID) দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
-        <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+      <div class="swiperDots">
+        <span class="dot active" data-page="0"></span>
+        <span class="dot" data-page="1"></span>
       </div>
 
-      <div class="section">
-        <h2>🪙 কয়েন সেটিংস</h2>
-        <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
-        <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
-        <div class="row"><label>প্রতি বিজ্ঞাপনের খরচ</label><input type="number" id="coinAdCost" placeholder="5"></div>
-        <div class="row"><label>বিজ্ঞাপন দেখলে পুরস্কার</label><input type="number" id="coinAdReward" placeholder="1"></div>
-        <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
-        <div class="sectionStatus" id="coinSettingsStatus"></div>
+      <div class="swiperContainer" id="swiperContainer">
+        <div class="swiperTrack" id="swiperTrack">
+
+          <div class="swiperPage">
+            <div class="section">
+              <h2>👤 একাউন্ট</h2>
+              <input type="text" id="accountSearch" placeholder="🔍 ইউনিক আইডি (UID) দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
+              <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+            </div>
+          </div>
+
+          <div class="swiperPage">
+            <div class="section">
+              <h2>🪙 কয়েন সেটিংস</h2>
+              <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
+              <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
+              <div class="row"><label>প্রতি বিজ্ঞাপনের খরচ</label><input type="number" id="coinAdCost" placeholder="5"></div>
+              <div class="row"><label>বিজ্ঞাপন দেখলে পুরস্কার</label><input type="number" id="coinAdReward" placeholder="1"></div>
+              <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
+              <div class="sectionStatus" id="coinSettingsStatus"></div>
+            </div>
+          </div>
+
+        </div>
       </div>
     </main>
   </div>
@@ -218,6 +247,60 @@
       statusEl.textContent = 'এরর: ' + e.message;
     }
   });
+
+  // ---- সোয়াইপার (একাউন্ট <-> কয়েন সেটিংস) ----
+  const swiperContainer = document.getElementById('swiperContainer');
+  const swiperTrack = document.getElementById('swiperTrack');
+  const dots = document.querySelectorAll('.dot');
+  let currentPage = 0;
+  let startX = 0;
+  let currentTranslate = 0;
+  let isDragging = false;
+
+  function goToPage(index) {
+    currentPage = Math.max(0, Math.min(1, index));
+    swiperTrack.style.transform = `translateX(-${currentPage * 50}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === currentPage));
+  }
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => goToPage(Number(dot.dataset.page)));
+  });
+
+  function onDragStart(clientX) {
+    isDragging = true;
+    startX = clientX;
+    swiperTrack.classList.add('dragging');
+  }
+
+  function onDragMove(clientX) {
+    if (!isDragging) return;
+    const deltaX = clientX - startX;
+    const containerWidth = swiperContainer.offsetWidth;
+    const deltaPercent = (deltaX / containerWidth) * 50;
+    currentTranslate = -(currentPage * 50) + deltaPercent;
+    swiperTrack.style.transform = `translateX(${currentTranslate}%)`;
+  }
+
+  function onDragEnd(clientX) {
+    if (!isDragging) return;
+    isDragging = false;
+    swiperTrack.classList.remove('dragging');
+    const deltaX = clientX - startX;
+    const threshold = 50;
+    if (deltaX < -threshold) goToPage(currentPage + 1);
+    else if (deltaX > threshold) goToPage(currentPage - 1);
+    else goToPage(currentPage);
+  }
+
+  swiperContainer.addEventListener('touchstart', (e) => onDragStart(e.touches[0].clientX), { passive: true });
+  swiperContainer.addEventListener('touchmove', (e) => onDragMove(e.touches[0].clientX), { passive: true });
+  swiperContainer.addEventListener('touchend', (e) => onDragEnd(e.changedTouches[0].clientX));
+
+  swiperContainer.addEventListener('mousedown', (e) => onDragStart(e.clientX));
+  swiperContainer.addEventListener('mousemove', (e) => { if (isDragging) onDragMove(e.clientX); });
+  swiperContainer.addEventListener('mouseup', (e) => onDragEnd(e.clientX));
+  swiperContainer.addEventListener('mouseleave', (e) => { if (isDragging) onDragEnd(e.clientX); });
 
   onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = 'none';
