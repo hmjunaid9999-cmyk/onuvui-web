@@ -148,7 +148,16 @@
   .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
   .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
   .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
-  .repliesList { margin-left: 36px; }
+  /* ---- রিপ্লাই বক্স: কোনো ডান-দিকে ইনডেন্ট নেই, সব একদম বরাবর, শুধু নিচের দিকে বাড়ে ---- */
+  .replyBox { margin-top: 8px; background: #12161d; border: 1px solid #262c36; border-radius: 10px; padding: 8px; }
+  .replyBox .commentRow { margin-bottom: 8px; }
+  .replyBox .commentRow:last-child { margin-bottom: 0; }
+  .replyForm { display: flex; gap: 6px; margin-top: 8px; }
+  .replyForm textarea {
+    flex: 1; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 6px 8px;
+    border-radius: 8px; font-size: 12px; resize: vertical; min-height: 32px; font-family: inherit;
+  }
+  .replyForm button { background: var(--primary-color); color: #fff; border: none; border-radius: 8px; padding: 0 10px; font-size: 11px; }
 
   #loadMoreBtn {
     display: block; width: 100%; background: var(--card-color); color: #fff; border: 1px solid #262c36;
@@ -514,6 +523,30 @@
     loadPosts(true);
   }
 
+  // ---- শেয়ার করা লিংক (#post-<id>) থেকে সরাসরি সেই পোস্টে নিয়ে যাওয়া ----
+  async function openSharedPostIfAny() {
+    const m = location.hash.match(/^#post-(.+)$/);
+    if (!m) return;
+    const postId = decodeURIComponent(m[1]);
+    try {
+      const snap = await getDoc(doc(db, "posts", postId));
+      if (!snap.exists()) return;
+      if (!allLoadedPosts.some(p => p.id === postId)) {
+        allLoadedPosts.unshift({ id: postId, data: snap.data() });
+        renderPosts();
+      }
+      setTimeout(() => {
+        const el = document.getElementById('post-' + postId);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.style.outline = '2px solid var(--primary-color)';
+        setTimeout(() => { el.style.outline = ''; }, 2000);
+      }, 200);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   loadMoreBtn.addEventListener('click', () => loadPosts(false));
 
   searchBar.addEventListener('input', renderPosts);
@@ -718,31 +751,40 @@
     return card;
   }
 
-  // ---- কমেন্ট লোড ও রেন্ডার ----
+  // ---- কমেন্ট লোড ও রেন্ডার (ফ্ল্যাট: প্রথম পেজে শুধু কমেন্ট, রিপ্লাই আলাদা বক্সে, ডান দিকে ইনডেন্ট নেই) ----
   function loadComments(postId, card) {
     const listEl = card.querySelector('.commentsListEl');
-    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
     onSnapshot(q, (snap) => {
       const all = [];
-      snap.forEach(c => all.push({ id: c.id, data: c.data() }));
-      const topLevel = all.filter(c => !c.data.replyToId);
-      const childrenByParent = {};
-      all.filter(c => c.data.replyToId).forEach(c => {
-        if (!childrenByParent[c.data.replyToId]) childrenByParent[c.data.replyToId] = [];
-        childrenByParent[c.data.replyToId].push(c);
-      });
+      const byId = {};
+      snap.forEach(c => { const obj = { id: c.id, data: c.data() }; all.push(obj); byId[c.id] = obj; });
 
-      function renderNode(c, depth) {
-        const row = buildCommentRow(postId, c.id, c.data, depth, card);
-        const repliesListEl = row.querySelector('.repliesList');
-        (childrenByParent[c.id] || []).forEach(child => {
-          repliesListEl.appendChild(renderNode(child, depth + 1));
-        });
-        return row;
+      // ---- পুরনো ডেটাতে রিপ্লাই-এর-রিপ্লাই চেইন থাকলেও (কোনো ডেটা বাদ যাচ্ছে না), সবসময়
+      //      মূল (টপ-লেভেল) কমেন্টের বক্সেই ফ্ল্যাটভাবে একসাথে দেখানো হবে ----
+      function findTopLevelId(obj) {
+        let cur = obj;
+        const seen = new Set();
+        while (cur && cur.data.replyToId && !seen.has(cur.id)) {
+          seen.add(cur.id);
+          const parent = byId[cur.data.replyToId];
+          if (!parent) break;
+          cur = parent;
+        }
+        return cur ? cur.id : obj.id;
       }
 
+      const topLevel = all.filter(c => !c.data.replyToId).slice().reverse(); // নতুন কমেন্ট আগে
+      const repliesByTop = {};
+      all.filter(c => c.data.replyToId).forEach(c => {
+        const topId = findTopLevelId(c);
+        (repliesByTop[topId] = repliesByTop[topId] || []).push(c); // পুরাতন থেকে নতুন, ধারাবাহিকভাবে নিচে নামবে
+      });
+
       listEl.innerHTML = '';
-      topLevel.forEach(c => listEl.appendChild(renderNode(c, 0)));
+      topLevel.forEach(c => {
+        listEl.appendChild(buildCommentRow(postId, c.id, c.data, true, card, repliesByTop[c.id] || []));
+      });
 
       const cCountEl = card.querySelector('.commentCountEl');
       if (cCountEl) cCountEl.textContent = all.length;
@@ -768,17 +810,18 @@
     catch (e) { alert('কমেন্ট এরর: ' + e.message); }
   }
 
-  function buildCommentRow(postId, commentId, d, depth, card) {
+  // isTopLevel = true হলে এটা মূল কমেন্ট (রিপ্লাই বক্স টগল করা যাবে); false হলে এটা সেই বক্সের
+  // ভেতরের একটা রিপ্লাই সারি — কোনো অবস্থাতেই আরও ডান দিকে যাবে না, নিজের কোনো রিপ্লাই-বক্স থাকবে না।
+  function buildCommentRow(postId, commentId, d, isTopLevel, card, replies) {
     const isOwner = currentUser && d.uid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
-    const indent = Math.min(depth, 4) * 24;
+    const replyList = replies || [];
     const row = document.createElement('div');
     row.className = 'commentRow';
-    row.style.marginLeft = indent + 'px';
 
     row.innerHTML = `
       <img src="${d.photoURL || ''}">
-      <div style="flex:1;">
+      <div style="flex:1; min-width:0;">
         <div class="commentBody">
           <div class="cName">${escapeHtml(d.name)}</div>
           <div class="cText">${escapeHtml(d.text)}</div>
@@ -787,15 +830,19 @@
           <span>${timeAgo(d.createdAt)}</span>
           <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
           <button class="cCopyBtn">কপি</button>
-          <button class="cReplyBtn">উত্তর দিন</button>
+          ${isTopLevel ? `<button class="cReplyToggleBtn">উত্তর দিন${replyList.length ? ' (' + replyList.length + ')' : ''}</button>` : ''}
           ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
           ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
         </div>
-        <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
-          <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
-          <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
-        </div>
-        <div class="repliesList"></div>
+        ${isTopLevel ? `
+          <div class="replyBox" style="display:none;">
+            <div class="replyBoxList"></div>
+            <div class="replyForm">
+              <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
+              <button class="replySubmitBtn">পাঠান</button>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `;
 
@@ -828,17 +875,24 @@
       });
     }
 
-    const replyBtn = row.querySelector('.cReplyBtn');
-    if (replyBtn) {
-      const replyForm = row.querySelector('.replyForm');
-      replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
+    if (isTopLevel) {
+      const replyBox = row.querySelector('.replyBox');
+      const replyBoxList = row.querySelector('.replyBoxList');
+      replyList.forEach(r => {
+        // রিপ্লাই বক্সের ভেতরের প্রতিটা সারি ফ্ল্যাট (isTopLevel=false) — আর ডানে যাবে না
+        replyBoxList.appendChild(buildCommentRow(postId, r.id, r.data, false, card, []));
       });
+
+      const toggleBtn = row.querySelector('.cReplyToggleBtn');
+      toggleBtn.addEventListener('click', () => {
+        replyBox.style.display = replyBox.style.display === 'none' ? 'block' : 'none';
+      });
+
       row.querySelector('.replySubmitBtn').addEventListener('click', () => {
         const input = row.querySelector('.replyInput');
+        // সবসময় মূল (টপ-লেভেল) কমেন্টের সাথেই যুক্ত হবে — যাতে সব রিপ্লাই এক বক্সেই ফ্ল্যাট থাকে
         postComment(postId, input.value, commentId, card);
         input.value = '';
-        replyForm.style.display = 'none';
       });
     }
 
@@ -852,6 +906,7 @@
       appScreen.style.display = 'block';
       listenSettings();
       resetFeed();
+      openSharedPostIfAny();
       initBackGuard();
     } else {
       appScreen.style.display = 'none';
