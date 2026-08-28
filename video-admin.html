@@ -37,11 +37,19 @@
   .section h2 { font-size: 15px; margin-bottom: 12px; }
   .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
   .row label { width: 110px; font-size: 13px; color: #9ca3af; flex-shrink: 0; }
-  input[type="number"], input[type="text"] {
+  input[type="number"], input[type="text"], textarea {
     flex: 1; width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
-    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit;
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical;
   }
   .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
+  .notice { font-size: 12px; color: #9ca3af; background: #0d1117; border: 1px solid #262c36; border-radius: 8px; padding: 10px; line-height: 1.5; }
+
+  .topMenuRow { display: flex; align-items: flex-start; gap: 8px; background: #0d1117; border: 1px solid #262c36; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+  .orderBtn { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #161b22; border: 1px solid #30363d; color: #9ca3af; font-size: 13px; font-weight: bold; padding: 0; }
+  .orderBtn.checked { background: #4285F4; color: #fff; border-color: #4285F4; }
+  .topMenuFields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .topMenuFields input { margin: 0; }
+  .tmDeleteBtn { flex-shrink: 0; width: 30px; height: 30px; padding: 0; background: #35171c; color: #ff9da8; border: 1px solid #632b34; border-radius: 8px; font-size: 13px; }
 
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
   .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
@@ -130,13 +138,13 @@
 
   .swiperContainer { overflow: hidden; }
   .swiperTrack {
-    display: flex; width: 200%;
+    display: flex; width: 300%;
     transition: transform 0.3s ease;
     touch-action: pan-y;
   }
   .swiperTrack.dragging { transition: none; }
-  .swiperPage { width: 50%; flex-shrink: 0; min-width: 0; }
-  .swiperPage .section { margin-bottom: 0; }
+  .swiperPage { width: 33.3334%; flex-shrink: 0; min-width: 0; }
+  .swiperPage .section { margin-bottom: 12px; }
 </style>
 </head>
 <body>
@@ -165,6 +173,7 @@
       <div class="swiperDots">
         <span class="dot active" data-page="0"></span>
         <span class="dot" data-page="1"></span>
+        <span class="dot" data-page="2"></span>
       </div>
 
       <div class="swiperContainer" id="swiperContainer">
@@ -172,9 +181,19 @@
 
           <div class="swiperPage">
             <div class="section">
-              <h2>👤 একাউন্ট</h2>
-              <input type="text" id="accountSearch" placeholder="🔍 নাম, ইমেইল বা UID দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
-              <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+              <h2>🎨 থিম</h2>
+              <label>নোটিশ বক্সের লেখা</label>
+              <textarea id="themeNoticeText" rows="2" placeholder="এখানে নোটিশের লেখা লিখুন..."></textarea>
+              <button class="sectionSaveBtn" id="saveNoticeBtn">💾 নোটিশ সেভ করুন</button>
+              <div class="sectionStatus" id="noticeStatus"></div>
+            </div>
+            <div class="section">
+              <h2>📋 টপ মেনু</h2>
+              <div class="notice">বাম পাশের ✔ বাটনে ক্রমানুসারে (যেটা আগে দেখাতে চান সেটা আগে) ট্যাপ করুন — ট্যাপের ক্রম অনুযায়ী সিরিয়াল নম্বর বসবে।</div>
+              <div id="topMenuList" style="margin-top:12px;"></div>
+              <button class="sectionSaveBtn" id="addTopMenuItemBtn" style="background:#262c36;margin-top:4px;">➕ নতুন আইটেম যোগ করুন</button>
+              <button class="sectionSaveBtn" id="saveTopMenuBtn" style="margin-top:10px;">💾 টপ মেনু সেভ করুন</button>
+              <div class="sectionStatus" id="topMenuStatus"></div>
             </div>
           </div>
 
@@ -187,6 +206,14 @@
               <div class="row"><label>বিজ্ঞাপন দেখলে পুরস্কার</label><input type="number" id="coinAdReward" placeholder="1"></div>
               <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
               <div class="sectionStatus" id="coinSettingsStatus"></div>
+            </div>
+          </div>
+
+          <div class="swiperPage">
+            <div class="section">
+              <h2>👤 একাউন্ট</h2>
+              <input type="text" id="accountSearch" placeholder="🔍 নাম, ইমেইল বা UID দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
+              <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
             </div>
           </div>
 
@@ -622,18 +649,20 @@
     }
   });
 
-  // ---- সোয়াইপার (একাউন্ট <-> কয়েন সেটিংস) ----
+  // ---- সোয়াইপার (থিম <-> কয়েন সেটিংস <-> একাউন্ট), মোট পেজ: 3 ----
   const swiperContainer = document.getElementById('swiperContainer');
   const swiperTrack = document.getElementById('swiperTrack');
   const dots = document.querySelectorAll('.dot');
+  const TOTAL_PAGES = 3;
+  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (৩ পেজে ~33.333%)
   let currentPage = 0;
   let startX = 0;
   let currentTranslate = 0;
   let isDragging = false;
 
   function goToPage(index) {
-    currentPage = Math.max(0, Math.min(1, index));
-    swiperTrack.style.transform = `translateX(-${currentPage * 50}%)`;
+    currentPage = Math.max(0, Math.min(TOTAL_PAGES - 1, index));
+    swiperTrack.style.transform = `translateX(-${currentPage * STEP}%)`;
     dots.forEach((d, i) => d.classList.toggle('active', i === currentPage));
   }
 
@@ -651,8 +680,8 @@
     if (!isDragging) return;
     const deltaX = clientX - startX;
     const containerWidth = swiperContainer.offsetWidth;
-    const deltaPercent = (deltaX / containerWidth) * 50;
-    currentTranslate = -(currentPage * 50) + deltaPercent;
+    const deltaPercent = (deltaX / containerWidth) * STEP;
+    currentTranslate = -(currentPage * STEP) + deltaPercent;
     swiperTrack.style.transform = `translateX(${currentTranslate}%)`;
   }
 
@@ -676,6 +705,112 @@
   swiperContainer.addEventListener('mouseup', (e) => onDragEnd(e.clientX));
   swiperContainer.addEventListener('mouseleave', (e) => { if (isDragging) onDragEnd(e.clientX); });
 
+  // ---- থিম: নোটিশ বক্স ও টপ মেনু ----
+  const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+  let themeMenuItems = [];   // [{id, label, url}]
+  let checkedOrder = [];     // ট্যাপ করা ক্রম অনুযায়ী id-গুলোর তালিকা
+
+  function newTmId() { return 'tm' + Date.now() + Math.random().toString(36).slice(2, 8); }
+
+  function renderTopMenuList() {
+    const listEl = document.getElementById('topMenuList');
+    if (!themeMenuItems.length) {
+      listEl.innerHTML = '<div class="listEmpty">কোনো আইটেম নেই — নিচের বাটনে চেপে যোগ করুন</div>';
+      return;
+    }
+    listEl.innerHTML = '';
+    themeMenuItems.forEach(item => {
+      const orderIdx = checkedOrder.indexOf(item.id);
+      const row = document.createElement('div');
+      row.className = 'topMenuRow';
+      row.innerHTML = `
+        <button type="button" class="orderBtn ${orderIdx > -1 ? 'checked' : ''}">${orderIdx > -1 ? (orderIdx + 1) : '☐'}</button>
+        <div class="topMenuFields">
+          <input type="text" class="tmName" placeholder="নাম (যেমন: হোম)" value="${escHtml(item.label)}">
+          <input type="text" class="tmLink" placeholder="লিংক (যেমন: https://...)" value="${escHtml(item.url)}">
+        </div>
+        <button type="button" class="tmDeleteBtn">🗑️</button>
+      `;
+      row.querySelector('.orderBtn').addEventListener('click', () => {
+        const idx = checkedOrder.indexOf(item.id);
+        if (idx > -1) checkedOrder.splice(idx, 1);
+        else checkedOrder.push(item.id);
+        renderTopMenuList();
+      });
+      row.querySelector('.tmDeleteBtn').addEventListener('click', () => {
+        themeMenuItems = themeMenuItems.filter(x => x.id !== item.id);
+        const idx = checkedOrder.indexOf(item.id);
+        if (idx > -1) checkedOrder.splice(idx, 1);
+        renderTopMenuList();
+      });
+      row.querySelector('.tmName').addEventListener('input', e => { item.label = e.target.value; });
+      row.querySelector('.tmLink').addEventListener('input', e => { item.url = e.target.value; });
+      listEl.appendChild(row);
+    });
+  }
+
+  document.getElementById('addTopMenuItemBtn').addEventListener('click', () => {
+    themeMenuItems.push({ id: newTmId(), label: '', url: '' });
+    renderTopMenuList();
+  });
+
+  async function loadTheme() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "theme"));
+      const d = snap.exists() ? snap.data() : {};
+      document.getElementById('themeNoticeText').value = d.noticeText || '';
+      if (Array.isArray(d.topMenuItems) && d.topMenuItems.length) {
+        themeMenuItems = d.topMenuItems.map(x => ({ id: newTmId(), label: x.label || '', url: x.url || '' }));
+        checkedOrder = themeMenuItems.map(x => x.id); // Firestore-এ যে ক্রমে সেভ ছিল সেটাই শুরুর ক্রম
+      } else {
+        // প্রথমবার — ৫টা খালি আইটেমের ঘর তৈরি করে দেওয়া হচ্ছে
+        themeMenuItems = Array.from({ length: 5 }, () => ({ id: newTmId(), label: '', url: '' }));
+        checkedOrder = [];
+      }
+      renderTopMenuList();
+    } catch (e) {
+      document.getElementById('topMenuStatus').style.color = '#f87171';
+      document.getElementById('topMenuStatus').textContent = 'লোড এরর: ' + e.message;
+    }
+  }
+
+  document.getElementById('saveNoticeBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('noticeStatus');
+    const text = document.getElementById('themeNoticeText').value.trim();
+    try {
+      await setDoc(doc(db, "settings", "theme"), { noticeText: text }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  document.getElementById('saveTopMenuBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('topMenuStatus');
+    // যেগুলোয় ✔ ট্যাপ করা হয়েছে সেগুলো আগে (ট্যাপ-ক্রম অনুযায়ী), বাকিগুলো পরে;
+    // নাম বা লিংক দুটোই খালি থাকা আইটেম বাদ দিয়ে সেভ হবে
+    const ordered = [...themeMenuItems]
+      .sort((a, b) => {
+        const ai = checkedOrder.indexOf(a.id), bi = checkedOrder.indexOf(b.id);
+        return (ai > -1 ? ai : 999) - (bi > -1 ? bi : 999);
+      })
+      .filter(x => x.label.trim() || x.url.trim())
+      .map(x => ({ label: x.label.trim(), url: x.url.trim() }));
+    try {
+      await setDoc(doc(db, "settings", "theme"), { topMenuItems: ordered }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
   onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = 'none';
     deniedScreen.style.display = 'none';
@@ -688,6 +823,7 @@
       adminScreen.style.display = 'block';
       startAccountsListener();
       loadCoinSettings();
+      loadTheme();
     } else {
       deniedScreen.style.display = 'flex';
     }
