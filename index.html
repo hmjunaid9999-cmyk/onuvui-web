@@ -648,6 +648,7 @@
             if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
             if (!openCommentSections.includes(commentsWrap)) openCommentSections.push(commentsWrap);
             enterCommentFocus(card);
+            rearmGuard();
           } else {
             openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
             openReplyBoxes = openReplyBoxes.filter(b => !commentsWrap.contains(b));
@@ -939,6 +940,10 @@
   });
 
   // ---- Back বাটন গার্ড: মেনু/কমেন্ট খোলা থাকলে বন্ধ করে, নাহলে দুইবার Back চাইলে বের হবে ----
+  // ব্রাউজারের নিজস্ব স্ক্রল-রিস্টোরেশন বন্ধ রাখা হচ্ছে, নাহলে প্রথমবার ব্যাক চাপলে ব্রাউজার
+  // নিজে থেকেই পুরনো (শুরুর) স্ক্রল পজিশনে ফিরিয়ে নিয়ে যায় — আমাদের নিজের scrollIntoView-ই এখন একমাত্র নিয়ন্ত্রক
+  if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
   let backGuardActive = false;
   let backPressCount = 0;
   let backPressTimer = null;
