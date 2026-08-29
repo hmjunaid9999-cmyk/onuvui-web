@@ -89,24 +89,27 @@ let panelBeforeSub="home";
 // (আপাতত এখানে সরাসরি তালিকা লেখা আছে, পরে অ্যাডমিন প্যানেল থেকে এই তালিকা
 //  Firestore থেকে টেনে আনার ব্যবস্থা করা হবে — তখন শুধু নিচের দুটো অ্যারে বদলালেই হবে)
 // ---- নোটিশ বক্স (হেডারের নিচে ডান থেকে বামে স্ক্রল করা লেখা) ----
-// (আপাতত এখানে সরাসরি লেখা, পরে অ্যাডমিন প্যানেল থেকে Firestore থেকে টেনে আনার ব্যবস্থা হবে)
-let noticeText="🎉 প্রতিদিন নতুন নতুন ভিডিও ও বিজ্ঞাপন যোগ হচ্ছে — সাথেই থাকুন!";
+let noticeText="🎉 প্রতিদিন নতুন নতুন ভিডিও ও বিজ্ঞাপন যোগ হচ্ছে — সাথেই থাকুন!"; // অ্যাডমিন প্যানেলে কিছু সেভ করা না থাকলে এটা দেখাবে (ব্যাকআপ)
 $("noticeText").textContent=noticeText;
 
+// অ্যাডমিন প্যানেলে সেভ করা না থাকলে এই ডিফল্ট আইটেমগুলো দেখাবে (ব্যাকআপ)
 let topMenuItems=[
   {label:"হোম",action:()=>goToHomePanel()},
   {label:"প্রোফাইল",action:()=>alert("প্রোফাইল সেকশন শীঘ্রই আসছে")},
   {label:"ভিডিও",action:()=>goToHomePanel()},
   {label:"ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")}
 ];
+let drawerExtraItems=[
+  {label:"📢 বিজ্ঞাপন",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("বিজ্ঞাপন"));b&&panel("ad",b)}},
+  {label:"🎬 মাই ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("মাই ভিডিও"));b&&panel("my",b)}},
+  {label:"➕ অ্যাড ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("অ্যাড ভিডিও"));b&&panel("add",b)}}
+];
 let drawerMenuItems=[
   {label:"🏠 হোম",action:()=>goToHomePanel()},
   {label:"👤 প্রোফাইল",action:()=>alert("প্রোফাইল সেকশন শীঘ্রই আসছে")},
   {label:"🎬 ভিডিও",action:()=>goToHomePanel()},
   {label:"⚽ ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")},
-  {label:"📢 বিজ্ঞাপন",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("বিজ্ঞাপন"));b&&panel("ad",b)}},
-  {label:"🎬 মাই ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("মাই ভিডিও"));b&&panel("my",b)}},
-  {label:"➕ অ্যাড ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("অ্যাড ভিডিও"));b&&panel("add",b)}}
+  ...drawerExtraItems
 ];
 function renderTopMenu(){$("topMenu").innerHTML=topMenuItems.map((m,i)=>`<button class="${i===0?"active":""}" data-i="${i}">${esc(m.label)}</button>`).join("");$("topMenu").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{$("topMenu").querySelectorAll("button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");closeDrawer(true);topMenuItems[Number(btn.dataset.i)].action()}))}
 function renderDrawerMenu(){$("drawerList").innerHTML=drawerMenuItems.map((m,i)=>`<button data-i="${i}">${esc(m.label)}</button>`).join("");$("drawerList").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{drawerMenuItems[Number(btn.dataset.i)].action();closeDrawer()}))}
@@ -114,6 +117,30 @@ let drawerOpen=false;
 window.openDrawer=()=>{if(drawerOpen)return;drawerOpen=true;let offset=(document.querySelector("header").offsetHeight||0)+($("noticeBar").offsetHeight||0);$("sideDrawer").style.top=offset+"px";$("drawerOverlay").style.top=offset+"px";$("sideDrawer").classList.add("open");$("drawerOverlay").classList.add("show");history.pushState({drawer:true},"")};
 window.closeDrawer=(skipHistory)=>{if(!drawerOpen)return;drawerOpen=false;$("sideDrawer").classList.remove("open");$("drawerOverlay").classList.remove("show");if(!skipHistory)history.back()};
 renderTopMenu();renderDrawerMenu();
+
+// ---- অ্যাডমিন প্যানেলের "থিম" সেকশনে সেভ করা নোটিশ ও টপ মেনু Firestore থেকে টেনে আনা ----
+async function loadTheme(){
+  try{
+    let snap=await getDoc(doc(db,"settings","theme"));
+    if(!snap.exists())return;
+    let d=snap.data();
+    if(typeof d.noticeText==="string"&&d.noticeText.trim()){
+      noticeText=d.noticeText.trim();
+      $("noticeText").textContent=noticeText;
+    }
+    if(Array.isArray(d.topMenuItems)&&d.topMenuItems.length){
+      let fetched=d.topMenuItems.filter(x=>x&&x.label).map(x=>({
+        label:x.label,
+        action:()=>{ if(x.url) location.href=x.url; }
+      }));
+      topMenuItems=fetched;
+      drawerMenuItems=[...fetched,...drawerExtraItems];
+      renderTopMenu();
+      renderDrawerMenu();
+    }
+  }catch(e){console.error("থিম লোড করা যায়নি:",e)}
+}
+loadTheme();
 window.panel=(id,b)=>{let current=document.querySelector(".panel.active");panelBeforeSub=current?current.id:"home";document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="my")loadMine();if(id==="ad")loadAdsList();balance();if(id==="ad"||id==="my"||id==="add"){history.pushState({subPanel:id,returnTo:panelBeforeSub},"",location.pathname+location.search)}};
 window.goBackFromPlayer=()=>{hideAd();stopWatchTracking(vid);return history.length>1?history.back():( $("player").classList.remove("active"),$("home").classList.add("active"),$("frame").src="")};
 function goToHomePanel(){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$("home").classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"))}
