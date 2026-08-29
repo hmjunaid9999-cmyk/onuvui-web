@@ -141,15 +141,16 @@
     border-radius: 10px; font-size: 13px; resize: vertical; min-height: 36px; font-family: inherit;
   }
   .commentForm button { background: var(--primary-color); color: #fff; border: none; padding: 0 14px; border-radius: 10px; font-size: 12px; }
-  .commentRow { display: flex; gap: 8px; margin-bottom: 10px; }
-  .commentRow img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
+  .commentRow { margin-bottom: 10px; }
+  .commentMain { display: flex; gap: 8px; }
+  .commentMain img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
   .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; }
   .commentBody .cName { font-size: 12px; font-weight: bold; }
   .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
   .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
   .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
-  /* ---- রিপ্লাই বক্স: কোনো ডান-দিকে ইনডেন্ট নেই, সব একদম বরাবর, শুধু নিচের দিকে বাড়ে ---- */
-  .replyBox { margin-top: 8px; background: #12161d; border: 1px solid #262c36; border-radius: 10px; padding: 8px; }
+  /* ---- রিপ্লাই বক্স: কমেন্টের অ্যাভাটারের ঠিক নিচেই শুরু হবে (একদম বরাবর), ডান দিকে সরবে না ---- */
+  .replyBox { margin-top: 8px; background: #12161d; border: 1px solid #262c36; border-radius: 10px; padding: 8px 6px 8px 0; }
   .replyBox .commentRow { margin-bottom: 8px; }
   .replyBox .commentRow:last-child { margin-bottom: 0; }
   .replyForm { display: flex; gap: 6px; margin-top: 8px; }
@@ -283,10 +284,13 @@
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
+  let openReplyBoxes = [];
 
   // ---- কমেন্ট বক্স খোলা থাকলে বাকি পোস্ট ও "আরও দেখুন" বাটন লুকানো (ফোকাস মোড) ----
   let loadMoreBtnPrevDisplay = '';
+  let focusedCard = null;
   function enterCommentFocus(activeCard) {
+    focusedCard = activeCard;
     postsList.querySelectorAll('.postCard').forEach(c => {
       if (c !== activeCard) c.style.display = 'none';
     });
@@ -296,6 +300,12 @@
   function exitCommentFocus() {
     postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
     loadMoreBtn.style.display = loadMoreBtnPrevDisplay;
+    // ---- অন্যান্য পোস্ট আবার দেখানোর ফলে লেআউট বদলে যায়, তাই যে পোস্টটা পড়ছিল সেটাই আবার সামনে আনা হচ্ছে
+    //      (আগে এখানে স্ক্রল পজিশন ধরে রাখা হতো না, ফলে একদম টপে/এলোমেলো জায়গায় চলে যেত) ----
+    if (focusedCard) {
+      focusedCard.scrollIntoView({ block: 'start' });
+      focusedCard = null;
+    }
   }
 
 
@@ -640,6 +650,7 @@
             enterCommentFocus(card);
           } else {
             openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
+            openReplyBoxes = openReplyBoxes.filter(b => !commentsWrap.contains(b));
             exitCommentFocus();
           }
         });
@@ -709,7 +720,9 @@
           try {
             await deleteDoc(doc(db, "posts", postId));
             allLoadedPosts = allLoadedPosts.filter(p => p.id !== postId);
-            openCommentSections = openCommentSections.filter(w => w !== card.querySelector('.commentsWrap'));
+            const wrap = card.querySelector('.commentsWrap');
+            openCommentSections = openCommentSections.filter(w => w !== wrap);
+            openReplyBoxes = openReplyBoxes.filter(b => !wrap.contains(b));
             card.remove();
           } catch (e) { alert('এরর: ' + e.message); }
         });
@@ -820,30 +833,32 @@
     row.className = 'commentRow';
 
     row.innerHTML = `
-      <img src="${d.photoURL || ''}">
-      <div style="flex:1; min-width:0;">
-        <div class="commentBody">
-          <div class="cName">${escapeHtml(d.name)}</div>
-          <div class="cText">${escapeHtml(d.text)}</div>
-        </div>
-        <div class="commentMeta">
-          <span>${timeAgo(d.createdAt)}</span>
-          <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
-          <button class="cCopyBtn">কপি</button>
-          ${isTopLevel ? `<button class="cReplyToggleBtn">উত্তর দিন${replyList.length ? ' (' + replyList.length + ')' : ''}</button>` : ''}
-          ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
-          ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
-        </div>
-        ${isTopLevel ? `
-          <div class="replyBox" style="display:none;">
-            <div class="replyBoxList"></div>
-            <div class="replyForm">
-              <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
-              <button class="replySubmitBtn">পাঠান</button>
-            </div>
+      <div class="commentMain">
+        <img src="${d.photoURL || ''}">
+        <div style="flex:1; min-width:0;">
+          <div class="commentBody">
+            <div class="cName">${escapeHtml(d.name)}</div>
+            <div class="cText">${escapeHtml(d.text)}</div>
           </div>
-        ` : ''}
+          <div class="commentMeta">
+            <span>${timeAgo(d.createdAt)}</span>
+            <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
+            <button class="cCopyBtn">কপি</button>
+            ${isTopLevel ? `<button class="cReplyToggleBtn">উত্তর দিন${replyList.length ? ' (' + replyList.length + ')' : ''}</button>` : ''}
+            ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
+            ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
+          </div>
+        </div>
       </div>
+      ${isTopLevel ? `
+        <div class="replyBox" style="display:none;">
+          <div class="replyBoxList"></div>
+          <div class="replyForm">
+            <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
+            <button class="replySubmitBtn">পাঠান</button>
+          </div>
+        </div>
+      ` : ''}
     `;
 
     row.querySelector('.cLikeBtn').addEventListener('click', async () => {
@@ -885,7 +900,14 @@
 
       const toggleBtn = row.querySelector('.cReplyToggleBtn');
       toggleBtn.addEventListener('click', () => {
-        replyBox.style.display = replyBox.style.display === 'none' ? 'block' : 'none';
+        const show = replyBox.style.display === 'none';
+        replyBox.style.display = show ? 'block' : 'none';
+        if (show) {
+          if (!openReplyBoxes.includes(replyBox)) openReplyBoxes.push(replyBox);
+          rearmGuard();
+        } else {
+          openReplyBoxes = openReplyBoxes.filter(b => b !== replyBox);
+        }
       });
 
       row.querySelector('.replySubmitBtn').addEventListener('click', () => {
@@ -945,9 +967,16 @@
       rearmGuard();
       return;
     }
+    if (openReplyBoxes.length) {
+      const box = openReplyBoxes.pop();
+      box.style.display = 'none';
+      rearmGuard();
+      return;
+    }
     if (openCommentSections.length) {
       const wrap = openCommentSections.pop();
       wrap.style.display = 'none';
+      openReplyBoxes = openReplyBoxes.filter(b => !wrap.contains(b));
       exitCommentFocus();
       rearmGuard();
       return;
