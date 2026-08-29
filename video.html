@@ -92,25 +92,27 @@ let panelBeforeSub="home";
 let noticeText="🎉 প্রতিদিন নতুন নতুন ভিডিও ও বিজ্ঞাপন যোগ হচ্ছে — সাথেই থাকুন!"; // অ্যাডমিন প্যানেলে কিছু সেভ করা না থাকলে এটা দেখাবে (ব্যাকআপ)
 $("noticeText").textContent=noticeText;
 
-// অ্যাডমিন প্যানেলে সেভ করা না থাকলে এই ডিফল্ট আইটেমগুলো দেখাবে (ব্যাকআপ)
+// অ্যাডমিন প্যানেলে "টপ মেনু" সেভ করা না থাকলে এই ডিফল্ট আইটেমগুলো দেখাবে (ব্যাকআপ)
 let topMenuItems=[
   {label:"হোম",action:()=>goToHomePanel()},
   {label:"প্রোফাইল",action:()=>alert("প্রোফাইল সেকশন শীঘ্রই আসছে")},
   {label:"ভিডিও",action:()=>goToHomePanel()},
   {label:"ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")}
 ];
+// অ্যাডমিন প্যানেলে "সাইড মেনু" সেভ করা না থাকলে এই ডিফল্ট আইটেমগুলো দেখাবে (ব্যাকআপ) — টপ মেনু থেকে সম্পূর্ণ আলাদা
+let sideMenuItems=[
+  {label:"🏠 হোম",action:()=>goToHomePanel()},
+  {label:"👤 প্রোফাইল",action:()=>alert("প্রোফাইল সেকশন শীঘ্রই আসছে")},
+  {label:"🎬 ভিডিও",action:()=>goToHomePanel()},
+  {label:"⚽ ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")}
+];
+// এই ৩টা মূল অ্যাপ ফিচার হওয়ায় সবসময় সাইড মেনুতে অ্যাডমিনের কনফিগারের সাথে যুক্ত হয়ে থাকবে
 let drawerExtraItems=[
   {label:"📢 বিজ্ঞাপন",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("বিজ্ঞাপন"));b&&panel("ad",b)}},
   {label:"🎬 মাই ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("মাই ভিডিও"));b&&panel("my",b)}},
   {label:"➕ অ্যাড ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("অ্যাড ভিডিও"));b&&panel("add",b)}}
 ];
-let drawerMenuItems=[
-  {label:"🏠 হোম",action:()=>goToHomePanel()},
-  {label:"👤 প্রোফাইল",action:()=>alert("প্রোফাইল সেকশন শীঘ্রই আসছে")},
-  {label:"🎬 ভিডিও",action:()=>goToHomePanel()},
-  {label:"⚽ ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")},
-  ...drawerExtraItems
-];
+let drawerMenuItems=[...sideMenuItems,...drawerExtraItems];
 function renderTopMenu(){$("topMenu").innerHTML=topMenuItems.map((m,i)=>`<button class="${i===0?"active":""}" data-i="${i}">${esc(m.label)}</button>`).join("");$("topMenu").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{$("topMenu").querySelectorAll("button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");closeDrawer(true);topMenuItems[Number(btn.dataset.i)].action()}))}
 function renderDrawerMenu(){$("drawerList").innerHTML=drawerMenuItems.map((m,i)=>`<button data-i="${i}">${esc(m.label)}</button>`).join("");$("drawerList").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{drawerMenuItems[Number(btn.dataset.i)].action();closeDrawer()}))}
 let drawerOpen=false;
@@ -128,16 +130,27 @@ async function loadTheme(){
       noticeText=d.noticeText.trim();
       $("noticeText").textContent=noticeText;
     }
-    if(Array.isArray(d.topMenuItems)&&d.topMenuItems.length){
-      let fetched=d.topMenuItems.filter(x=>x&&x.label).map(x=>({
-        label:x.label,
-        action:()=>{ if(x.url) location.href=x.url; }
-      }));
-      topMenuItems=fetched;
-      drawerMenuItems=[...fetched,...drawerExtraItems];
-      renderTopMenu();
-      renderDrawerMenu();
+    if(Array.isArray(d.topMenuItems)){
+      let filled=d.topMenuItems.filter(x=>x&&x.label&&String(x.label).trim());
+      if(filled.length){
+        topMenuItems=filled.map(x=>({
+          label:String(x.label).trim(),
+          action:()=>{ if(x.url) location.href=x.url; }
+        }));
+      }
     }
+    if(Array.isArray(d.sideMenuItems)){
+      let filledSide=d.sideMenuItems.filter(x=>x&&x.label&&String(x.label).trim());
+      if(filledSide.length){
+        sideMenuItems=filledSide.map(x=>({
+          label:String(x.label).trim(),
+          action:()=>{ if(x.url) location.href=x.url; }
+        }));
+      }
+    }
+    drawerMenuItems=[...sideMenuItems,...drawerExtraItems];
+    renderTopMenu();
+    renderDrawerMenu();
   }catch(e){console.error("থিম লোড করা যায়নি:",e)}
 }
 loadTheme();

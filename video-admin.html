@@ -189,11 +189,19 @@
             </div>
             <div class="section">
               <h2>📋 টপ মেনু</h2>
-              <div class="notice">বাম পাশের ✔ বাটনে ক্রমানুসারে (যেটা আগে দেখাতে চান সেটা আগে) ট্যাপ করুন — ট্যাপের ক্রম অনুযায়ী সিরিয়াল নম্বর বসবে।</div>
+              <div class="notice">সবসময় ন্যূনতম ৫টা ঘর থাকবে (এগুলো মুছে ফেলা যাবে না, শুধু খালি করা যাবে) — চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো ডিলিটও করা যাবে। বাম পাশের ✔ বাটনে যেটাকে আগে দেখাতে চান সেটাতে আগে ট্যাপ করুন — ট্যাপ করা মাত্র আইটেমটি সরাসরি লিস্টের উপরে চলে আসবে (টেনে সরানোর দরকার নেই), যেভাবে ট্যাপ করবেন সেভাবেই উপর থেকে নিচে সাজিয়ে সেভ হবে।</div>
               <div id="topMenuList" style="margin-top:12px;"></div>
               <button class="sectionSaveBtn" id="addTopMenuItemBtn" style="background:#262c36;margin-top:4px;">➕ নতুন আইটেম যোগ করুন</button>
               <button class="sectionSaveBtn" id="saveTopMenuBtn" style="margin-top:10px;">💾 টপ মেনু সেভ করুন</button>
               <div class="sectionStatus" id="topMenuStatus"></div>
+            </div>
+            <div class="section">
+              <h2>📱 সাইড মেনু</h2>
+              <div class="notice">সবসময় ন্যূনতম ৫টা ঘর থাকবে (এগুলো মুছে ফেলা যাবে না, শুধু খালি করা যাবে) — চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো ডিলিটও করা যাবে। বাম পাশের ✔ বাটনে যেটাকে আগে দেখাতে চান সেটাতে আগে ট্যাপ করুন — ট্যাপ করা মাত্র আইটেমটি সরাসরি লিস্টের উপরে চলে আসবে (টেনে সরানোর দরকার নেই), যেভাবে ট্যাপ করবেন সেভাবেই উপর থেকে নিচে সাজিয়ে সেভ হবে।</div>
+              <div id="sideMenuList" style="margin-top:12px;"></div>
+              <button class="sectionSaveBtn" id="addSideMenuItemBtn" style="background:#262c36;margin-top:4px;">➕ নতুন আইটেম যোগ করুন</button>
+              <button class="sectionSaveBtn" id="saveSideMenuBtn" style="margin-top:10px;">💾 সাইড মেনু সেভ করুন</button>
+              <div class="sectionStatus" id="sideMenuStatus"></div>
             </div>
           </div>
 
@@ -708,41 +716,67 @@
   // ---- থিম: নোটিশ বক্স ও টপ মেনু ----
   const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
-  let themeMenuItems = [];   // [{id, label, url}]
-  let checkedOrder = [];     // ট্যাপ করা ক্রম অনুযায়ী id-গুলোর তালিকা
+  // ---- ন্যূনতম ৫-ঘরের মেনু সিস্টেম (টপ মেনু ও সাইড মেনু — দুটোতেই একই নিয়ম) ----
+  // সবসময় কমপক্ষে ৫টা ঘর থাকবে (এই ৫টা মোছা যাবে না, শুধু খালি করা যাবে)।
+  // চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো সরাসরি ডিলিটও করা যাবে।
+  // ✔ বাটনে ট্যাপ করলেই সেই ঘরটা লিস্টের উপরে উঠে আসে — যেই ক্রমে ট্যাপ করবেন, উপর থেকে নিচে সেই ক্রমেই সাজানো থাকবে।
+  const MENU_MIN_COUNT = 5;
+  const newMenuId = () => 'm' + Date.now() + Math.random().toString(36).slice(2, 8);
 
-  function newTmId() { return 'tm' + Date.now() + Math.random().toString(36).slice(2, 8); }
+  function buildMenuState(savedArr) {
+    let items = Array.isArray(savedArr)
+      ? savedArr.map(x => ({ id: newMenuId(), label: (x && x.label) || '', url: (x && x.url) || '' }))
+      : [];
+    while (items.length < MENU_MIN_COUNT) items.push({ id: newMenuId(), label: '', url: '' });
+    // যেসব ঘরে আগে থেকেই লেখা আছে, সেগুলোকে শুরুতেই তাদের সেভ করা ক্রম অনুযায়ী ✔ ধরে নেওয়া হচ্ছে
+    const order = [];
+    items.forEach(it => { if (it.label.trim() || it.url.trim()) order.push(it.id); });
+    return { items, order };
+  }
 
-  function renderTopMenuList() {
-    const listEl = document.getElementById('topMenuList');
-    if (!themeMenuItems.length) {
-      listEl.innerHTML = '<div class="listEmpty">কোনো আইটেম নেই — নিচের বাটনে চেপে যোগ করুন</div>';
-      return;
-    }
+  function menuDisplayOrder(state) {
+    return state.items.map(it => it.id).sort((a, b) => {
+      const ai = state.order.indexOf(a), bi = state.order.indexOf(b);
+      if (ai > -1 && bi > -1) return ai - bi;
+      if (ai > -1) return -1;
+      if (bi > -1) return 1;
+      return 0; // দুটোই আনচেকড হলে আগের ক্রমই ঠিক থাকবে (স্টেবল সর্ট)
+    });
+  }
+
+  function renderMenuSlots(listElId, state) {
+    const listEl = document.getElementById(listElId);
     listEl.innerHTML = '';
-    themeMenuItems.forEach(item => {
-      const orderIdx = checkedOrder.indexOf(item.id);
+    menuDisplayOrder(state).forEach(id => {
+      const item = state.items.find(x => x.id === id);
+      const isChecked = state.order.includes(id);
+      const canDelete = state.items.length > MENU_MIN_COUNT;
       const row = document.createElement('div');
       row.className = 'topMenuRow';
       row.innerHTML = `
-        <button type="button" class="orderBtn ${orderIdx > -1 ? 'checked' : ''}">${orderIdx > -1 ? (orderIdx + 1) : '☐'}</button>
+        <button type="button" class="orderBtn ${isChecked ? 'checked' : ''}">${isChecked ? '✔' : '☐'}</button>
         <div class="topMenuFields">
           <input type="text" class="tmName" placeholder="নাম (যেমন: হোম)" value="${escHtml(item.label)}">
           <input type="text" class="tmLink" placeholder="লিংক (যেমন: https://...)" value="${escHtml(item.url)}">
         </div>
-        <button type="button" class="tmDeleteBtn">🗑️</button>
+        <button type="button" class="tmDeleteBtn" title="${canDelete ? 'এই আইটেমটি মুছে ফেলুন' : 'এই ঘরটি খালি করুন'}">🗑️</button>
       `;
       row.querySelector('.orderBtn').addEventListener('click', () => {
-        const idx = checkedOrder.indexOf(item.id);
-        if (idx > -1) checkedOrder.splice(idx, 1);
-        else checkedOrder.push(item.id);
-        renderTopMenuList();
+        const idx = state.order.indexOf(id);
+        if (idx > -1) state.order.splice(idx, 1);
+        else state.order.push(id);
+        renderMenuSlots(listElId, state);
       });
       row.querySelector('.tmDeleteBtn').addEventListener('click', () => {
-        themeMenuItems = themeMenuItems.filter(x => x.id !== item.id);
-        const idx = checkedOrder.indexOf(item.id);
-        if (idx > -1) checkedOrder.splice(idx, 1);
-        renderTopMenuList();
+        const idx = state.order.indexOf(id);
+        if (idx > -1) state.order.splice(idx, 1);
+        if (state.items.length > MENU_MIN_COUNT) {
+          state.items = state.items.filter(x => x.id !== id);
+        } else {
+          item.label = '';
+          item.url = '';
+        }
+        renderMenuSlots(listElId, state);
       });
       row.querySelector('.tmName').addEventListener('input', e => { item.label = e.target.value; });
       row.querySelector('.tmLink').addEventListener('input', e => { item.url = e.target.value; });
@@ -750,9 +784,24 @@
     });
   }
 
+  function getOrderedMenuArray(state) {
+    // খালি আইটেমগুলো সেভ হয় না — পরের বার লোড করার সময় আবার ন্যূনতম ৫টা ঘরে পূরণ হয়ে যাবে
+    return menuDisplayOrder(state)
+      .map(id => state.items.find(x => x.id === id))
+      .filter(it => it.label.trim() || it.url.trim())
+      .map(it => ({ label: it.label.trim(), url: it.url.trim() }));
+  }
+
+  let topMenuState = { items: [], order: [] };
+  let sideMenuState = { items: [], order: [] };
+
   document.getElementById('addTopMenuItemBtn').addEventListener('click', () => {
-    themeMenuItems.push({ id: newTmId(), label: '', url: '' });
-    renderTopMenuList();
+    topMenuState.items.push({ id: newMenuId(), label: '', url: '' });
+    renderMenuSlots('topMenuList', topMenuState);
+  });
+  document.getElementById('addSideMenuItemBtn').addEventListener('click', () => {
+    sideMenuState.items.push({ id: newMenuId(), label: '', url: '' });
+    renderMenuSlots('sideMenuList', sideMenuState);
   });
 
   async function loadTheme() {
@@ -760,15 +809,10 @@
       const snap = await getDoc(doc(db, "settings", "theme"));
       const d = snap.exists() ? snap.data() : {};
       document.getElementById('themeNoticeText').value = d.noticeText || '';
-      if (Array.isArray(d.topMenuItems) && d.topMenuItems.length) {
-        themeMenuItems = d.topMenuItems.map(x => ({ id: newTmId(), label: x.label || '', url: x.url || '' }));
-        checkedOrder = themeMenuItems.map(x => x.id); // Firestore-এ যে ক্রমে সেভ ছিল সেটাই শুরুর ক্রম
-      } else {
-        // প্রথমবার — ৫টা খালি আইটেমের ঘর তৈরি করে দেওয়া হচ্ছে
-        themeMenuItems = Array.from({ length: 5 }, () => ({ id: newTmId(), label: '', url: '' }));
-        checkedOrder = [];
-      }
-      renderTopMenuList();
+      topMenuState = buildMenuState(d.topMenuItems);
+      sideMenuState = buildMenuState(d.sideMenuItems);
+      renderMenuSlots('topMenuList', topMenuState);
+      renderMenuSlots('sideMenuList', sideMenuState);
     } catch (e) {
       document.getElementById('topMenuStatus').style.color = '#f87171';
       document.getElementById('topMenuStatus').textContent = 'লোড এরর: ' + e.message;
@@ -791,17 +835,23 @@
 
   document.getElementById('saveTopMenuBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('topMenuStatus');
-    // যেগুলোয় ✔ ট্যাপ করা হয়েছে সেগুলো আগে (ট্যাপ-ক্রম অনুযায়ী), বাকিগুলো পরে;
-    // নাম বা লিংক দুটোই খালি থাকা আইটেম বাদ দিয়ে সেভ হবে
-    const ordered = [...themeMenuItems]
-      .sort((a, b) => {
-        const ai = checkedOrder.indexOf(a.id), bi = checkedOrder.indexOf(b.id);
-        return (ai > -1 ? ai : 999) - (bi > -1 ? bi : 999);
-      })
-      .filter(x => x.label.trim() || x.url.trim())
-      .map(x => ({ label: x.label.trim(), url: x.url.trim() }));
+    const ordered = getOrderedMenuArray(topMenuState);
     try {
       await setDoc(doc(db, "settings", "theme"), { topMenuItems: ordered }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  document.getElementById('saveSideMenuBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('sideMenuStatus');
+    const ordered = getOrderedMenuArray(sideMenuState);
+    try {
+      await setDoc(doc(db, "settings", "theme"), { sideMenuItems: ordered }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
