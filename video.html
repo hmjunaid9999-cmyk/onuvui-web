@@ -8,8 +8,6 @@
 .noticeBar{background:#1f2937;border-bottom:1px solid #30363d;overflow:hidden;white-space:nowrap;padding:9px 0}
 .noticeBar span{display:inline-block;padding-left:100%;color:#fbbf24;font-size:13px;animation:marqueeMove 16s linear infinite}
 @keyframes marqueeMove{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
-.debugBar{background:#3b0d0d;color:#ff9da8;border-bottom:1px solid #632b34;padding:8px 14px;font-size:12px;line-height:1.5}
-#debugBar{display:none}
 .topMenu{position:static;display:flex;gap:8px;overflow-x:auto;padding:10px 14px;background:#0d1117;border-bottom:1px solid #21262d;scrollbar-width:none}
 .topMenu::-webkit-scrollbar{display:none}
 .topMenu button{flex-shrink:0;background:#161b22;color:#c9d1d9;border:1px solid #30363d;border-radius:20px;padding:7px 16px;font-size:13px;white-space:nowrap;cursor:pointer}
@@ -24,7 +22,7 @@
 .sideDrawer .drawerList button{width:100%;text-align:left;background:transparent;border:0;color:#e6edf3;padding:13px 18px;font-size:14px;cursor:pointer}
 .sideDrawer .drawerList button.active{background:#161b22;color:#4285f4;font-weight:700}
 @keyframes pulseUnmute{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-</style></head><body><script src="https://www.youtube.com/iframe_api"></script><div id="app"><header><button class="menuBtn" onclick="openDrawer()">☰</button>🎬 ভিডিও</header><div class="noticeBar" id="noticeBar"><span id="noticeText"></span></div><div id="debugBar"></div><nav id="topMenu" class="topMenu"></nav><main>
+</style></head><body><script src="https://www.youtube.com/iframe_api"></script><div id="app"><header><button class="menuBtn" onclick="openDrawer()">☰</button>🎬 ভিডিও</header><div class="noticeBar" id="noticeBar"><span id="noticeText"></span></div><nav id="topMenu" class="topMenu"></nav><main>
 <section id="home" class="panel active"><div class="search">🔎<input id="search" placeholder="ভিডিও খুঁজুন..." oninput="render()"></div><div id="grid" class="grid"><div class="loading">লোড হচ্ছে...</div></div></section>
 <section id="player" class="panel"><div class="top-back"><button onclick="goBackFromPlayer()">← ভিডিও তালিকায় ফিরে যান</button></div><div class="video"><iframe id="frame" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe><div id="adOverlay" style="display:none;position:absolute;inset:0;background:#000;z-index:5"><iframe id="adFrame" style="width:100%;height:100%;border:0" allow="autoplay;encrypted-media"></iframe><div style="position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:8px"><span id="adCountdown" style="background:#000000b3;color:#fff;padding:6px 10px;border-radius:6px;font-size:12px"></span><button id="adUnmuteBtn" style="background:#facc15;color:#000;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:13px;font-weight:700;animation:pulseUnmute 1.2s infinite;">🔊 সাউন্ড অন করতে ট্যাপ করুন</button><button id="adSkipBtn" style="display:none;background:#fff;color:#000;border:0;border-radius:6px;padding:6px 12px;font-weight:700;cursor:pointer">স্কিপ ➡</button></div><div style="position:absolute;top:10px;left:10px;background:#000000b3;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px">বিজ্ঞাপন</div></div></div><div class="info"><h2 id="title"></h2><p id="caption" class="caption"></p><div class="actions"><button id="like">🤍 <span id="likes">0</span></button><button id="comment">💬 <span id="commentsCount">0</span></button><button id="share">🔗 শেয়ার</button><button id="copy">📋 কপি লিংক</button><span>👁 <span id="views">0</span></span></div><div id="commentBox" class="comments"><textarea id="commentText" rows="2" placeholder="একটি কমেন্ট লিখুন..."></textarea><button class="primary" onclick="postComment()">পোস্ট করুন</button><div id="commentList"></div></div></div></section>
 <section id="ad" class="panel"><div class="balance">🪙 <span id="unitLabel1">Coin</span> Balance<strong id="adPoints">0 Coin</strong></div><div class="box"><h3>📢 বিজ্ঞাপন যোগ করুন</h3><label>বিজ্ঞাপনের Title</label><input id="adTitle"><label>YouTube/Facebook Embed URL</label><input id="adUrl" placeholder="https://www.youtube.com/embed/"><label>বিজ্ঞাপনের খরচ</label><input id="adBudget" type="number" readonly><p id="adCostNote" class="notice"></p><button class="primary" onclick="submitAd()">বিজ্ঞাপন জমা দিন</button><div id="adStatus" class="notice"></div></div><div class="box"><h3>👁 বিজ্ঞাপন দেখুন ও Coin জিতুন</h3><p id="adRewardNote" class="notice"></p><div id="adsList" class="list"><div class="loading">লোড হচ্ছে...</div></div></div><div class="box"><h3>💳 Payment Request</h3><p class="notice">বর্তমানে ম্যানুয়াল Payment System। Admin-এর কাছে Coin কেনার Request পাঠানো যাবে।</p><label>কত Coin চান</label><input id="requestCoins" type="number" min="1"><label>পেমেন্টের তথ্য / Transaction ID</label><input id="paymentNote" placeholder="Transaction ID বা পেমেন্টের বিবরণ"><button class="primary" onclick="submitPaymentRequest()">Payment Request পাঠান</button><div id="paymentStatus" class="notice"></div></div></section>
@@ -118,24 +116,15 @@ let drawerMenuItems=[...sideMenuItems,...drawerExtraItems];
 function renderTopMenu(){$("topMenu").innerHTML=topMenuItems.map((m,i)=>`<button class="${i===0?"active":""}" data-i="${i}">${esc(m.label)}</button>`).join("");$("topMenu").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{$("topMenu").querySelectorAll("button").forEach(x=>x.classList.remove("active"));btn.classList.add("active");closeDrawer(true);topMenuItems[Number(btn.dataset.i)].action()}))}
 function renderDrawerMenu(){$("drawerList").innerHTML=drawerMenuItems.map((m,i)=>`<button data-i="${i}">${esc(m.label)}</button>`).join("");$("drawerList").querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{drawerMenuItems[Number(btn.dataset.i)].action();closeDrawer()}))}
 let drawerOpen=false;
-window.openDrawer=()=>{if(drawerOpen)return;drawerOpen=true;let offset=(document.querySelector("header").offsetHeight||0)+($("noticeBar").offsetHeight||0)+($("debugBar").offsetHeight||0);$("sideDrawer").style.top=offset+"px";$("drawerOverlay").style.top=offset+"px";$("sideDrawer").classList.add("open");$("drawerOverlay").classList.add("show");history.pushState({drawer:true},"")};
+window.openDrawer=()=>{if(drawerOpen)return;drawerOpen=true;let offset=(document.querySelector("header").offsetHeight||0)+($("noticeBar").offsetHeight||0);$("sideDrawer").style.top=offset+"px";$("drawerOverlay").style.top=offset+"px";$("sideDrawer").classList.add("open");$("drawerOverlay").classList.add("show");history.pushState({drawer:true},"")};
 window.closeDrawer=(skipHistory)=>{if(!drawerOpen)return;drawerOpen=false;$("sideDrawer").classList.remove("open");$("drawerOverlay").classList.remove("show");if(!skipHistory)history.back()};
 renderTopMenu();renderDrawerMenu();
 
 // ---- অ্যাডমিন প্যানেলের "থিম" সেকশনে সেভ করা নোটিশ, টপ মেনু ও সাইড মেনু Firestore থেকে টেনে আনা ----
-function showDebug(msg,isError){
-  let el=$("debugBar");
-  el.innerHTML+=(el.innerHTML?"<br>":"")+esc(msg);
-  el.className="debugBar";
-  el.style.display="block";
-}
 async function loadTheme(){
   try{
     let snap=await getDoc(doc(db,"settings","theme"));
-    if(!snap.exists()){
-      showDebug("⚠️ settings/theme ডকুমেন্ট Firestore-এ এখনো তৈরি হয়নি (কোনো সেকশনে এখনো সেভ করা হয়নি)");
-      return;
-    }
+    if(!snap.exists())return;
     let d=snap.data();
     if(typeof d.noticeText==="string"&&d.noticeText.trim()){
       noticeText=d.noticeText.trim();
@@ -148,12 +137,7 @@ async function loadTheme(){
           label:String(x.label).trim(),
           action:()=>{ if(x.url) location.href=x.url; }
         }));
-        showDebug("✅ টপ মেনু লোড হয়েছে: "+filled.map(x=>x.label).join(", "));
-      }else{
-        showDebug("ℹ️ টপ মেনু: Firestore-এ ডেটা আছে কিন্তু নাম-লেখা কোনো আইটেম নেই (সবগুলো খালি) — ডিফল্ট দেখানো হচ্ছে");
       }
-    }else{
-      showDebug("ℹ️ টপ মেনু: Firestore-এ topMenuItems ফিল্ড এখনো নেই — ডিফল্ট দেখানো হচ্ছে");
     }
     if(Array.isArray(d.sideMenuItems)){
       let filledSide=d.sideMenuItems.filter(x=>x&&x.label&&String(x.label).trim());
@@ -162,19 +146,12 @@ async function loadTheme(){
           label:String(x.label).trim(),
           action:()=>{ if(x.url) location.href=x.url; }
         }));
-        showDebug("✅ সাইড মেনু লোড হয়েছে: "+filledSide.map(x=>x.label).join(", "));
-      }else{
-        showDebug("ℹ️ সাইড মেনু: Firestore-এ ডেটা আছে কিন্তু নাম-লেখা কোনো আইটেম নেই — ডিফল্ট দেখানো হচ্ছে");
       }
-    }else{
-      showDebug("ℹ️ সাইড মেনু: Firestore-এ sideMenuItems ফিল্ড এখনো নেই — ডিফল্ট দেখানো হচ্ছে");
     }
     drawerMenuItems=[...sideMenuItems,...drawerExtraItems];
     renderTopMenu();
     renderDrawerMenu();
-  }catch(e){
-    showDebug("❌ থিম/মেনু লোড এরর: "+e.message,true);
-  }
+  }catch(e){console.error("থিম লোড করা যায়নি:",e)}
 }
 loadTheme();
 window.panel=(id,b)=>{let current=document.querySelector(".panel.active");panelBeforeSub=current?current.id:"home";document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="my")loadMine();if(id==="ad")loadAdsList();balance();if(id==="ad"||id==="my"||id==="add"){history.pushState({subPanel:id,returnTo:panelBeforeSub},"",location.pathname+location.search)}};
