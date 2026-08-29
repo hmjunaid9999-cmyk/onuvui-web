@@ -266,6 +266,9 @@
   const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
+  // ---- URL-এ ?uid=... থাকলে সেই ব্যবহারকারীর প্রোফাইল দেখাবে, না থাকলে নিজের প্রোফাইল ----
+  const viewUid = new URLSearchParams(location.search).get('uid');
+
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
   const loginBtn = document.getElementById('googleLoginBtn');
@@ -297,6 +300,7 @@
   const postsLoading = document.getElementById('postsLoading');
   const emptyPosts = document.getElementById('emptyPosts');
   const myPostsList = document.getElementById('myPostsList');
+  const postsHeading = document.getElementById('postsHeading');
 
   COVER_COLORS.forEach(color => {
     const sw = document.createElement('div');
@@ -376,31 +380,44 @@
     return d + ' ' + months[Number(m) - 1] + ' ' + y;
   }
 
-  function renderProfile() {
-    const displayName = myProfile.name || currentUser.displayName || 'User';
-    const displayPhoto = myProfile.photoURL || currentUser.photoURL || '';
-    const cover = myProfile.coverColor || '#4285F4';
+  function renderProfile(profileData, isOwn) {
+    const displayName = profileData.name || 'ব্যবহারকারী';
+    const displayPhoto = profileData.photoURL || '';
+    const cover = profileData.coverColor || '#4285F4';
     profileCover.style.background = cover;
     profileAvatar.src = displayPhoto;
     profileName.textContent = displayName;
-    profileEmail.textContent = currentUser.email || '';
-    if (myProfile.bio && myProfile.bio.trim()) {
+
+    // ---- গোপনীয়তার জন্য অন্য কারও ইমেইল দেখানো হবে না, শুধু নিজের প্রোফাইলে নিজের ইমেইল দেখাবে ----
+    if (isOwn) {
+      profileEmail.style.display = 'block';
+      profileEmail.textContent = currentUser.email || '';
+    } else {
+      profileEmail.style.display = 'none';
+    }
+
+    if (profileData.bio && profileData.bio.trim()) {
       profileBio.style.display = 'block';
       profileBioEmpty.style.display = 'none';
-      profileBio.textContent = myProfile.bio;
+      profileBio.textContent = profileData.bio;
     } else {
       profileBio.style.display = 'none';
-      profileBioEmpty.style.display = 'block';
+      profileBioEmpty.style.display = isOwn ? 'block' : 'none';
     }
     const extras = [];
-    if (myProfile.gender && GENDER_LABELS[myProfile.gender]) extras.push('🚻 ' + GENDER_LABELS[myProfile.gender]);
-    if (myProfile.birthday) extras.push('🎂 ' + formatBirthday(myProfile.birthday));
+    if (profileData.gender && GENDER_LABELS[profileData.gender]) extras.push('🚻 ' + GENDER_LABELS[profileData.gender]);
+    if (profileData.birthday) extras.push('🎂 ' + formatBirthday(profileData.birthday));
     profileExtra.textContent = extras.join('   ');
-    profileJoined.textContent = formatJoinDate(myProfile.createdAt);
+    profileJoined.textContent = formatJoinDate(profileData.createdAt);
+
+    editProfileBtn.style.display = isOwn ? 'inline-block' : 'none';
+    postsHeading.textContent = isOwn ? '📝 আমার পোস্ট' : '📝 ' + displayName + ' এর পোস্ট';
+    emptyPosts.textContent = isOwn ? 'আপনি এখনো কোনো পোস্ট করেননি' : 'এখনো কোনো পোস্ট নেই';
   }
 
-  // ---- এডিট প্রোফাইল মোডাল ----
+  // ---- এডিট প্রোফাইল মোডাল (শুধু নিজের প্রোফাইলে) ----
   editProfileBtn.addEventListener('click', () => {
+    if (viewUid && viewUid !== currentUser.uid) return;
     editBio.value = myProfile.bio || '';
     editGender.value = myProfile.gender || '';
     editBirthday.value = myProfile.birthday || '';
@@ -446,15 +463,15 @@
     editSaveBtn.disabled = false;
   });
 
-  // ---- আমার পোস্ট লোড (equality filter only, client-side সর্ট — কম্পোজিট ইনডেক্স এড়াতে) ----
+  // ---- টার্গেট ইউজারের পোস্ট লোড (equality filter only, client-side সর্ট — কম্পোজিট ইনডেক্স এড়াতে) ----
   let myPosts = [];
 
-  async function loadMyPosts() {
+  async function loadUserPosts(targetUid) {
     postsLoading.style.display = 'block';
     emptyPosts.style.display = 'none';
     myPostsList.innerHTML = '';
     try {
-      const q = query(collection(db, "posts"), where("authorUid", "==", currentUser.uid));
+      const q = query(collection(db, "posts"), where("authorUid", "==", targetUid));
       const snap = await getDocs(q);
       myPosts = [];
       snap.forEach(d => myPosts.push({ id: d.id, data: d.data() }));
@@ -471,15 +488,17 @@
       statComments.textContent = totalComments;
 
       postsLoading.style.display = 'none';
-      if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return; }
+      if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return myPosts; }
       myPosts.forEach(p => myPostsList.appendChild(buildPostCard(p.id, p.data)));
     } catch (e) {
       postsLoading.textContent = 'এরর: ' + e.message;
     }
+    return myPosts;
   }
 
   function buildPostCard(postId, d) {
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
+    const isPostOwner = currentUser && d.authorUid === currentUser.uid;
     const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
 
     const card = document.createElement('div');
@@ -501,8 +520,8 @@
           <div class="postMenuDropdown">
             <button class="copyLinkBtn">🔗 লিংক কপি</button>
             <button class="shareBtn">📤 শেয়ার</button>
-            <button class="editBtn">✏️ এডিট</button>
-            <button class="deleteBtn">🗑️ ডিলিট</button>
+            ${isPostOwner ? '<button class="editBtn">✏️ এডিট</button>' : ''}
+            ${isPostOwner ? '<button class="deleteBtn">🗑️ ডিলিট</button>' : ''}
           </div>
         </div>
       </div>
@@ -576,29 +595,35 @@
       }
     });
 
-    card.querySelector('.editBtn').addEventListener('click', () => {
-      menuDropdown.classList.remove('open');
-      const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
-      if (newText === null) return;
-      updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-        d.text = newText;
-        const idx = myPosts.findIndex(p => p.id === postId);
-        if (idx > -1) myPosts[idx].data = d;
-        card.replaceWith(buildPostCard(postId, d));
-      }).catch(e => alert('এরর: ' + e.message));
-    });
+    const editBtnEl = card.querySelector('.editBtn');
+    if (editBtnEl) {
+      editBtnEl.addEventListener('click', () => {
+        menuDropdown.classList.remove('open');
+        const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
+        if (newText === null) return;
+        updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
+          d.text = newText;
+          const idx = myPosts.findIndex(p => p.id === postId);
+          if (idx > -1) myPosts[idx].data = d;
+          card.replaceWith(buildPostCard(postId, d));
+        }).catch(e => alert('এরর: ' + e.message));
+      });
+    }
 
-    card.querySelector('.deleteBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
-      try {
-        await deleteDoc(doc(db, "posts", postId));
-        myPosts = myPosts.filter(p => p.id !== postId);
-        card.remove();
-        statPosts.textContent = myPosts.length;
-        if (myPosts.length === 0) emptyPosts.style.display = 'block';
-      } catch (e) { alert('এরর: ' + e.message); }
-    });
+    const deleteBtnEl = card.querySelector('.deleteBtn');
+    if (deleteBtnEl) {
+      deleteBtnEl.addEventListener('click', async () => {
+        menuDropdown.classList.remove('open');
+        if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
+        try {
+          await deleteDoc(doc(db, "posts", postId));
+          myPosts = myPosts.filter(p => p.id !== postId);
+          card.remove();
+          statPosts.textContent = myPosts.length;
+          if (myPosts.length === 0) emptyPosts.style.display = 'block';
+        } catch (e) { alert('এরর: ' + e.message); }
+      });
+    }
 
     card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
       const input = card.querySelector('.commentInput');
@@ -738,9 +763,31 @@
     if (user) {
       loginScreen.style.display = 'none';
       appScreen.style.display = 'block';
-      await ensureUserProfile(user);
-      renderProfile();
-      loadMyPosts();
+      await ensureUserProfile(user); // নিজের প্রোফাইল সবসময় সিঙ্ক/তৈরি হয়
+
+      const targetUid = viewUid || user.uid;
+      const isOwn = targetUid === user.uid;
+
+      let profileData = null;
+      if (isOwn) {
+        profileData = myProfile;
+      } else {
+        const snap = await getDoc(doc(db, "users", targetUid));
+        profileData = snap.exists() ? snap.data() : null;
+      }
+
+      const posts = await loadUserPosts(targetUid);
+
+      // ---- users/ ডকুমেন্ট না থাকলে (যেমন যে ব্যবহারকারী কখনো প্রোফাইল পেজে ঢোকেননি),
+      //      তার পোস্ট থেকেই নাম/ছবি নিয়ে দেখানো হচ্ছে ----
+      if (!profileData) {
+        const first = posts && posts[0];
+        profileData = first
+          ? { name: first.data.authorName, photoURL: first.data.authorPhoto, coverColor: '#4285F4', bio: '' }
+          : { name: 'ব্যবহারকারী', photoURL: '', coverColor: '#4285F4', bio: '' };
+      }
+
+      renderProfile(profileData, isOwn);
     } else {
       appScreen.style.display = 'none';
       loginScreen.style.display = 'flex';

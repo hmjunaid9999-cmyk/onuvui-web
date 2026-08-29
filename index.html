@@ -107,6 +107,8 @@
   .postHeader img.avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; }
   .postHeader .pName { font-size: 13px; font-weight: bold; }
   .postHeader .pTime { font-size: 11px; color: #6b7280; }
+  .postAuthorLink { color: inherit; text-decoration: none; display: block; }
+  .postAuthorLink.pName:active, .postAuthorLink.pName:hover { text-decoration: underline; }
   .postMenuWrap { margin-left: auto; position: relative; }
   .postMenuBtn { background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px; }
   .postMenuDropdown {
@@ -586,9 +588,11 @@
 
     card.innerHTML = `
       <div class="postHeader">
-        <img class="avatar" src="${d.authorPhoto || ''}">
+        <a class="postAuthorLink" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">
+          <img class="avatar" src="${d.authorPhoto || ''}">
+        </a>
         <div>
-          <div class="pName">${escapeHtml(d.authorName)}</div>
+          <a class="postAuthorLink pName" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">${escapeHtml(d.authorName)}</a>
           <div class="pTime">${timeAgo(d.createdAt)}</div>
         </div>
         <div class="postMenuWrap">
