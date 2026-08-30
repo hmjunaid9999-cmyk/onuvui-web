@@ -92,7 +92,7 @@
   .gridRow2 .gridCode {
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #9ca3af;
     padding: 8px 10px; border-radius: 8px; font-size: 12px; font-family: monospace;
-    min-height: 90px; resize: vertical;
+    min-height: 220px; resize: vertical;
   }
   .accordionBtn {
     display: block; width: 100%; text-align: left; background: #0d1117; color: #fff;
@@ -107,11 +107,12 @@
   .menuTypeBox.collapsed { display: none; }
   .menuTypeBox { padding: 10px 2px 2px; }
 
-  /* ---- এড পেজ (বামে) / এড গেজেট (ডানে) — পাশাপাশি দুইটা বাটন ---- */
-  .addTypeRow { display: flex; gap: 8px; margin-bottom: 10px; }
+  /* ---- এড পেজ (বামে) / এড গেজেট (ডানে) — পাশাপাশি দুইটা ছোট বাটন, স্ক্রিনের মধ্যেই আঁটবে ---- */
+  .addTypeRow { display: flex; gap: 6px; margin-bottom: 10px; }
   .addTypeBtn {
-    flex: 1; background: #0d1117; color: #9ca3af; border: 1px solid #30363d;
-    padding: 10px 6px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+    flex: 1; min-width: 0; background: #0d1117; color: #9ca3af; border: 1px solid #30363d;
+    padding: 8px 2px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .addTypeBtn.active { background: #4285F4; color: #fff; border-color: #4285F4; }
 
@@ -124,12 +125,17 @@
     background: #238636; color: #fff; border: none; padding: 9px; border-radius: 8px;
     font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 2px;
   }
+  .createForm textarea.gridCode { min-height: 220px; }
 
   /* ---- তৈরি হওয়া আইটেম: ডিফল্টে লকড (শুধু দেখা যাবে), এডিট বাটনে চাপলে পরিবর্তন করা যাবে ---- */
   .gridRow2 input:disabled, .gridRow2 textarea:disabled { opacity: 0.65; background: #0b0f14; cursor: default; }
   .gridBtnCol { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
   .gridEditBtn {
     background: #262c36; color: #60a5fa; border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; cursor: pointer;
+  }
+  .gridCopyBtn {
+    background: #262c36; color: #34d399; border: none; border-radius: 8px;
     padding: 8px 10px; font-size: 13px; cursor: pointer;
   }
 
@@ -235,21 +241,29 @@
           <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
           <div class="menuTypeBox collapsed" id="mtTop">
             <div class="addTypeRow">
-              <button type="button" class="addTypeBtn active" data-form="menuPageForm">📄 এড পেজ</button>
-              <button type="button" class="addTypeBtn" data-form="menuGadgetForm">🧩 এড গেজেট</button>
+              <button type="button" class="addTypeBtn active" data-panel="menuPagePanel">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-panel="menuGadgetPanel">🧩 এড গেজেট</button>
             </div>
-            <div class="createForm" id="menuPageForm">
-              <input type="text" class="createLabel" id="menuPageCreateLabel" placeholder="নাম/আইকন">
-              <input type="text" class="createUrl" id="menuPageCreateUrl" placeholder="লিংক">
-              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="page">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="menuPagePanel">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="menuPageCreateLabel" placeholder="নাম/আইকন">
+                <input type="text" class="createUrl" id="menuPageCreateUrl" placeholder="লিংক">
+                <button type="button" class="createBtn" data-list="menuGridTable" data-kind="page">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="menuGridTable"></div>
             </div>
-            <div class="createForm" id="menuGadgetForm" style="display:none">
-              <input type="text" class="createLabel" id="menuGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-              <textarea class="gridCode" id="menuGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="menuGadgetPanel" style="display:none">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="menuGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+                <textarea class="gridCode" id="menuGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+                <button type="button" class="createBtn" data-list="menuGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="menuGadgetGridTable"></div>
             </div>
-            <div class="gridTable itemList" id="menuCombinedList"></div>
-            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)।</div>
+
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম।</div>
             <button class="sectionSaveBtn" data-section="menu" data-status="statusMenu">💾 সেভ করুন</button>
             <div class="sectionStatus" id="statusMenu"></div>
           </div>
@@ -258,21 +272,29 @@
           <button type="button" class="accordionBtn" data-toggle="mtFooter">২. ফুটার মেনু</button>
           <div class="menuTypeBox collapsed" id="mtFooter">
             <div class="addTypeRow">
-              <button type="button" class="addTypeBtn active" data-form="footerPageForm">📄 এড পেজ</button>
-              <button type="button" class="addTypeBtn" data-form="footerGadgetForm">🧩 এড গেজেট</button>
+              <button type="button" class="addTypeBtn active" data-panel="footerPagePanel">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-panel="footerGadgetPanel">🧩 এড গেজেট</button>
             </div>
-            <div class="createForm" id="footerPageForm">
-              <input type="text" class="createLabel" id="footerPageCreateLabel" placeholder="নাম/আইকন">
-              <input type="text" class="createUrl" id="footerPageCreateUrl" placeholder="লিংক">
-              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="page">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="footerPagePanel">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="footerPageCreateLabel" placeholder="নাম/আইকন">
+                <input type="text" class="createUrl" id="footerPageCreateUrl" placeholder="লিংক">
+                <button type="button" class="createBtn" data-list="footerGridTable" data-kind="page">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="footerGridTable"></div>
             </div>
-            <div class="createForm" id="footerGadgetForm" style="display:none">
-              <input type="text" class="createLabel" id="footerGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-              <textarea class="gridCode" id="footerGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="footerGadgetPanel" style="display:none">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="footerGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+                <textarea class="gridCode" id="footerGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+                <button type="button" class="createBtn" data-list="footerGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="footerGadgetGridTable"></div>
             </div>
-            <div class="gridTable itemList" id="footerCombinedList"></div>
-            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে।</div>
+
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে।</div>
             <button class="sectionSaveBtn" data-section="footer" data-status="statusFooter">💾 সেভ করুন</button>
             <div class="sectionStatus" id="statusFooter"></div>
           </div>
@@ -281,21 +303,29 @@
           <button type="button" class="accordionBtn" data-toggle="mtSidebar">৩. সাইড বার মেনু</button>
           <div class="menuTypeBox collapsed" id="mtSidebar">
             <div class="addTypeRow">
-              <button type="button" class="addTypeBtn active" data-form="sidebarPageForm">📄 এড পেজ</button>
-              <button type="button" class="addTypeBtn" data-form="sidebarGadgetForm">🧩 এড গেজেট</button>
+              <button type="button" class="addTypeBtn active" data-panel="sidebarPagePanel">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-panel="sidebarGadgetPanel">🧩 এড গেজেট</button>
             </div>
-            <div class="createForm" id="sidebarPageForm">
-              <input type="text" class="createLabel" id="sidebarPageCreateLabel" placeholder="নাম/আইকন">
-              <input type="text" class="createUrl" id="sidebarPageCreateUrl" placeholder="লিংক">
-              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="page">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="sidebarPagePanel">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="sidebarPageCreateLabel" placeholder="নাম/আইকন">
+                <input type="text" class="createUrl" id="sidebarPageCreateUrl" placeholder="লিংক">
+                <button type="button" class="createBtn" data-list="sidebarGridTable" data-kind="page">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="sidebarGridTable"></div>
             </div>
-            <div class="createForm" id="sidebarGadgetForm" style="display:none">
-              <input type="text" class="createLabel" id="sidebarGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-              <textarea class="gridCode" id="sidebarGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+
+            <div class="typePanel" id="sidebarGadgetPanel" style="display:none">
+              <div class="createForm">
+                <input type="text" class="createLabel" id="sidebarGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+                <textarea class="gridCode" id="sidebarGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+                <button type="button" class="createBtn" data-list="sidebarGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
+              </div>
+              <div class="gridTable itemList" id="sidebarGadgetGridTable"></div>
             </div>
-            <div class="gridTable itemList" id="sidebarCombinedList"></div>
-            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)।</div>
+
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম।</div>
             <button class="sectionSaveBtn" data-section="sidebar" data-status="statusSidebar">💾 সেভ করুন</button>
             <div class="sectionStatus" id="statusSidebar"></div>
           </div>
@@ -577,9 +607,31 @@
     });
   }
 
-  // ---- তৈরি হওয়া আইটেমের এডিট/ডিলিট বাটন — ডিফল্টে লকড থাকে, এডিটে চাপলে পরিবর্তনযোগ্য হয় ----
+  // ---- ক্লিপবোর্ডে কপি করার সহায়ক ফাংশন (নতুন/পুরনো ব্রাউজার দুটোতেই কাজ করবে) ----
+  function fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* কিছু না */ }
+    document.body.removeChild(ta);
+  }
+  function copyText(text) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    } else {
+      fallbackCopyText(text);
+    }
+  }
+
+  // ---- তৈরি হওয়া আইটেমের এডিট/কপি/ডিলিট বাটন — ডিফল্টে লকড থাকে, এডিটে চাপলে পরিবর্তনযোগ্য হয় ----
   function wireEditDelete(row) {
     const editBtn = row.querySelector('.gridEditBtn');
+    const copyBtn = row.querySelector('.gridCopyBtn');
     const deleteBtn = row.querySelector('.gridDeleteBtn');
     deleteBtn.addEventListener('click', () => {
       if (confirm('আইটেমটি ডিলিট করবেন?')) row.remove();
@@ -591,6 +643,13 @@
       editBtn.dataset.editing = wasEditing ? '0' : '1';
       editBtn.textContent = wasEditing ? '✏️' : '✅';
       if (!wasEditing && fields[0]) fields[0].focus();
+    });
+    copyBtn.addEventListener('click', () => {
+      const source = row.dataset.type === 'gadget' ? row.querySelector('.gridCode') : row.querySelector('.gridUrl');
+      copyText(source.value);
+      const original = copyBtn.textContent;
+      copyBtn.textContent = '✅';
+      setTimeout(() => { copyBtn.textContent = original; }, 1200);
     });
   }
 
@@ -606,6 +665,7 @@
       </div>
       <div class="gridBtnCol">
         <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="লিংক কপি করুন">📋</button>
         <button type="button" class="gridDeleteBtn">🗑️</button>
       </div>
     `;
@@ -626,6 +686,7 @@
       </div>
       <div class="gridBtnCol">
         <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="কোড কপি করুন">📋</button>
         <button type="button" class="gridDeleteBtn">🗑️</button>
       </div>
     `;
