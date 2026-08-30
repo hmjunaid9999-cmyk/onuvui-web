@@ -103,14 +103,9 @@
   .accordionBox { padding: 10px 2px 2px; }
   .accordionBox.collapsed { display: none; }
 
-  /* ---- মেনু বার: টপ মেনু / ফুটার মেনু / সাইড বার মেনু — তিনটা বাটন পরপর ---- */
-  .menuTypeTabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .menuTypeTab {
-    flex: 1; background: #0d1117; color: #9ca3af; border: 1px solid #30363d;
-    padding: 10px 4px; border-radius: 10px; font-size: 12.5px; font-weight: bold; cursor: pointer;
-  }
-  .menuTypeTab.active { background: #4285F4; color: #fff; border-color: #4285F4; }
-  .menuTypeBox { }
+  /* ---- মেনু বার: টপ মেনু / ফুটার মেনু / সাইড বার মেনু — তিনটা বাটন একটার নিচে একটা ---- */
+  .menuTypeBox.collapsed { display: none; }
+  .menuTypeBox { padding: 10px 2px 2px; }
 
   /* ---- আইটেম তৈরির ফর্ম (সবসময় খালি থাকে, এখান থেকেই নতুন আইটেম তৈরি হয়) ---- */
   .createForm {
@@ -228,14 +223,9 @@
         <div class="section">
           <h2>📋 মেনু বার</h2>
 
-          <div class="menuTypeTabs">
-            <button type="button" class="menuTypeTab active" data-target="mtTop">টপ মেনু</button>
-            <button type="button" class="menuTypeTab" data-target="mtFooter">ফুটার মেনু</button>
-            <button type="button" class="menuTypeTab" data-target="mtSidebar">সাইড বার মেনু</button>
-          </div>
-
           <!-- ================= ১) টপ মেনু ================= -->
-          <div class="menuTypeBox" id="mtTop">
+          <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtTop">
             <button type="button" class="accordionBtn" data-toggle="menuPageBox">📄 এড পেজ</button>
             <div id="menuPageBox" class="accordionBox collapsed">
               <div class="createForm">
@@ -264,7 +254,8 @@
           </div>
 
           <!-- ================= ২) ফুটার মেনু ================= -->
-          <div class="menuTypeBox" id="mtFooter" style="display:none">
+          <button type="button" class="accordionBtn" data-toggle="mtFooter">২. ফুটার মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtFooter">
             <button type="button" class="accordionBtn" data-toggle="footerPageBox">📄 এড পেজ</button>
             <div id="footerPageBox" class="accordionBox collapsed">
               <div class="createForm">
@@ -293,7 +284,8 @@
           </div>
 
           <!-- ================= ৩) সাইড বার মেনু ================= -->
-          <div class="menuTypeBox" id="mtSidebar" style="display:none">
+          <button type="button" class="accordionBtn" data-toggle="mtSidebar">৩. সাইড বার মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtSidebar">
             <button type="button" class="accordionBtn" data-toggle="sidebarPageBox">📄 এড পেজ</button>
             <div id="sidebarPageBox" class="accordionBox collapsed">
               <div class="createForm">
@@ -770,18 +762,7 @@
     });
   });
 
-  // ---- টপ মেনু / ফুটার মেনু / সাইড বার মেনু — তিনটা বাটনের মধ্যে সুইচ ----
-  document.querySelectorAll('.menuTypeTab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const group = tab.closest('.section');
-      group.querySelectorAll('.menuTypeTab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      group.querySelectorAll('.menuTypeBox').forEach(box => { box.style.display = 'none'; });
-      document.getElementById(tab.dataset.target).style.display = 'block';
-    });
-  });
-
-  // ---- অ্যাকর্ডিয়ন (পেজ / গেজেট বাটনে চাপলে নিচের বক্স খোলে-বন্ধ হয়) ----
+  // ---- অ্যাকর্ডিয়ন (টপ মেনু/ফুটার মেনু/সাইড বার মেনু এবং তার ভিতরের এড পেজ/এড গেজেট — সবগুলো বাটনেই এই একই লজিকে খোলে-বন্ধ হয়) ----
   document.querySelectorAll('.accordionBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById(btn.dataset.toggle).classList.toggle('collapsed');
