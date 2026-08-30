@@ -107,6 +107,14 @@
   .menuTypeBox.collapsed { display: none; }
   .menuTypeBox { padding: 10px 2px 2px; }
 
+  /* ---- এড পেজ (বামে) / এড গেজেট (ডানে) — পাশাপাশি দুইটা বাটন ---- */
+  .addTypeRow { display: flex; gap: 8px; margin-bottom: 10px; }
+  .addTypeBtn {
+    flex: 1; background: #0d1117; color: #9ca3af; border: 1px solid #30363d;
+    padding: 10px 6px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer;
+  }
+  .addTypeBtn.active { background: #4285F4; color: #fff; border-color: #4285F4; }
+
   /* ---- আইটেম তৈরির ফর্ম (সবসময় খালি থাকে, এখান থেকেই নতুন আইটেম তৈরি হয়) ---- */
   .createForm {
     background: #0d1117; border: 1px dashed #30363d; border-radius: 10px;
@@ -226,91 +234,70 @@
           <!-- ================= ১) টপ মেনু ================= -->
           <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
           <div class="menuTypeBox collapsed" id="mtTop">
-            <button type="button" class="accordionBtn" data-toggle="menuPageBox">📄 এড পেজ</button>
-            <div id="menuPageBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="menuPageCreateLabel" placeholder="নাম/আইকন">
-                <input type="text" class="createUrl" id="menuPageCreateUrl" placeholder="লিংক">
-                <button type="button" class="createBtn" data-list="menuGridTable" data-kind="page">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="menuGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (গেজেটের সাথে মিলিয়ে)।</div>
-              <button class="sectionSaveBtn" data-section="menu" data-status="statusMenuPage">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusMenuPage"></div>
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="menuPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="menuGadgetForm">🧩 এড গেজেট</button>
             </div>
-
-            <button type="button" class="accordionBtn" data-toggle="menuGadgetBox">🧩 এড গেজেট</button>
-            <div id="menuGadgetBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="menuGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-                <textarea class="gridCode" id="menuGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-                <button type="button" class="createBtn" data-list="menuGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="menuGadgetGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজের সাথে মিলিয়ে)।</div>
-              <button class="sectionSaveBtn" data-section="menu" data-status="statusMenuGadget">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusMenuGadget"></div>
+            <div class="createForm" id="menuPageForm">
+              <input type="text" class="createLabel" id="menuPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="menuPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="page">➕ তৈরি করুন</button>
             </div>
+            <div class="createForm" id="menuGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="menuGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="menuGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+            <div class="gridTable itemList" id="menuCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)।</div>
+            <button class="sectionSaveBtn" data-section="menu" data-status="statusMenu">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusMenu"></div>
           </div>
 
           <!-- ================= ২) ফুটার মেনু ================= -->
           <button type="button" class="accordionBtn" data-toggle="mtFooter">২. ফুটার মেনু</button>
           <div class="menuTypeBox collapsed" id="mtFooter">
-            <button type="button" class="accordionBtn" data-toggle="footerPageBox">📄 এড পেজ</button>
-            <div id="footerPageBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="footerPageCreateLabel" placeholder="নাম/আইকন">
-                <input type="text" class="createUrl" id="footerPageCreateUrl" placeholder="লিংক">
-                <button type="button" class="createBtn" data-list="footerGridTable" data-kind="page">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="footerGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (গেজেটের সাথে মিলিয়ে)। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে।</div>
-              <button class="sectionSaveBtn" data-section="footer" data-status="statusFooterPage">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusFooterPage"></div>
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="footerPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="footerGadgetForm">🧩 এড গেজেট</button>
             </div>
-
-            <button type="button" class="accordionBtn" data-toggle="footerGadgetBox">🧩 এড গেজেট</button>
-            <div id="footerGadgetBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="footerGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-                <textarea class="gridCode" id="footerGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-                <button type="button" class="createBtn" data-list="footerGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="footerGadgetGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজের সাথে মিলিয়ে)।</div>
-              <button class="sectionSaveBtn" data-section="footer" data-status="statusFooterGadget">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusFooterGadget"></div>
+            <div class="createForm" id="footerPageForm">
+              <input type="text" class="createLabel" id="footerPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="footerPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="page">➕ তৈরি করুন</button>
             </div>
+            <div class="createForm" id="footerGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="footerGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="footerGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+            <div class="gridTable itemList" id="footerCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে।</div>
+            <button class="sectionSaveBtn" data-section="footer" data-status="statusFooter">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusFooter"></div>
           </div>
 
           <!-- ================= ৩) সাইড বার মেনু ================= -->
           <button type="button" class="accordionBtn" data-toggle="mtSidebar">৩. সাইড বার মেনু</button>
           <div class="menuTypeBox collapsed" id="mtSidebar">
-            <button type="button" class="accordionBtn" data-toggle="sidebarPageBox">📄 এড পেজ</button>
-            <div id="sidebarPageBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="sidebarPageCreateLabel" placeholder="নাম/আইকন">
-                <input type="text" class="createUrl" id="sidebarPageCreateUrl" placeholder="লিংক">
-                <button type="button" class="createBtn" data-list="sidebarGridTable" data-kind="page">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="sidebarGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (গেজেটের সাথে মিলিয়ে)।</div>
-              <button class="sectionSaveBtn" data-section="sidebar" data-status="statusSidebarPage">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusSidebarPage"></div>
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="sidebarPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="sidebarGadgetForm">🧩 এড গেজেট</button>
             </div>
-
-            <button type="button" class="accordionBtn" data-toggle="sidebarGadgetBox">🧩 এড গেজেট</button>
-            <div id="sidebarGadgetBox" class="accordionBox collapsed">
-              <div class="createForm">
-                <input type="text" class="createLabel" id="sidebarGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
-                <textarea class="gridCode" id="sidebarGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
-                <button type="button" class="createBtn" data-list="sidebarGadgetGridTable" data-kind="gadget">➕ তৈরি করুন</button>
-              </div>
-              <div class="gridTable itemList" id="sidebarGadgetGridTable"></div>
-              <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজের সাথে মিলিয়ে)।</div>
-              <button class="sectionSaveBtn" data-section="sidebar" data-status="statusSidebarGadget">💾 সেভ করুন</button>
-              <div class="sectionStatus" id="statusSidebarGadget"></div>
+            <div class="createForm" id="sidebarPageForm">
+              <input type="text" class="createLabel" id="sidebarPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="sidebarPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="page">➕ তৈরি করুন</button>
             </div>
+            <div class="createForm" id="sidebarGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="sidebarGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="sidebarGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+            <div class="gridTable itemList" id="sidebarCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একসাথে ধারাবাহিকভাবে)।</div>
+            <button class="sectionSaveBtn" data-section="sidebar" data-status="statusSidebar">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusSidebar"></div>
           </div>
         </div>
         </div>
@@ -552,12 +539,9 @@
   }
 
   const posterColorPicker = createColorPicker('posterColorPicker', COLOR_PALETTE.length);
-  const menuGridTable = document.getElementById('menuGridTable');
-  const sidebarGridTable = document.getElementById('sidebarGridTable');
-  const footerGridTable = document.getElementById('footerGridTable');
-  const sidebarGadgetGridTable = document.getElementById('sidebarGadgetGridTable');
-  const menuGadgetGridTable = document.getElementById('menuGadgetGridTable');
-  const footerGadgetGridTable = document.getElementById('footerGadgetGridTable');
+  const menuCombinedList = document.getElementById('menuCombinedList');
+  const sidebarCombinedList = document.getElementById('sidebarCombinedList');
+  const footerCombinedList = document.getElementById('footerCombinedList');
 
   // ---- নাম+লিংক ও গেজেট গ্রিড (একই সেকশনে দুই ট্যাব — টিক দিলে সারি নিজের ট্যাবে উপরে যায়,
   //      এবং কোন ক্রমে টিক দেওয়া হয়েছে সেটাও মনে রাখা হয় (row.dataset.seq) — সেভ করার সময়
@@ -613,6 +597,7 @@
   function createGridRow(label, url, getNextSeq) {
     const row = document.createElement('div');
     row.className = 'gridRow2';
+    row.dataset.type = 'page';
     row.innerHTML = `
       <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
       <div class="gridFields">
@@ -632,6 +617,7 @@
   function createGadgetRow(title, code, getNextSeq) {
     const row = document.createElement('div');
     row.className = 'gridRow2';
+    row.dataset.type = 'gadget';
     row.innerHTML = `
       <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
       <div class="gridFields">
@@ -656,27 +642,23 @@
     return out;
   }
 
-  // মিশ্রিত entries[] থেকে পেজ-ট্যাব ও গেজেট-ট্যাবে সারি বসায়; প্রতিটা সারির original ক্রম মনে রাখে
-  // (কিছু টিক না দিলে সেভের সময় এই আগের ক্রমই বজায় থাকে)
-  function fillCombinedSection(pageContainer, gadgetContainer, entries, getNextSeq) {
-    pageContainer.innerHTML = '';
-    gadgetContainer.innerHTML = '';
+  // মিশ্রিত entries[] থেকে একটাই লিস্টে পেজ ও গেজেট আইটেম একসাথে, আগের ক্রম অনুযায়ী বসায়
+  function fillCombinedList(container, entries, getNextSeq) {
+    container.innerHTML = '';
     (entries || []).forEach((entry, idx) => {
+      let row = null;
       if (entry && entry.type === 'gadget') {
-        const row = createGadgetRow(entry.title, entry.code, getNextSeq);
-        row.dataset.origIndex = String(idx);
-        gadgetContainer.appendChild(row);
+        row = createGadgetRow(entry.title, entry.code, getNextSeq);
       } else if (entry) {
-        const row = createGridRow(entry.label, entry.url, getNextSeq);
+        row = createGridRow(entry.label, entry.url, getNextSeq);
+      }
+      if (row) {
         row.dataset.origIndex = String(idx);
-        pageContainer.appendChild(row);
+        container.appendChild(row);
       }
     });
-    if (pageContainer.children.length === 0) {
-      pageContainer.innerHTML = '<div class="listEmpty">এখনো কোনো পেজ তৈরি হয়নি</div>';
-    }
-    if (gadgetContainer.children.length === 0) {
-      gadgetContainer.innerHTML = '<div class="listEmpty">এখনো কোনো গেজেট তৈরি হয়নি</div>';
+    if (container.children.length === 0) {
+      container.innerHTML = '<div class="listEmpty">এখনো কোনো আইটেম তৈরি হয়নি</div>';
     }
   }
 
@@ -685,45 +667,40 @@
     if (empty) empty.remove();
   }
 
-  // পেজ-ট্যাব ও গেজেট-ট্যাব থেকে একসাথে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
+  // একই লিস্ট থেকে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
   // বাকিগুলো তাদের আগের ক্রম (origIndex) অনুযায়ী সাজিয়ে একটাই মিশ্রিত লিস্ট বানায়
-  function readCombinedSection(pageContainer, gadgetContainer) {
+  function readCombinedList(container) {
     const rows = [];
-    pageContainer.querySelectorAll('.gridRow2').forEach(row => {
-      const label = row.querySelector('.gridLabel').value.trim();
-      const url = row.querySelector('.gridUrl').value.trim();
-      if (!label) return;
-      rows.push({
-        entry: { type: 'page', label, url: url || '#' },
-        seq: row.dataset.seq ? Number(row.dataset.seq) : null,
-        orig: row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999
-      });
-    });
-    gadgetContainer.querySelectorAll('.gridRow2').forEach(row => {
-      const title = row.querySelector('.gridLabel').value.trim();
-      const code = row.querySelector('.gridCode').value;
-      if (!code.trim()) return;
-      rows.push({
-        entry: { type: 'gadget', title, code },
-        seq: row.dataset.seq ? Number(row.dataset.seq) : null,
-        orig: row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999
-      });
+    container.querySelectorAll('.gridRow2').forEach(row => {
+      const seq = row.dataset.seq ? Number(row.dataset.seq) : null;
+      const orig = row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999;
+      if (row.dataset.type === 'gadget') {
+        const title = row.querySelector('.gridLabel').value.trim();
+        const code = row.querySelector('.gridCode').value;
+        if (!code.trim()) return;
+        rows.push({ entry: { type: 'gadget', title, code }, seq, orig });
+      } else {
+        const label = row.querySelector('.gridLabel').value.trim();
+        const url = row.querySelector('.gridUrl').value.trim();
+        if (!label) return;
+        rows.push({ entry: { type: 'page', label, url: url || '#' }, seq, orig });
+      }
     });
     const checked = rows.filter(r => r.seq !== null).sort((a, b) => a.seq - b.seq);
     const unchecked = rows.filter(r => r.seq === null).sort((a, b) => a.orig - b.orig);
     return [...checked, ...unchecked].map(r => r.entry);
   }
 
-  // শুরুতে খালি সারি দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
-  fillCombinedSection(sidebarGridTable, sidebarGadgetGridTable, [], sidebarSeq);
-  fillCombinedSection(menuGridTable, menuGadgetGridTable, [], menuSeq);
-  fillCombinedSection(footerGridTable, footerGadgetGridTable, [], footerSeq);
+  // শুরুতে খালি লিস্ট দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
+  fillCombinedList(sidebarCombinedList, [], sidebarSeq);
+  fillCombinedList(menuCombinedList, [], menuSeq);
+  fillCombinedList(footerCombinedList, [], footerSeq);
 
-  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিচের লিস্টে জমা হয় ----
+  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিচের কম্বাইন্ড লিস্টে জমা হয় ----
   const SEQ_BY_LIST = {
-    sidebarGridTable: sidebarSeq, sidebarGadgetGridTable: sidebarSeq,
-    menuGridTable: menuSeq, menuGadgetGridTable: menuSeq,
-    footerGridTable: footerSeq, footerGadgetGridTable: footerSeq
+    sidebarCombinedList: sidebarSeq,
+    menuCombinedList: menuSeq,
+    footerCombinedList: footerSeq
   };
 
   document.querySelectorAll('.createBtn').forEach(btn => {
@@ -766,6 +743,17 @@
   document.querySelectorAll('.accordionBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById(btn.dataset.toggle).classList.toggle('collapsed');
+    });
+  });
+
+  // ---- এড পেজ (বামে) / এড গেজেট (ডানে) — কোনটার ফর্ম দেখাবে সেটা বাছাই করে, নিচের লিস্ট সবসময় একটাই থাকে ----
+  document.querySelectorAll('.addTypeBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const box = btn.closest('.menuTypeBox');
+      box.querySelectorAll('.addTypeBtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      box.querySelectorAll('.createForm').forEach(f => { f.style.display = 'none'; });
+      document.getElementById(btn.dataset.form).style.display = 'flex';
     });
   });
 
@@ -844,9 +832,9 @@
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
     posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
-    fillCombinedSection(menuGridTable, menuGadgetGridTable, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
-    fillCombinedSection(sidebarGridTable, sidebarGadgetGridTable, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
-    fillCombinedSection(footerGridTable, footerGadgetGridTable, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets), footerSeq);
+    fillCombinedList(menuCombinedList, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
+    fillCombinedList(sidebarCombinedList, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
+    fillCombinedList(footerCombinedList, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets), footerSeq);
     return s;
   }
 
@@ -867,9 +855,9 @@
       data = { posterColors: colors };
     }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
-    else if (section === 'menu') data = { menuEntries: readCombinedSection(menuGridTable, menuGadgetGridTable), menuItems: [], menuGadgets: [] };
-    else if (section === 'sidebar') data = { sidebarEntries: readCombinedSection(sidebarGridTable, sidebarGadgetGridTable), sidebarItems: [], sidebarGadgets: [] };
-    else if (section === 'footer') data = { footerEntries: readCombinedSection(footerGridTable, footerGadgetGridTable), footerItems: [], footerGadgets: [] };
+    else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
+    else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };
+    else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
     else if (section === 'contentSettings') data = {
       postsPerPage: Number(postsPerPage.value) || 5,
       maxWidth: Number(maxWidth.value) || 640,
