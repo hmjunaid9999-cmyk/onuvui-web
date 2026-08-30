@@ -569,9 +569,12 @@
   }
 
   const posterColorPicker = createColorPicker('posterColorPicker', COLOR_PALETTE.length);
-  const menuCombinedList = document.getElementById('menuCombinedList');
-  const sidebarCombinedList = document.getElementById('sidebarCombinedList');
-  const footerCombinedList = document.getElementById('footerCombinedList');
+  const menuGridTable = document.getElementById('menuGridTable');
+  const menuGadgetGridTable = document.getElementById('menuGadgetGridTable');
+  const sidebarGridTable = document.getElementById('sidebarGridTable');
+  const sidebarGadgetGridTable = document.getElementById('sidebarGadgetGridTable');
+  const footerGridTable = document.getElementById('footerGridTable');
+  const footerGadgetGridTable = document.getElementById('footerGadgetGridTable');
 
   // ---- নাম+লিংক ও গেজেট গ্রিড (একই সেকশনে দুই ট্যাব — টিক দিলে সারি নিজের ট্যাবে উপরে যায়,
   //      এবং কোন ক্রমে টিক দেওয়া হয়েছে সেটাও মনে রাখা হয় (row.dataset.seq) — সেভ করার সময়
@@ -703,23 +706,27 @@
     return out;
   }
 
-  // মিশ্রিত entries[] থেকে একটাই লিস্টে পেজ ও গেজেট আইটেম একসাথে, আগের ক্রম অনুযায়ী বসায়
-  function fillCombinedList(container, entries, getNextSeq) {
-    container.innerHTML = '';
+  // মিশ্রিত entries[] থেকে পেজ-লিস্ট ও গেজেট-লিস্টে আলাদা আলাদা সারি বসায়; প্রতিটা সারির
+  // original ক্রম মনে রাখে (কিছু টিক না দিলে সেভের সময় এই আগের ক্রমই বজায় থাকে)
+  function fillCombinedSection(pageContainer, gadgetContainer, entries, getNextSeq) {
+    pageContainer.innerHTML = '';
+    gadgetContainer.innerHTML = '';
     (entries || []).forEach((entry, idx) => {
-      let row = null;
       if (entry && entry.type === 'gadget') {
-        row = createGadgetRow(entry.title, entry.code, getNextSeq);
-      } else if (entry) {
-        row = createGridRow(entry.label, entry.url, getNextSeq);
-      }
-      if (row) {
+        const row = createGadgetRow(entry.title, entry.code, getNextSeq);
         row.dataset.origIndex = String(idx);
-        container.appendChild(row);
+        gadgetContainer.appendChild(row);
+      } else if (entry) {
+        const row = createGridRow(entry.label, entry.url, getNextSeq);
+        row.dataset.origIndex = String(idx);
+        pageContainer.appendChild(row);
       }
     });
-    if (container.children.length === 0) {
-      container.innerHTML = '<div class="listEmpty">এখনো কোনো আইটেম তৈরি হয়নি</div>';
+    if (pageContainer.children.length === 0) {
+      pageContainer.innerHTML = '<div class="listEmpty">এখনো কোনো পেজ তৈরি হয়নি</div>';
+    }
+    if (gadgetContainer.children.length === 0) {
+      gadgetContainer.innerHTML = '<div class="listEmpty">এখনো কোনো গেজেট তৈরি হয়নি</div>';
     }
   }
 
@@ -728,40 +735,45 @@
     if (empty) empty.remove();
   }
 
-  // একই লিস্ট থেকে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
-  // বাকিগুলো তাদের আগের ক্রম (origIndex) অনুযায়ী সাজিয়ে একটাই মিশ্রিত লিস্ট বানায়
-  function readCombinedList(container) {
+  // পেজ-লিস্ট ও গেজেট-লিস্ট থেকে একসাথে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
+  // বাকিগুলো তাদের আগের ক্রম (origIndex) অনুযায়ী সাজিয়ে সেভের জন্য একটাই মিশ্রিত লিস্ট বানায়
+  function readCombinedSection(pageContainer, gadgetContainer) {
     const rows = [];
-    container.querySelectorAll('.gridRow2').forEach(row => {
-      const seq = row.dataset.seq ? Number(row.dataset.seq) : null;
-      const orig = row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999;
-      if (row.dataset.type === 'gadget') {
-        const title = row.querySelector('.gridLabel').value.trim();
-        const code = row.querySelector('.gridCode').value;
-        if (!code.trim()) return;
-        rows.push({ entry: { type: 'gadget', title, code }, seq, orig });
-      } else {
-        const label = row.querySelector('.gridLabel').value.trim();
-        const url = row.querySelector('.gridUrl').value.trim();
-        if (!label) return;
-        rows.push({ entry: { type: 'page', label, url: url || '#' }, seq, orig });
-      }
+    pageContainer.querySelectorAll('.gridRow2').forEach(row => {
+      const label = row.querySelector('.gridLabel').value.trim();
+      const url = row.querySelector('.gridUrl').value.trim();
+      if (!label) return;
+      rows.push({
+        entry: { type: 'page', label, url: url || '#' },
+        seq: row.dataset.seq ? Number(row.dataset.seq) : null,
+        orig: row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999
+      });
+    });
+    gadgetContainer.querySelectorAll('.gridRow2').forEach(row => {
+      const title = row.querySelector('.gridLabel').value.trim();
+      const code = row.querySelector('.gridCode').value;
+      if (!code.trim()) return;
+      rows.push({
+        entry: { type: 'gadget', title, code },
+        seq: row.dataset.seq ? Number(row.dataset.seq) : null,
+        orig: row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999
+      });
     });
     const checked = rows.filter(r => r.seq !== null).sort((a, b) => a.seq - b.seq);
     const unchecked = rows.filter(r => r.seq === null).sort((a, b) => a.orig - b.orig);
     return [...checked, ...unchecked].map(r => r.entry);
   }
 
-  // শুরুতে খালি লিস্ট দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
-  fillCombinedList(sidebarCombinedList, [], sidebarSeq);
-  fillCombinedList(menuCombinedList, [], menuSeq);
-  fillCombinedList(footerCombinedList, [], footerSeq);
+  // শুরুতে খালি সারি দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
+  fillCombinedSection(sidebarGridTable, sidebarGadgetGridTable, [], sidebarSeq);
+  fillCombinedSection(menuGridTable, menuGadgetGridTable, [], menuSeq);
+  fillCombinedSection(footerGridTable, footerGadgetGridTable, [], footerSeq);
 
-  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিচের কম্বাইন্ড লিস্টে জমা হয় ----
+  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিজের লিস্টে জমা হয় ----
   const SEQ_BY_LIST = {
-    sidebarCombinedList: sidebarSeq,
-    menuCombinedList: menuSeq,
-    footerCombinedList: footerSeq
+    sidebarGridTable: sidebarSeq, sidebarGadgetGridTable: sidebarSeq,
+    menuGridTable: menuSeq, menuGadgetGridTable: menuSeq,
+    footerGridTable: footerSeq, footerGadgetGridTable: footerSeq
   };
 
   document.querySelectorAll('.createBtn').forEach(btn => {
@@ -807,14 +819,14 @@
     });
   });
 
-  // ---- এড পেজ (বামে) / এড গেজেট (ডানে) — কোনটার ফর্ম দেখাবে সেটা বাছাই করে, নিচের লিস্ট সবসময় একটাই থাকে ----
+  // ---- এড পেজ (বামে) / এড গেজেট (ডানে) — কোনটার প্যানেল (ফর্ম + নিজের লিস্ট) দেখাবে সেটা বাছাই করে ----
   document.querySelectorAll('.addTypeBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const box = btn.closest('.menuTypeBox');
       box.querySelectorAll('.addTypeBtn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      box.querySelectorAll('.createForm').forEach(f => { f.style.display = 'none'; });
-      document.getElementById(btn.dataset.form).style.display = 'flex';
+      box.querySelectorAll('.typePanel').forEach(p => { p.style.display = 'none'; });
+      document.getElementById(btn.dataset.panel).style.display = 'block';
     });
   });
 
@@ -893,9 +905,9 @@
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
     posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
-    fillCombinedList(menuCombinedList, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
-    fillCombinedList(sidebarCombinedList, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
-    fillCombinedList(footerCombinedList, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets), footerSeq);
+    fillCombinedSection(menuGridTable, menuGadgetGridTable, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
+    fillCombinedSection(sidebarGridTable, sidebarGadgetGridTable, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
+    fillCombinedSection(footerGridTable, footerGadgetGridTable, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets), footerSeq);
     return s;
   }
 
@@ -916,9 +928,9 @@
       data = { posterColors: colors };
     }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
-    else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
-    else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };
-    else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
+    else if (section === 'menu') data = { menuEntries: readCombinedSection(menuGridTable, menuGadgetGridTable), menuItems: [], menuGadgets: [] };
+    else if (section === 'sidebar') data = { sidebarEntries: readCombinedSection(sidebarGridTable, sidebarGadgetGridTable), sidebarItems: [], sidebarGadgets: [] };
+    else if (section === 'footer') data = { footerEntries: readCombinedSection(footerGridTable, footerGadgetGridTable), footerItems: [], footerGadgets: [] };
     else if (section === 'contentSettings') data = {
       postsPerPage: Number(postsPerPage.value) || 5,
       maxWidth: Number(maxWidth.value) || 640,
