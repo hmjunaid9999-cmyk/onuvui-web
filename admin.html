@@ -89,6 +89,11 @@
     width: 100%; background: #21262d; color: #9ca3af; border: 1px dashed #30363d;
     padding: 9px; border-radius: 10px; font-size: 13px; font-weight: normal; margin-bottom: 4px; cursor: pointer;
   }
+  .gridRow2 .gridCode {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #9ca3af;
+    padding: 8px 10px; border-radius: 8px; font-size: 12px; font-family: monospace;
+    min-height: 90px; resize: vertical;
+  }
 
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
   .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
@@ -190,6 +195,12 @@
           <div class="gridTable" id="sidebarGridTable"></div>
           <button type="button" class="addRowBtn" data-target="sidebarGridTable">➕ আরও যোগ করুন</button>
           <div class="hint">উপরে নাম/আইকন, নিচে লিংক দিন। ✅ টিক দিলে সারিটা উপরে চলে যাবে — এটাই সাইটে বাটন দেখানোর ক্রম। 🗑️ দিয়ে সারি মুছে ফেলুন। নাম খালি রাখলে সেই বাটন দেখাবে না</div>
+
+          <h3 style="font-size:14px;margin-top:14px;">🧩 সাইডবার গেজেট</h3>
+          <div class="gridTable" id="sidebarGadgetGridTable"></div>
+          <button type="button" class="addRowBtn addGadgetBtn" data-target="sidebarGadgetGridTable">➕ গেজেট যোগ করুন</button>
+          <div class="hint">টাইটেল দিন (শুধু নিজের চেনার জন্য), নিচের বক্সে HTML/CSS/JS কোড বসান। ✅ টিক দিলে উপরে যাবে — এটাই দেখানোর ক্রম। এই গেজেটগুলো সাইডবার মেনুর একদম উপরে দেখাবে</div>
+
           <button class="sectionSaveBtn" data-section="sidebar">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusSidebar"></div>
         </div>
@@ -199,6 +210,12 @@
           <div class="gridTable" id="menuGridTable"></div>
           <button type="button" class="addRowBtn" data-target="menuGridTable">➕ আরও যোগ করুন</button>
           <div class="hint">উপরে নাম/আইকন, নিচে লিংক দিন। ✅ টিক দিলে সারিটা উপরে চলে যাবে — এটাই সাইটে বাটন দেখানোর ক্রম। 🗑️ দিয়ে সারি মুছে ফেলুন। নাম খালি রাখলে সেই বাটন দেখাবে না</div>
+
+          <h3 style="font-size:14px;margin-top:14px;">🧩 টপ মেনু গেজেট</h3>
+          <div class="gridTable" id="menuGadgetGridTable"></div>
+          <button type="button" class="addRowBtn addGadgetBtn" data-target="menuGadgetGridTable">➕ গেজেট যোগ করুন</button>
+          <div class="hint">টাইটেল দিন (শুধু নিজের চেনার জন্য), নিচের বক্সে HTML/CSS/JS কোড বসান। ✅ টিক দিলে উপরে যাবে — এটাই দেখানোর ক্রম। এই গেজেটগুলো টপ মেনুর বাটনগুলোর উপরে দেখাবে</div>
+
           <button class="sectionSaveBtn" data-section="menu">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusMenu"></div>
         </div>
@@ -208,6 +225,12 @@
           <div class="gridTable" id="footerGridTable"></div>
           <button type="button" class="addRowBtn" data-target="footerGridTable">➕ আরও যোগ করুন</button>
           <div class="hint">উপরে নাম/আইকন, নিচে লিংক দিন। ✅ টিক দিলে সারিটা উপরে চলে যাবে — এটাই সাইটে বাটন দেখানোর ক্রম। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে</div>
+
+          <h3 style="font-size:14px;margin-top:14px;">🧩 ফুটার গেজেট</h3>
+          <div class="gridTable" id="footerGadgetGridTable"></div>
+          <button type="button" class="addRowBtn addGadgetBtn" data-target="footerGadgetGridTable">➕ গেজেট যোগ করুন</button>
+          <div class="hint">টাইটেল দিন (শুধু নিজের চেনার জন্য), নিচের বক্সে HTML/CSS/JS কোড বসান। ✅ টিক দিলে উপরে যাবে — এটাই দেখানোর ক্রম। এই গেজেটগুলো ফুটারের একদম উপরে দেখাবে</div>
+
           <button class="sectionSaveBtn" data-section="footer">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusFooter"></div>
         </div>
@@ -453,6 +476,9 @@
   const menuGridTable = document.getElementById('menuGridTable');
   const sidebarGridTable = document.getElementById('sidebarGridTable');
   const footerGridTable = document.getElementById('footerGridTable');
+  const sidebarGadgetGridTable = document.getElementById('sidebarGadgetGridTable');
+  const menuGadgetGridTable = document.getElementById('menuGadgetGridTable');
+  const footerGadgetGridTable = document.getElementById('footerGadgetGridTable');
 
   // ---- নাম+লিংক গ্রিড (টিক দিলে সারি উপরে চলে যায়/গ্রুপ হয়ে জমা হয় — এটাই ক্রম, শুধুই ক্রম ঠিক করার টুল;
   //      🗑️ দিয়ে ডিলিট, "আরও যোগ করুন" বাটনে নতুন সারি যোগ হয়) ----
@@ -510,15 +536,72 @@
     return items;
   }
 
+  // ---- অ্যাড গেজেট গ্রিড (টাইটেল + কোড বক্স, একই টিক-দিলে-উপরে-যাওয়া নিয়ম) ----
+  function createGadgetRow(title, code) {
+    const row = document.createElement('div');
+    row.className = 'gridRow2';
+    row.innerHTML = `
+      <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+      <div class="gridFields">
+        <input type="text" class="gridLabel" placeholder="টাইটেল (শুধু নিজের চেনার জন্য)" value="${(title || '').replace(/"/g, '&quot;')}">
+        <textarea class="gridCode" placeholder="এখানে HTML/CSS/JS কোড বসান">${(code || '').replace(/</g, '&lt;')}</textarea>
+      </div>
+      <button type="button" class="gridDeleteBtn">🗑️</button>
+    `;
+    const check = row.querySelector('.gridCheck');
+    check.addEventListener('change', () => {
+      row.classList.toggle('gridRowChecked', check.checked);
+      if (check.checked) {
+        const container = row.parentElement;
+        if (!container) return;
+        const checkedRows = Array.from(container.querySelectorAll('.gridRow2.gridRowChecked')).filter(r => r !== row);
+        const lastChecked = checkedRows[checkedRows.length - 1];
+        if (lastChecked && lastChecked.nextSibling) {
+          container.insertBefore(row, lastChecked.nextSibling);
+        } else if (lastChecked) {
+          container.appendChild(row);
+        } else {
+          container.insertBefore(row, container.firstChild);
+        }
+      }
+    });
+    row.querySelector('.gridDeleteBtn').addEventListener('click', () => row.remove());
+    return row;
+  }
+
+  function fillGadgetGrid(container, items) {
+    container.innerHTML = '';
+    const list = items || [];
+    const rowCount = Math.max(2, list.length);
+    for (let i = 0; i < rowCount; i++) {
+      const item = list[i];
+      container.appendChild(createGadgetRow(item ? item.title : '', item ? item.code : ''));
+    }
+  }
+
+  function readGadgetGrid(container) {
+    const items = [];
+    container.querySelectorAll('.gridRow2').forEach(row => {
+      const title = row.querySelector('.gridLabel').value.trim();
+      const code = row.querySelector('.gridCode').value;
+      if (title) items.push({ title, code });
+    });
+    return items;
+  }
+
   // শুরুতে খালি ৫টা করে সারি দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
   fillGrid(sidebarGridTable, []);
   fillGrid(menuGridTable, []);
   fillGrid(footerGridTable, []);
+  fillGadgetGrid(sidebarGadgetGridTable, []);
+  fillGadgetGrid(menuGadgetGridTable, []);
+  fillGadgetGrid(footerGadgetGridTable, []);
 
   document.querySelectorAll('.addRowBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const container = document.getElementById(btn.dataset.target);
-      container.appendChild(createGridRow('', ''));
+      if (btn.classList.contains('addGadgetBtn')) container.appendChild(createGadgetRow('', ''));
+      else container.appendChild(createGridRow('', ''));
     });
   });
 
@@ -600,6 +683,9 @@
     fillGrid(menuGridTable, s.menuItems);
     fillGrid(sidebarGridTable, s.sidebarItems);
     fillGrid(footerGridTable, s.footerItems);
+    fillGadgetGrid(sidebarGadgetGridTable, s.sidebarGadgets);
+    fillGadgetGrid(menuGadgetGridTable, s.menuGadgets);
+    fillGadgetGrid(footerGadgetGridTable, s.footerGadgets);
     return s;
   }
 
@@ -620,9 +706,9 @@
       data = { posterColors: colors };
     }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
-    else if (section === 'menu') data = { menuItems: readGrid(menuGridTable) };
-    else if (section === 'sidebar') data = { sidebarItems: readGrid(sidebarGridTable) };
-    else if (section === 'footer') data = { footerItems: readGrid(footerGridTable) };
+    else if (section === 'menu') data = { menuItems: readGrid(menuGridTable), menuGadgets: readGadgetGrid(menuGadgetGridTable) };
+    else if (section === 'sidebar') data = { sidebarItems: readGrid(sidebarGridTable), sidebarGadgets: readGadgetGrid(sidebarGadgetGridTable) };
+    else if (section === 'footer') data = { footerItems: readGrid(footerGridTable), footerGadgets: readGadgetGrid(footerGadgetGridTable) };
     else if (section === 'contentSettings') data = {
       postsPerPage: Number(postsPerPage.value) || 5,
       maxWidth: Number(maxWidth.value) || 640,

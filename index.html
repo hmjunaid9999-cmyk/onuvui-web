@@ -189,6 +189,9 @@
   #sidebarCloseBtn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
   #sidebarGrid { display: flex; flex-direction: column; gap: 8px; }
   #sidebarGrid a { display: block; background: #0d1117; color: #fff; text-decoration: none; font-size: 13px; padding: 10px 12px; border-radius: 10px; border: 1px solid #262c36; }
+  #sidebarGadgets:not(:empty), #menuGadgets:not(:empty), #footerGadgets:not(:empty) { margin-bottom: 14px; }
+  .sidebarGadgetBox { margin-bottom: 10px; }
+  .sidebarGadgetBox:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -205,6 +208,7 @@
 
     <div id="sidebarOverlay"></div>
     <div id="sidebarDrawer">
+      <div id="sidebarGadgets"></div>
       <div class="drawerHeader"><strong>মেনু</strong><button id="sidebarCloseBtn">✕</button></div>
       <div id="sidebarGrid"></div>
     </div>
@@ -217,6 +221,7 @@
     </div>
 
     <div id="noticeBar"><span id="noticeText"></span></div>
+    <div id="menuGadgets"></div>
     <div id="menuGrid"></div>
 
     <main>
@@ -244,6 +249,7 @@
     </main>
 
     <div id="footerSection">
+      <div id="footerGadgets"></div>
       <div id="footerSiteName"></div>
       <div id="footerGrid"></div>
     </div>
@@ -325,6 +331,9 @@
   const footerGrid = document.getElementById('footerGrid');
   const footerSiteName = document.getElementById('footerSiteName');
   const sidebarGrid = document.getElementById('sidebarGrid');
+  const sidebarGadgets = document.getElementById('sidebarGadgets');
+  const menuGadgets = document.getElementById('menuGadgets');
+  const footerGadgets = document.getElementById('footerGadgets');
   const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
   const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
   const sidebarDrawer = document.getElementById('sidebarDrawer');
@@ -371,6 +380,29 @@
     });
   }
 
+  // ---- অ্যাড গেজেট রেন্ডার (HTML বসায়, ভেতরের <script> ট্যাগও চালায়) ----
+  function renderGadgets(container, items) {
+    container.innerHTML = '';
+    (items || []).forEach(item => {
+      if (!item || !item.title || !item.code) return;
+      const box = document.createElement('div');
+      box.className = 'sidebarGadgetBox';
+      const scripts = [];
+      box.innerHTML = item.code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, js) => {
+        scripts.push(js);
+        return '';
+      });
+      container.appendChild(box);
+      scripts.forEach(js => {
+        try {
+          const s = document.createElement('script');
+          s.textContent = js;
+          box.appendChild(s);
+        } catch (e) { console.warn('গেজেট স্ক্রিপ্ট চালাতে সমস্যা:', e); }
+      });
+    });
+  }
+
   function applySettings(s) {
     if (!s) return;
     const root = document.documentElement.style;
@@ -396,6 +428,9 @@
     renderLinkButtons(menuGrid, s.menuItems);
     renderLinkButtons(footerGrid, s.footerItems);
     renderLinkButtons(sidebarGrid, s.sidebarItems);
+    renderGadgets(sidebarGadgets, s.sidebarGadgets);
+    renderGadgets(menuGadgets, s.menuGadgets);
+    renderGadgets(footerGadgets, s.footerGadgets);
     postsPerPage = s.postsPerPage || 5;
   }
 
