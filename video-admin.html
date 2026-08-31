@@ -44,6 +44,62 @@
   .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
   .notice { font-size: 12px; color: #9ca3af; background: #0d1117; border: 1px solid #262c36; border-radius: 8px; padding: 10px; line-height: 1.5; }
 
+  /* ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম (থিম প্যানেলের মতোই) ---- */
+  .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .gridRow2 {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 8px;
+  }
+  .gridRow2.gridRowChecked { border-color: #4285F4; }
+  .gridRow2 input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 8px; flex-shrink: 0; accent-color: #4285F4; cursor: pointer;
+  }
+  .gridRow2 .gridFields { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .gridTypeTag { font-size: 10px; font-weight: bold; color: #6b7280; letter-spacing: 0.3px; }
+  .gridRow2 .gridCode {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #9ca3af;
+    padding: 8px 10px; border-radius: 8px; font-size: 12px; font-family: monospace;
+    min-height: 220px; resize: vertical;
+  }
+  .accordionBtn {
+    display: block; width: 100%; text-align: left; background: #0d1117; color: #fff;
+    border: 1px solid #30363d; padding: 10px 12px; border-radius: 10px; font-size: 14px;
+    font-weight: bold; cursor: pointer; margin-top: 10px;
+  }
+  .accordionBtn:first-of-type { margin-top: 0; }
+  .menuTypeBox.collapsed { display: none; }
+  .menuTypeBox { padding: 10px 2px 2px; }
+  .addTypeRow { display: flex; gap: 6px; margin-bottom: 10px; }
+  .addTypeBtn {
+    flex: 1; min-width: 0; background: #0d1117; color: #9ca3af; border: 1px solid #30363d;
+    padding: 8px 2px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .addTypeBtn.active { background: #4285F4; color: #fff; border-color: #4285F4; }
+  .createForm {
+    background: #0d1117; border: 1px dashed #30363d; border-radius: 10px;
+    padding: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .createForm .createBtn {
+    background: #238636; color: #fff; border: none; padding: 9px; border-radius: 8px;
+    font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 2px;
+  }
+  .createForm textarea.gridCode { min-height: 220px; }
+  .gridRow2 input:disabled, .gridRow2 textarea:disabled { opacity: 0.65; background: #0b0f14; cursor: default; }
+  .gridBtnCol { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .gridEditBtn {
+    background: #262c36; color: #60a5fa; border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; cursor: pointer;
+  }
+  .gridCopyBtn {
+    background: #262c36; color: #34d399; border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; cursor: pointer;
+  }
+  .gridDeleteBtn {
+    background: #262c36; color: #f87171; border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; font-weight: normal; cursor: pointer; flex-shrink: 0;
+  }
+
   .topMenuRow { display: flex; align-items: flex-start; gap: 8px; background: #0d1117; border: 1px solid #262c36; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
   .orderBtn { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #161b22; border: 1px solid #30363d; color: #9ca3af; font-size: 13px; font-weight: bold; padding: 0; }
   .orderBtn.checked { background: #4285F4; color: #fff; border-color: #4285F4; }
@@ -188,20 +244,57 @@
               <div class="sectionStatus" id="noticeStatus"></div>
             </div>
             <div class="section">
-              <h2>📋 টপ মেনু</h2>
-              <div class="notice">সবসময় ন্যূনতম ৫টা ঘর থাকবে (এগুলো মুছে ফেলা যাবে না, শুধু খালি করা যাবে) — চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো ডিলিটও করা যাবে। বাম পাশের ✔ বাটনে যেটাকে আগে দেখাতে চান সেটাতে আগে ট্যাপ করুন — ট্যাপ করা মাত্র আইটেমটি সরাসরি লিস্টের উপরে চলে আসবে (টেনে সরানোর দরকার নেই), যেভাবে ট্যাপ করবেন সেভাবেই উপর থেকে নিচে সাজিয়ে সেভ হবে।</div>
-              <div id="topMenuList" style="margin-top:12px;"></div>
-              <button class="sectionSaveBtn" id="addTopMenuItemBtn" style="background:#262c36;margin-top:4px;">➕ নতুন আইটেম যোগ করুন</button>
-              <button class="sectionSaveBtn" id="saveTopMenuBtn" style="margin-top:10px;">💾 টপ মেনু সেভ করুন</button>
-              <div class="sectionStatus" id="topMenuStatus"></div>
-            </div>
-            <div class="section">
-              <h2>📱 সাইড মেনু</h2>
-              <div class="notice">সবসময় ন্যূনতম ৫টা ঘর থাকবে (এগুলো মুছে ফেলা যাবে না, শুধু খালি করা যাবে) — চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো ডিলিটও করা যাবে। বাম পাশের ✔ বাটনে যেটাকে আগে দেখাতে চান সেটাতে আগে ট্যাপ করুন — ট্যাপ করা মাত্র আইটেমটি সরাসরি লিস্টের উপরে চলে আসবে (টেনে সরানোর দরকার নেই), যেভাবে ট্যাপ করবেন সেভাবেই উপর থেকে নিচে সাজিয়ে সেভ হবে।</div>
-              <div id="sideMenuList" style="margin-top:12px;"></div>
-              <button class="sectionSaveBtn" id="addSideMenuItemBtn" style="background:#262c36;margin-top:4px;">➕ নতুন আইটেম যোগ করুন</button>
-              <button class="sectionSaveBtn" id="saveSideMenuBtn" style="margin-top:10px;">💾 সাইড মেনু সেভ করুন</button>
-              <div class="sectionStatus" id="sideMenuStatus"></div>
+              <h2>📋 মেনু বার</h2>
+
+              <!-- ================= ১) টপ মেনু ================= -->
+              <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
+              <div class="menuTypeBox collapsed" id="mtTop">
+                <div class="addTypeRow">
+                  <button type="button" class="addTypeBtn active" data-form="topPageForm">📄 এড পেজ</button>
+                  <button type="button" class="addTypeBtn" data-form="topGadgetForm">🧩 এড গেজেট</button>
+                </div>
+
+                <div class="createForm" id="topPageForm">
+                  <input type="text" class="createLabel" id="topPageCreateLabel" placeholder="নাম/আইকন">
+                  <input type="text" class="createUrl" id="topPageCreateUrl" placeholder="লিংক">
+                  <button type="button" class="createBtn" data-list="topCombinedList" data-kind="page">➕ তৈরি করুন</button>
+                </div>
+                <div class="createForm" id="topGadgetForm" style="display:none">
+                  <input type="text" class="createLabel" id="topGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+                  <textarea class="gridCode" id="topGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+                  <button type="button" class="createBtn" data-list="topCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+                </div>
+
+                <div class="gridTable itemList" id="topCombinedList"></div>
+                <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একই লিস্টে, ধারাবাহিকভাবে)।</div>
+                <button class="sectionSaveBtn" id="saveTopMenuBtn">💾 টপ মেনু সেভ করুন</button>
+                <div class="sectionStatus" id="topMenuStatus"></div>
+              </div>
+
+              <!-- ================= ২) সাইড মেনু ================= -->
+              <button type="button" class="accordionBtn" data-toggle="mtSide">২. সাইড মেনু</button>
+              <div class="menuTypeBox collapsed" id="mtSide">
+                <div class="addTypeRow">
+                  <button type="button" class="addTypeBtn active" data-form="sidePageForm">📄 এড পেজ</button>
+                  <button type="button" class="addTypeBtn" data-form="sideGadgetForm">🧩 এড গেজেট</button>
+                </div>
+
+                <div class="createForm" id="sidePageForm">
+                  <input type="text" class="createLabel" id="sidePageCreateLabel" placeholder="নাম/আইকন">
+                  <input type="text" class="createUrl" id="sidePageCreateUrl" placeholder="লিংক">
+                  <button type="button" class="createBtn" data-list="sideCombinedList" data-kind="page">➕ তৈরি করুন</button>
+                </div>
+                <div class="createForm" id="sideGadgetForm" style="display:none">
+                  <input type="text" class="createLabel" id="sideGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+                  <textarea class="gridCode" id="sideGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+                  <button type="button" class="createBtn" data-list="sideCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+                </div>
+
+                <div class="gridTable itemList" id="sideCombinedList"></div>
+                <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একই লিস্টে, ধারাবাহিকভাবে)।</div>
+                <button class="sectionSaveBtn" id="saveSideMenuBtn">💾 সাইড মেনু সেভ করুন</button>
+                <div class="sectionStatus" id="sideMenuStatus"></div>
+              </div>
             </div>
           </div>
 
@@ -716,128 +809,230 @@
   // ---- থিম: নোটিশ বক্স ও টপ মেনু ----
   const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
-  // ---- ন্যূনতম ৫-ঘরের মেনু সিস্টেম (টপ মেনু ও সাইড মেনু — দুটোতেই একই নিয়ম) ----
-  // সবসময় কমপক্ষে ৫টা ঘর থাকবে (এই ৫টা মোছা যাবে না, শুধু খালি করা যাবে)।
-  // চাইলে আরও আইটেম যোগ করা যাবে, আর নতুন যোগ করা আইটেমগুলো সরাসরি ডিলিটও করা যাবে।
-  // ✔ বাটনে ট্যাপ করলেই সেই ঘরটা লিস্টের উপরে উঠে আসে — যেই ক্রমে ট্যাপ করবেন, উপর থেকে নিচে সেই ক্রমেই সাজানো থাকবে।
-  const MENU_MIN_COUNT = 5;
-  const newMenuId = () => 'm' + Date.now() + Math.random().toString(36).slice(2, 8);
-
-  function buildMenuState(savedArr) {
-    let items = Array.isArray(savedArr)
-      ? savedArr.map(x => ({ id: newMenuId(), label: (x && x.label) || '', url: (x && x.url) || '' }))
-      : [];
-    while (items.length < MENU_MIN_COUNT) items.push({ id: newMenuId(), label: '', url: '' });
-    // যেসব ঘরে আগে থেকেই লেখা আছে, সেগুলোকে শুরুতেই তাদের সেভ করা ক্রম অনুযায়ী ✔ ধরে নেওয়া হচ্ছে
-    const order = [];
-    items.forEach(it => { if (it.label.trim() || it.url.trim()) order.push(it.id); });
-    return { items, order };
+  // ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম (থিম প্যানেলের সাথেই একই — একটাই লিস্টে পেজ+গেজেট, টিক দিলে উপরে) ----
+  function makeSeqCounter() {
+    let n = 0;
+    return () => ++n;
   }
+  const topSeq = makeSeqCounter();
+  const sideSeq = makeSeqCounter();
 
-  function menuDisplayOrder(state) {
-    return state.items.map(it => it.id).sort((a, b) => {
-      const ai = state.order.indexOf(a), bi = state.order.indexOf(b);
-      if (ai > -1 && bi > -1) return ai - bi;
-      if (ai > -1) return -1;
-      if (bi > -1) return 1;
-      return 0; // দুটোই আনচেকড হলে আগের ক্রমই ঠিক থাকবে (স্টেবল সর্ট)
-    });
-  }
-
-  function renderMenuSlots(listElId, state) {
-    const listEl = document.getElementById(listElId);
-    listEl.innerHTML = '';
-    menuDisplayOrder(state).forEach(id => {
-      const item = state.items.find(x => x.id === id);
-      const isChecked = state.order.includes(id);
-      const canDelete = state.items.length > MENU_MIN_COUNT;
-      const row = document.createElement('div');
-      row.className = 'topMenuRow';
-      row.innerHTML = `
-        <button type="button" class="orderBtn ${isChecked ? 'checked' : ''}">${isChecked ? '✔' : '☐'}</button>
-        <div class="topMenuFields">
-          <input type="text" class="tmName" placeholder="নাম (যেমন: হোম)" value="${escHtml(item.label)}">
-          <input type="text" class="tmLink" placeholder="লিংক (যেমন: https://...)" value="${escHtml(item.url)}">
-        </div>
-        <button type="button" class="tmDeleteBtn" title="${canDelete ? 'এই আইটেমটি মুছে ফেলুন' : 'এই ঘরটি খালি করুন'}">🗑️</button>
-      `;
-      row.querySelector('.orderBtn').addEventListener('click', () => {
-        const idx = state.order.indexOf(id);
-        if (idx > -1) state.order.splice(idx, 1);
-        else state.order.push(id);
-        renderMenuSlots(listElId, state);
-      });
-      row.querySelector('.tmDeleteBtn').addEventListener('click', () => {
-        const idx = state.order.indexOf(id);
-        if (idx > -1) state.order.splice(idx, 1);
-        if (state.items.length > MENU_MIN_COUNT) {
-          state.items = state.items.filter(x => x.id !== id);
+  function wireCheckReorder(row, getNextSeq) {
+    const check = row.querySelector('.gridCheck');
+    check.addEventListener('change', () => {
+      row.classList.toggle('gridRowChecked', check.checked);
+      if (check.checked) {
+        row.dataset.seq = String(getNextSeq());
+        const container = row.parentElement;
+        if (!container) return;
+        const checkedRows = Array.from(container.querySelectorAll('.gridRow2.gridRowChecked')).filter(r => r !== row);
+        const lastChecked = checkedRows[checkedRows.length - 1];
+        if (lastChecked && lastChecked.nextSibling) {
+          container.insertBefore(row, lastChecked.nextSibling);
+        } else if (lastChecked) {
+          container.appendChild(row);
         } else {
-          item.label = '';
-          item.url = '';
+          container.insertBefore(row, container.firstChild);
         }
-        renderMenuSlots(listElId, state);
-      });
-      row.querySelector('.tmName').addEventListener('input', e => { item.label = e.target.value; });
-      row.querySelector('.tmLink').addEventListener('input', e => { item.url = e.target.value; });
-      listEl.appendChild(row);
+      } else {
+        delete row.dataset.seq;
+      }
     });
   }
 
-  function getOrderedMenuArray(state) {
-    // খালি আইটেমগুলো সেভ হয় না — পরের বার লোড করার সময় আবার ন্যূনতম ৫টা ঘরে পূরণ হয়ে যাবে
-    return menuDisplayOrder(state)
-      .map(id => state.items.find(x => x.id === id))
-      .filter(it => it.label.trim() || it.url.trim())
-      .map(it => ({ label: it.label.trim(), url: it.url.trim() }));
+  // ---- ক্লিপবোর্ডে কপি করা — ফাইলে আগে থেকেই থাকা copyText(text, btnEl) ফাংশনটাই পুনরায় ব্যবহার করা হচ্ছে ----
+
+  // ---- তৈরি হওয়া আইটেমের এডিট/কপি/ডিলিট বাটন — ডিফল্টে লকড থাকে, এডিটে চাপলে পরিবর্তনযোগ্য হয় ----
+  function wireEditDelete(row) {
+    const editBtn = row.querySelector('.gridEditBtn');
+    const copyBtn = row.querySelector('.gridCopyBtn');
+    const deleteBtn = row.querySelector('.gridDeleteBtn');
+    deleteBtn.addEventListener('click', () => {
+      if (confirm('আইটেমটি ডিলিট করবেন?')) row.remove();
+    });
+    editBtn.addEventListener('click', () => {
+      const fields = row.querySelectorAll('.gridLabel, .gridUrl, .gridCode');
+      const wasEditing = editBtn.dataset.editing === '1';
+      fields.forEach(f => { f.disabled = wasEditing; });
+      editBtn.dataset.editing = wasEditing ? '0' : '1';
+      editBtn.textContent = wasEditing ? '✏️' : '✅';
+      if (!wasEditing && fields[0]) fields[0].focus();
+    });
+    copyBtn.addEventListener('click', () => {
+      const source = row.dataset.type === 'gadget' ? row.querySelector('.gridCode') : row.querySelector('.gridUrl');
+      copyText(source.value, copyBtn);
+    });
   }
 
-  let topMenuState = { items: [], order: [] };
-  let sideMenuState = { items: [], order: [] };
+  function createGridRow(label, url, getNextSeq) {
+    const row = document.createElement('div');
+    row.className = 'gridRow2';
+    row.dataset.type = 'page';
+    row.innerHTML = `
+      <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+      <div class="gridFields">
+        <div class="gridTypeTag">📄 পেজ</div>
+        <input type="text" class="gridLabel" placeholder="নাম/আইকন" value="${escHtml(label)}" disabled>
+        <input type="text" class="gridUrl" placeholder="লিংক" value="${escHtml(url)}" disabled>
+      </div>
+      <div class="gridBtnCol">
+        <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="লিংক কপি করুন">📋</button>
+        <button type="button" class="gridDeleteBtn">🗑️</button>
+      </div>
+    `;
+    wireCheckReorder(row, getNextSeq);
+    wireEditDelete(row);
+    return row;
+  }
 
-  document.getElementById('addTopMenuItemBtn').addEventListener('click', () => {
-    topMenuState.items.push({ id: newMenuId(), label: '', url: '' });
-    renderMenuSlots('topMenuList', topMenuState);
-  });
-  document.getElementById('addSideMenuItemBtn').addEventListener('click', () => {
-    sideMenuState.items.push({ id: newMenuId(), label: '', url: '' });
-    renderMenuSlots('sideMenuList', sideMenuState);
-  });
+  function createGadgetRow(title, code, getNextSeq) {
+    const row = document.createElement('div');
+    row.className = 'gridRow2';
+    row.dataset.type = 'gadget';
+    row.innerHTML = `
+      <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+      <div class="gridFields">
+        <div class="gridTypeTag">🧩 গেজেট</div>
+        <input type="text" class="gridLabel" placeholder="টাইটেল (ঐচ্ছিক)" value="${escHtml(title)}" disabled>
+        <textarea class="gridCode" placeholder="এখানে HTML/CSS/JS কোড বসান" disabled>${(code || '').replace(/</g, '&lt;')}</textarea>
+      </div>
+      <div class="gridBtnCol">
+        <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="কোড কপি করুন">📋</button>
+        <button type="button" class="gridDeleteBtn">🗑️</button>
+      </div>
+    `;
+    wireCheckReorder(row, getNextSeq);
+    wireEditDelete(row);
+    return row;
+  }
 
-  async function loadTheme() {
-    try {
-      const snap = await getDoc(doc(db, "settings", "theme"));
-      const d = snap.exists() ? snap.data() : {};
-      document.getElementById('themeNoticeText').value = d.noticeText || '';
-      topMenuState = buildMenuState(d.topMenuItems);
-      sideMenuState = buildMenuState(d.sideMenuItems);
-      renderMenuSlots('topMenuList', topMenuState);
-      renderMenuSlots('sideMenuList', sideMenuState);
-    } catch (e) {
-      document.getElementById('topMenuStatus').style.color = '#f87171';
-      document.getElementById('topMenuStatus').textContent = 'লোড এরর: ' + e.message;
+  // পুরনো ডেটা ফরম্যাট (শুধু label+url এর অ্যারে) থাকলে একটাই মিশ্রিত পেজ-লিস্টে রূপান্তর করে
+  function buildLegacyMenuEntries(items) {
+    const out = [];
+    (items || []).forEach(it => { if (it && it.label) out.push({ type: 'page', label: it.label, url: it.url }); });
+    return out;
+  }
+
+  // মিশ্রিত entries[] থেকে একটাই লিস্টে পেজ ও গেজেট আইটেম একসাথে, আগের ক্রম অনুযায়ী বসায়
+  function fillCombinedList(container, entries, getNextSeq) {
+    container.innerHTML = '';
+    (entries || []).forEach((entry, idx) => {
+      let row = null;
+      if (entry && entry.type === 'gadget') {
+        row = createGadgetRow(entry.title, entry.code, getNextSeq);
+      } else if (entry) {
+        row = createGridRow(entry.label, entry.url, getNextSeq);
+      }
+      if (row) {
+        row.dataset.origIndex = String(idx);
+        container.appendChild(row);
+      }
+    });
+    if (container.children.length === 0) {
+      container.innerHTML = '<div class="listEmpty">এখনো কোনো আইটেম তৈরি হয়নি</div>';
     }
   }
 
-  document.getElementById('saveNoticeBtn').addEventListener('click', async () => {
-    const statusEl = document.getElementById('noticeStatus');
-    const text = document.getElementById('themeNoticeText').value.trim();
-    try {
-      await setDoc(doc(db, "settings", "theme"), { noticeText: text }, { merge: true });
-      statusEl.style.color = '#4ade80';
-      statusEl.textContent = '✅ সেভ হয়েছে!';
-      setTimeout(() => { statusEl.textContent = ''; }, 2000);
-    } catch (e) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'এরর: ' + e.message;
-    }
+  function clearListEmpty(container) {
+    const empty = container.querySelector('.listEmpty');
+    if (empty) empty.remove();
+  }
+
+  // একই লিস্ট থেকে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
+  // বাকিগুলো তাদের আগের ক্রম (origIndex) অনুযায়ী সাজিয়ে একটাই মিশ্রিত লিস্ট বানায়
+  function readCombinedList(container) {
+    const rows = [];
+    container.querySelectorAll('.gridRow2').forEach(row => {
+      const seq = row.dataset.seq ? Number(row.dataset.seq) : null;
+      const orig = row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999;
+      if (row.dataset.type === 'gadget') {
+        const title = row.querySelector('.gridLabel').value.trim();
+        const code = row.querySelector('.gridCode').value;
+        if (!code.trim()) return;
+        rows.push({ entry: { type: 'gadget', title, code }, seq, orig });
+      } else {
+        const label = row.querySelector('.gridLabel').value.trim();
+        const url = row.querySelector('.gridUrl').value.trim();
+        if (!label) return;
+        rows.push({ entry: { type: 'page', label, url: url || '#' }, seq, orig });
+      }
+    });
+    const checked = rows.filter(r => r.seq !== null).sort((a, b) => a.seq - b.seq);
+    const unchecked = rows.filter(r => r.seq === null).sort((a, b) => a.orig - b.orig);
+    return [...checked, ...unchecked].map(r => r.entry);
+  }
+
+  const topCombinedList = document.getElementById('topCombinedList');
+  const sideCombinedList = document.getElementById('sideCombinedList');
+
+  // শুরুতে খালি লিস্ট দেখাও (লগইনের পর loadTheme() আসল ডেটা দিয়ে আবার ভরে দেবে)
+  fillCombinedList(topCombinedList, [], topSeq);
+  fillCombinedList(sideCombinedList, [], sideSeq);
+
+  const SEQ_BY_LIST = { topCombinedList: topSeq, sideCombinedList: sideSeq };
+
+  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিচের কম্বাইন্ড লিস্টে জমা হয় ----
+  document.querySelectorAll('.createBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const listId = btn.dataset.list;
+      const kind = btn.dataset.kind;
+      const container = document.getElementById(listId);
+      const seqFor = SEQ_BY_LIST[listId];
+      const form = btn.closest('.createForm');
+
+      if (kind === 'page') {
+        const labelInput = form.querySelector('.createLabel');
+        const urlInput = form.querySelector('.createUrl');
+        const label = labelInput.value.trim();
+        const url = urlInput.value.trim();
+        if (!label) { alert('নাম/আইকন লিখুন'); return; }
+        clearListEmpty(container);
+        const row = createGridRow(label, url, seqFor);
+        row.dataset.origIndex = '999999';
+        container.appendChild(row);
+        labelInput.value = '';
+        urlInput.value = '';
+      } else {
+        const titleInput = form.querySelector('.createLabel');
+        const codeInput = form.querySelector('.gridCode');
+        const title = titleInput.value.trim();
+        const code = codeInput.value;
+        if (!code.trim()) { alert('কোড লিখুন'); return; }
+        clearListEmpty(container);
+        const row = createGadgetRow(title, code, seqFor);
+        row.dataset.origIndex = '999999';
+        container.appendChild(row);
+        titleInput.value = '';
+        codeInput.value = '';
+      }
+    });
+  });
+
+  // ---- অ্যাকর্ডিয়ন (১. টপ মেনু / ২. সাইড মেনু বাটনে চাপলে নিচের অংশ খোলে-বন্ধ হয়) ----
+  document.querySelectorAll('.accordionBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.toggle).classList.toggle('collapsed');
+    });
+  });
+
+  // ---- এড পেজ (বামে) / এড গেজেট (ডানে) — কোনটার ফর্ম দেখাবে সেটা বাছাই করে, নিচের লিস্ট সবসময় একটাই থাকে ----
+  document.querySelectorAll('.addTypeBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const box = btn.closest('.menuTypeBox');
+      box.querySelectorAll('.addTypeBtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      box.querySelectorAll('.createForm').forEach(f => { f.style.display = 'none'; });
+      document.getElementById(btn.dataset.form).style.display = 'flex';
+    });
   });
 
   document.getElementById('saveTopMenuBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('topMenuStatus');
-    const ordered = getOrderedMenuArray(topMenuState);
+    const entries = readCombinedList(topCombinedList);
     try {
-      await setDoc(doc(db, "settings", "theme"), { topMenuItems: ordered }, { merge: true });
+      await setDoc(doc(db, "settings", "theme"), { topMenuEntries: entries, topMenuItems: [] }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
@@ -849,9 +1044,36 @@
 
   document.getElementById('saveSideMenuBtn').addEventListener('click', async () => {
     const statusEl = document.getElementById('sideMenuStatus');
-    const ordered = getOrderedMenuArray(sideMenuState);
+    const entries = readCombinedList(sideCombinedList);
     try {
-      await setDoc(doc(db, "settings", "theme"), { sideMenuItems: ordered }, { merge: true });
+      await setDoc(doc(db, "settings", "theme"), { sideMenuEntries: entries, sideMenuItems: [] }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  async function loadTheme() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "theme"));
+      const d = snap.exists() ? snap.data() : {};
+      document.getElementById('themeNoticeText').value = d.noticeText || '';
+      fillCombinedList(topCombinedList, (d.topMenuEntries && d.topMenuEntries.length) ? d.topMenuEntries : buildLegacyMenuEntries(d.topMenuItems), topSeq);
+      fillCombinedList(sideCombinedList, (d.sideMenuEntries && d.sideMenuEntries.length) ? d.sideMenuEntries : buildLegacyMenuEntries(d.sideMenuItems), sideSeq);
+    } catch (e) {
+      document.getElementById('topMenuStatus').style.color = '#f87171';
+      document.getElementById('topMenuStatus').textContent = 'লোড এরর: ' + e.message;
+    }
+  }
+
+  document.getElementById('saveNoticeBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('noticeStatus');
+    const text = document.getElementById('themeNoticeText').value.trim();
+    try {
+      await setDoc(doc(db, "settings", "theme"), { noticeText: text }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
