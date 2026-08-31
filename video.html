@@ -33,7 +33,7 @@
 </main><nav><div><button onclick="panel('ad',this)"><b>📢</b>বিজ্ঞাপন</button><button class="active" onclick="panel('my',this)"><b>🎬</b>মাই ভিডিও</button><button onclick="panel('add',this)"><b>➕</b>অ্যাড ভিডিও</button></div></nav></div>
 <div class="drawerOverlay" id="drawerOverlay" onclick="closeDrawer()"></div>
 <div class="sideDrawer" id="sideDrawer">
-  <div class="drawerHead"><span>🎬 মেনু</span><button onclick="closeDrawer()">✕</button></div>
+  <div class="drawerHead"><span></span><button onclick="closeDrawer()">✕</button></div>
   <div class="drawerList" id="drawerList"></div>
 </div>
 <script type="module">
@@ -108,13 +108,7 @@ let sideMenuItems=[
   {label:"🎬 ভিডিও",action:()=>goToHomePanel()},
   {label:"⚽ ম্যাচ",action:()=>alert("ম্যাচ সেকশন শীঘ্রই আসছে")}
 ];
-// এই ৩টা মূল অ্যাপ ফিচার হওয়ায় সবসময় সাইড মেনুতে অ্যাডমিনের কনফিগারের সাথে যুক্ত হয়ে থাকবে
-let drawerExtraItems=[
-  {label:"📢 বিজ্ঞাপন",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("বিজ্ঞাপন"));b&&panel("ad",b)}},
-  {label:"🎬 মাই ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("মাই ভিডিও"));b&&panel("my",b)}},
-  {label:"➕ অ্যাড ভিডিও",action:()=>{let b=[...document.querySelectorAll("nav button")].find(x=>x.textContent.includes("অ্যাড ভিডিও"));b&&panel("add",b)}}
-];
-let drawerMenuItems=[...sideMenuItems,...drawerExtraItems];
+let drawerMenuItems=[...sideMenuItems];
 // গেজেটের কোডের ভেতরের <script> ট্যাগ আলাদা করে বের করে এক্সিকিউট করার সহায়ক ফাংশন (ইনডেক্স.html-এর মতোই)
 function renderGadgetBox(container, className, code){
   if(!code) return;
@@ -163,7 +157,7 @@ function renderDrawerMenu(entries){
     listEl.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{drawerMenuItems[Number(btn.dataset.i)].action();closeDrawer()}));
     return;
   }
-  // অ্যাডমিন থেকে সেভ করা মিশ্র (পেজ + গেজেট) তালিকা, তারপর মূল ৩টা ফিচার বাটন সবসময় নিচে যোগ থাকবে
+  // অ্যাডমিন থেকে সেভ করা মিশ্র (পেজ + গেজেট) তালিকা
   listEl.innerHTML="";
   entries.forEach(entry=>{
     if(!entry) return;
@@ -179,12 +173,6 @@ function renderDrawerMenu(entries){
       });
       listEl.appendChild(btn);
     }
-  });
-  drawerExtraItems.forEach(m=>{
-    const btn=document.createElement("button");
-    btn.textContent=m.label;
-    btn.addEventListener("click",()=>{m.action();closeDrawer()});
-    listEl.appendChild(btn);
   });
 }
 let drawerOpen=false;
