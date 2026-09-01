@@ -194,12 +194,12 @@
 
   .swiperContainer { overflow: hidden; }
   .swiperTrack {
-    display: flex; width: 300%;
+    display: flex; width: 400%;
     transition: transform 0.3s ease;
     touch-action: pan-y;
   }
   .swiperTrack.dragging { transition: none; }
-  .swiperPage { width: 33.3334%; flex-shrink: 0; min-width: 0; }
+  .swiperPage { width: 25%; flex-shrink: 0; min-width: 0; }
   .swiperPage .section { margin-bottom: 12px; }
 </style>
 </head>
@@ -230,6 +230,7 @@
         <span class="dot active" data-page="0"></span>
         <span class="dot" data-page="1"></span>
         <span class="dot" data-page="2"></span>
+        <span class="dot" data-page="3"></span>
       </div>
 
       <div class="swiperContainer" id="swiperContainer">
@@ -301,9 +302,13 @@
           <div class="swiperPage">
             <div class="section">
               <h2>🪙 কয়েন সেটিংস</h2>
+              <div class="hint">উদাহরণ: প্রতি ৫ সেকেন্ডে ০.১০ কয়েন দিলে, প্রতি ঘণ্টায় সর্বোচ্চ ১০ কয়েন এবং প্রতিদিন সর্বোচ্চ ১০০ কয়েন আয় করা যাবে।</div>
               <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
               <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
-              <div class="row"><label>ভিডিও দেখলে প্রতি সেকেন্ডে কয়েন</label><input type="number" step="0.1" id="coinPerSecond" placeholder="0.5"></div>
+              <div class="row"><label>প্রতি কত সেকেন্ডে কয়েন দেওয়া হবে</label><input type="number" min="1" step="1" id="rewardIntervalSeconds" placeholder="5"></div>
+              <div class="row"><label>সেই প্রতিটি সময়ে কত কয়েন দেওয়া হবে</label><input type="number" min="0" step="0.01" id="rewardCoins" placeholder="0.10"></div>
+              <div class="row"><label>প্রতি ঘণ্টায় সর্বোচ্চ কত কয়েন আয় করা যাবে</label><input type="number" min="0" step="0.01" id="maxCoinsPerHour" placeholder="10"></div>
+              <div class="row"><label>প্রতিদিন সর্বোচ্চ কত কয়েন আয় করা যাবে</label><input type="number" min="0" step="0.01" id="maxCoinsPerDay" placeholder="100"></div>
               <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
               <div class="sectionStatus" id="coinSettingsStatus"></div>
             </div>
@@ -314,6 +319,23 @@
               <h2>👤 একাউন্ট</h2>
               <input type="text" id="accountSearch" placeholder="🔍 নাম, ইমেইল বা UID দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
               <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+            </div>
+          </div>
+
+          <div class="swiperPage">
+            <div class="section">
+              <h2>📢 বিজ্ঞাপন (কোম্পানির এড)</h2>
+              <div class="hint">এখানে যা যোগ করবেন তা ভিডিও দেখার সময় প্রতি ৩ মিনিট পরপর মাঝখানে দেখানো হবে। এই বিজ্ঞাপনের জন্য ইউজাররা কোনো কয়েন পাবে না — কয়েন শুধু ভিডিও দেখলেই আসে (কয়েন সেটিংস পেজ দেখুন)।</div>
+              <label>বিজ্ঞাপনের Title</label>
+              <input type="text" id="newAdTitle" placeholder="যেমন: XYZ কোম্পানি">
+              <label>YouTube/Facebook Embed URL</label>
+              <input type="text" id="newAdUrl" placeholder="https://www.youtube.com/embed/...">
+              <button class="sectionSaveBtn" id="addAdBtn">➕ বিজ্ঞাপন যোগ করুন</button>
+              <div class="sectionStatus" id="addAdStatus"></div>
+            </div>
+            <div class="section">
+              <h2>📋 বিজ্ঞাপনের তালিকা</h2>
+              <div id="adsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
             </div>
           </div>
 
@@ -693,7 +715,7 @@
     }
   });
 
-  // ---- কয়েন সেটিংস (বিজ্ঞাপন সিস্টেম বাদ — এখন ভিডিও দেখলেই প্রতি সেকেন্ডে কয়েন) ----
+  // ---- কয়েন সেটিংস (বিজ্ঞাপন সিস্টেম বাদ — এখন ভিডিও দেখলেই নির্ধারিত ইন্টারভালে কয়েন, ঘণ্টা/দিনের ক্যাপসহ) ----
   async function loadCoinSettings() {
     const statusEl = document.getElementById('coinSettingsStatus');
     try {
@@ -701,7 +723,10 @@
       const d = snap.exists() ? snap.data() : {};
       document.getElementById('coinUnitName').value = d.unitName || 'Coin';
       document.getElementById('coinVideoCost').value = (typeof d.videoCost === 'number') ? d.videoCost : 100;
-      document.getElementById('coinPerSecond').value = (typeof d.coinPerSecond === 'number') ? d.coinPerSecond : 0.5;
+      document.getElementById('rewardIntervalSeconds').value = (typeof d.rewardIntervalSeconds === 'number') ? d.rewardIntervalSeconds : 5;
+      document.getElementById('rewardCoins').value = (typeof d.rewardCoins === 'number') ? d.rewardCoins : 0.10;
+      document.getElementById('maxCoinsPerHour').value = (typeof d.maxCoinsPerHour === 'number') ? d.maxCoinsPerHour : 10;
+      document.getElementById('maxCoinsPerDay').value = (typeof d.maxCoinsPerDay === 'number') ? d.maxCoinsPerDay : 100;
     } catch (e) {
       statusEl.style.color = '#f87171';
       statusEl.textContent = 'লোড এরর: ' + e.message;
@@ -712,9 +737,14 @@
     const statusEl = document.getElementById('coinSettingsStatus');
     const unitName = document.getElementById('coinUnitName').value.trim() || 'Coin';
     const videoCost = Number(document.getElementById('coinVideoCost').value) || 0;
-    const coinPerSecond = Number(document.getElementById('coinPerSecond').value) || 0;
+    const rewardIntervalSeconds = Math.max(1, Number(document.getElementById('rewardIntervalSeconds').value) || 5);
+    const rewardCoins = Number(document.getElementById('rewardCoins').value) || 0;
+    const maxCoinsPerHour = Number(document.getElementById('maxCoinsPerHour').value) || 0;
+    const maxCoinsPerDay = Number(document.getElementById('maxCoinsPerDay').value) || 0;
     try {
-      await setDoc(doc(db, "settings", "video"), { unitName, videoCost, coinPerSecond }, { merge: true });
+      await setDoc(doc(db, "settings", "video"), {
+        unitName, videoCost, rewardIntervalSeconds, rewardCoins, maxCoinsPerHour, maxCoinsPerDay
+      }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
@@ -724,12 +754,72 @@
     }
   });
 
-  // ---- সোয়াইপার (থিম <-> কয়েন সেটিংস <-> একাউন্ট), মোট পেজ: 3 ----
+  // ---- বিজ্ঞাপন (কোম্পানির এড) ম্যানেজমেন্ট — শুধু এডমিন যোগ/ডিলিট করতে পারবে, ইউজারদের জন্য কোনো খরচ বা রিওয়ার্ড নেই ----
+  async function loadAdminAds() {
+    const listEl = document.getElementById('adsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(query(collection(db, "advertisements"), orderBy("createdAt", "desc"), limit(50)));
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন যোগ করা হয়নি</div>'; return; }
+      listEl.innerHTML = '';
+      snap.forEach(docSnap => {
+        const d = docSnap.data(), id = docSnap.id;
+        const card = document.createElement('div');
+        card.className = 'accCard';
+        card.innerHTML = `
+          <button class="accDeleteBtn" type="button" title="বিজ্ঞাপন ডিলিট করুন">🗑️</button>
+          <div class="accName">${(d.title || 'Untitled').replace(/</g, '&lt;')}</div>
+          <div class="accCopyRow"><span class="accEmail">👁 ${Number(d.viewCount || 0)} বার দেখানো হয়েছে</span></div>
+        `;
+        card.querySelector('.accDeleteBtn').addEventListener('click', async () => {
+          const ok = confirm(`আপনি কি নিশ্চিত "${d.title || id}" বিজ্ঞাপনটি ডিলিট করতে চান?`);
+          if (!ok) return;
+          try {
+            await deleteDoc(doc(db, "advertisements", id));
+            loadAdminAds();
+          } catch (e) {
+            alert('ডিলিট করা যায়নি: ' + e.message);
+          }
+        });
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  document.getElementById('addAdBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('addAdStatus');
+    const title = document.getElementById('newAdTitle').value.trim();
+    const url = document.getElementById('newAdUrl').value.trim();
+    if (!title || !/^https?:\/\//i.test(url)) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'Title এবং সঠিক Embed URL দিন';
+      return;
+    }
+    try {
+      await addDoc(collection(db, "advertisements"), {
+        title, videoUrl: url, ownerUid: auth.currentUser.uid,
+        status: 'active', viewCount: 0, createdAt: serverTimestamp()
+      });
+      document.getElementById('newAdTitle').value = '';
+      document.getElementById('newAdUrl').value = '';
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ যোগ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      loadAdminAds();
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  // ---- সোয়াইপার (থিম <-> কয়েন সেটিংস <-> একাউন্ট <-> বিজ্ঞাপন), মোট পেজ: 4 ----
   const swiperContainer = document.getElementById('swiperContainer');
   const swiperTrack = document.getElementById('swiperTrack');
   const dots = document.querySelectorAll('.dot');
-  const TOTAL_PAGES = 3;
-  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (৩ পেজে ~33.333%)
+  const TOTAL_PAGES = 4;
+  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (৪ পেজে ২৫%)
   let currentPage = 0;
   let startX = 0;
   let currentTranslate = 0;
@@ -1070,6 +1160,7 @@
       startAccountsListener();
       loadCoinSettings();
       loadTheme();
+      loadAdminAds();
     } else {
       deniedScreen.style.display = 'flex';
     }

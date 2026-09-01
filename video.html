@@ -37,12 +37,12 @@
 </div>
 <script type="module">
 import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";import{getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";import{getFirestore,collection,query,orderBy,getDocs,doc,getDoc,setDoc,increment,deleteDoc,addDoc,serverTimestamp,onSnapshot,limit,runTransaction}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[];let settings={unitName:"Coin",videoCost:10,coinPerSecond:0.5};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
+const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[];let settings={unitName:"Coin",videoCost:10,rewardIntervalSeconds:5,rewardCoins:0.10,maxCoinsPerHour:10,maxCoinsPerDay:100};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
 const provider=new GoogleAuthProvider();
 window.doGoogleLogin=async()=>{try{await signInWithPopup(auth,provider)}catch(e){alert("লগইন এরর: "+e.message)}};
 onAuthStateChanged(auth,async u=>{user=u;$("addLoginBox").style.display=u?"none":"block";if(u){try{let uref=doc(db,"users",u.uid);let snap=await getDoc(uref);if(!snap.exists()){await setDoc(uref,{name:u.displayName||"",email:u.email||"",photoURL:u.photoURL||"",videoBalance:0,createdAt:serverTimestamp()})}else{await setDoc(uref,{name:u.displayName||"",email:u.email||"",photoURL:u.photoURL||""},{merge:true})}}catch(e){}}await loadSettings();await balance();await loadMine()});
 async function logHistory(type,amount){if(!user)return;try{await addDoc(collection(db,"users",user.uid,"history"),{type,amount,createdAt:serverTimestamp()})}catch(e){}}
-async function loadSettings(){try{let s=await getDoc(doc(db,"settings","video"));if(s.exists()){let d=s.data();settings.unitName=d.unitName||d.pointName||settings.unitName;settings.videoCost=Number(d.videoCost??d.videoPointCost??settings.videoCost);settings.coinPerSecond=Number(d.coinPerSecond??settings.coinPerSecond)}}catch(e){}[1,2,3].forEach(n=>$("unitLabel"+n).textContent=unit());$("videoBudget").value=settings.videoCost;$("videoCostNote").textContent="প্রতি ভিডিও যোগ করার খরচ "+settings.videoCost+" "+unit()+"।";$("coinEarnNote").textContent="ভিডিও দেখলেই কয়েন জমা হবে — প্রতি সেকেন্ডে "+settings.coinPerSecond+" "+unit()+"।"}
+async function loadSettings(){try{let s=await getDoc(doc(db,"settings","video"));if(s.exists()){let d=s.data();settings.unitName=d.unitName||d.pointName||settings.unitName;settings.videoCost=Number(d.videoCost??d.videoPointCost??settings.videoCost);settings.rewardIntervalSeconds=Number(d.rewardIntervalSeconds??settings.rewardIntervalSeconds);settings.rewardCoins=Number(d.rewardCoins??settings.rewardCoins);settings.maxCoinsPerHour=Number(d.maxCoinsPerHour??settings.maxCoinsPerHour);settings.maxCoinsPerDay=Number(d.maxCoinsPerDay??settings.maxCoinsPerDay)}}catch(e){}[1,2,3].forEach(n=>$("unitLabel"+n).textContent=unit());$("videoBudget").value=settings.videoCost;$("videoCostNote").textContent="প্রতি ভিডিও যোগ করার খরচ "+settings.videoCost+" "+unit()+"।";$("coinEarnNote").textContent="ভিডিও দেখলেই কয়েন জমা হবে — প্রতি "+settings.rewardIntervalSeconds+" সেকেন্ডে "+settings.rewardCoins+" "+unit()+" (সর্বোচ্চ প্রতি ঘণ্টায় "+settings.maxCoinsPerHour+" "+unit()+", প্রতিদিন "+settings.maxCoinsPerDay+" "+unit()+")।"}
 async function load(){try{let s=await getDocs(query(collection(db,"videos"),orderBy("createdAt","desc"),limit(60)));arr=s.docs.map(x=>({id:x.id,d:x.data()}));render()}catch(e){$("grid").innerHTML='<div class="error">ভিডিও লোড করা যাচ্ছে না: '+esc(e.message)+'</div>'}}
 function videoId(url){let m=String(url||"").match(/(?:embed\/|youtu\.be\/|watch\?v=|v=)([A-Za-z0-9_-]{6,})/);return m?m[1]:null}function thumbFor(d){if(d.thumbnail)return d.thumbnail;let y=videoId(d.videoUrl);return y?`https://img.youtube.com/vi/${y}/hqdefault.jpg`:""}
 window.render=()=>{let t=$("search").value.toLowerCase().trim();$("grid").innerHTML="";let a=arr.filter(x=>(x.d.title||"").toLowerCase().includes(t));if(!a.length){$("grid").innerHTML='<div class="empty">কোনো ভিডিও নেই।</div>';return}a.forEach(x=>{let d=x.d,c=document.createElement("div");c.className="card";let im=thumbFor(d);c.innerHTML=`<div class="thumb">${im?`<img src="${esc(im)}" alt="">`:""}</div><div class="body"><div class="title">${esc(d.title||"Untitled")}</div><div class="muted">${esc(d.channelName||"Onuvuti")} · 👁 ${Number(d.viewCount||0)}</div></div>`;c.onclick=()=>openVideo(x.id);$("grid").append(c)})};
@@ -60,7 +60,7 @@ function attachYtPlayer(){
   if(!(ytApiReady&&window.YT&&YT.Player)){setTimeout(attachYtPlayer,300);return}
   try{ytPlayer=new YT.Player("frame",{events:{onStateChange:e=>{if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){saveWatchProgress(vid);ytIsPlaying=false}else if(e.data===YT.PlayerState.PLAYING){ytIsPlaying=true}}}})}catch(e){ytPlayer=null}
 }
-function startWatchTracking(videoId,baseSeconds){watchStartTs=Date.now();watchBaseSeconds=baseSeconds||0;ytIsPlaying=true;clearInterval(watchSaveIv);watchSaveIv=setInterval(()=>{saveWatchProgress(videoId);creditWatchCoins()},5000)}
+function startWatchTracking(videoId,baseSeconds){watchStartTs=Date.now();watchBaseSeconds=baseSeconds||0;ytIsPlaying=true;clearInterval(watchSaveIv);let tickMs=Math.max(1,Number(settings.rewardIntervalSeconds||5))*1000;watchSaveIv=setInterval(()=>{saveWatchProgress(videoId);creditWatchCoins()},tickMs)}
 function stopWatchTracking(videoId){if(videoId)saveWatchProgress(videoId);clearInterval(watchSaveIv);watchSaveIv=null;watchStartTs=null;try{if(ytPlayer&&ytPlayer.destroy)ytPlayer.destroy()}catch(e){}ytPlayer=null}
 function currentWatchSeconds(){if(ytPlayer&&typeof ytPlayer.getCurrentTime==="function"){try{let t=ytPlayer.getCurrentTime();if(typeof t==="number"&&t>=0)return Math.floor(t)}catch(e){}}if(!watchStartTs)return watchBaseSeconds;return watchBaseSeconds+Math.floor((Date.now()-watchStartTs)/1000)}
 async function saveWatchProgress(videoId){let sec=currentWatchSeconds();try{localStorage.setItem("wp_"+videoId,String(sec))}catch(e){}}
@@ -70,17 +70,41 @@ document.addEventListener("visibilitychange",()=>{if(document.hidden&&vid)saveWa
 window.addEventListener("beforeunload",()=>{if(vid)saveWatchProgress(vid)});
 
 // ---- ভিডিও দেখলে কয়েন আয়ের সিস্টেম (বিজ্ঞাপন সিস্টেম বাদ — এখন সরাসরি ভিডিও দেখলেই কয়েন) ----
-// প্রতি ৫ সেকেন্ড পর পর, যদি ভিডিও সত্যিই চলতে থাকে (পজ না থাকে), তাহলে প্রতি সেকেন্ডে coinPerSecond হারে কয়েন জমা হয়
+// অ্যাডমিন প্যানেলে নির্ধারিত rewardIntervalSeconds (যেমন ৫ সেকেন্ড) পরপর, যদি ভিডিও সত্যিই
+// চলতে থাকে (পজ না থাকে), তাহলে rewardCoins (যেমন ০.১০) পরিমাণ কয়েন জমা হয় — তবে প্রতি ঘণ্টায়
+// maxCoinsPerHour এবং প্রতিদিন maxCoinsPerDay-এর বেশি নয়। lastVideoRewardAt/hourWindowStart/
+// dayWindowStart ফিল্ডগুলো সাথে পাঠানো হয় যাতে Firestore Security Rules সার্ভার-সাইডে এই
+// ইন্টারভাল ও ক্যাপ দুটোই যাচাই করতে পারে (কনসোল/স্ক্রিপ্ট দিয়ে দ্রুত কল করে ফার্মিং ঠেকাতে)।
 let ytIsPlaying=true;
 async function creditWatchCoins(){
   if(!user)return;
   let playing=ytPlayer?ytIsPlaying:!document.hidden; // ইউটিউব হলে আসল প্লেয়ার স্টেট, না হলে (যেমন ফেসবুক) ট্যাব দেখা যাচ্ছে কিনা তা দিয়ে অনুমান
   if(!playing)return;
-  let amount=Number((Number(settings.coinPerSecond||0)*5).toFixed(4));
-  if(!amount)return;
+  let reward=Number(settings.rewardCoins||0);
+  if(!reward)return;
   try{
-    await setDoc(doc(db,"users",user.uid),{videoBalance:increment(amount)},{merge:true});
-    await logHistory("videoWatchReward",amount);
+    let uref=doc(db,"users",user.uid);
+    let snap=await getDoc(uref);
+    let ud=snap.exists()?snap.data():{};
+    let now=Date.now();
+    let hourStartMs=ud.hourWindowStart?ud.hourWindowStart.toMillis():0;
+    let hourExpired=(!hourStartMs)||(now-hourStartMs>3600000);
+    let newHourEarned=hourExpired?reward:Number(ud.hourEarnedAmount||0)+reward;
+    if(newHourEarned>Number(settings.maxCoinsPerHour||0))return; // ঘণ্টার সর্বোচ্চ সীমা শেষ — আপাতত আর কয়েন দেওয়া হবে না
+    let dayStartMs=ud.dayWindowStart?ud.dayWindowStart.toMillis():0;
+    let dayExpired=(!dayStartMs)||(now-dayStartMs>86400000);
+    let newDayEarned=dayExpired?reward:Number(ud.dayEarnedAmount||0)+reward;
+    if(newDayEarned>Number(settings.maxCoinsPerDay||0))return; // দিনের সর্বোচ্চ সীমা শেষ
+    let payload={
+      videoBalance:increment(reward),
+      lastVideoRewardAt:serverTimestamp(),
+      hourEarnedAmount:newHourEarned,
+      dayEarnedAmount:newDayEarned
+    };
+    payload.hourWindowStart=hourExpired?serverTimestamp():ud.hourWindowStart;
+    payload.dayWindowStart=dayExpired?serverTimestamp():ud.dayWindowStart;
+    await setDoc(uref,payload,{merge:true});
+    await logHistory("videoWatchReward",reward);
     await balance()
   }catch(e){}
 }
