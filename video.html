@@ -30,7 +30,7 @@
 .adOverlay .adBox{width:100%;max-width:640px}
 .adOverlay .adLabel{color:#fbbf24;font-size:12px;margin-bottom:8px;text-align:center;letter-spacing:.5px}
 .adOverlay .adVideoWrap{position:relative;background:#000;aspect-ratio:16/9;border-radius:10px;overflow:hidden;border:1px solid #30363d}
-.adOverlay .adVideoWrap iframe{position:absolute;width:100%;height:100%;border:0}
+.adOverlay .adVideoWrap video{position:absolute;width:100%;height:100%;object-fit:contain}
 .adSkipBtn{width:100%;margin-top:12px;padding:11px;background:#262c36;color:#fff;border:1px solid #30363d;border-radius:7px;font-weight:700;cursor:not-allowed;opacity:.6}
 .adSkipBtn.enabled{cursor:pointer;opacity:1;background:#4285f4;border-color:#4285f4}
 </style>
@@ -43,11 +43,11 @@
 <section id="add" class="panel"><div class="balance">🪙 <span id="unitLabel3">Coin</span> Balance<strong id="addPoints">0 Coin</strong></div><div class="box"><h3>➕ ভিডিও যোগ করুন</h3><label>ভিডিওর Title</label><input id="newTitle"><label>ভিডিও লিংক (YouTube, Facebook, Vimeo, Dailymotion ইত্যাদি)</label><input id="newUrl" placeholder="ভিডিওর লিংক পেস্ট করুন (Embed কোড পেস্ট করলেও চলবে)"><p class="notice" style="margin-top:-6px">YouTube, Facebook, Vimeo বা Dailymotion — যেকোনো একটির সাধারণ ভিডিও লিংক অথবা সম্পূর্ণ Embed/iframe কোড পেস্ট করলেই এটি স্বয়ংক্রিয়ভাবে সঠিক ফরম্যাটে বসে যাবে।</p><label>ভিডিওর খরচ</label><input id="videoBudget" type="number" readonly><p id="videoCostNote" class="notice"></p><button class="primary" onclick="submitVideo()">ভিডিও যুক্ত করুন</button><div id="videoStatus" class="notice"></div><div id="addLoginBox" style="display:none; margin-top:14px; text-align:center;"><p class="notice" style="margin-bottom:8px;">ভিডিও যুক্ত করতে আগে লগইন করুন</p><button class="primary" style="background:#4285F4;" onclick="doGoogleLogin()">🔵 Google দিয়ে লগইন করুন</button></div></div></section>
 </main><nav><div><button onclick="panel('coin',this)"><b>🪙</b>কয়েন</button><button class="active" onclick="panel('my',this)"><b>🎬</b>মাই ভিডিও</button><button onclick="panel('add',this)"><b>➕</b>অ্যাড ভিডিও</button></div></nav></div>
 <div class="drawerOverlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="adOverlay" id="adOverlay"><div class="adBox"><div class="adLabel">🔻 বিজ্ঞাপন</div><div class="adVideoWrap"><video id="adVideoEl" playsinline autoplay></video></div><button class="adSkipBtn" id="adSkipBtn">স্কিপ করুন</button></div></div>
 <div class="sideDrawer" id="sideDrawer">
   <div class="drawerHead"><span></span><button onclick="closeDrawer()">✕</button></div>
   <div class="drawerList" id="drawerList"></div>
 </div>
-<div class="adOverlay" id="adOverlay"><div class="adBox"><div class="adLabel">🔻 বিজ্ঞাপন</div><div class="adVideoWrap"><iframe id="adFrame" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div><button class="adSkipBtn" id="adSkipBtn">স্কিপ করুন</button></div></div>
 <script type="module">
 import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";import{getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";import{getFirestore,collection,query,orderBy,getDocs,doc,getDoc,setDoc,increment,deleteDoc,addDoc,serverTimestamp,onSnapshot,limit,runTransaction,updateDoc}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[];let settings={unitName:"Coin",videoCost:10,rewardIntervalSeconds:5,rewardCoins:0.10,maxCoinsPerHour:10,maxCoinsPerDay:100};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
@@ -67,22 +67,48 @@ function thumbFor(d){if(d.thumbnail)return d.thumbnail;let y=videoId(d.videoUrl)
 // প্লেসহোল্ডার দেখানোর পর, Vimeo/Dailymotion হলে ব্যাকগ্রাউন্ডে আসল থাম্বনেইল এনে বসিয়ে দেওয়া হয় এবং পরের বার সবার জন্য দেখানোর জন্য ডাটাবেজেও সেভ করে রাখা হয়
 function enhanceThumb(imgEl,docId,d){if(d.thumbnail)return;let ext=extIdFor(d.videoUrl);if(!ext)return;fetchExternalThumb(ext.type,ext.id).then(th=>{if(!th)return;if(imgEl&&imgEl.isConnected)imgEl.src=th;try{updateDoc(doc(db,"videos",docId),{thumbnail:th})}catch(e){}})}
 window.render=()=>{let t=$("search").value.toLowerCase().trim();$("grid").innerHTML="";let a=arr.filter(x=>(x.d.title||"").toLowerCase().includes(t));if(!a.length){$("grid").innerHTML='<div class="empty">কোনো ভিডিও নেই।</div>';return}a.forEach((x,i)=>{let d=x.d,c=document.createElement("div");c.className="card";let im=thumbFor(d);c.innerHTML=`<div class="thumb">${im?`<img src="${esc(im)}" alt="">`:""}</div><div class="body"><div class="title">${esc(d.title||"Untitled")}</div><div class="muted">${esc(d.channelName||"Onuvuti")} · 👁 ${Number(d.viewCount||0)}</div></div>`;enhanceThumb(c.querySelector(".thumb img"),x.id,d);c.onclick=()=>maybeShowAdThenPlay(x.id);$("grid").append(c);if(i===0&&a.length>1){let adWrap=document.createElement("div");adWrap.id="container-e11b62d0d7d59d1d067e466e43ac58a8";$("grid").append(adWrap);if(!window._nativeBannerLoaded){window._nativeBannerLoaded=true;try{let s=document.createElement("script");s.async=true;s.setAttribute("data-cfasync","false");s.src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js";document.body.appendChild(s)}catch(e){}}}})};
-// ---- ভিডিওতে ক্লিক করলে আগে video-admin.html-এর "বিজ্ঞাপন" অংশে যোগ করা একটা ভিডিও-অ্যাড দেখানো হয়, স্কিপ করার পরই আসল ভিডিও চালু হয় ----
-let adsList=[],adSkipTimer=null;
-async function loadAds(){try{let snap=await getDocs(query(collection(db,"advertisements"),orderBy("createdAt","desc"),limit(20)));adsList=snap.docs.map(x=>({id:x.id,d:x.data()})).filter(x=>(x.d.status||"active")==="active")}catch(e){adsList=[]}}
-window.maybeShowAdThenPlay=(id)=>{
-  if(!adsList.length)return openVideo(id);
-  let ad=adsList[Math.floor(Math.random()*adsList.length)];
-  let adUrl=normalizeEmbedUrl(ad.d.videoUrl||"");
-  if(!validUrl(adUrl))return openVideo(id);
-  $("adFrame").src=adUrl;
+// ---- ভিডিওতে ক্লিক করলে আগে Adcash-এর VAST প্রি-রোল অ্যাড দেখানো হয়, স্কিপ/শেষ হলেই আসল ভিডিও চালু হয় ----
+const VAST_TAG_URL="https://youradexchange.com/video/select.php?r=12092194";
+let adSkipTimer=null;
+async function fetchVastMediaFile(){
+  try{
+    let url=VAST_TAG_URL,depth=0,xmlDoc=null;
+    while(depth<3){
+      let r=await fetch(url,{cache:"no-store"});
+      if(!r.ok)return null;
+      let xmlText=await r.text();
+      xmlDoc=new DOMParser().parseFromString(xmlText,"text/xml");
+      if(xmlDoc.querySelector("parsererror"))return null;
+      let wrapperUri=xmlDoc.querySelector("VASTAdTagURI");
+      if(!wrapperUri)break;
+      url=wrapperUri.textContent.trim();depth++
+    }
+    if(!xmlDoc)return null;
+    let mediaFiles=[...xmlDoc.querySelectorAll("MediaFile")];
+    if(!mediaFiles.length)return null;
+    let mp4=mediaFiles.find(m=>(m.getAttribute("type")||"").includes("mp4"))||mediaFiles[0];
+    let mediaUrl=(mp4.textContent||"").trim();
+    if(!mediaUrl)return null;
+    let impressions=[...xmlDoc.querySelectorAll("Impression")].map(n=>n.textContent.trim()).filter(Boolean);
+    return{url:mediaUrl,impressions}
+  }catch(e){return null}
+}
+window.maybeShowAdThenPlay=async(id)=>{
+  let ad=await fetchVastMediaFile();
+  if(!ad||!ad.url)return openVideo(id);
+  let videoEl=$("adVideoEl");
+  videoEl.src=ad.url;
   $("adOverlay").classList.add("show");
   let skipBtn=$("adSkipBtn"),secs=5;
   skipBtn.disabled=true;skipBtn.classList.remove("enabled");skipBtn.textContent=`স্কিপ করুন (${secs})`;
   clearInterval(adSkipTimer);
   adSkipTimer=setInterval(()=>{secs--;if(secs<=0){clearInterval(adSkipTimer);skipBtn.disabled=false;skipBtn.classList.add("enabled");skipBtn.textContent="স্কিপ করুন ➜"}else{skipBtn.textContent=`স্কিপ করুন (${secs})`}},1000);
-  try{updateDoc(doc(db,"advertisements",ad.id),{viewCount:increment(1)})}catch(e){}
-  skipBtn.onclick=()=>{if(skipBtn.disabled)return;clearInterval(adSkipTimer);$("adOverlay").classList.remove("show");$("adFrame").src="";openVideo(id)}
+  (ad.impressions||[]).forEach(u=>{try{fetch(u,{mode:"no-cors"})}catch(e){}});
+  let finished=false;
+  let finish=()=>{if(finished)return;finished=true;clearInterval(adSkipTimer);$("adOverlay").classList.remove("show");try{videoEl.pause()}catch(e){}videoEl.src="";openVideo(id)};
+  skipBtn.onclick=()=>{if(skipBtn.disabled)return;finish()};
+  videoEl.onended=finish;
+  videoEl.onerror=finish;
 };
 async function openVideo(id){try{if(vid&&vid!==id)stopWatchTracking(vid);let s=await getDoc(doc(db,"videos",id));if(!s.exists())return;vid=id;data=s.data();$("home").classList.remove("active");$("player").classList.add("active");let savedSec=await getWatchProgress(id);$("frame").src=withResumeParam(data.videoUrl||"",savedSec);$("title").textContent=data.title||"";$("caption").textContent=data.caption||"";await Promise.all([setDoc(doc(db,"videos",id,"stats","counts"),{viewCount:increment(1)},{merge:true}),setDoc(doc(db,"videos",id),{viewCount:increment(1)},{merge:true})]);subscribeStats();subscribeComments();likeState();startWatchTracking(id,savedSec);setTimeout(attachYtPlayer,1500);history.pushState({video:id},"",location.pathname+"?v="+encodeURIComponent(id))}catch(e){console.error(e)}}
 
@@ -314,5 +340,5 @@ function normalizeEmbedUrl(raw){
 }
 window.submitVideo=async()=>{if(!user)return alert("ভিডিও যুক্ত করতে লগইন করুন।");let title=$("newTitle").value.trim(),url=normalizeEmbedUrl($("newUrl").value),cost=settings.videoCost;if(!title||!validUrl(url))return alert("Title এবং সঠিক Embed URL/লিংক দিন।");try{await runTransaction(db,async tx=>{let uref=doc(db,"users",user.uid),us=await tx.get(uref);if(!us.exists())throw Error("User profile পাওয়া যায়নি।");let ud=us.data(),legacy=Number(ud.points??ud.coins??ud.balance??0);let bal=Number(ud.videoBalance??legacy);if(bal<cost)throw Error("পর্যাপ্ত "+unit()+" নেই।");let vref=doc(collection(db,"videos"));tx.set(vref,{title,caption:"",videoUrl:url,ownerUid:user.uid,createdAt:serverTimestamp(),pointsSpent:cost,status:"active"});tx.update(uref,{videoBalance:bal-cost})});$("newTitle").value="";$("newUrl").value="";$("videoStatus").textContent="ভিডিও সফলভাবে যুক্ত হয়েছে ✓";await logHistory("videoSpend",-cost);await balance();await load();await loadMine()}catch(e){$("videoStatus").textContent=e.message}};
 window.submitPaymentRequest=async()=>{if(!user)return alert("Payment Request করতে লগইন করুন।");let coins=Number($("requestCoins").value),note=$("paymentNote").value.trim();if(!coins||coins<1)return alert("কত Coin চান তা লিখুন।");try{await addDoc(collection(db,"paymentRequests"),{uid:user.uid,coins,note,status:"pending",createdAt:serverTimestamp()});$("requestCoins").value="";$("paymentNote").value="";$("paymentStatus").textContent="Payment Request পাঠানো হয়েছে ✓"}catch(e){$("paymentStatus").textContent="Request পাঠানো যায়নি: "+e.message}};
-load();loadAds();let initial=new URLSearchParams(location.search).get("v");if(initial)setTimeout(()=>openVideo(initial),400);
+load();let initial=new URLSearchParams(location.search).get("v");if(initial)setTimeout(()=>openVideo(initial),400);
 </script></body></html>
