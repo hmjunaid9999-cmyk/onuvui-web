@@ -302,13 +302,14 @@
           <div class="swiperPage">
             <div class="section">
               <h2>🪙 কয়েন সেটিংস</h2>
-              <div class="hint">উদাহরণ: প্রতি ৫ সেকেন্ডে ০.১০ কয়েন দিলে, প্রতি ঘণ্টায় সর্বোচ্চ ১০ কয়েন এবং প্রতিদিন সর্বোচ্চ ১০০ কয়েন আয় করা যাবে।</div>
+              <div class="hint">উদাহরণ: প্রতি ৫ সেকেন্ডে ০.১০ কয়েন দিলে, প্রতি ঘণ্টায় সর্বোচ্চ ১০ কয়েন, প্রতিদিন সর্বোচ্চ ১০০ কয়েন এবং একটি নির্দিষ্ট ভিডিওতে সর্বোচ্চ যত কয়েন সেট করবেন তত কয়েন আয় করা যাবে।</div>
               <div class="row"><label>ইউনিটের নাম</label><input type="text" id="coinUnitName" placeholder="Coin"></div>
               <div class="row"><label>প্রতি ভিডিও আপলোডের খরচ</label><input type="number" id="coinVideoCost" placeholder="100"></div>
               <div class="row"><label>প্রতি কত সেকেন্ডে কয়েন দেওয়া হবে</label><input type="number" min="1" step="1" id="rewardIntervalSeconds" placeholder="5"></div>
               <div class="row"><label>সেই প্রতিটি সময়ে কত কয়েন দেওয়া হবে</label><input type="number" min="0" step="0.01" id="rewardCoins" placeholder="0.10"></div>
               <div class="row"><label>প্রতি ঘণ্টায় সর্বোচ্চ কত কয়েন আয় করা যাবে</label><input type="number" min="0" step="0.01" id="maxCoinsPerHour" placeholder="10"></div>
               <div class="row"><label>প্রতিদিন সর্বোচ্চ কত কয়েন আয় করা যাবে</label><input type="number" min="0" step="0.01" id="maxCoinsPerDay" placeholder="100"></div>
+              <div class="row"><label>একটি ভিডিওতে সর্বোচ্চ কত কয়েন পাওয়া যাবে</label><input type="number" min="0" step="0.01" id="maxCoinsPerVideo" placeholder="5 (০ দিলে কোনো সীমা থাকবে না)"></div>
               <button class="sectionSaveBtn" id="saveCoinSettingsBtn">💾 সেভ করুন</button>
               <div class="sectionStatus" id="coinSettingsStatus"></div>
             </div>
@@ -727,6 +728,7 @@
       document.getElementById('rewardCoins').value = (typeof d.rewardCoins === 'number') ? d.rewardCoins : 0.10;
       document.getElementById('maxCoinsPerHour').value = (typeof d.maxCoinsPerHour === 'number') ? d.maxCoinsPerHour : 10;
       document.getElementById('maxCoinsPerDay').value = (typeof d.maxCoinsPerDay === 'number') ? d.maxCoinsPerDay : 100;
+      document.getElementById('maxCoinsPerVideo').value = (typeof d.maxCoinsPerVideo === 'number') ? d.maxCoinsPerVideo : 5;
     } catch (e) {
       statusEl.style.color = '#f87171';
       statusEl.textContent = 'লোড এরর: ' + e.message;
@@ -741,9 +743,10 @@
     const rewardCoins = Number(document.getElementById('rewardCoins').value) || 0;
     const maxCoinsPerHour = Number(document.getElementById('maxCoinsPerHour').value) || 0;
     const maxCoinsPerDay = Number(document.getElementById('maxCoinsPerDay').value) || 0;
+    const maxCoinsPerVideo = Number(document.getElementById('maxCoinsPerVideo').value) || 0;
     try {
       await setDoc(doc(db, "settings", "video"), {
-        unitName, videoCost, rewardIntervalSeconds, rewardCoins, maxCoinsPerHour, maxCoinsPerDay
+        unitName, videoCost, rewardIntervalSeconds, rewardCoins, maxCoinsPerHour, maxCoinsPerDay, maxCoinsPerVideo
       }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
