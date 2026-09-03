@@ -146,11 +146,39 @@
   .commentRow { margin-bottom: 10px; }
   .commentMain { display: flex; gap: 8px; }
   .commentMain img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
-  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; }
+  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; position: relative; }
+  /* ---- কমেন্ট/রিপ্লাই এর উপরের সারি: নাম বাম দিকে, থ্রি-ডট মেনু ডান দিকে ---- */
+  .commentBodyTop { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; }
   .commentBody .cName { font-size: 12px; font-weight: bold; }
-  .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
-  .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
+  .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; margin-top: 2px; }
+  /* ---- কার কমেন্ট/রিপ্লাই-এ উত্তর দেওয়া হয়েছে সেটার নাম-ট্যাগ ---- */
+  .cReplyToLine { font-size: 11px; color: var(--primary-color); margin-top: 2px; }
+  .cReplyToLine b { font-weight: bold; }
+
+  /* ---- কমেন্ট/রিপ্লাই এর থ্রি-ডট মেনু (কপি, এডিট, ডিলিট) ---- */
+  .commentMenuWrap { position: relative; flex-shrink: 0; }
+  .commentMenuBtn { background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1; }
+  .commentMenuDropdown {
+    display: none; position: absolute; right: 0; top: 20px; background: #21262d; border: 1px solid #30363d;
+    border-radius: 10px; min-width: 110px; z-index: 10; overflow: hidden;
+  }
+  .commentMenuDropdown.open { display: block; }
+  .commentMenuDropdown button {
+    display: block; width: 100%; text-align: left; background: none; border: none; color: #fff;
+    padding: 8px 10px; font-size: 11px; cursor: pointer;
+  }
+  .commentMenuDropdown button:hover { background: #30363d; }
+
+  /* ---- কমেন্ট/রিপ্লাই এর নিচের সারি: সময়, লাইক ও রিপ্লাই বাটন ---- */
+  .commentBottomRow { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .commentBottomButtons { display: flex; gap: 10px; }
+  .commentBottomButtons button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
+  .commentBottomButtons button.cLiked { color: #f87171; }
+
+  /* ---- কাকে উত্তর দেওয়া হচ্ছে সেটার লেবেল (রিপ্লাই বক্সের ভেতরে) ---- */
+  .replyTargetLabel { font-size: 11px; color: var(--primary-color); margin-bottom: 4px; display: none; }
+  .replyTargetLabel.show { display: block; }
+  .cancelReplyTarget { color: #f87171; cursor: pointer; margin-left: 4px; }
   /* ---- রিপ্লাই বক্স: কমেন্টের অ্যাভাটারের ঠিক নিচেই শুরু হবে (একদম বরাবর), ডান দিকে সরবে না ---- */
   .replyBox { margin-top: 8px; background: #12161d; border: 1px solid #262c36; border-radius: 10px; padding: 8px 6px 8px 0; }
   .replyBox .commentRow { margin-bottom: 8px; }
@@ -285,6 +313,8 @@
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
+  // ---- কমেন্ট ও রিপ্লাই এর বাটন অর্ডার: নিচে লাইক+রিপ্লাই, উপরে থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট ----
+  let commentButtonOrder = { bottom: ['like', 'reply'], menu: ['copy', 'edit', 'delete'] };
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
   let openReplyBoxes = [];
@@ -416,6 +446,8 @@
 
     if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
     if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+    if (s.commentBottomButtons && s.commentBottomButtons.length) commentButtonOrder.bottom = s.commentBottomButtons;
+    if (s.commentMenuButtons && s.commentMenuButtons.length) commentButtonOrder.menu = s.commentMenuButtons;
     if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
     if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
@@ -827,6 +859,10 @@
       const repliesByTop = {};
       all.filter(c => c.data.replyToId).forEach(c => {
         const topId = findTopLevelId(c);
+        // ---- এই রিপ্লাইটা সরাসরি কার কমেন্ট/রিপ্লাই-এর উদ্দেশ্যে করা হয়েছে, তার নাম বের করে রাখা হচ্ছে
+        //      (যাতে "কার মন্তব্যে উত্তর দেওয়া হয়েছে" সেটা দেখানো যায়) ----
+        const directParent = byId[c.data.replyToId];
+        c.replyToName = directParent ? directParent.data.name : '';
         (repliesByTop[topId] = repliesByTop[topId] || []).push(c); // পুরাতন থেকে নতুন, ধারাবাহিকভাবে নিচে নামবে
       });
 
@@ -861,7 +897,11 @@
 
   // isTopLevel = true হলে এটা মূল কমেন্ট (রিপ্লাই বক্স টগল করা যাবে); false হলে এটা সেই বক্সের
   // ভেতরের একটা রিপ্লাই সারি — কোনো অবস্থাতেই আরও ডান দিকে যাবে না, নিজের কোনো রিপ্লাই-বক্স থাকবে না।
-  function buildCommentRow(postId, commentId, d, isTopLevel, card, replies) {
+  // ctx = শেয়ার্ড রিপ্লাই-বক্স কন্ট্রোলার, শুধু টপ-লেভেল কমেন্ট নিজে বানায়, তারপর তার সব রিপ্লাই-এর
+  //       (এবং রিপ্লাই-এর-রিপ্লাই এর) কাছে পাস হয় — যাতে যেকোনো রিপ্লাই থেকেও "উত্তর দিন" চাপলে
+  //       একই (একমাত্র) বক্স খুলে যায়, কিন্তু লক্ষ্য (কাকে উত্তর দেওয়া হচ্ছে) বদলে যায়
+  // replyToName = এই কমেন্ট/রিপ্লাইটা সরাসরি কার মন্তব্যের উত্তরে করা হয়েছে (থাকলে উপরে নাম-ট্যাগ দেখাবে)
+  function buildCommentRow(postId, commentId, d, isTopLevel, card, replies, ctx, replyToName) {
     const isOwner = currentUser && d.uid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
     const replyList = replies || [];
@@ -873,84 +913,184 @@
         <img src="${d.photoURL || ''}">
         <div style="flex:1; min-width:0;">
           <div class="commentBody">
-            <div class="cName">${escapeHtml(d.name)}</div>
+            <div class="commentBodyTop">
+              <div class="cName">${escapeHtml(d.name)}</div>
+              <div class="commentMenuWrap">
+                <button class="commentMenuBtn">⋮</button>
+                <div class="commentMenuDropdown"></div>
+              </div>
+            </div>
+            ${replyToName ? `<div class="cReplyToLine">↪ <b>${escapeHtml(replyToName)}</b> এর মন্তব্যে</div>` : ''}
             <div class="cText">${escapeHtml(d.text)}</div>
           </div>
-          <div class="commentMeta">
-            <span>${timeAgo(d.createdAt)}</span>
-            <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
-            <button class="cCopyBtn">কপি</button>
-            ${isTopLevel ? `<button class="cReplyToggleBtn">উত্তর দিন${replyList.length ? ' (' + replyList.length + ')' : ''}</button>` : ''}
-            ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
-            ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
+          <div class="commentBottomRow">
+            <span class="cTime">${timeAgo(d.createdAt)}</span>
+            <div class="commentBottomButtons"></div>
           </div>
+          ${isTopLevel ? `
+            <div class="replyBox" style="display:none;">
+              <div class="replyBoxList"></div>
+              <div class="replyTargetLabel"></div>
+              <div class="replyForm">
+                <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
+                <button class="replySubmitBtn">পাঠান</button>
+              </div>
+            </div>
+          ` : ''}
         </div>
       </div>
-      ${isTopLevel ? `
-        <div class="replyBox" style="display:none;">
-          <div class="replyBoxList"></div>
-          <div class="replyForm">
-            <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
-            <button class="replySubmitBtn">পাঠান</button>
-          </div>
-        </div>
-      ` : ''}
     `;
 
-    row.querySelector('.cLikeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const ref2 = doc(db, "posts", postId, "comments", commentId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-    });
+    const bottomContainer = row.querySelector('.commentBottomButtons');
+    const menuContainer = row.querySelector('.commentMenuDropdown');
+    const menuBtn = row.querySelector('.commentMenuBtn');
 
-    row.querySelector('.cCopyBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
-    });
-
-    const editBtn = row.querySelector('.cEditBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
-      });
-    }
-
-    const deleteBtn = row.querySelector('.cDeleteBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', async () => {
-        if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
-        try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
-        catch (e) { alert('এরর: ' + e.message); }
-      });
-    }
-
-    if (isTopLevel) {
+    // ---- টপ-লেভেল হলে নিজের রিপ্লাই-বক্স কন্ট্রোলার (ctx) বানানো হচ্ছে, নাহলে প্যারেন্ট থেকে পাওয়া ctx-ই ব্যবহার হবে ----
+    const topCtx = isTopLevel ? (() => {
       const replyBox = row.querySelector('.replyBox');
       const replyBoxList = row.querySelector('.replyBoxList');
-      replyList.forEach(r => {
-        // রিপ্লাই বক্সের ভেতরের প্রতিটা সারি ফ্ল্যাট (isTopLevel=false) — আর ডানে যাবে না
-        replyBoxList.appendChild(buildCommentRow(postId, r.id, r.data, false, card, []));
-      });
-
-      const toggleBtn = row.querySelector('.cReplyToggleBtn');
-      toggleBtn.addEventListener('click', () => {
-        const show = replyBox.style.display === 'none';
-        replyBox.style.display = show ? 'block' : 'none';
-        if (show) {
-          if (!openReplyBoxes.includes(replyBox)) openReplyBoxes.push(replyBox);
-          rearmGuard();
+      const replyInput = row.querySelector('.replyInput');
+      const targetLabel = row.querySelector('.replyTargetLabel');
+      const newCtx = {
+        replyBox, replyBoxList, replyInput, targetLabel,
+        currentTargetId: commentId,
+        currentTargetName: d.name
+      };
+      newCtx.updateLabel = () => {
+        if (newCtx.currentTargetId === commentId) {
+          targetLabel.classList.remove('show');
+          targetLabel.innerHTML = '';
         } else {
-          openReplyBoxes = openReplyBoxes.filter(b => b !== replyBox);
+          targetLabel.classList.add('show');
+          targetLabel.innerHTML = `↩ <b>${escapeHtml(newCtx.currentTargetName)}</b> কে উত্তর দিচ্ছেন <span class="cancelReplyTarget">✕</span>`;
+          const cancelEl = targetLabel.querySelector('.cancelReplyTarget');
+          if (cancelEl) cancelEl.addEventListener('click', () => {
+            newCtx.currentTargetId = commentId;
+            newCtx.currentTargetName = d.name;
+            newCtx.updateLabel();
+          });
         }
+      };
+      // isMainToggle=true হলে এটা মূল কমেন্টের নিজের "উত্তর দিন" বাটন — চাপলে বক্স খোলে/বন্ধ হয় (টগল)
+      // false হলে এটা কোনো নির্দিষ্ট রিপ্লাই-এর "উত্তর দিন" বাটন — বক্স খুলে যাবে (বন্ধ থাকলে) ও লক্ষ্য বদলাবে
+      newCtx.openFor = (id, name, isMainToggle) => {
+        const isOpen = replyBox.style.display === 'block';
+        if (isMainToggle && isOpen) {
+          replyBox.style.display = 'none';
+          openReplyBoxes = openReplyBoxes.filter(b => b !== replyBox);
+          return;
+        }
+        replyBox.style.display = 'block';
+        newCtx.currentTargetId = isMainToggle ? commentId : id;
+        newCtx.currentTargetName = isMainToggle ? d.name : name;
+        newCtx.updateLabel();
+        if (!openReplyBoxes.includes(replyBox)) openReplyBoxes.push(replyBox);
+        rearmGuard();
+        replyInput.focus();
+      };
+      return newCtx;
+    })() : ctx;
+
+    // ---- প্রতিটা বাটনের সংজ্ঞা (নিচে লাইক+রিপ্লাই, উপরে থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট — settings থেকে ক্রম ঠিক হবে) ----
+    const buttonDefs = {
+      like: () => {
+        const b = document.createElement('button');
+        b.className = 'cLikeBtn' + (liked ? ' cLiked' : '');
+        b.innerHTML = `${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span>`;
+        b.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const ref2 = doc(db, "posts", postId, "comments", commentId);
+          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+          await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+        });
+        return b;
+      },
+      reply: () => {
+        const b = document.createElement('button');
+        b.className = 'cReplyBtn';
+        b.textContent = 'উত্তর দিন' + (isTopLevel && replyList.length ? ' (' + replyList.length + ')' : '');
+        b.addEventListener('click', () => {
+          topCtx.openFor(commentId, d.name, isTopLevel);
+        });
+        return b;
+      },
+      copy: () => {
+        const b = document.createElement('button');
+        b.className = 'cCopyBtn';
+        b.textContent = 'কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
+        });
+        return b;
+      },
+      edit: () => {
+        // এডিট শুধু যে কমেন্ট/রিপ্লাই করেছে তার জন্যই দেখাবে
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'cEditBtn';
+        b.textContent = 'এডিট';
+        b.addEventListener('click', () => {
+          menuContainer.classList.remove('open');
+          const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
+          if (newText === null) return;
+          updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
+        });
+        return b;
+      },
+      delete: () => {
+        // ডিলিট শুধু যে কমেন্ট/রিপ্লাই করেছে তার জন্যই দেখাবে
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'cDeleteBtn';
+        b.textContent = 'ডিলিট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
+          try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
+          catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      }
+    };
+
+    function placeCommentButtons(order, container) {
+      (order || []).forEach(key => {
+        const factory = buttonDefs[key];
+        if (!factory) return;
+        const el = factory();
+        if (el) container.appendChild(el);
+      });
+    }
+
+    placeCommentButtons(commentButtonOrder.bottom, bottomContainer);
+    placeCommentButtons(commentButtonOrder.menu, menuContainer);
+
+    // থ্রি-ডট মেনু খোলা/বন্ধ
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.commentMenuDropdown.open, .postMenuDropdown.open').forEach(el => { if (el !== menuContainer) el.classList.remove('open'); });
+      menuContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuContainer.classList.remove('open'));
+    menuContainer.addEventListener('click', (e) => e.stopPropagation());
+
+    if (isTopLevel) {
+      replyList.forEach(r => {
+        // রিপ্লাই বক্সের ভেতরের প্রতিটা সারি ফ্ল্যাট (isTopLevel=false) — আর ডানে যাবে না,
+        // কিন্তু নিজের replyToName সহ দেখানো হবে যাতে বোঝা যায় কার মন্তব্যে উত্তর দেওয়া হয়েছে
+        topCtx.replyBoxList.appendChild(buildCommentRow(postId, r.id, r.data, false, card, [], topCtx, r.replyToName));
       });
 
       row.querySelector('.replySubmitBtn').addEventListener('click', () => {
-        const input = row.querySelector('.replyInput');
-        // সবসময় মূল (টপ-লেভেল) কমেন্টের সাথেই যুক্ত হবে — যাতে সব রিপ্লাই এক বক্সেই ফ্ল্যাট থাকে
-        postComment(postId, input.value, commentId, card);
+        const input = topCtx.replyInput;
+        const targetId = topCtx.currentTargetId; // মূল কমেন্ট অথবা নির্দিষ্ট কোনো রিপ্লাই — যেটা লক্ষ্য করা হয়েছে
+        if (!input.value.trim()) return;
+        postComment(postId, input.value, targetId, card);
         input.value = '';
+        topCtx.currentTargetId = commentId;
+        topCtx.currentTargetName = d.name;
+        topCtx.updateLabel();
       });
     }
 

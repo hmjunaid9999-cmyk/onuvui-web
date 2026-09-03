@@ -389,6 +389,22 @@
         </div>
 
         <div class="section">
+          <h2>💬 কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে। প্রতিটা কমেন্ট ও রিপ্লাই এর নিচে এই বাটনগুলো দেখাবে</div>
+          <div class="buttonPicker" id="commentBottomButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="commentBottomButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusCommentBottomButtons"></div>
+        </div>
+
+        <div class="section">
+          <h2>💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে। এডিট ও ডিলিট শুধু যিনি কমেন্ট/রিপ্লাই করেছেন তিনিই দেখতে পাবেন</div>
+          <div class="buttonPicker" id="commentMenuButtonPicker"></div>
+          <button class="sectionSaveBtn" data-section="commentMenuButtons">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusCommentMenuButtons"></div>
+        </div>
+
+        <div class="section">
           <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
           <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
           <div class="buttonPicker" id="posterColorPicker"></div>
@@ -465,15 +481,22 @@
   };
   const BUTTON_KEYS = Object.keys(BUTTON_LABELS);
 
-  function createPicker(containerId) {
+  // ---- কমেন্ট ও রিপ্লাই এর বাটন (নিচে লাইক+রিপ্লাই, থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট) ----
+  const COMMENT_BUTTON_LABELS = {
+    like: '❤️ লাইক', reply: '↩️ রিপ্লাই', copy: '📋 কপি', edit: '✏️ এডিট', delete: '🗑️ ডিলিট'
+  };
+  const COMMENT_BUTTON_KEYS = Object.keys(COMMENT_BUTTON_LABELS);
+
+  // keys, labels প্যারামিটার নিয়ে জেনারিক পিকার — পোস্ট ও কমেন্ট/রিপ্লাই দুই ধরনের বাটনের জন্যই ব্যবহার করা যায়
+  function createPicker(containerId, keys, labels) {
     const container = document.getElementById(containerId);
     let order = [];
 
-    BUTTON_KEYS.forEach(key => {
+    keys.forEach(key => {
       const chip = document.createElement('div');
       chip.className = 'pickerChip';
       chip.dataset.key = key;
-      chip.innerHTML = `<span class="badge"></span><span>${BUTTON_LABELS[key]}</span>`;
+      chip.innerHTML = `<span class="badge"></span><span>${labels[key]}</span>`;
       chip.addEventListener('click', () => {
         const idx = order.indexOf(key);
         if (idx === -1) order.push(key);
@@ -498,12 +521,15 @@
 
     return {
       getOrder: () => order,
-      setOrder: (arr) => { order = (arr || []).filter(k => BUTTON_KEYS.includes(k)); refresh(); }
+      setOrder: (arr) => { order = (arr || []).filter(k => keys.includes(k)); refresh(); }
     };
   }
 
-  const bottomPicker = createPicker('bottomButtonPicker');
-  const menuPicker = createPicker('menuButtonPicker');
+  const bottomPicker = createPicker('bottomButtonPicker', BUTTON_KEYS, BUTTON_LABELS);
+  const menuPicker = createPicker('menuButtonPicker', BUTTON_KEYS, BUTTON_LABELS);
+  // ---- কমেন্ট/রিপ্লাই এর নিচের বাটন (লাইক, রিপ্লাই) ও থ্রি-ডট মেনু বাটন (কপি, এডিট, ডিলিট) এর জন্য পিকার ----
+  const commentBottomPicker = createPicker('commentBottomButtonPicker', COMMENT_BUTTON_KEYS, COMMENT_BUTTON_LABELS);
+  const commentMenuPicker = createPicker('commentMenuButtonPicker', COMMENT_BUTTON_KEYS, COMMENT_BUTTON_LABELS);
 
   // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
   const COLOR_PALETTE = [
@@ -877,6 +903,8 @@
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
+    commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
+    commentMenuPicker.setOrder(s.commentMenuButtons && s.commentMenuButtons.length ? s.commentMenuButtons : ['copy', 'edit', 'delete']);
     posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
     fillCombinedList(menuCombinedList, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
     fillCombinedList(sidebarCombinedList, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
@@ -895,6 +923,8 @@
     else if (section === 'postButtonsLayout') data = { postButtonsJustify: postButtonsJustify.value };
     else if (section === 'bottomButtons') data = { bottomButtons: bottomPicker.getOrder() };
     else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
+    else if (section === 'commentBottomButtons') data = { commentBottomButtons: commentBottomPicker.getOrder() };
+    else if (section === 'commentMenuButtons') data = { commentMenuButtons: commentMenuPicker.getOrder() };
     else if (section === 'posterColors') {
       const colors = posterColorPicker.getOrder();
       if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
@@ -926,7 +956,7 @@
   document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
     btn.addEventListener('click', () => {
       const section = btn.getAttribute('data-section');
-      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons' };
+      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons', commentBottomButtons: 'CommentBottomButtons', commentMenuButtons: 'CommentMenuButtons' };
       const statusId = btn.dataset.status || ('status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1))));
       saveSection(section, document.getElementById(statusId));
     });
