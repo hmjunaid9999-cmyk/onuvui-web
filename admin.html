@@ -340,6 +340,19 @@
         </div>
       </div>
 
+      <!-- ================= রিপোর্ট ================= -->
+      <div class="swipePanel" id="panel-content-reports">
+        <div class="swipePanelInner">
+        <div class="folderTitle">🚩 রিপোর্ট</div>
+        <div class="addTypeRow">
+          <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+        </div>
+        <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+        </div>
+      </div>
+
       <!-- ================= সেটিংস ================= -->
       <div class="swipePanel" id="panel-content-settings">
         <div class="swipePanelInner">
@@ -435,7 +448,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, collection, collectionGroup, query, orderBy, getDocs
+    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, collectionGroup, query, orderBy, where, getDocs
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -477,13 +490,13 @@
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
   const BUTTON_LABELS = {
     like: '❤️ লাইক', comment: '💬 কমেন্ট', copyText: '📋 টেক্সট কপি',
-    copyLink: '🔗 লিংক কপি', share: '📤 শেয়ার', edit: '✏️ এডিট', delete: '🗑️ ডিলিট'
+    copyLink: '🔗 লিংক কপি', share: '📤 শেয়ার', edit: '✏️ এডিট', delete: '🗑️ ডিলিট', report: '🚩 রিপোর্ট'
   };
   const BUTTON_KEYS = Object.keys(BUTTON_LABELS);
 
-  // ---- কমেন্ট ও রিপ্লাই এর বাটন (নিচে লাইক+রিপ্লাই, থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট) ----
+  // ---- কমেন্ট ও রিপ্লাই এর বাটন (নিচে লাইক+রিপ্লাই, থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট+রিপোর্ট) ----
   const COMMENT_BUTTON_LABELS = {
-    like: '❤️ লাইক', reply: '↩️ রিপ্লাই', copy: '📋 কপি', edit: '✏️ এডিট', delete: '🗑️ ডিলিট'
+    like: '❤️ লাইক', reply: '↩️ রিপ্লাই', copy: '📋 কপি', edit: '✏️ এডিট', delete: '🗑️ ডিলিট', report: '🚩 রিপোর্ট'
   };
   const COMMENT_BUTTON_KEYS = Object.keys(COMMENT_BUTTON_LABELS);
 
@@ -835,8 +848,20 @@
     { key: 'posts', icon: '📝', label: 'পোস্ট', panel: 'panel-content-posts', onShow: () => loadAdminPosts() },
     { key: 'comments', icon: '💬', label: 'কমেন্ট', panel: 'panel-content-comments', onShow: () => loadAdminCommentsAndReplies() },
     { key: 'replies', icon: '↩️', label: 'রিপ্লাই', panel: 'panel-content-replies', onShow: () => loadAdminCommentsAndReplies() },
+    { key: 'reports', icon: '🚩', label: 'রিপোর্ট', panel: 'panel-content-reports', onShow: () => loadAdminReports(currentReportType) },
     { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' }
   ];
+
+  // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
+  let currentReportType = 'post';
+  document.querySelectorAll('[data-report-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentReportType = btn.getAttribute('data-report-type');
+      loadAdminReports(currentReportType);
+    });
+  });
 
   const swipeContainer = document.getElementById('swipeContainer');
   const swipeIndicator = document.getElementById('swipeIndicator');
@@ -902,9 +927,9 @@
     postsPerPage.value = s.postsPerPage || 5;
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
-    menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete']);
+    menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
     commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
-    commentMenuPicker.setOrder(s.commentMenuButtons && s.commentMenuButtons.length ? s.commentMenuButtons : ['copy', 'edit', 'delete']);
+    commentMenuPicker.setOrder(s.commentMenuButtons && s.commentMenuButtons.length ? s.commentMenuButtons : ['copy', 'edit', 'delete', 'report']);
     posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
     fillCombinedList(menuCombinedList, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
     fillCombinedList(sidebarCombinedList, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
@@ -1003,13 +1028,28 @@
     commentsListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
     repliesListEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
     try {
-      const snap = await getDocs(query(collectionGroup(db, "comments"), orderBy("createdAt", "desc")));
+      // ---- আগে orderBy সহ চেষ্টা করা হচ্ছে (এর জন্য Firestore-এ কালেকশন-গ্রুপ ইনডেক্স লাগতে পারে);
+      //      সেটা ব্যর্থ হলে orderBy ছাড়াই সব ডাটা টেনে এনে নিজে থেকে (ক্লায়েন্ট সাইডে) সাজানো হচ্ছে,
+      //      যাতে ইনডেক্স না থাকলেও কমেন্ট/রিপ্লাই দেখা যায় ----
+      let snap;
+      try {
+        snap = await getDocs(query(collectionGroup(db, "comments"), orderBy("createdAt", "desc")));
+      } catch (indexErr) {
+        snap = await getDocs(collectionGroup(db, "comments"));
+      }
       const comments = [];
       const replies = [];
       snap.forEach(docSnap => {
         const d = docSnap.data();
         (d.replyToId ? replies : comments).push(d);
       });
+      const sortDesc = (a, b) => {
+        const ta = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+        const tb = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+        return tb - ta;
+      };
+      comments.sort(sortDesc);
+      replies.sort(sortDesc);
 
       commentsListEl.innerHTML = comments.length ? '' : '<div class="listEmpty">কোনো কমেন্ট নেই</div>';
       comments.forEach(d => {
@@ -1033,8 +1073,51 @@
         repliesListEl.appendChild(card);
       });
     } catch (e) {
-      commentsListEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + ' (ইনডেক্স তৈরি করার লিংক থাকলে সেটায় ক্লিক করুন)</div>';
+      commentsListEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + ' — Firebase কনসোলে গিয়ে Firestore Rules পাবলিশ করা আছে কিনা যাচাই করুন</div>';
       repliesListEl.innerHTML = '';
+    }
+  }
+
+  // ---- রিপোর্ট: পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট লোড (টাইপ অনুযায়ী ফিল্টার) ----
+  async function loadAdminReports(type) {
+    const listEl = document.getElementById('reportsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      let snap;
+      try {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type), orderBy("createdAt", "desc")));
+      } catch (indexErr) {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type)));
+      }
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো রিপোর্ট নেই</div>'; return; }
+      const items = [];
+      snap.forEach(docSnap => items.push({ id: docSnap.id, d: docSnap.data() }));
+      items.sort((a, b) => {
+        const ta = a.d.createdAt && a.d.createdAt.toMillis ? a.d.createdAt.toMillis() : 0;
+        const tb = b.d.createdAt && b.d.createdAt.toMillis ? b.d.createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+      listEl.innerHTML = '';
+      items.forEach(({ id, d }) => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>রিপোর্টার: ${d.reporterEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="metaRow"><span>লেখক: ${d.authorName || ''}</span><span></span></div>
+          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
+          <button type="button" class="gridDeleteBtn" data-report-id="${id}" style="margin-top:8px;">🗑️ রিপোর্ট মুছুন</button>
+        `;
+        card.querySelector('[data-report-id]').addEventListener('click', async (e) => {
+          if (!confirm('এই রিপোর্টটি মুছে ফেলতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "reports", id));
+            card.remove();
+          } catch (err) { alert('এরর: ' + err.message); }
+        });
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
     }
   }
 

@@ -312,9 +312,9 @@
   let composerMode = 'text';
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
-  let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete'] };
-  // ---- কমেন্ট ও রিপ্লাই এর বাটন অর্ডার: নিচে লাইক+রিপ্লাই, উপরে থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট ----
-  let commentButtonOrder = { bottom: ['like', 'reply'], menu: ['copy', 'edit', 'delete'] };
+  let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete', 'report'] };
+  // ---- কমেন্ট ও রিপ্লাই এর বাটন অর্ডার: নিচে লাইক+রিপ্লাই, উপরে থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট+রিপোর্ট ----
+  let commentButtonOrder = { bottom: ['like', 'reply'], menu: ['copy', 'edit', 'delete', 'report'] };
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
   let openReplyBoxes = [];
@@ -795,6 +795,31 @@
           } catch (e) { alert('এরর: ' + e.message); }
         });
         return b;
+      },
+      report: () => {
+        const b = document.createElement('button');
+        b.className = 'reportBtn';
+        b.textContent = '🚩 রিপোর্ট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
+          if (!confirm('এই পোস্টটি রিপোর্ট করতে চান?')) return;
+          try {
+            await addDoc(collection(db, "reports"), {
+              type: 'post',
+              postId: postId,
+              targetId: postId,
+              text: d.text || '',
+              authorName: d.authorName || '',
+              authorUid: d.authorUid || '',
+              reporterUid: currentUser.uid,
+              reporterEmail: currentUser.email || '',
+              createdAt: serverTimestamp()
+            });
+            showStatus('রিপোর্ট পাঠানো হয়েছে ✓');
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
       }
     };
 
@@ -1049,6 +1074,32 @@
           if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
           try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
           catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      },
+      report: () => {
+        const b = document.createElement('button');
+        b.className = 'cReportBtn';
+        b.textContent = '🚩 রিপোর্ট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
+          const isReply = !!d.replyToId;
+          if (!confirm((isReply ? 'রিপ্লাইটি' : 'কমেন্টটি') + ' রিপোর্ট করতে চান?')) return;
+          try {
+            await addDoc(collection(db, "reports"), {
+              type: isReply ? 'reply' : 'comment',
+              postId: postId,
+              targetId: commentId,
+              parentCommentId: d.replyToId || null,
+              text: d.text || '',
+              authorName: d.name || '',
+              authorUid: d.uid || '',
+              reporterUid: currentUser.uid,
+              reporterEmail: currentUser.email || '',
+              createdAt: serverTimestamp()
+            });
+          } catch (e) { alert('এরর: ' + e.message); }
         });
         return b;
       }
