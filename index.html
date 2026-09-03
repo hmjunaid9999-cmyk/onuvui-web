@@ -218,9 +218,55 @@
   #sidebarGrid { display: flex; flex-direction: column; gap: 8px; }
   #sidebarGrid a { display: block; background: #0d1117; color: #fff; text-decoration: none; font-size: 13px; padding: 10px 12px; border-radius: 10px; border: 1px solid #262c36; }
   .sidebarGadgetBox { margin-bottom: 8px; }
+<  /* ---- রিপোর্ট কারণ বাছাই মোডাল ---- */
+  .reportModalOverlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 500;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .reportModalBox {
+    width: 100%; max-width: 480px; background: var(--card-color); border-radius: 16px 16px 0 0;
+    padding: 18px 16px 22px; box-sizing: border-box;
+  }
+  .reportModalTitle { font-size: 15px; font-weight: bold; margin-bottom: 12px; }
+  .reportReasonList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .reportReasonBtn {
+    text-align: left; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 10px 12px; border-radius: 10px; font-size: 13px; cursor: pointer;
+  }
+  .reportReasonBtn.selected { border-color: var(--primary-color); background: rgba(66,133,244,0.15); }
+  #reportOtherText {
+    display: none; width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; margin-bottom: 10px; box-sizing: border-box; resize: vertical; min-height: 50px;
+  }
+  .reportModalActions { display: flex; gap: 8px; }
+  .reportModalActions button {
+    flex: 1; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; border: none;
+  }
+  #reportCancelBtn { background: #262c36; color: #9ca3af; }
+  #reportSubmitBtn { background: var(--primary-color); color: #fff; }
 </style>
 </head>
 <body>
+
+  <!-- ---- রিপোর্ট কারণ বাছাই মোডাল (সব পোস্ট/কমেন্ট/রিপ্লাই এর জন্য একটাই শেয়ার্ড মোডাল) ---- -->
+  <div id="reportModalOverlay" class="reportModalOverlay" style="display:none;">
+    <div class="reportModalBox">
+      <div class="reportModalTitle">কেন রিপোর্ট করছেন?</div>
+      <div class="reportReasonList" id="reportReasonList">
+        <button type="button" class="reportReasonBtn" data-reason="স্প্যাম">🚫 স্প্যাম</button>
+        <button type="button" class="reportReasonBtn" data-reason="অশ্লীল/আপত্তিকর কনটেন্ট">🔞 অশ্লীল/আপত্তিকর কনটেন্ট</button>
+        <button type="button" class="reportReasonBtn" data-reason="হয়রানি বা হুমকি">⚠️ হয়রানি বা হুমকি</button>
+        <button type="button" class="reportReasonBtn" data-reason="মিথ্যা তথ্য">❌ মিথ্যা তথ্য</button>
+        <button type="button" class="reportReasonBtn" data-reason="other">✏️ অন্যান্য</button>
+      </div>
+      <textarea id="reportOtherText" placeholder="কারণ লিখুন..."></textarea>
+      <div class="reportModalActions">
+        <button type="button" id="reportCancelBtn">বাতিল</button>
+        <button type="button" id="reportSubmitBtn">রিপোর্ট পাঠান</button>
+      </div>
+    </div>
+  </div>
+
 
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
@@ -626,6 +672,46 @@
 
   searchBar.addEventListener('input', renderPosts);
 
+  // ---- রিপোর্ট কারণ বাছাই মোডাল কন্ট্রোলার: Promise রিটার্ন করে — বাছাই করলে কারণের টেক্সট,
+  //      বাতিল করলে null রিটার্ন করে ----
+  const reportModalOverlay = document.getElementById('reportModalOverlay');
+  const reportOtherText = document.getElementById('reportOtherText');
+  let reportModalResolver = null;
+  let selectedReportReason = null;
+
+  document.querySelectorAll('.reportReasonBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.reportReasonBtn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedReportReason = btn.dataset.reason;
+      reportOtherText.style.display = selectedReportReason === 'other' ? 'block' : 'none';
+      if (selectedReportReason === 'other') reportOtherText.focus();
+    });
+  });
+
+  document.getElementById('reportCancelBtn').addEventListener('click', () => closeReportModal(null));
+  document.getElementById('reportSubmitBtn').addEventListener('click', () => {
+    if (!selectedReportReason) { alert('একটা কারণ বাছাই করুন'); return; }
+    const reason = selectedReportReason === 'other'
+      ? (reportOtherText.value.trim() || 'অন্যান্য')
+      : selectedReportReason;
+    closeReportModal(reason);
+  });
+
+  function closeReportModal(result) {
+    reportModalOverlay.style.display = 'none';
+    if (reportModalResolver) { reportModalResolver(result); reportModalResolver = null; }
+  }
+
+  function askReportReason() {
+    selectedReportReason = null;
+    reportOtherText.value = '';
+    reportOtherText.style.display = 'none';
+    document.querySelectorAll('.reportReasonBtn').forEach(b => b.classList.remove('selected'));
+    reportModalOverlay.style.display = 'flex';
+    return new Promise(resolve => { reportModalResolver = resolve; });
+  }
+
   function renderPosts() {
     const searchTerm = searchBar.value.trim().toLowerCase();
     postsList.innerHTML = '';
@@ -803,7 +889,8 @@
         b.addEventListener('click', async () => {
           menuContainer.classList.remove('open');
           if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
-          if (!confirm('এই পোস্টটি রিপোর্ট করতে চান?')) return;
+          const reason = await askReportReason();
+          if (reason === null) return;
           try {
             await addDoc(collection(db, "reports"), {
               type: 'post',
@@ -812,6 +899,7 @@
               text: d.text || '',
               authorName: d.authorName || '',
               authorUid: d.authorUid || '',
+              reason: reason,
               reporterUid: currentUser.uid,
               reporterEmail: currentUser.email || '',
               createdAt: serverTimestamp()
@@ -1085,7 +1173,8 @@
           menuContainer.classList.remove('open');
           if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
           const isReply = !!d.replyToId;
-          if (!confirm((isReply ? 'রিপ্লাইটি' : 'কমেন্টটি') + ' রিপোর্ট করতে চান?')) return;
+          const reason = await askReportReason();
+          if (reason === null) return;
           try {
             await addDoc(collection(db, "reports"), {
               type: isReply ? 'reply' : 'comment',
@@ -1095,6 +1184,7 @@
               text: d.text || '',
               authorName: d.name || '',
               authorUid: d.uid || '',
+              reason: reason,
               reporterUid: currentUser.uid,
               reporterEmail: currentUser.email || '',
               createdAt: serverTimestamp()

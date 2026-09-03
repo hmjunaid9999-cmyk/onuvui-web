@@ -1104,6 +1104,7 @@
         card.innerHTML = `
           <div class="metaRow"><span>রিপোর্টার: ${d.reporterEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
           <div class="metaRow"><span>লেখক: ${d.authorName || ''}</span><span></span></div>
+          ${d.reason ? `<div class="metaRow"><span>🚩 কারণ: ${(d.reason + '').replace(/</g, '&lt;')}</span><span></span></div>` : ''}
           <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
           <button type="button" class="gridDeleteBtn" data-report-id="${id}" style="margin-top:8px;">🗑️ রিপোর্ট মুছুন</button>
         `;
