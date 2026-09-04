@@ -77,15 +77,15 @@
   .statBox .statLabel { font-size: 11px; color: #9ca3af; margin-top: 2px; }
   .statBox + .statBox { border-left: 1px solid #262c36; }
 
-  /* ---- প্রোফাইল অ্যাকশন (লাইক/কমেন্ট/সাবস্ক্রাইব) ---- */
-  #profileActions { display: none; gap: 8px; padding: 0 16px 18px; flex-wrap: wrap; justify-content: center; }
-  #profileActions button {
-    background: #21262d; color: #c9d1d9; border: 1px solid #30363d; padding: 8px 14px;
-    border-radius: 16px; font-size: 12px; cursor: pointer;
+  /* ---- প্রোফাইল অ্যাকশন (সাবস্ক্রাইব/মেসেজ) ---- */
+  #profileActions { display: none; gap: 10px; padding: 0 16px 18px; justify-content: center; }
+  #profileActions button, #profileActions a {
+    flex: 1; max-width: 200px; text-align: center; background: #21262d; color: #c9d1d9;
+    border: 1px solid #30363d; padding: 10px 14px; border-radius: 18px; font-size: 13px;
+    font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box;
   }
-  #profileLikeBtn.liked { color: #f87171; border-color: #f87171; }
-  #subscribeBtn.subscribed { color: #4ade80; border-color: #4ade80; }
-  #profileCommentsWrap { margin: 0 16px 18px; }
+  #subscribeBtn { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+  #subscribeBtn.subscribed { background: #21262d; color: #f87171; border-color: #f87171; }
   #lockedPosts { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 16px; line-height: 1.7; }
 
   /* ---- এডিট প্রোফাইল মোডাল ---- */
@@ -203,20 +203,13 @@
           <div class="statBox"><div class="statNum" id="statPosts">0</div><div class="statLabel">পোস্ট</div></div>
           <div class="statBox"><div class="statNum" id="statLikes">0</div><div class="statLabel">প্রাপ্ত লাইক</div></div>
           <div class="statBox"><div class="statNum" id="statComments">0</div><div class="statLabel">প্রাপ্ত কমেন্ট</div></div>
+          <div class="statBox"><div class="statNum" id="statSubscribers">0</div><div class="statLabel">সাবস্ক্রাইবার</div></div>
         </div>
       </div>
 
       <div id="profileActions">
-        <button id="profileLikeBtn">❤️ লাইক (<span id="profileLikeCount">0</span>)</button>
-        <button id="profileCommentToggleBtn">💬 কমেন্ট (<span id="profileCommentCount">0</span>)</button>
         <button id="subscribeBtn">➕ সাবস্ক্রাইব করুন</button>
-      </div>
-      <div id="profileCommentsWrap" class="commentsWrap">
-        <div class="commentForm">
-          <textarea id="profileCommentInput" rows="1" placeholder="প্রোফাইলে কমেন্ট লিখুন..."></textarea>
-          <button id="profileCommentSubmitBtn">পোস্ট</button>
-        </div>
-        <div id="profileCommentsListEl"></div>
+        <a id="messageBtn" href="#">✉️ মেসেজ করুন</a>
       </div>
 
       <div id="postsHeading">📝 আমার পোস্ট</div>
@@ -292,7 +285,6 @@
   let currentTargetUid = null;
   let currentIsOwnProfile = false;
   let currentIsSubscribed = false;
-  let profileCommentsLoaded = false;
   const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
@@ -334,15 +326,9 @@
   const postsHeading = document.getElementById('postsHeading');
 
   const profileActions = document.getElementById('profileActions');
-  const profileLikeBtn = document.getElementById('profileLikeBtn');
-  const profileLikeCount = document.getElementById('profileLikeCount');
-  const profileCommentToggleBtn = document.getElementById('profileCommentToggleBtn');
-  const profileCommentCount = document.getElementById('profileCommentCount');
   const subscribeBtn = document.getElementById('subscribeBtn');
-  const profileCommentsWrap = document.getElementById('profileCommentsWrap');
-  const profileCommentInput = document.getElementById('profileCommentInput');
-  const profileCommentSubmitBtn = document.getElementById('profileCommentSubmitBtn');
-  const profileCommentsListEl = document.getElementById('profileCommentsListEl');
+  const messageBtn = document.getElementById('messageBtn');
+  const statSubscribers = document.getElementById('statSubscribers');
 
   COVER_COLORS.forEach(color => {
     const sw = document.createElement('div');
@@ -455,27 +441,22 @@
     editProfileBtn.style.display = isOwn ? 'inline-block' : 'none';
     postsHeading.textContent = isOwn ? '📝 আমার পোস্ট' : '📝 ' + displayName + ' এর পোস্ট';
     emptyPosts.textContent = isOwn ? 'আপনি এখনো কোনো পোস্ট করেননি' : 'এখনো কোনো পোস্ট নেই';
+    lockedPosts.textContent = '🔒 পোস্ট দেখতে হলে আগে ' + displayName + '-কে সাবস্ক্রাইব করুন';
 
-    // ---- অন্যের প্রোফাইলে লাইক/কমেন্ট/সাবস্ক্রাইব বাটন দেখানো হবে ----
+    // ---- সাবস্ক্রাইবার সংখ্যা সবসময় দেখাবে (নিজের ও অন্যের প্রোফাইলে) ----
+    statSubscribers.textContent = (profileData.subscribers || []).length;
+
+    // ---- অন্যের প্রোফাইলে শুধু সাবস্ক্রাইব ও মেসেজ বাটন দেখানো হবে ----
     profileActions.style.display = isOwn ? 'none' : 'flex';
-    profileCommentsWrap.style.display = 'none';
-    profileCommentsLoaded = false;
     if (!isOwn) {
-      updateProfileLikeBtnUI();
       updateSubscribeBtnUI();
+      messageBtn.href = 'messages.html?uid=' + currentTargetUid;
     }
-  }
-
-  function updateProfileLikeBtnUI() {
-    const likedBy = (currentProfileData && currentProfileData.profileLikedBy) || [];
-    const liked = currentUser && likedBy.includes(currentUser.uid);
-    profileLikeBtn.classList.toggle('liked', !!liked);
-    profileLikeCount.textContent = likedBy.length;
   }
 
   function updateSubscribeBtnUI() {
     if (currentIsSubscribed) {
-      subscribeBtn.textContent = '✅ সাবস্ক্রাইবড';
+      subscribeBtn.textContent = '🔕 আনসাবস্ক্রাইব করুন';
       subscribeBtn.classList.add('subscribed');
     } else {
       subscribeBtn.textContent = '➕ সাবস্ক্রাইব করুন';
@@ -580,6 +561,7 @@
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
     const isPostOwner = currentUser && d.authorUid === currentUser.uid;
     const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
+    const interactive = currentIsOwnProfile; // অন্যের প্রোফাইলে পোস্ট শুধু দেখা যাবে, লাইক/কমেন্ট/রিপ্লাই করা যাবে না
 
     const card = document.createElement('div');
     card.className = 'postCard';
@@ -607,6 +589,7 @@
       </div>
       ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
       ${mediaHtml}
+      ${interactive ? `
       <div class="postButtons">
         <button class="likeBtn ${liked ? 'liked' : ''}">❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)</button>
         <button class="commentToggleBtn">💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)</button>
@@ -619,7 +602,7 @@
           <button class="commentSubmitBtn">পোস্ট</button>
         </div>
         <div class="commentsListEl"></div>
-      </div>
+      </div>` : `<div class="postStatus"></div>`}
     `;
 
     const statusEl = card.querySelector('.postStatus');
@@ -635,30 +618,39 @@
     document.addEventListener('click', () => menuDropdown.classList.remove('open'));
     menuDropdown.addEventListener('click', (e) => e.stopPropagation());
 
-    card.querySelector('.likeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const postRef = doc(db, "posts", postId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-      if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
-      else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-      const idx = myPosts.findIndex(p => p.id === postId);
-      if (idx > -1) myPosts[idx].data = d;
-      card.replaceWith(buildPostCard(postId, d));
-    });
+    const likeBtnEl = card.querySelector('.likeBtn');
+    if (likeBtnEl) {
+      likeBtnEl.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const postRef = doc(db, "posts", postId);
+        const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+        await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+        if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
+        else d.likedBy = [...(d.likedBy || []), currentUser.uid];
+        const idx = myPosts.findIndex(p => p.id === postId);
+        if (idx > -1) myPosts[idx].data = d;
+        card.replaceWith(buildPostCard(postId, d));
+      });
+    }
 
     const commentsWrap = card.querySelector('.commentsWrap');
+    const commentToggleBtnEl = card.querySelector('.commentToggleBtn');
     let commentsLoaded = false;
-    card.querySelector('.commentToggleBtn').addEventListener('click', () => {
-      const show = commentsWrap.style.display !== 'block';
-      commentsWrap.style.display = show ? 'block' : 'none';
-      if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
-    });
+    if (commentToggleBtnEl) {
+      commentToggleBtnEl.addEventListener('click', () => {
+        const show = commentsWrap.style.display !== 'block';
+        commentsWrap.style.display = show ? 'block' : 'none';
+        if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+      });
+    }
 
-    card.querySelector('.copyTextBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
-    });
+    const copyTextBtnEl = card.querySelector('.copyTextBtn');
+    if (copyTextBtnEl) {
+      copyTextBtnEl.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
+        catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+      });
+    }
 
     card.querySelector('.copyLinkBtn').addEventListener('click', async () => {
       menuDropdown.classList.remove('open');
@@ -837,24 +829,6 @@
     return row;
   }
 
-  // ---- প্রোফাইল লাইক (গেস্টবুক স্টাইল - অন্যের প্রোফাইল লাইক করা) ----
-  profileLikeBtn.addEventListener('click', async () => {
-    if (!currentUser || currentIsOwnProfile || !currentTargetUid) return;
-    profileLikeBtn.disabled = true;
-    const likedBy = (currentProfileData && currentProfileData.profileLikedBy) || [];
-    const nowLiked = likedBy.includes(currentUser.uid);
-    try {
-      await setDoc(doc(db, "users", currentTargetUid), {
-        profileLikedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
-      }, { merge: true });
-      currentProfileData.profileLikedBy = nowLiked
-        ? likedBy.filter(u => u !== currentUser.uid)
-        : [...likedBy, currentUser.uid];
-      updateProfileLikeBtnUI();
-    } catch (e) { alert('এরর: ' + e.message); }
-    profileLikeBtn.disabled = false;
-  });
-
   // ---- সাবস্ক্রাইব / আনসাবস্ক্রাইব ----
   subscribeBtn.addEventListener('click', async () => {
     if (!currentUser || currentIsOwnProfile || !currentTargetUid) return;
@@ -870,147 +844,12 @@
         currentProfileData.subscribers = nowSubscribed
           ? subs.filter(u => u !== currentUser.uid)
           : [...subs, currentUser.uid];
+        statSubscribers.textContent = currentProfileData.subscribers.length;
       }
       updateSubscribeBtnUI();
       await loadUserPosts(currentTargetUid, currentIsOwnProfile || currentIsSubscribed);
     } catch (e) { alert('এরর: ' + e.message); }
     subscribeBtn.disabled = false;
-  });
-
-  // ---- প্রোফাইল গেস্টবুক কমেন্ট ----
-  function loadProfileComments(targetUid) {
-    const q = query(collection(db, "users", targetUid, "profileComments"), orderBy("createdAt", "desc"));
-    onSnapshot(q, (snap) => {
-      const all = [];
-      snap.forEach(c => all.push({ id: c.id, data: c.data() }));
-      const topLevel = all.filter(c => !c.data.replyToId);
-      const repliesByParent = {};
-      all.filter(c => c.data.replyToId).forEach(c => {
-        if (!repliesByParent[c.data.replyToId]) repliesByParent[c.data.replyToId] = [];
-        repliesByParent[c.data.replyToId].push(c);
-      });
-
-      profileCommentsListEl.innerHTML = '';
-      topLevel.forEach(c => {
-        const row = buildProfileCommentRow(targetUid, c.id, c.data, false);
-        profileCommentsListEl.appendChild(row);
-        const repliesListEl = row.querySelector('.repliesList');
-        (repliesByParent[c.id] || []).forEach(r => {
-          repliesListEl.appendChild(buildProfileCommentRow(targetUid, r.id, r.data, true));
-        });
-      });
-      profileCommentCount.textContent = all.length;
-    });
-  }
-
-  async function postProfileComment(targetUid, text, replyToId) {
-    if (!currentUser) return;
-    const t = (text || '').trim();
-    if (!t) return;
-    const payload = {
-      uid: currentUser.uid,
-      name: myProfile.name || currentUser.displayName || 'User',
-      email: currentUser.email || '',
-      photoURL: myProfile.photoURL || currentUser.photoURL || '',
-      text: t,
-      likedBy: [],
-      createdAt: serverTimestamp()
-    };
-    if (replyToId) payload.replyToId = replyToId;
-    try { await addDoc(collection(db, "users", targetUid, "profileComments"), payload); }
-    catch (e) { alert('কমেন্ট এরর: ' + e.message); }
-  }
-
-  function buildProfileCommentRow(targetUid, commentId, d, isReply) {
-    const isOwner = currentUser && d.uid === currentUser.uid;
-    const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
-    const canReply = currentIsOwnProfile || currentIsSubscribed;
-    const row = document.createElement('div');
-    row.className = 'commentRow';
-
-    row.innerHTML = `
-      <img src="${d.photoURL || ''}">
-      <div style="flex:1;">
-        <div class="commentBody">
-          <div class="cName">${escapeHtml(d.name)}</div>
-          <div class="cText">${escapeHtml(d.text)}</div>
-        </div>
-        <div class="commentMeta">
-          <span>${timeAgo(d.createdAt)}</span>
-          <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
-          <button class="cCopyBtn">কপি</button>
-          ${!isReply && canReply ? '<button class="cReplyBtn">উত্তর দিন</button>' : ''}
-          ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
-          ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
-        </div>
-        ${!isReply ? `
-        <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
-          <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
-          <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
-        </div>
-        <div class="repliesList"></div>` : ''}
-      </div>
-    `;
-
-    row.querySelector('.cLikeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const ref2 = doc(db, "users", targetUid, "profileComments", commentId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-    });
-
-    row.querySelector('.cCopyBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
-    });
-
-    const editBtn = row.querySelector('.cEditBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "users", targetUid, "profileComments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
-      });
-    }
-
-    const deleteBtn = row.querySelector('.cDeleteBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', async () => {
-        if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
-        try { await deleteDoc(doc(db, "users", targetUid, "profileComments", commentId)); }
-        catch (e) { alert('এরর: ' + e.message); }
-      });
-    }
-
-    const replyBtn = row.querySelector('.cReplyBtn');
-    if (replyBtn) {
-      const replyForm = row.querySelector('.replyForm');
-      replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
-      });
-      row.querySelector('.replySubmitBtn').addEventListener('click', () => {
-        const input = row.querySelector('.replyInput');
-        postProfileComment(targetUid, input.value, commentId);
-        input.value = '';
-        replyForm.style.display = 'none';
-      });
-    }
-
-    return row;
-  }
-
-  profileCommentToggleBtn.addEventListener('click', () => {
-    const show = profileCommentsWrap.style.display !== 'block';
-    profileCommentsWrap.style.display = show ? 'block' : 'none';
-    if (show && !profileCommentsLoaded && currentTargetUid) {
-      loadProfileComments(currentTargetUid);
-      profileCommentsLoaded = true;
-    }
-  });
-
-  profileCommentSubmitBtn.addEventListener('click', () => {
-    if (!currentTargetUid) return;
-    postProfileComment(currentTargetUid, profileCommentInput.value, null);
-    profileCommentInput.value = '';
   });
 
   // ---- অথ স্টেট ----
@@ -1047,7 +886,6 @@
         } catch (e) {}
         if (!profileData) profileData = { name: 'ব্যবহারকারী', photoURL: '', coverColor: '#4285F4', bio: '' };
       }
-      profileData.profileLikedBy = profileData.profileLikedBy || [];
       profileData.subscribers = profileData.subscribers || [];
       currentProfileData = profileData;
       currentIsSubscribed = isOwn ? true : profileData.subscribers.includes(user.uid);
@@ -1056,9 +894,6 @@
 
       // ---- সাবস্ক্রাইবার (বা নিজে) না হলে পোস্ট লিস্ট দেখানো হবে না ----
       await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
-
-      // ---- প্রোফাইল গেস্টবুক কমেন্ট (নিজের প্রোফাইল ছাড়া অন্যদের প্রোফাইলে) ----
-      if (!isOwn) { loadProfileComments(targetUid); profileCommentsLoaded = true; }
     } else {
       appScreen.style.display = 'none';
       loginScreen.style.display = 'flex';
