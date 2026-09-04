@@ -340,19 +340,6 @@
         </div>
       </div>
 
-      <!-- ================= রিপোর্ট ================= -->
-      <div class="swipePanel" id="panel-content-reports">
-        <div class="swipePanelInner">
-        <div class="folderTitle">🚩 রিপোর্ট</div>
-        <div class="addTypeRow">
-          <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
-          <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
-          <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
-        </div>
-        <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
-        </div>
-      </div>
-
       <!-- ================= সেটিংস ================= -->
       <div class="swipePanel" id="panel-content-settings">
         <div class="swipePanelInner">
@@ -853,20 +840,10 @@
     { key: 'posts', icon: '📝', label: 'পোস্ট', panel: 'panel-content-posts', onShow: () => loadAdminPosts() },
     { key: 'comments', icon: '💬', label: 'কমেন্ট', panel: 'panel-content-comments', onShow: () => loadAdminCommentsAndReplies() },
     { key: 'replies', icon: '↩️', label: 'রিপ্লাই', panel: 'panel-content-replies', onShow: () => loadAdminCommentsAndReplies() },
-    { key: 'reports', icon: '🚩', label: 'রিপোর্ট', panel: 'panel-content-reports', onShow: () => loadAdminReports(currentReportType) },
     { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' }
   ];
 
-  // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
-  let currentReportType = 'post';
-  document.querySelectorAll('[data-report-type]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentReportType = btn.getAttribute('data-report-type');
-      loadAdminReports(currentReportType);
-    });
-  });
+  // ---- রিপোর্ট এখন আলাদাভাবে profile-admin.html-এ দেখা ও ম্যানেজ করা হয় ----
 
   const swipeContainer = document.getElementById('swipeContainer');
   const swipeIndicator = document.getElementById('swipeIndicator');
@@ -1082,50 +1059,6 @@
     } catch (e) {
       commentsListEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + ' — Firebase কনসোলে গিয়ে Firestore Rules পাবলিশ করা আছে কিনা যাচাই করুন</div>';
       repliesListEl.innerHTML = '';
-    }
-  }
-
-  // ---- রিপোর্ট: পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট লোড (টাইপ অনুযায়ী ফিল্টার) ----
-  async function loadAdminReports(type) {
-    const listEl = document.getElementById('reportsAdminList');
-    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
-    try {
-      let snap;
-      try {
-        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type), orderBy("createdAt", "desc")));
-      } catch (indexErr) {
-        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type)));
-      }
-      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো রিপোর্ট নেই</div>'; return; }
-      const items = [];
-      snap.forEach(docSnap => items.push({ id: docSnap.id, d: docSnap.data() }));
-      items.sort((a, b) => {
-        const ta = a.d.createdAt && a.d.createdAt.toMillis ? a.d.createdAt.toMillis() : 0;
-        const tb = b.d.createdAt && b.d.createdAt.toMillis ? b.d.createdAt.toMillis() : 0;
-        return tb - ta;
-      });
-      listEl.innerHTML = '';
-      items.forEach(({ id, d }) => {
-        const card = document.createElement('div');
-        card.className = 'listCard';
-        card.innerHTML = `
-          <div class="metaRow"><span>রিপোর্টার: ${d.reporterEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
-          <div class="metaRow"><span>লেখক: ${d.authorName || ''}</span><span></span></div>
-          ${d.reason ? `<div class="metaRow"><span>🚩 কারণ: ${(d.reason + '').replace(/</g, '&lt;')}</span><span></span></div>` : ''}
-          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
-          <button type="button" class="gridDeleteBtn" data-report-id="${id}" style="margin-top:8px;">🗑️ রিপোর্ট মুছুন</button>
-        `;
-        card.querySelector('[data-report-id]').addEventListener('click', async (e) => {
-          if (!confirm('এই রিপোর্টটি মুছে ফেলতে চান?')) return;
-          try {
-            await deleteDoc(doc(db, "reports", id));
-            card.remove();
-          } catch (err) { alert('এরর: ' + err.message); }
-        });
-        listEl.appendChild(card);
-      });
-    } catch (e) {
-      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
     }
   }
 

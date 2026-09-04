@@ -26,10 +26,9 @@
     padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
   }
   #logoutBtn {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
   }
-  #backBtn {
+  #backBtn, #reportsBackBtn {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
   }
@@ -111,8 +110,23 @@
 
   .listEmpty { text-align: center; color: #6b7280; font-size: 13px; padding: 30px 0; }
 
-  .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
-  .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
+  .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+  .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
+  .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
+
+  /* ---- হেডারের ডান পাশে একাধিক বাটন (রিপোর্ট + লগ আউট) রাখার জন্য ---- */
+  .headerRightGroup {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .headerRightGroup button { position: static; }
+  #openReportsBtn {
+    background: #262c36; color: #fbbf24; padding: 6px 14px; border-radius: 14px; font-size: 12px;
+  }
+
+  /* ---- রিপোর্ট পেজ: adminScreen থেকে সম্পূর্ণ আলাদা স্ক্রিন, ব্যাক বাটনে ফিরে যাওয়া যায় ---- */
+  #reportsScreen { display: none; }
+  #reportsScreen main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -133,7 +147,10 @@
     <header>
       <button id="backBtn">←</button>
       <span>👤 Profile Admin Panel</span>
-      <button id="logoutBtn">লগ আউট</button>
+      <div class="headerRightGroup">
+        <button id="openReportsBtn">🚩 রিপোর্ট</button>
+        <button id="logoutBtn">লগ আউট</button>
+      </div>
     </header>
 
     <main>
@@ -238,13 +255,29 @@
     </main>
   </div>
 
+  <!-- ================= রিপোর্ট পেজ: সম্পূর্ণ আলাদা স্ক্রিন, ব্যাক বাটনে adminScreen-এ ফিরে যাওয়া যায় ================= -->
+  <div id="reportsScreen">
+    <header>
+      <button id="reportsBackBtn">←</button>
+      <span>🚩 রিপোর্ট</span>
+    </header>
+    <main>
+      <div class="addTypeRow">
+        <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
+        <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
+        <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+      </div>
+      <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+    </main>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc
+    getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, getDocs, deleteDoc
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -268,6 +301,7 @@
   const loginScreen = document.getElementById('loginScreen');
   const deniedScreen = document.getElementById('deniedScreen');
   const adminScreen = document.getElementById('adminScreen');
+  const reportsScreen = document.getElementById('reportsScreen');
 
   document.getElementById('googleLoginBtn').addEventListener('click', async () => {
     try { await signInWithPopup(auth, provider); }
@@ -284,6 +318,81 @@
       window.location.href = 'profile.html';
     }
   });
+
+  // ---- রিপোর্ট পেজ: adminScreen থেকে আলাদা স্ক্রিন, খুললে-বন্ধ করলে টগল হয় ----
+  let currentReportType = 'post';
+  document.getElementById('openReportsBtn').addEventListener('click', () => {
+    adminScreen.style.display = 'none';
+    reportsScreen.style.display = 'block';
+    loadAdminReports(currentReportType);
+  });
+  document.getElementById('reportsBackBtn').addEventListener('click', () => {
+    reportsScreen.style.display = 'none';
+    adminScreen.style.display = 'block';
+  });
+  document.querySelectorAll('[data-report-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentReportType = btn.getAttribute('data-report-type');
+      loadAdminReports(currentReportType);
+    });
+  });
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ---- রিপোর্ট: পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট লোড (টাইপ অনুযায়ী ফিল্টার) ----
+  async function loadAdminReports(type) {
+    const listEl = document.getElementById('reportsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      let snap;
+      try {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type), orderBy("createdAt", "desc")));
+      } catch (indexErr) {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type)));
+      }
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো রিপোর্ট নেই</div>'; return; }
+      const items = [];
+      snap.forEach(docSnap => items.push({ id: docSnap.id, d: docSnap.data() }));
+      items.sort((a, b) => {
+        const ta = a.d.createdAt && a.d.createdAt.toMillis ? a.d.createdAt.toMillis() : 0;
+        const tb = b.d.createdAt && b.d.createdAt.toMillis ? b.d.createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+      listEl.innerHTML = '';
+      items.forEach(({ id, d }) => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>রিপোর্টার: ${d.reporterEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="metaRow"><span>লেখক: ${d.authorName || ''}</span><span></span></div>
+          ${d.reason ? `<div class="metaRow"><span>🚩 কারণ: ${(d.reason + '').replace(/</g, '&lt;')}</span><span></span></div>` : ''}
+          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
+          <button type="button" class="gridDeleteBtn" data-report-id="${id}" style="margin-top:8px;">🗑️ রিপোর্ট মুছুন</button>
+        `;
+        card.querySelector('[data-report-id]').addEventListener('click', async (e) => {
+          if (!confirm('এই রিপোর্টটি মুছে ফেলতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "reports", id));
+            card.remove();
+          } catch (err) { alert('এরর: ' + err.message); }
+        });
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
 
   const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
@@ -619,6 +728,7 @@
     loginScreen.style.display = 'none';
     deniedScreen.style.display = 'none';
     adminScreen.style.display = 'none';
+    reportsScreen.style.display = 'none';
 
     if (!user) {
       loginScreen.style.display = 'flex';
