@@ -59,7 +59,7 @@
 </div>
 <script type="module">
 import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";import{getAuth,onAuthStateChanged,GoogleAuthProvider,signInWithPopup,signOut}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";import{getFirestore,collection,query,orderBy,getDocs,doc,getDoc,setDoc,increment,deleteDoc,addDoc,serverTimestamp,onSnapshot,limit,runTransaction,updateDoc}from"https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[],homeScrollY=0;let settings={unitName:"Coin",videoCost:10,rewardIntervalSeconds:5,rewardCoins:0.10,maxCoinsPerHour:10,maxCoinsPerDay:100,maxCoinsPerVideo:5};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
+const cfg={apiKey:"AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",authDomain:"onuvuti-5c9e3.firebaseapp.com",projectId:"onuvuti-5c9e3",storageBucket:"onuvuti-5c9e3.firebasestorage.app",messagingSenderId:"846713879232",appId:"1:846713879232:web:d87ae40431210088df8b25",measurementId:"G-WJ8N8XLPSZ"};const app=getApps().length?getApps()[0]:initializeApp(cfg),auth=getAuth(app),db=getFirestore(app);let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[],homeScrollY=0,openReqId=0;let settings={unitName:"Coin",videoCost:10,rewardIntervalSeconds:5,rewardCoins:0.10,maxCoinsPerHour:10,maxCoinsPerDay:100,maxCoinsPerVideo:5};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
 // ---- ভিডিওতে ঢোকার আগে হোম পেজে ঠিক কতটুকু স্ক্রল করা ছিল তা মনে রাখা, যাতে ব্যাক করলে
 //      সেই একই জায়গায় (ঠিক ওই ভিডিওর কার্ডের কাছে) ফিরে আসে, উপরে/একদম শুরুতে চলে না যায় ----
 function restoreHomeScroll(){requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,homeScrollY)))}
@@ -122,7 +122,30 @@ window.maybeShowAdThenPlay=async(id)=>{
   videoEl.onended=finish;
   videoEl.onerror=finish;
 };
-async function openVideo(id){try{if($("home").classList.contains("active"))homeScrollY=window.scrollY||document.documentElement.scrollTop||0;if(vid&&vid!==id)stopWatchTracking(vid);let s=await getDoc(doc(db,"videos",id));if(!s.exists())return;vid=id;data=s.data();$("home").classList.remove("active");$("player").classList.add("active");let savedSec=await getWatchProgress(id);$("frame").src=withResumeParam(data.videoUrl||"",savedSec);$("title").textContent=data.title||"";$("caption").textContent=data.caption||"";await Promise.all([setDoc(doc(db,"videos",id,"stats","counts"),{viewCount:increment(1)},{merge:true}),setDoc(doc(db,"videos",id),{viewCount:increment(1)},{merge:true})]);subscribeStats();subscribeComments();likeState();startWatchTracking(id,savedSec);setTimeout(attachYtPlayer,1500);history.pushState({video:id},"",location.pathname+"?v="+encodeURIComponent(id))}catch(e){console.error(e)}}
+async function openVideo(id){
+  const reqId=++openReqId; // ব্যাক-এন্ড কল চলাকালীন ইউজার অন্য কোথাও চলে গেলে/অন্য ভিডিও খুললে পুরনো রেসপন্স যাতে ভুলভাবে প্রয়োগ না হয়
+  try{
+    if($("home").classList.contains("active"))homeScrollY=window.scrollY||document.documentElement.scrollTop||0;
+    if(vid&&vid!==id)stopWatchTracking(vid);
+    let s=await getDoc(doc(db,"videos",id));
+    if(reqId!==openReqId)return;
+    if(!s.exists())return;
+    vid=id;data=s.data();
+    $("home").classList.remove("active");
+    $("player").classList.add("active");
+    // ---- URL/history স্ক্রিন পরিবর্তনের সাথে সাথেই আপডেট করা হয় (নেটওয়ার্ক কলের জন্য অপেক্ষা না করে),
+    //      যাতে ব্যাক বাটন চাপলে সবসময় সঠিক জায়গাতেই ফিরে যায়, কোনো ইনকনসিসটেন্ট/আটকে যাওয়া অবস্থা তৈরি না হয় ----
+    history.pushState({video:id},"",location.pathname+"?v="+encodeURIComponent(id));
+    let savedSec=await getWatchProgress(id);
+    if(reqId!==openReqId)return;
+    $("frame").src=withResumeParam(data.videoUrl||"",savedSec);
+    $("title").textContent=data.title||"";
+    $("caption").textContent=data.caption||"";
+    await Promise.all([setDoc(doc(db,"videos",id,"stats","counts"),{viewCount:increment(1)},{merge:true}),setDoc(doc(db,"videos",id),{viewCount:increment(1)},{merge:true})]);
+    if(reqId!==openReqId)return;
+    subscribeStats();subscribeComments();likeState();startWatchTracking(id,savedSec);setTimeout(attachYtPlayer,1500);
+  }catch(e){console.error(e)}
+}
 
 // ---- ভিডিও যেখানে দেখা বন্ধ হয়েছিল, সেখান থেকেই আবার শুরু করার সিস্টেম ----
 // (আগে শুধু ঘড়ির সময় গুনে অনুমান করা হতো, তাই ভিডিও পজ থাকা অবস্থায়ও সময় বাড়তেই থাকত
