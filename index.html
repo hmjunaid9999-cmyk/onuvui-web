@@ -131,7 +131,15 @@
     padding: 10px 12px; font-size: 12px; cursor: pointer;
   }
   .postMenuDropdown button:hover { background: #30363d; }
-  .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+  .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 4px; }
+  .postText.clamped {
+    display: -webkit-box; -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--clamp-lines, 6); overflow: hidden;
+  }
+  .readMoreBtn {
+    display: none; background: none; border: none; color: var(--primary-color);
+    font-size: 13px; font-weight: bold; cursor: pointer; padding: 0; margin: 0 0 8px; text-align: left;
+  }
   .postPhoto { max-width: 100%; border-radius: 10px; margin-bottom: 8px; }
   .postPoster {
     border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
@@ -255,6 +263,7 @@
   #reportCancelBtn { background: #262c36; color: #9ca3af; }
   #reportSubmitBtn { background: var(--primary-color); color: #fff; }
 </style>
+<script src="https://pl31122260.profitableratecpmnetwork.com/65/17/dc/6517dc104652b6f1fc8158f825d1a5aa.js"></script>
 </head>
 <body>
 
@@ -326,6 +335,20 @@
         <div class="postStatus" id="composerStatus"></div>
       </div>
 
+      <!-- ---- ব্যানার অ্যাড (৩২০x৫০), সার্চ বারের ঠিক উপরে ---- -->
+      <div style="display:flex; justify-content:center; padding:8px 0;">
+        <script>
+          atOptions = {
+            'key' : '637576a22a8ac384bc75c05afc089bb6',
+            'format' : 'iframe',
+            'height' : 50,
+            'width' : 320,
+            'params' : {}
+          };
+        </script>
+        <script src="https://www.highrevenueformat.com/637576a22a8ac384bc75c05afc089bb6/invoke.js"></script>
+      </div>
+
       <!-- ---- সার্চ ---- -->
       <input type="text" id="searchBar" placeholder="🔍 পোস্ট খুঁজুন...">
 
@@ -369,6 +392,7 @@
 
   let currentUser = null;
   let postsPerPage = 5;
+  let readMoreLines = 6;
   let lastVisibleDoc = null;
   let allLoadedPosts = [];
   let composerMode = 'text';
@@ -535,6 +559,8 @@
     if (s.commentBottomButtons && s.commentBottomButtons.length) commentButtonOrder.bottom = s.commentBottomButtons;
     if (s.commentMenuButtons && s.commentMenuButtons.length) commentButtonOrder.menu = s.commentMenuButtons;
     if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
+    postsPerPage = s.postsPerPage || 5;
+    readMoreLines = s.readMoreLines || 6;
     if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
     siteName.textContent = s.siteName || 'Onuvuti';
@@ -545,7 +571,6 @@
     renderCombined(menuGrid, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets));
     renderCombined(footerGrid, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets));
     renderCombined(sidebarGrid, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets));
-    postsPerPage = s.postsPerPage || 5;
   }
 
   function listenSettings() {
@@ -752,13 +777,59 @@
     return new Promise(resolve => { reportModalResolver = resolve; });
   }
 
+  // ---- ৩০০x২৫০ ব্যানার অ্যাড: iframe এর srcdoc এর ভেতরে আলাদাভাবে লোড করা হয়, যাতে
+  //      অ্যাড নেটওয়ার্কের document.write স্ক্রিপ্ট ফিড রি-রেন্ডার হওয়ার সময় মূল পেজ
+  //      মুছে না ফেলে ----
+  function buildAdBanner300x250() {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex; justify-content:center; padding:10px 0;';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'border:none; width:300px; height:250px;';
+    iframe.setAttribute('scrolling', 'no');
+    iframe.srcdoc = `<!DOCTYPE html><html><head><style>body{margin:0;padding:0;overflow:hidden;}</style></head><body>
+      <script>
+        atOptions = {
+          'key' : '5a3f11ee05184dbd6b902eb0e3f8bde1',
+          'format' : 'iframe',
+          'height' : 250,
+          'width' : 300,
+          'params' : {}
+        };
+      <\/script>
+      <script src="https://www.highrevenueformat.com/5a3f11ee05184dbd6b902eb0e3f8bde1/invoke.js"><\/script>
+    </body></html>`;
+    wrap.appendChild(iframe);
+    return wrap;
+  }
+
+  // ---- নেটিভ কনটেইনার অ্যাড: এই ধরনের widget সাধারণত document.write ব্যবহার করে না,
+  //      তাই সরাসরি DOM-এ বসানো হচ্ছে (iframe sandbox দরকার নেই) ----
+  function buildAdContainerE11b62() {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'padding:10px 0;';
+    const target = document.createElement('div');
+    target.id = 'container-e11b62d0d7d59d1d067e466e43ac58a8';
+    wrap.appendChild(target);
+    const script = document.createElement('script');
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    script.src = 'https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js';
+    wrap.appendChild(script);
+    return wrap;
+  }
+
   function renderPosts() {
     const searchTerm = searchBar.value.trim().toLowerCase();
     postsList.innerHTML = '';
 
     allLoadedPosts
       .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm))
-      .forEach(p => postsList.appendChild(buildPostCard(p.id, p.data)));
+      .forEach((p, i) => {
+        postsList.appendChild(buildPostCard(p.id, p.data));
+        // ---- ৩০০x২৫০ ব্যানার সবসময় প্রথম পোস্টের পরে, নেটিভ কনটেইনার অ্যাড দ্বিতীয় পোস্টের পরে ----
+        if (i === 0) postsList.appendChild(buildAdBanner300x250());
+        if (i === 1) postsList.appendChild(buildAdContainerE11b62());
+      });
   }
 
   function buildPostCard(postId, d) {
@@ -789,7 +860,7 @@
           <div class="postMenuDropdown"></div>
         </div>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
+      ${d.type !== 'poster' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${escapeHtml(d.text)}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
       <div class="postButtons"></div>
       <div class="postStatus"></div>
@@ -804,6 +875,23 @@
 
     const statusEl = card.querySelector('.postStatus');
     function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
+
+    // ---- "আরও পড়ুন": টেক্সট readMoreLines লাইনের বেশি হলেই বাটন দেখাবে, চাপলে পুরোটা খুলবে ----
+    const postTextEl = card.querySelector('.postText');
+    const readMoreBtn = card.querySelector('.readMoreBtn');
+    if (postTextEl && readMoreBtn) {
+      requestAnimationFrame(() => {
+        if (postTextEl.scrollHeight > postTextEl.clientHeight + 1) {
+          readMoreBtn.style.display = 'block';
+        }
+      });
+      let expanded = false;
+      readMoreBtn.addEventListener('click', () => {
+        expanded = !expanded;
+        postTextEl.classList.toggle('clamped', !expanded);
+        readMoreBtn.textContent = expanded ? 'সংক্ষেপ করুন' : 'আরও পড়ুন';
+      });
+    }
 
     const bottomContainer = card.querySelector('.postButtons');
     const menuContainer = card.querySelector('.postMenuDropdown');
@@ -896,7 +984,17 @@
             d.text = newText;
             // ---- শুধু এই কার্ডের টেক্সট আপডেট, পুরো ফিড পুনর্নির্মাণ না করে ----
             const textEl = card.querySelector('.postText, .postTextContent');
-            if (textEl) textEl.textContent = newText;
+            if (textEl) {
+              textEl.textContent = newText;
+              if (textEl.classList.contains('postText') && readMoreBtn) {
+                textEl.classList.add('clamped');
+                readMoreBtn.textContent = 'আরও পড়ুন';
+                readMoreBtn.style.display = 'none';
+                requestAnimationFrame(() => {
+                  if (textEl.scrollHeight > textEl.clientHeight + 1) readMoreBtn.style.display = 'block';
+                });
+              }
+            }
             const posterEl = card.querySelector('.postPoster');
             if (posterEl) posterEl.textContent = newText;
           }).catch(e => alert('এরর: ' + e.message));

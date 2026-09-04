@@ -358,7 +358,11 @@
         <div class="swipePanelInner">
         <div class="folderTitle">⚙️ কন্টেন্ট সেটিংস</div>
         <div class="section">
-          <h2>প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
+          <h2>✂️ কত লাইন পর "আরও পড়ুন" আসবে</h2>
+          <input type="number" id="readMoreLines" placeholder="৬" min="1">
+          <div class="hint">পোস্টের লেখা এতগুলো লাইনের পর কেটে "আরও পড়ুন" বাটন দেখাবে, চাপলে পুরো লেখা খুলবে</div>
+
+          <h2 style="margin-top:16px;">প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
           <input type="number" id="postsPerPage" placeholder="৫">
           <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
 
@@ -485,6 +489,7 @@
   const composerHeight = document.getElementById('composerHeight');
   const posterHeight = document.getElementById('posterHeight');
   const postsPerPage = document.getElementById('postsPerPage');
+  const readMoreLines = document.getElementById('readMoreLines');
   const postButtonsJustify = document.getElementById('postButtonsJustify');
 
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
@@ -925,6 +930,7 @@
     composerHeight.value = s.composerHeight || 100;
     posterHeight.value = s.posterHeight || 180;
     postsPerPage.value = s.postsPerPage || 5;
+    readMoreLines.value = s.readMoreLines || 6;
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
@@ -961,6 +967,7 @@
     else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
     else if (section === 'contentSettings') data = {
       postsPerPage: Number(postsPerPage.value) || 5,
+      readMoreLines: Number(readMoreLines.value) || 6,
       maxWidth: Number(maxWidth.value) || 640,
       composerHeight: Number(composerHeight.value) || 100,
       posterHeight: Number(posterHeight.value) || 180
