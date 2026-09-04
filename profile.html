@@ -770,11 +770,14 @@
       });
     }
 
-    card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
-      const input = card.querySelector('.commentInput');
-      postComment(postId, input.value, null, card);
-      input.value = '';
-    });
+    const commentSubmitBtnEl = card.querySelector('.commentSubmitBtn');
+    if (commentSubmitBtnEl) {
+      commentSubmitBtnEl.addEventListener('click', () => {
+        const input = card.querySelector('.commentInput');
+        postComment(postId, input.value, null, card);
+        input.value = '';
+      });
+    }
 
     return card;
   }
