@@ -13,6 +13,8 @@
     --text-color: #ffffff;
     --max-width: 640px;
     --poster-height: 180px;
+    --own-action-scale: 1;
+    --other-action-scale: 1;
   }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
 
@@ -120,10 +122,13 @@
   .subCountLabel span { color: #fff; font-weight: bold; }
   #profileActions button, #profileActions a, #ownActionRow button {
     width: 100%; text-align: center; background: #21262d; color: #c9d1d9;
-    border: 1px solid #30363d; padding: 8px 6px; border-radius: 18px; font-size: 11.5px;
+    border: 1px solid #30363d; padding: 0.7em 0.55em; border-radius: 1.6em;
     font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  /* ---- এডমিন প্যানেল থেকে নিজের প্রোফাইল (৩টা বাটন) ও অন্যের প্রোফাইল (৪টা বাটন)-এর সাইজ আলাদাভাবে কন্ট্রোল করা যায় ---- */
+  #ownActionRow button { font-size: calc(11.5px * var(--own-action-scale, 1)); }
+  #profileActions button, #profileActions a { font-size: calc(11.5px * var(--other-action-scale, 1)); }
   #subscribeBtn { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
   #subscribeBtn.subscribed { background: #21262d; color: #f87171; border-color: #f87171; }
   .staticBadge { opacity: 0.85; cursor: default !important; }
@@ -133,10 +138,13 @@
   #tabsOther, #tabsOwn { display: none; gap: 8px; padding: 0 16px 14px; justify-content: center; }
   .tabBtn {
     flex: 1; max-width: 200px; text-align: center; background: #161b22; color: #9ca3af;
-    border: 1px solid #262c36; padding: 9px 14px; border-radius: 18px; font-size: 13px;
+    border: 1px solid #262c36; padding: 0.7em 1.1em; border-radius: 1.4em;
     font-weight: bold; cursor: pointer; box-sizing: border-box;
   }
   .tabBtn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+  /* ---- ট্যাবও নিজের/অন্যের গ্রুপের সাথে একই স্কেলে বড়/ছোট হবে ---- */
+  #tabsOwn .tabBtn { font-size: calc(13px * var(--own-action-scale, 1)); }
+  #tabsOther .tabBtn { font-size: calc(13px * var(--other-action-scale, 1)); }
 
   #aboutSection { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 18px; text-align: center; }
 
@@ -523,6 +531,12 @@
       const sideEntries = d.sideMenuEntries || [];
       renderMenuEntries(sideMenuList, sideEntries, false);
       hamburgerBtn.style.display = sideEntries.length ? 'block' : 'none';
+
+      // ---- এডমিন প্যানেল থেকে নিজের প্রোফাইল / অন্যের প্রোফাইল অ্যাকশন বাটনের সাইজ (%) ----
+      const ownScale = (Number(d.ownActionScale) || 100) / 100;
+      const otherScale = (Number(d.otherActionScale) || 100) / 100;
+      document.documentElement.style.setProperty('--own-action-scale', ownScale);
+      document.documentElement.style.setProperty('--other-action-scale', otherScale);
     } catch (e) {
       console.error('প্রোফাইল পেজ সেটিংস লোড এরর:', e);
     }

@@ -145,6 +145,20 @@
       </div>
 
       <div class="section">
+        <h2>🔘 প্রোফাইল বাটন সাইজ</h2>
+        <div class="hint" style="margin-top:0;">প্রোফাইল কার্ডের নিচের বাটনগুলোর সাইজ % হিসেবে নির্ধারণ করুন। ১০০% মানে ডিফল্ট সাইজ।</div>
+
+        <label>নিজের প্রোফাইলের বাটন সাইজ (%) — সাবস্ক্রাইবার, প্রোফাইল এডিট করুন, মাই পোস্ট (৩টা)</label>
+        <input type="text" inputmode="numeric" id="ownBtnSize" placeholder="১০০">
+
+        <label style="margin-top:10px;">অন্যের প্রোফাইলের বাটন সাইজ (%) — সাবস্ক্রাইব, মেসেজ করুন, পোস্ট, এবাউট (৪টা)</label>
+        <input type="text" inputmode="numeric" id="otherBtnSize" placeholder="১০০">
+
+        <button class="sectionSaveBtn" id="saveBtnSizeBtn" style="margin-top:12px;">💾 বাটন সাইজ সেভ করুন</button>
+        <div class="sectionStatus" id="btnSizeStatus"></div>
+      </div>
+
+      <div class="section">
         <h2>📋 মেনু বার</h2>
 
         <!-- ================= ১) টপ মেনু ================= -->
@@ -512,6 +526,8 @@
       const snap = await getDoc(doc(db, "settings", "profilePage"));
       const d = snap.exists() ? snap.data() : {};
       document.getElementById('themeNoticeText').value = d.noticeText || '';
+      document.getElementById('ownBtnSize').value = d.ownActionScale || 100;
+      document.getElementById('otherBtnSize').value = d.otherActionScale || 100;
       fillCombinedList(topCombinedList, (d.topMenuEntries && d.topMenuEntries.length) ? d.topMenuEntries : buildLegacyMenuEntries(d.topMenuItems), topSeq);
       fillCombinedList(sideCombinedList, (d.sideMenuEntries && d.sideMenuEntries.length) ? d.sideMenuEntries : buildLegacyMenuEntries(d.sideMenuItems), sideSeq);
     } catch (e) {
@@ -525,6 +541,26 @@
     const text = document.getElementById('themeNoticeText').value.trim();
     try {
       await setDoc(doc(db, "settings", "profilePage"), { noticeText: text }, { merge: true });
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  document.getElementById('saveBtnSizeBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('btnSizeStatus');
+    const ownVal = Number(document.getElementById('ownBtnSize').value);
+    const otherVal = Number(document.getElementById('otherBtnSize').value);
+    if (!ownVal || !otherVal || ownVal < 30 || otherVal < 30 || ownVal > 300 || otherVal > 300) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = '৩০ থেকে ৩০০ এর মধ্যে সংখ্যা দিন';
+      return;
+    }
+    try {
+      await setDoc(doc(db, "settings", "profilePage"), { ownActionScale: ownVal, otherActionScale: otherVal }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
