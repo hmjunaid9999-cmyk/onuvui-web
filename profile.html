@@ -208,7 +208,7 @@
       <!-- ---- অন্যের প্রোফাইলে: বামে সাবস্ক্রাইব (উপরে সংখ্যা), ডানে মেসেজ ---- -->
       <div id="profileActions">
         <div class="actionCol">
-          <div class="subCountLabel"><span id="statSubscribers">0</span> সাবস্ক্রাইবার</div>
+          <div class="subCountLabel"><span id="statSubscribers">0</span></div>
           <button id="subscribeBtn">➕ সাবস্ক্রাইব করুন</button>
         </div>
         <div class="actionCol">
@@ -219,7 +219,7 @@
       <!-- ---- নিজের প্রোফাইলে: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট ---- -->
       <div id="ownActionRow">
         <div class="actionCol">
-          <div class="subCountLabel"><span id="statSubscribersOwn">0</span> সাবস্ক্রাইবার</div>
+          <div class="subCountLabel"><span id="statSubscribersOwn">0</span></div>
         </div>
         <div class="actionCol">
           <button id="editProfileBtn">✏️ প্রোফাইল এডিট করুন</button>
@@ -441,6 +441,15 @@
 
   const GENDER_LABELS = { male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য' };
 
+  // ---- ১০০০+ সংখ্যাকে 1k, 1.1k, 2.2k আকারে দেখানোর জন্য ----
+  function formatCount(n) {
+    n = Number(n) || 0;
+    if (n < 1000) return String(n);
+    const k = n / 1000;
+    const rounded = Math.round(k * 10) / 10;
+    return (rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1)) + 'k';
+  }
+
   function formatBirthday(str) {
     if (!str) return '';
     const [y, m, d] = str.split('-');
@@ -484,8 +493,8 @@
 
     // ---- সাবস্ক্রাইবার সংখ্যা সবসময় দেখাবে (নিজের ও অন্যের প্রোফাইলে), বাটনের উপরে ----
     const subCount = (profileData.subscribers || []).length;
-    statSubscribers.textContent = subCount;
-    statSubscribersOwn.textContent = subCount;
+    statSubscribers.textContent = formatCount(subCount);
+    statSubscribersOwn.textContent = formatCount(subCount);
 
     if (isOwn) {
       // ---- নিজের প্রোফাইল: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট + মাই পোস্ট ট্যাব ----
@@ -905,7 +914,7 @@
         currentProfileData.subscribers = nowSubscribed
           ? subs.filter(u => u !== currentUser.uid)
           : [...subs, currentUser.uid];
-        statSubscribers.textContent = currentProfileData.subscribers.length;
+        statSubscribers.textContent = formatCount(currentProfileData.subscribers.length);
       }
       updateSubscribeBtnUI();
       await loadUserPosts(currentTargetUid, currentIsOwnProfile || currentIsSubscribed);
