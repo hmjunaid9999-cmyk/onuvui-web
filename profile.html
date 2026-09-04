@@ -71,22 +71,31 @@
     background: #21262d; color: #fff; border: 1px solid #30363d; padding: 8px 18px;
     border-radius: 20px; font-size: 13px; cursor: pointer;
   }
-  #profileStats { display: flex; border-top: 1px solid #262c36; }
-  .statBox { flex: 1; text-align: center; padding: 12px 8px; }
-  .statBox .statNum { font-size: 16px; font-weight: bold; }
-  .statBox .statLabel { font-size: 11px; color: #9ca3af; margin-top: 2px; }
-  .statBox + .statBox { border-left: 1px solid #262c36; }
 
-  /* ---- প্রোফাইল অ্যাকশন (সাবস্ক্রাইব/মেসেজ) ---- */
-  #profileActions { display: none; gap: 10px; padding: 0 16px 18px; justify-content: center; }
-  #profileActions button, #profileActions a {
-    flex: 1; max-width: 200px; text-align: center; background: #21262d; color: #c9d1d9;
+  /* ---- প্রোফাইল অ্যাকশন (সাবস্ক্রাইব/মেসেজ / এডিট) ---- */
+  #profileActions, #ownActionRow { display: none; gap: 10px; padding: 0 16px 14px; justify-content: center; }
+  .actionCol { flex: 1; max-width: 200px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; box-sizing: border-box; }
+  .subCountLabel { text-align: center; font-size: 12px; color: #9ca3af; }
+  .subCountLabel span { color: #fff; font-weight: bold; }
+  #profileActions button, #profileActions a, #ownActionRow button {
+    width: 100%; text-align: center; background: #21262d; color: #c9d1d9;
     border: 1px solid #30363d; padding: 10px 14px; border-radius: 18px; font-size: 13px;
     font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box;
   }
   #subscribeBtn { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
   #subscribeBtn.subscribed { background: #21262d; color: #f87171; border-color: #f87171; }
   #lockedPosts { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 16px; line-height: 1.7; }
+
+  /* ---- ট্যাব (পোস্ট / এবাউট / মাই পোস্ট) ---- */
+  #tabsOther, #tabsOwn { display: none; gap: 8px; padding: 0 16px 14px; justify-content: center; }
+  .tabBtn {
+    flex: 1; max-width: 200px; text-align: center; background: #161b22; color: #9ca3af;
+    border: 1px solid #262c36; padding: 9px 14px; border-radius: 18px; font-size: 13px;
+    font-weight: bold; cursor: pointer; box-sizing: border-box;
+  }
+  .tabBtn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+  #aboutSection { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 18px; text-align: center; }
 
   /* ---- এডিট প্রোফাইল মোডাল ---- */
   #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-end; justify-content: center; }
@@ -193,30 +202,55 @@
           <img id="profileAvatar" src="">
           <div id="profileName"></div>
           <div id="profileEmail"></div>
-          <div id="profileBio" style="display:none;"></div>
-          <div id="profileBioEmpty" style="display:none;">এখনো কোনো বায়ো লেখা হয়নি</div>
-          <div id="profileExtra"></div>
-          <div id="profileJoined"></div>
+        </div>
+      </div>
+
+      <!-- ---- অন্যের প্রোফাইলে: বামে সাবস্ক্রাইব (উপরে সংখ্যা), ডানে মেসেজ ---- -->
+      <div id="profileActions">
+        <div class="actionCol">
+          <div class="subCountLabel"><span id="statSubscribers">0</span> সাবস্ক্রাইবার</div>
+          <button id="subscribeBtn">➕ সাবস্ক্রাইব করুন</button>
+        </div>
+        <div class="actionCol">
+          <a id="messageBtn" href="#">✉️ মেসেজ করুন</a>
+        </div>
+      </div>
+
+      <!-- ---- নিজের প্রোফাইলে: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট ---- -->
+      <div id="ownActionRow">
+        <div class="actionCol">
+          <div class="subCountLabel"><span id="statSubscribersOwn">0</span> সাবস্ক্রাইবার</div>
+        </div>
+        <div class="actionCol">
           <button id="editProfileBtn">✏️ প্রোফাইল এডিট করুন</button>
         </div>
-        <div id="profileStats">
-          <div class="statBox"><div class="statNum" id="statPosts">0</div><div class="statLabel">পোস্ট</div></div>
-          <div class="statBox"><div class="statNum" id="statLikes">0</div><div class="statLabel">প্রাপ্ত লাইক</div></div>
-          <div class="statBox"><div class="statNum" id="statComments">0</div><div class="statLabel">প্রাপ্ত কমেন্ট</div></div>
-          <div class="statBox"><div class="statNum" id="statSubscribers">0</div><div class="statLabel">সাবস্ক্রাইবার</div></div>
-        </div>
       </div>
 
-      <div id="profileActions">
-        <button id="subscribeBtn">➕ সাবস্ক্রাইব করুন</button>
-        <a id="messageBtn" href="#">✉️ মেসেজ করুন</a>
+      <!-- ---- অন্যের প্রোফাইলে ট্যাব: পোস্ট / এবাউট ---- -->
+      <div id="tabsOther">
+        <button id="postsTabBtn" class="tabBtn active">📝 পোস্ট</button>
+        <button id="aboutTabBtn" class="tabBtn">ℹ️ এবাউট</button>
       </div>
 
-      <div id="postsHeading">📝 আমার পোস্ট</div>
-      <div id="postsLoading">লোড হচ্ছে...</div>
-      <div id="emptyPosts" style="display:none;">আপনি এখনো কোনো পোস্ট করেননি</div>
-      <div id="lockedPosts" style="display:none;">🔒 এই ব্যবহারকারীর পোস্ট দেখতে হলে আগে সাবস্ক্রাইব করুন</div>
-      <div id="myPostsList"></div>
+      <!-- ---- নিজের প্রোফাইলে ট্যাব: মাই পোস্ট ---- -->
+      <div id="tabsOwn">
+        <button id="myPostsTabBtn" class="tabBtn active">📝 মাই পোস্ট</button>
+      </div>
+
+      <div id="aboutSection" style="display:none;">
+        <div id="profileBio" style="display:none;"></div>
+        <div id="profileBioEmpty" style="display:none;">এখনো কোনো বায়ো লেখা হয়নি</div>
+        <div id="profileExtra"></div>
+        <div id="profileJoined"></div>
+      </div>
+
+      <div id="postsWrap">
+        <div id="postsHeading">📝 আমার পোস্ট</div>
+        <div id="postsLoading">লোড হচ্ছে...</div>
+        <div id="emptyPosts" style="display:none;">আপনি এখনো কোনো পোস্ট করেননি</div>
+        <div id="lockedPosts" style="display:none;">🔒 এই ব্যবহারকারীর পোস্ট দেখতে হলে আগে সাবস্ক্রাইব করুন</div>
+        <div id="myPostsList"></div>
+      </div>
     </main>
   </div>
 
@@ -305,9 +339,6 @@
   const profileBioEmpty = document.getElementById('profileBioEmpty');
   const profileExtra = document.getElementById('profileExtra');
   const profileJoined = document.getElementById('profileJoined');
-  const statPosts = document.getElementById('statPosts');
-  const statLikes = document.getElementById('statLikes');
-  const statComments = document.getElementById('statComments');
 
   const editProfileBtn = document.getElementById('editProfileBtn');
   const editOverlay = document.getElementById('editOverlay');
@@ -329,6 +360,15 @@
   const subscribeBtn = document.getElementById('subscribeBtn');
   const messageBtn = document.getElementById('messageBtn');
   const statSubscribers = document.getElementById('statSubscribers');
+  const ownActionRow = document.getElementById('ownActionRow');
+  const statSubscribersOwn = document.getElementById('statSubscribersOwn');
+  const tabsOther = document.getElementById('tabsOther');
+  const tabsOwn = document.getElementById('tabsOwn');
+  const postsTabBtn = document.getElementById('postsTabBtn');
+  const aboutTabBtn = document.getElementById('aboutTabBtn');
+  const myPostsTabBtn = document.getElementById('myPostsTabBtn');
+  const aboutSection = document.getElementById('aboutSection');
+  const postsWrap = document.getElementById('postsWrap');
 
   COVER_COLORS.forEach(color => {
     const sw = document.createElement('div');
@@ -438,21 +478,52 @@
     profileExtra.textContent = extras.join('   ');
     profileJoined.textContent = formatJoinDate(profileData.createdAt);
 
-    editProfileBtn.style.display = isOwn ? 'inline-block' : 'none';
     postsHeading.textContent = isOwn ? '📝 আমার পোস্ট' : '📝 ' + displayName + ' এর পোস্ট';
     emptyPosts.textContent = isOwn ? 'আপনি এখনো কোনো পোস্ট করেননি' : 'এখনো কোনো পোস্ট নেই';
     lockedPosts.textContent = '🔒 পোস্ট দেখতে হলে আগে ' + displayName + '-কে সাবস্ক্রাইব করুন';
 
-    // ---- সাবস্ক্রাইবার সংখ্যা সবসময় দেখাবে (নিজের ও অন্যের প্রোফাইলে) ----
-    statSubscribers.textContent = (profileData.subscribers || []).length;
+    // ---- সাবস্ক্রাইবার সংখ্যা সবসময় দেখাবে (নিজের ও অন্যের প্রোফাইলে), বাটনের উপরে ----
+    const subCount = (profileData.subscribers || []).length;
+    statSubscribers.textContent = subCount;
+    statSubscribersOwn.textContent = subCount;
 
-    // ---- অন্যের প্রোফাইলে শুধু সাবস্ক্রাইব ও মেসেজ বাটন দেখানো হবে ----
-    profileActions.style.display = isOwn ? 'none' : 'flex';
-    if (!isOwn) {
+    if (isOwn) {
+      // ---- নিজের প্রোফাইল: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট + মাই পোস্ট ট্যাব ----
+      profileActions.style.display = 'none';
+      ownActionRow.style.display = 'flex';
+      tabsOther.style.display = 'none';
+      tabsOwn.style.display = 'flex';
+      aboutSection.style.display = 'none';
+      postsWrap.style.display = 'block';
+    } else {
+      // ---- অন্যের প্রোফাইল: বামে সাবস্ক্রাইব, ডানে মেসেজ + পোস্ট/এবাউট ট্যাব ----
+      profileActions.style.display = 'flex';
+      ownActionRow.style.display = 'none';
+      tabsOther.style.display = 'flex';
+      tabsOwn.style.display = 'none';
       updateSubscribeBtnUI();
       messageBtn.href = 'messages.html?uid=' + currentTargetUid;
+      // ---- ডিফল্ট ট্যাব: পোস্ট ----
+      setOtherTab('posts');
     }
   }
+
+  // ---- অন্যের প্রোফাইলে পোস্ট/এবাউট ট্যাব সুইচ ----
+  function setOtherTab(tab) {
+    if (tab === 'about') {
+      postsWrap.style.display = 'none';
+      aboutSection.style.display = 'block';
+      postsTabBtn.classList.remove('active');
+      aboutTabBtn.classList.add('active');
+    } else {
+      postsWrap.style.display = 'block';
+      aboutSection.style.display = 'none';
+      postsTabBtn.classList.add('active');
+      aboutTabBtn.classList.remove('active');
+    }
+  }
+  postsTabBtn.addEventListener('click', () => setOtherTab('posts'));
+  aboutTabBtn.addEventListener('click', () => setOtherTab('about'));
 
   function updateSubscribeBtnUI() {
     if (currentIsSubscribed) {
@@ -523,9 +594,6 @@
     if (!canView) {
       postsLoading.style.display = 'none';
       lockedPosts.style.display = 'block';
-      statPosts.textContent = '—';
-      statLikes.textContent = '—';
-      statComments.textContent = '—';
       myPosts = [];
       return myPosts;
     }
@@ -541,12 +609,6 @@
         const tb = b.data.createdAt && b.data.createdAt.toDate ? b.data.createdAt.toDate().getTime() : 0;
         return tb - ta;
       });
-
-      const totalLikes = myPosts.reduce((sum, p) => sum + (p.data.likedBy || []).length, 0);
-      const totalComments = myPosts.reduce((sum, p) => sum + (p.data.commentCount || 0), 0);
-      statPosts.textContent = myPosts.length;
-      statLikes.textContent = totalLikes;
-      statComments.textContent = totalComments;
 
       postsLoading.style.display = 'none';
       if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return myPosts; }
@@ -691,7 +753,6 @@
           await deleteDoc(doc(db, "posts", postId));
           myPosts = myPosts.filter(p => p.id !== postId);
           card.remove();
-          statPosts.textContent = myPosts.length;
           if (myPosts.length === 0) emptyPosts.style.display = 'block';
         } catch (e) { alert('এরর: ' + e.message); }
       });
