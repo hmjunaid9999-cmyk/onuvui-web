@@ -29,6 +29,10 @@
     position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
   }
+  #backBtn {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
+  }
 
   main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
   .folderTitle { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
@@ -45,7 +49,7 @@
   }
   .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
 
-  /* ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম (video-admin.html এর থিম প্যানেলের সাথে অভিন্ন) ---- */
+  /* ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম (প্রোফাইল পেজের হেডারে দেখানো হয়) ---- */
   .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
   .gridRow2 {
     display: flex; align-items: flex-start; gap: 8px;
@@ -123,12 +127,14 @@
 
   <div id="adminScreen">
     <header>
+      <button id="backBtn">←</button>
       <span>👤 Profile Admin Panel</span>
       <button id="logoutBtn">লগ আউট</button>
     </header>
 
     <main>
-      <div class="folderTitle">🎨 থিম</div>
+      <div class="folderTitle">🎨 প্রোফাইল পেজ থিম</div>
+      <div class="hint" style="margin-bottom:14px;">এখানে যা সেভ করবেন তা সরাসরি profile.html পেজে দেখা যাবে (নোটিশ বার হেডারের নিচে, টপ মেনু তার নিচে হরাইজন্টাল বারে, সাইড মেনু হেডারের ☰ আইকনে)।</div>
 
       <div class="section">
         <h2>📝 নোটিশ বক্স</h2>
@@ -213,7 +219,7 @@
     measurementId: "G-WJ8N8XLPSZ"
   };
 
-  // ---- video-admin.html এর মতোই — একই এডমিন ইমেইল লিস্ট ----
+  // ---- এডমিন হিসেবে অনুমোদিত ইমেইল লিস্ট (শুধু এই প্রোফাইল-এডমিন প্যানেলের জন্য) ----
   const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
 
   const app = initializeApp(firebaseConfig);
@@ -231,6 +237,15 @@
   });
   document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
   document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+
+  // ---- ব্যাক বাটন: ব্রাউজার হিস্টোরিতে ঠিক আগের পেজে ফিরিয়ে নেবে; হিস্টোরি না থাকলে profile.html-এ যাবে ----
+  document.getElementById('backBtn').addEventListener('click', () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = 'profile.html';
+    }
+  });
 
   const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
 
@@ -255,7 +270,7 @@
     document.body.removeChild(ta);
   }
 
-  // ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম (video-admin.html এর থিম প্যানেলের সাথে অভিন্ন — একই settings/theme ডকুমেন্ট ব্যবহার করে) ----
+  // ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম — profile.html নিজের settings/profilePage ডকুমেন্ট থেকে এটা পড়ে হেডারের নিচে দেখায় ----
   function makeSeqCounter() {
     let n = 0;
     return () => ++n;
@@ -468,7 +483,7 @@
     const statusEl = document.getElementById('topMenuStatus');
     const entries = readCombinedList(topCombinedList);
     try {
-      await setDoc(doc(db, "settings", "theme"), { topMenuEntries: entries, topMenuItems: [] }, { merge: true });
+      await setDoc(doc(db, "settings", "profilePage"), { topMenuEntries: entries, topMenuItems: [] }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
@@ -482,7 +497,7 @@
     const statusEl = document.getElementById('sideMenuStatus');
     const entries = readCombinedList(sideCombinedList);
     try {
-      await setDoc(doc(db, "settings", "theme"), { sideMenuEntries: entries, sideMenuItems: [] }, { merge: true });
+      await setDoc(doc(db, "settings", "profilePage"), { sideMenuEntries: entries, sideMenuItems: [] }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);
@@ -494,7 +509,7 @@
 
   async function loadTheme() {
     try {
-      const snap = await getDoc(doc(db, "settings", "theme"));
+      const snap = await getDoc(doc(db, "settings", "profilePage"));
       const d = snap.exists() ? snap.data() : {};
       document.getElementById('themeNoticeText').value = d.noticeText || '';
       fillCombinedList(topCombinedList, (d.topMenuEntries && d.topMenuEntries.length) ? d.topMenuEntries : buildLegacyMenuEntries(d.topMenuItems), topSeq);
@@ -509,7 +524,7 @@
     const statusEl = document.getElementById('noticeStatus');
     const text = document.getElementById('themeNoticeText').value.trim();
     try {
-      await setDoc(doc(db, "settings", "theme"), { noticeText: text }, { merge: true });
+      await setDoc(doc(db, "settings", "profilePage"), { noticeText: text }, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
       setTimeout(() => { statusEl.textContent = ''; }, 2000);

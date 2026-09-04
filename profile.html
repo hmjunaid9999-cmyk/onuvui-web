@@ -48,6 +48,51 @@
     position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
   }
+  #hamburgerBtn {
+    position: absolute; left: 44px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #fff; font-size: 19px; cursor: pointer; padding: 4px 8px;
+    display: none;
+  }
+
+  /* ---- এডমিন থেকে কন্ট্রোল করা নোটিশ বার ---- */
+  #noticeBar {
+    display: none; background: #1f2937; color: #93c5fd; font-size: 12.5px; text-align: center;
+    padding: 9px 16px; border-bottom: 1px solid #262c36; line-height: 1.5;
+  }
+
+  /* ---- এডমিন থেকে কন্ট্রোল করা টপ মেনু বার (হেডারের ঠিক নিচে) ---- */
+  #topMenuBar {
+    display: none; gap: 8px; padding: 10px 14px; overflow-x: auto; background: var(--card-color);
+    border-bottom: 1px solid #262c36;
+  }
+  #topMenuBar::-webkit-scrollbar { display: none; }
+  .topMenuItem {
+    flex-shrink: 0; background: #21262d; color: #c9d1d9; border: 1px solid #30363d;
+    padding: 7px 16px; border-radius: 16px; font-size: 12.5px; font-weight: bold;
+    text-decoration: none; white-space: nowrap;
+  }
+  .topMenuGadget { flex-shrink: 0; }
+
+  /* ---- এডমিন থেকে কন্ট্রোল করা সাইড মেনু (হ্যামবার্গার) ---- */
+  #sideMenuOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 250;
+  }
+  #sideMenuOverlay.open { display: block; }
+  #sideMenuPanel {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 78%; max-width: 300px;
+    background: var(--card-color); z-index: 251; padding: 18px 14px; overflow-y: auto;
+    transform: translateX(-100%); transition: transform 0.25s ease;
+  }
+  #sideMenuOverlay.open #sideMenuPanel { transform: translateX(0); }
+  #sideMenuPanel h2 { font-size: 15px; margin-bottom: 14px; }
+  #sideMenuCloseBtn {
+    position: absolute; right: 12px; top: 14px; background: none; border: none;
+    color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px;
+  }
+  .sideMenuItem, .sideMenuGadget {
+    display: block; padding: 12px 10px; border-radius: 10px; color: #c9d1d9;
+    text-decoration: none; font-size: 14px; margin-bottom: 8px; background: #0d1117; border: 1px solid #262c36;
+  }
 
   main { padding: 16px; max-width: var(--max-width); margin: 0 auto; }
 
@@ -188,10 +233,14 @@
 
   <div id="appScreen">
     <div id="siteHeader">
-      <a href="index.html" id="backBtn">←</a>
+      <button id="backBtn">←</button>
+      <button id="hamburgerBtn">☰</button>
       <h1>প্রোফাইল</h1>
       <button id="logoutBtn">লগ আউট</button>
     </div>
+
+    <div id="noticeBar"></div>
+    <div id="topMenuBar"></div>
 
     <main>
       <div id="profileCard">
@@ -251,6 +300,15 @@
         <div id="myPostsList"></div>
       </div>
     </main>
+  </div>
+
+  <!-- ---- এডমিন থেকে কন্ট্রোল করা সাইড মেনু ---- -->
+  <div id="sideMenuOverlay">
+    <div id="sideMenuPanel">
+      <button id="sideMenuCloseBtn">✕</button>
+      <h2>☰ মেনু</h2>
+      <div id="sideMenuList"></div>
+    </div>
   </div>
 
   <!-- ---- এডিট প্রোফাইল মোডাল ---- -->
@@ -329,6 +387,16 @@
   const loginBtn = document.getElementById('googleLoginBtn');
   const loginStatus = document.getElementById('loginStatus');
   const logoutBtn = document.getElementById('logoutBtn');
+  const backBtn = document.getElementById('backBtn');
+
+  // ---- এডমিন প্যানেল (profile-admin.html) থেকে কন্ট্রোল হওয়া উপাদান ----
+  const noticeBar = document.getElementById('noticeBar');
+  const topMenuBar = document.getElementById('topMenuBar');
+  const hamburgerBtn = document.getElementById('hamburgerBtn');
+  const sideMenuOverlay = document.getElementById('sideMenuOverlay');
+  const sideMenuPanel = document.getElementById('sideMenuPanel');
+  const sideMenuCloseBtn = document.getElementById('sideMenuCloseBtn');
+  const sideMenuList = document.getElementById('sideMenuList');
 
   const profileCover = document.getElementById('profileCover');
   const profileAvatar = document.getElementById('profileAvatar');
@@ -393,7 +461,78 @@
   });
   logoutBtn.addEventListener('click', async () => { await signOut(auth); });
 
+  // ---- ব্যাক বাটন: ব্রাউজার হিস্টোরিতে ঠিক আগের পেজে ফিরিয়ে নেবে; হিস্টোরি না থাকলে (যেমন সরাসরি লিংক থেকে খোলা হলে) index.html-এ যাবে ----
+  backBtn.addEventListener('click', () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
   function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
+
+  // ---- এডমিন প্যানেল থেকে সেভ করা HTML/CSS/JS গেজেট চালানোর জন্য (innerHTML দিয়ে <script> রান হয় না, তাই আলাদাভাবে রিক্রিয়েট করা হচ্ছে) ----
+  function renderRawGadget(container, code) {
+    container.innerHTML = code || '';
+    container.querySelectorAll('script').forEach(oldScript => {
+      const newScript = document.createElement('script');
+      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+      newScript.textContent = oldScript.textContent;
+      oldScript.replaceWith(newScript);
+    });
+  }
+
+  // ---- টপ মেনু / সাইড মেনুর এন্ট্রি (পেজ বা গেজেট) রেন্ডার করার জন্য ----
+  function renderMenuEntries(container, entries, isTop) {
+    container.innerHTML = '';
+    (entries || []).forEach(entry => {
+      if (!entry) return;
+      if (entry.type === 'gadget') {
+        const wrap = document.createElement('div');
+        wrap.className = isTop ? 'topMenuGadget' : 'sideMenuGadget';
+        renderRawGadget(wrap, entry.code);
+        container.appendChild(wrap);
+      } else {
+        const a = document.createElement('a');
+        a.className = isTop ? 'topMenuItem' : 'sideMenuItem';
+        a.href = entry.url || '#';
+        a.textContent = entry.label || '';
+        container.appendChild(a);
+      }
+    });
+  }
+
+  // ---- profile-admin.html যে settings/profilePage ডকুমেন্টে সেভ করে, সেটা লোড করে প্রোফাইল পেজে দেখানো হচ্ছে ----
+  async function loadProfilePageSettings() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "profilePage"));
+      const d = snap.exists() ? snap.data() : {};
+
+      if (d.noticeText && d.noticeText.trim()) {
+        noticeBar.textContent = d.noticeText;
+        noticeBar.style.display = 'block';
+      } else {
+        noticeBar.style.display = 'none';
+      }
+
+      const topEntries = d.topMenuEntries || [];
+      renderMenuEntries(topMenuBar, topEntries, true);
+      topMenuBar.style.display = topEntries.length ? 'flex' : 'none';
+
+      const sideEntries = d.sideMenuEntries || [];
+      renderMenuEntries(sideMenuList, sideEntries, false);
+      hamburgerBtn.style.display = sideEntries.length ? 'block' : 'none';
+    } catch (e) {
+      console.error('প্রোফাইল পেজ সেটিংস লোড এরর:', e);
+    }
+  }
+
+  hamburgerBtn.addEventListener('click', () => sideMenuOverlay.classList.add('open'));
+  sideMenuCloseBtn.addEventListener('click', () => sideMenuOverlay.classList.remove('open'));
+  sideMenuOverlay.addEventListener('click', (e) => {
+    if (e.target === sideMenuOverlay) sideMenuOverlay.classList.remove('open');
+  });
 
   function timeAgo(ts) {
     if (!ts || !ts.toDate) return '';
@@ -934,6 +1073,7 @@
     if (user) {
       loginScreen.style.display = 'none';
       appScreen.style.display = 'block';
+      loadProfilePageSettings(); // এডমিন প্যানেল থেকে নোটিশ/মেনু লোড হচ্ছে
       await ensureUserProfile(user); // নিজের প্রোফাইল সবসময় সিঙ্ক/তৈরি হয়
 
       const targetUid = viewUid || user.uid;
