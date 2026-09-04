@@ -612,6 +612,7 @@
       const snap = await getDocs(q);
       myPosts = [];
       snap.forEach(d => myPosts.push({ id: d.id, data: d.data() }));
+      console.log('loadUserPosts:', targetUid, 'found', myPosts.length, 'posts');
       myPosts.sort((a, b) => {
         const ta = a.data.createdAt && a.data.createdAt.toDate ? a.data.createdAt.toDate().getTime() : 0;
         const tb = b.data.createdAt && b.data.createdAt.toDate ? b.data.createdAt.toDate().getTime() : 0;
@@ -622,7 +623,10 @@
       if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return myPosts; }
       myPosts.forEach(p => myPostsList.appendChild(buildPostCard(p.id, p.data)));
     } catch (e) {
+      postsLoading.style.color = '#f87171';
+      postsLoading.style.display = 'block';
       postsLoading.textContent = 'এরর: ' + e.message;
+      console.error('loadUserPosts error:', e);
     }
     return myPosts;
   }
