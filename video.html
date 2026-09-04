@@ -169,7 +169,7 @@ async function creditWatchCoins(){
     let newDayEarned=dayExpired?reward:Number(ud.dayEarnedAmount||0)+reward;
     if(newDayEarned>Number(settings.maxCoinsPerDay||0))return; // দিনের সর্বোচ্চ সীমা শেষ
     let videoEarnedMap=ud.videoEarned||{};
-    let videoEarnedSoFar=Number(videoEarnedMap[videoId]||0);
+    let videoEarnedSoFar=Number(videoEarnedMap[vid]||0);
     let newVideoEarned=videoEarnedSoFar+reward;
     let maxPerVideo=Number(settings.maxCoinsPerVideo||0);
     if(maxPerVideo>0&&newVideoEarned>maxPerVideo)return; // এই ভিডিওতে সর্বোচ্চ কয়েন সীমা শেষ
@@ -178,7 +178,7 @@ async function creditWatchCoins(){
       lastVideoRewardAt:serverTimestamp(),
       hourEarnedAmount:newHourEarned,
       dayEarnedAmount:newDayEarned,
-      videoEarned:{...videoEarnedMap,[videoId]:newVideoEarned}
+      videoEarned:{...videoEarnedMap,[vid]:newVideoEarned}
     };
     payload.hourWindowStart=hourExpired?serverTimestamp():ud.hourWindowStart;
     payload.dayWindowStart=dayExpired?serverTimestamp():ud.dayWindowStart;
