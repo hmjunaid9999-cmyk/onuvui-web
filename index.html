@@ -18,22 +18,31 @@
   }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
 
-  #loginScreen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 24px; text-align: center;
+  /* ---- লগইন মোডাল: এখন আর পুরো অ্যাপ আটকে রাখে না, শুধু পোস্ট/লাইক/কমেন্ট/রিপ্লাই এর
+        মতো লগইন-প্রয়োজনীয় অ্যাকশনে ক্লিক করলে ওভারলে হিসেবে খুলবে, বন্ধও করা যাবে ---- */
+  .loginModalOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 400;
+    align-items: center; justify-content: center; padding: 24px;
   }
-  #loginScreen img { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 18px; }
-  #loginScreen h1 { font-size: 22px; margin-bottom: 6px; }
-  #loginScreen p { color: #9ca3af; font-size: 14px; margin-bottom: 28px; }
+  .loginModalOverlay.open { display: flex; }
+  .loginModalBox {
+    position: relative; width: 100%; max-width: 360px; background: var(--card-color);
+    border-radius: 18px; padding: 32px 24px 28px; text-align: center;
+  }
+  #loginModalCloseBtn {
+    position: absolute; right: 12px; top: 12px; background: none; border: none;
+    color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px;
+  }
+  .loginModalBox img { width: 72px; height: 72px; border-radius: 18px; margin-bottom: 16px; }
+  .loginModalBox h1 { font-size: 20px; margin-bottom: 6px; }
+  .loginModalBox p { color: #9ca3af; font-size: 13px; margin-bottom: 24px; }
   #googleLoginBtn {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 10px; justify-content: center; width: 100%;
     background: var(--primary-color); color: #fff; border: none;
     padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
   }
   #googleLoginBtn:disabled { opacity: 0.6; }
   #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; min-height: 18px; }
-
-  #appScreen { display: none; }
 
   #siteHeader {
     position: relative;
@@ -46,10 +55,11 @@
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 4px 8px;
   }
-  #logoutBtn {
+  #logoutBtn, #headerLoginBtn {
     position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
   }
+  #headerLoginBtn { color: var(--primary-color); }
 
   #noticeBar {
     background: #1c2128; overflow: hidden; white-space: nowrap; padding: 8px 0;
@@ -268,12 +278,17 @@
   </div>
 
 
-  <div id="loginScreen">
-    <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
-    <h1>Onuvuti App</h1>
-    <p>চালিয়ে যেতে Google দিয়ে লগইন করুন</p>
-    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
-    <div id="loginStatus"></div>
+  <!-- ---- লগইন মোডাল: পোস্ট/লাইক/কমেন্ট/রিপ্লাই এর মতো লগইন-প্রয়োজনীয় অ্যাকশনে গেলে খুলবে,
+        বাকি সব ব্রাউজিং (ফিড দেখা, মেনু/সাইডবার/ফুটার অপশন ব্যবহার করা) লগইন ছাড়াই চলবে ---- -->
+  <div id="loginModalOverlay" class="loginModalOverlay">
+    <div class="loginModalBox">
+      <button id="loginModalCloseBtn">✕</button>
+      <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
+      <h1>Onuvuti App</h1>
+      <p>পোস্ট, লাইক, কমেন্ট বা রিপ্লাই করতে Google দিয়ে লগইন করুন</p>
+      <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+      <div id="loginStatus"></div>
+    </div>
   </div>
 
   <div id="appScreen">
@@ -288,7 +303,8 @@
       <button id="sidebarToggleBtn">☰</button>
       <img id="siteLogo" src="" alt="">
       <h1 id="siteName">Onuvuti</h1>
-      <button id="logoutBtn">লগ আউট</button>
+      <button id="logoutBtn" style="display:none;">লগ আউট</button>
+      <button id="headerLoginBtn" style="display:none;">লগইন</button>
     </div>
 
     <div id="noticeBar"><span id="noticeText"></span></div>
@@ -390,11 +406,13 @@
 
 
   // ---- এলিমেন্ট রেফারেন্স ----
-  const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
+  const loginModalOverlay = document.getElementById('loginModalOverlay');
+  const loginModalCloseBtn = document.getElementById('loginModalCloseBtn');
   const loginBtn = document.getElementById('googleLoginBtn');
   const loginStatus = document.getElementById('loginStatus');
   const logoutBtn = document.getElementById('logoutBtn');
+  const headerLoginBtn = document.getElementById('headerLoginBtn');
   const siteLogo = document.getElementById('siteLogo');
   const siteName = document.getElementById('siteName');
   const noticeText = document.getElementById('noticeText');
@@ -416,7 +434,28 @@
   const postsList = document.getElementById('postsList');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
 
-  // ---- লগইন/লগআউট ----
+  // ---- লগইন মোডাল: ব্রাউজিং (ফিড দেখা, মেনু/সাইডবার/ফুটার অপশন দেখা-ব্যবহার করা) এর জন্য
+  //      লগইন লাগে না — শুধু পোস্ট/লাইক/কমেন্ট/রিপ্লাই এর মতো অ্যাকশনে গেলে এই মোডাল খুলবে ----
+  function openLoginModal() {
+    loginStatus.textContent = '';
+    loginBtn.disabled = false;
+    loginModalOverlay.classList.add('open');
+    rearmGuard();
+  }
+  function closeLoginModal() {
+    loginModalOverlay.classList.remove('open');
+  }
+  // ---- লগইন লাগবে এমন যেকোনো অ্যাকশনের শুরুতে এটা কল করতে হবে: লগইন করা থাকলে true,
+  //      নাহলে লগইন মোডাল খুলে false রিটার্ন করে (কলার সাথে সাথে থেমে যাবে) ----
+  function requireLogin() {
+    if (currentUser) return true;
+    openLoginModal();
+    return false;
+  }
+
+  loginModalCloseBtn.addEventListener('click', closeLoginModal);
+  loginModalOverlay.addEventListener('click', (e) => { if (e.target === loginModalOverlay) closeLoginModal(); });
+
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
     loginStatus.textContent = 'লগইন হচ্ছে...';
@@ -428,6 +467,7 @@
     }
   });
   logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  headerLoginBtn.addEventListener('click', openLoginModal);
 
   // ---- সাইডবার ----
   function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); }
@@ -555,7 +595,7 @@
 
   // ---- পোস্ট সাবমিট ----
   submitPostBtn.addEventListener('click', async () => {
-    if (!currentUser) { composerStatus.textContent = 'লগইন করুন'; return; }
+    if (!requireLogin()) return;
     const text = composerText.value.trim();
 
     if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
@@ -776,7 +816,7 @@
         b.className = 'likeBtn' + (liked ? ' liked' : '');
         b.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
         b.addEventListener('click', async () => {
-          if (!currentUser) return;
+          if (!requireLogin()) return;
           const postRef = doc(db, "posts", postId);
           const nowLiked = (d.likedBy || []).includes(currentUser.uid);
           await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
@@ -888,7 +928,7 @@
         b.textContent = '🚩 রিপোর্ট';
         b.addEventListener('click', async () => {
           menuContainer.classList.remove('open');
-          if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
+          if (!requireLogin()) return;
           const reason = await askReportReason();
           if (reason === null) return;
           try {
@@ -937,6 +977,7 @@
 
     // কমেন্ট সাবমিট
     card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
+      if (!requireLogin()) return;
       const input = card.querySelector('.commentInput');
       postComment(postId, input.value, null, card);
       input.value = '';
@@ -1111,7 +1152,7 @@
         b.className = 'cLikeBtn' + (liked ? ' cLiked' : '');
         b.innerHTML = `${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span>`;
         b.addEventListener('click', async () => {
-          if (!currentUser) return;
+          if (!requireLogin()) return;
           const ref2 = doc(db, "posts", postId, "comments", commentId);
           const nowLiked = (d.likedBy || []).includes(currentUser.uid);
           await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
@@ -1171,7 +1212,7 @@
         b.textContent = '🚩 রিপোর্ট';
         b.addEventListener('click', async () => {
           menuContainer.classList.remove('open');
-          if (!currentUser) { alert('রিপোর্ট করতে লগইন করুন'); return; }
+          if (!requireLogin()) return;
           const isReply = !!d.replyToId;
           const reason = await askReportReason();
           if (reason === null) return;
@@ -1224,6 +1265,7 @@
       });
 
       row.querySelector('.replySubmitBtn').addEventListener('click', () => {
+        if (!requireLogin()) return;
         const input = topCtx.replyInput;
         const targetId = topCtx.currentTargetId; // মূল কমেন্ট অথবা নির্দিষ্ট কোনো রিপ্লাই — যেটা লক্ষ্য করা হয়েছে
         if (!input.value.trim()) return;
@@ -1238,20 +1280,33 @@
     return row;
   }
 
+  // ---- অ্যাপ ব্রাউজ করতে (ফিড দেখা, মেনু/সাইডবার/ফুটার এর অপশন দেখা ও ব্যবহার করা) লগইন
+  //      বাধ্যতামূলক নয় — তাই অ্যাপ স্ক্রিন ও ফিড লোড এখন লগইন স্টেট এর জন্য অপেক্ষা না করেই
+  //      একবার শুরুতেই চালু হয়ে যায়। onAuthStateChanged শুধু হেডারের লগইন/লগআউট বাটন এবং
+  //      পোস্ট/কমেন্টের লাইক-স্টেট, নিজের পোস্ট/কমেন্টের এডিট-ডিলিট বাটন আপডেট করে ----
+  let appInitialized = false;
+
+  function updateAuthUI(user) {
+    logoutBtn.style.display = user ? '' : 'none';
+    headerLoginBtn.style.display = user ? 'none' : '';
+  }
+
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
-    if (user) {
-      loginScreen.style.display = 'none';
+    updateAuthUI(user);
+    if (user) closeLoginModal();
+
+    if (!appInitialized) {
+      appInitialized = true;
       appScreen.style.display = 'block';
       listenSettings();
       resetFeed();
       openSharedPostIfAny();
       initBackGuard();
-    } else {
-      appScreen.style.display = 'none';
-      loginScreen.style.display = 'flex';
-      loginBtn.disabled = false;
-      loginStatus.textContent = '';
+    } else if (allLoadedPosts.length) {
+      // ---- লগইন/লগআউট এর পর লাইক-স্টেট ও নিজের পোস্ট/কমেন্টের বাটনগুলো সঠিকভাবে দেখানোর জন্য
+      //      ফিড পুনরায় রেন্ডার করা হচ্ছে (খোলা কমেন্ট বক্স বন্ধ হয়ে যেতে পারে, এটা প্রত্যাশিত) ----
+      renderPosts();
     }
   });
 
@@ -1277,6 +1332,11 @@
   }
 
   function handleBack() {
+    if (loginModalOverlay.classList.contains('open')) {
+      closeLoginModal();
+      rearmGuard();
+      return;
+    }
     if (sidebarDrawer.classList.contains('open')) {
       closeSidebar();
       rearmGuard();
