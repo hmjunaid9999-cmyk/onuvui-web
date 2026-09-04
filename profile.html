@@ -56,10 +56,19 @@
     display: none;
   }
 
-  /* ---- এডমিন থেকে কন্ট্রোল করা নোটিশ বার ---- */
+  /* ---- এডমিন থেকে কন্ট্রোল করা নোটিশ বার — ডান থেকে বামে চলমান (marquee) ---- */
   #noticeBar {
-    display: none; background: #1f2937; color: #93c5fd; font-size: 12.5px; text-align: center;
-    padding: 9px 16px; border-bottom: 1px solid #262c36; line-height: 1.5;
+    display: none; background: #1f2937; color: #93c5fd; font-size: 12.5px;
+    padding: 9px 0; border-bottom: 1px solid #262c36; line-height: 1.5;
+    overflow: hidden; white-space: nowrap; position: relative;
+  }
+  #noticeBarText {
+    display: inline-block; padding-left: 100%; will-change: transform;
+    animation: noticeScroll linear infinite;
+  }
+  @keyframes noticeScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
   }
 
   /* ---- এডমিন থেকে কন্ট্রোল করা টপ মেনু বার (হেডারের ঠিক নিচে) ---- */
@@ -122,7 +131,7 @@
   .subCountLabel span { color: #fff; font-weight: bold; }
   #profileActions button, #profileActions a, #ownActionRow button {
     width: max-content; max-width: 100%; text-align: center; background: #21262d; color: #c9d1d9;
-    border: 1px solid #30363d; padding: 0.7em 1.15em; border-radius: 1.6em;
+    border: 1px solid #30363d; padding: 0.9em 1.15em; border-radius: 1.6em;
     font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
@@ -247,7 +256,7 @@
       <button id="logoutBtn">লগ আউট</button>
     </div>
 
-    <div id="noticeBar"></div>
+    <div id="noticeBar"><span id="noticeBarText"></span></div>
     <div id="topMenuBar"></div>
 
     <main>
@@ -399,6 +408,7 @@
 
   // ---- এডমিন প্যানেল (profile-admin.html) থেকে কন্ট্রোল হওয়া উপাদান ----
   const noticeBar = document.getElementById('noticeBar');
+  const noticeBarText = document.getElementById('noticeBarText');
   const topMenuBar = document.getElementById('topMenuBar');
   const hamburgerBtn = document.getElementById('hamburgerBtn');
   const sideMenuOverlay = document.getElementById('sideMenuOverlay');
@@ -518,7 +528,10 @@
       const d = snap.exists() ? snap.data() : {};
 
       if (d.noticeText && d.noticeText.trim()) {
-        noticeBar.textContent = d.noticeText;
+        noticeBarText.textContent = d.noticeText;
+        // ---- লেখা যত লম্বা, স্ক্রল হতে তত বেশি সময় লাগবে (গতি সবসময় প্রায় একরকম থাকার জন্য) ----
+        const seconds = Math.max(8, d.noticeText.length * 0.22);
+        noticeBarText.style.animationDuration = seconds + 's';
         noticeBar.style.display = 'block';
       } else {
         noticeBar.style.display = 'none';
@@ -537,6 +550,12 @@
       const otherScale = (Number(d.otherActionScale) || 100) / 100;
       document.documentElement.style.setProperty('--own-action-scale', ownScale);
       document.documentElement.style.setProperty('--other-action-scale', otherScale);
+
+      // ---- এডমিন প্যানেল থেকে পুরো পেজের ৪টা থিম রং ----
+      document.documentElement.style.setProperty('--primary-color', d.themePrimaryColor || '#4285F4');
+      document.documentElement.style.setProperty('--bg-color', d.themeBgColor || '#0d1117');
+      document.documentElement.style.setProperty('--card-color', d.themeCardColor || '#161b22');
+      document.documentElement.style.setProperty('--text-color', d.themeTextColor || '#ffffff');
     } catch (e) {
       console.error('প্রোফাইল পেজ সেটিংস লোড এরর:', e);
     }
