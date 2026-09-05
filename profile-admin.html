@@ -18,7 +18,7 @@
     background: #4285F4; color: #fff; border: none;
     padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
   }
-  #adminScreen { display: none; }
+  #adminScreen { display: none; flex-direction: column; height: 100vh; }
 
   header {
     position: relative;
@@ -26,14 +26,39 @@
     padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
   }
   #logoutBtn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
     background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
   }
-  #backBtn, #reportsBackBtn {
+  #backBtn {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
   }
 
-  main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
+  /* ---- সোয়াইপ ইন্ডিকেটর (উপরের ট্যাব) ---- */
+  #swipeIndicator {
+    flex-shrink: 0; display: flex; justify-content: center; gap: 8px;
+    padding: 10px 8px; background: #161b22; border-bottom: 1px solid #262c36;
+    overflow-x: auto;
+  }
+  .swipeTab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-width: 52px; padding: 6px 4px; border-radius: 10px; cursor: pointer;
+    color: #6b7280; font-size: 10px; flex-shrink: 0;
+  }
+  .swipeTab .swipeTabIcon { font-size: 17px; }
+  .swipeTab.active { background: #21262d; color: #fff; }
+
+  /* ---- সোয়াইপ প্যানেল কন্টেইনার ---- */
+  #swipeContainer {
+    flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  #swipeContainer::-webkit-scrollbar { display: none; }
+  .swipePanel {
+    width: 100%; max-width: 100%; min-width: 100%; flex-shrink: 0; scroll-snap-align: start;
+    height: 100%; overflow-y: auto; overflow-x: hidden; padding: 20px 16px; box-sizing: border-box;
+  }
+  .swipePanelInner { max-width: 640px; margin: 0 auto; width: 100%; }
   .folderTitle { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
 
   .section { background: #161b22; border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
@@ -113,20 +138,6 @@
   .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
   .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
-
-  /* ---- হেডারের ডান পাশে একাধিক বাটন (রিপোর্ট + লগ আউট) রাখার জন্য ---- */
-  .headerRightGroup {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .headerRightGroup button { position: static; }
-  #openReportsBtn {
-    background: #262c36; color: #fbbf24; padding: 6px 14px; border-radius: 14px; font-size: 12px;
-  }
-
-  /* ---- রিপোর্ট পেজ: adminScreen থেকে সম্পূর্ণ আলাদা স্ক্রিন, ব্যাক বাটনে ফিরে যাওয়া যায় ---- */
-  #reportsScreen { display: none; }
-  #reportsScreen main { padding: 20px 16px; max-width: 640px; margin: 0 auto; }
 </style>
 </head>
 <body>
@@ -147,13 +158,16 @@
     <header>
       <button id="backBtn">←</button>
       <span>👤 Profile Admin Panel</span>
-      <div class="headerRightGroup">
-        <button id="openReportsBtn">🚩 রিপোর্ট</button>
-        <button id="logoutBtn">লগ আউট</button>
-      </div>
+      <button id="logoutBtn">লগ আউট</button>
     </header>
 
-    <main>
+    <div id="swipeIndicator"></div>
+
+    <div id="swipeContainer">
+
+      <!-- ================= থিম ================= -->
+      <div class="swipePanel" id="panel-theme">
+        <div class="swipePanelInner">
       <div class="folderTitle">🎨 প্রোফাইল পেজ থিম</div>
       <div class="hint" style="margin-bottom:14px;">এখানে যা সেভ করবেন তা সরাসরি profile.html পেজে দেখা যাবে (নোটিশ বার হেডারের নিচে, টপ মেনু তার নিচে হরাইজন্টাল বারে, সাইড মেনু হেডারের ☰ আইকনে)।</div>
 
@@ -251,24 +265,24 @@
           <button class="sectionSaveBtn" id="saveSideMenuBtn">💾 সাইড মেনু সেভ করুন</button>
           <div class="sectionStatus" id="sideMenuStatus"></div>
         </div>
+        </div>
+        </div>
       </div>
-    </main>
-  </div>
 
-  <!-- ================= রিপোর্ট পেজ: সম্পূর্ণ আলাদা স্ক্রিন, ব্যাক বাটনে adminScreen-এ ফিরে যাওয়া যায় ================= -->
-  <div id="reportsScreen">
-    <header>
-      <button id="reportsBackBtn">←</button>
-      <span>🚩 রিপোর্ট</span>
-    </header>
-    <main>
-      <div class="addTypeRow">
-        <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
-        <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
-        <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+      <!-- ================= রিপোর্ট ================= -->
+      <div class="swipePanel" id="panel-reports">
+        <div class="swipePanelInner">
+        <div class="folderTitle">🚩 রিপোর্ট</div>
+        <div class="addTypeRow">
+          <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+        </div>
+        <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+        </div>
       </div>
-      <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
-    </main>
+
+    </div>
   </div>
 
 <script type="module">
@@ -301,7 +315,6 @@
   const loginScreen = document.getElementById('loginScreen');
   const deniedScreen = document.getElementById('deniedScreen');
   const adminScreen = document.getElementById('adminScreen');
-  const reportsScreen = document.getElementById('reportsScreen');
 
   document.getElementById('googleLoginBtn').addEventListener('click', async () => {
     try { await signInWithPopup(auth, provider); }
@@ -319,17 +332,51 @@
     }
   });
 
-  // ---- রিপোর্ট পেজ: adminScreen থেকে আলাদা স্ক্রিন, খুললে-বন্ধ করলে টগল হয় ----
+  // ---- নেভিগেশন: সোয়াইপ করে থিম → রিপোর্ট (admin.html এর ট্যাব সিস্টেমের মতো) ----
+  const SWIPE_PANELS = [
+    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
+    { key: 'reports', icon: '🚩', label: 'রিপোর্ট', panel: 'panel-reports', onShow: () => loadAdminReports(currentReportType) }
+  ];
+
+  const swipeContainer = document.getElementById('swipeContainer');
+  const swipeIndicator = document.getElementById('swipeIndicator');
+  let currentPanelIndex = 0;
+
+  SWIPE_PANELS.forEach((node, idx) => {
+    const tab = document.createElement('div');
+    tab.className = 'swipeTab' + (idx === 0 ? ' active' : '');
+    tab.innerHTML = `<span class="swipeTabIcon">${node.icon}</span><span>${node.label}</span>`;
+    tab.addEventListener('click', () => scrollToPanel(idx));
+    swipeIndicator.appendChild(tab);
+  });
+
+  function updateIndicator(idx) {
+    swipeIndicator.querySelectorAll('.swipeTab').forEach((tab, i) => {
+      tab.classList.toggle('active', i === idx);
+    });
+  }
+
+  function scrollToPanel(idx) {
+    swipeContainer.scrollTo({ left: idx * swipeContainer.clientWidth, behavior: 'smooth' });
+  }
+
+  let scrollSettleTimer = null;
+  swipeContainer.addEventListener('scroll', () => {
+    clearTimeout(scrollSettleTimer);
+    scrollSettleTimer = setTimeout(onSwipeSettled, 120);
+  });
+
+  function onSwipeSettled() {
+    const idx = Math.round(swipeContainer.scrollLeft / swipeContainer.clientWidth);
+    updateIndicator(idx);
+    if (idx === currentPanelIndex) return;
+    currentPanelIndex = idx;
+    const node = SWIPE_PANELS[idx];
+    if (node && node.onShow) node.onShow();
+  }
+
+  // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
   let currentReportType = 'post';
-  document.getElementById('openReportsBtn').addEventListener('click', () => {
-    adminScreen.style.display = 'none';
-    reportsScreen.style.display = 'block';
-    loadAdminReports(currentReportType);
-  });
-  document.getElementById('reportsBackBtn').addEventListener('click', () => {
-    reportsScreen.style.display = 'none';
-    adminScreen.style.display = 'block';
-  });
   document.querySelectorAll('[data-report-type]').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
@@ -728,12 +775,11 @@
     loginScreen.style.display = 'none';
     deniedScreen.style.display = 'none';
     adminScreen.style.display = 'none';
-    reportsScreen.style.display = 'none';
 
     if (!user) {
       loginScreen.style.display = 'flex';
     } else if (ADMIN_EMAILS.includes(user.email)) {
-      adminScreen.style.display = 'block';
+      adminScreen.style.display = 'flex';
       loadTheme();
     } else {
       deniedScreen.style.display = 'flex';
