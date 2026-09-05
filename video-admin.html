@@ -428,6 +428,10 @@
   function dayKey(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
   function monthKeyStr(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1); }
   const BN_MONTHS = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+  const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"];
+  function toBnNum(n) { return String(n).split("").map(c => BN_DIGITS[c] !== undefined ? BN_DIGITS[c] : c).join(""); }
+  function bnDateSuffix(day) { if (day === 1) return "লা"; if (day === 2 || day === 3) return "রা"; if (day === 4) return "ঠা"; if (day >= 5 && day <= 18) return "ই"; return "শে"; }
+  function bnDayLabel(d) { return toBnNum(d.getDate()) + bnDateSuffix(d.getDate()) + " " + BN_MONTHS[d.getMonth()] + " " + toBnNum(d.getFullYear()); }
   async function bumpStats(uid, amount) {
     const amt = Number(amount || 0);
     if (!amt) return;
@@ -437,27 +441,29 @@
       await setDoc(doc(db, "users", uid, "monthlyStats", monthKeyStr(now)), { income: increment(inc), expense: increment(exp) }, { merge: true });
     } catch (e) { }
   }
+  // ---- আজকের দিন থেকে পিছনের দিকে গড়িয়ে চলা (rolling) ৩১ দিন/১২ মাসের হিসাব — ক্যালেন্ডার
+  //      মাসের সাথে বাঁধা নয়, তাই মাস/বছর পাল্টে গেলেও প্রতিদিন/প্রতি মাসে স্বয়ংক্রিয়ভাবে
+  //      সবচেয়ে নতুনটা উপরে যোগ হয় আর সবচেয়ে পুরনোটা বাদ পড়ে যায় ----
   async function fetchDailyStats(uid) {
-    const now = new Date(), year = now.getFullYear(), month = now.getMonth();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const jobs = [];
-    for (let day = 1; day <= daysInMonth; day++) {
-      const key = year + "-" + pad2(month + 1) + "-" + pad2(day);
+    const now = new Date(), jobs = [];
+    for (let i = 0; i < 31; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+      const key = dayKey(d);
       jobs.push(getDoc(doc(db, "users", uid, "dailyStats", key)).then(s => {
-        const d = s.exists() ? s.data() : {};
-        return { label: 'তারিখ ' + day, income: Number(d.income || 0), expense: Number(d.expense || 0) };
+        const x = s.exists() ? s.data() : {};
+        return { label: bnDayLabel(d), income: Number(x.income || 0), expense: Number(x.expense || 0) };
       }));
     }
     return Promise.all(jobs);
   }
   async function fetchMonthlyStats(uid) {
     const now = new Date(), jobs = [];
-    for (let i = 11; i >= 0; i--) {
+    for (let i = 0; i < 12; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const key = monthKeyStr(d);
       jobs.push(getDoc(doc(db, "users", uid, "monthlyStats", key)).then(s => {
         const x = s.exists() ? s.data() : {};
-        return { label: BN_MONTHS[d.getMonth()] + ' ' + d.getFullYear(), income: Number(x.income || 0), expense: Number(x.expense || 0) };
+        return { label: BN_MONTHS[d.getMonth()] + ' ' + toBnNum(d.getFullYear()), income: Number(x.income || 0), expense: Number(x.expense || 0) };
       }));
     }
     return Promise.all(jobs);
