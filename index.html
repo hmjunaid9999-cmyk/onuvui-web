@@ -760,6 +760,7 @@
     selectedReportReason = null;
     document.querySelectorAll('.reportReasonBtn').forEach(b => b.classList.remove('selected'));
     reportModalOverlay.style.display = 'flex';
+    rearmGuard();
     return new Promise(resolve => { reportModalResolver = resolve; });
   }
 
@@ -1416,6 +1417,11 @@
   }
 
   function handleBack() {
+    if (reportModalOverlay.style.display === 'flex') {
+      closeReportModal(null);
+      rearmGuard();
+      return;
+    }
     if (loginModalOverlay.classList.contains('open')) {
       closeLoginModal();
       rearmGuard();
