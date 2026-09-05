@@ -361,6 +361,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -375,11 +376,12 @@
     projectId: "onuvuti-5c9e3",
     storageBucket: "onuvuti-5c9e3.firebasestorage.app",
     messagingSenderId: "846713879232",
-    appId: "1:846713879232:web:d87ae40431210088df8b25",
-    measurementId: "G-WJ8N8XLPSZ"
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
   };
 
   const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
