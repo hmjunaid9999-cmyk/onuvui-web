@@ -136,9 +136,16 @@
   .historyRow:last-child { border-bottom: none; }
   .historyType { color: #d1d5db; }
   .historyDate { color: #6b7280; font-size: 11px; margin-top: 2px; }
-  .historyAmount { font-weight: bold; }
+  .historyAmount { font-weight: bold; text-align: right; }
   .historyAmount.pos { color: #4ade80; }
   .historyAmount.neg { color: #f87171; }
+  .statTabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .statTabs button { padding: 10px; background: #0d1117; color: #9ca3af; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; }
+  .statTabs button.active { color: #fff; background: #4285F4; border-color: #4285F4; }
+  .historySummary { display: flex; justify-content: space-between; background: #0d1117; border: 1px solid #262c36; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .historySummary div + div { text-align: right; }
+  .historySummary strong { display: block; font-size: 18px; margin-top: 4px; }
+  .historyList { background: #0d1117; border: 1px solid #262c36; border-radius: 10px; padding: 0 14px; }
 
   .fabAddAccount {
     position: fixed; right: 18px; bottom: 18px; width: 52px; height: 52px; border-radius: 50%;
@@ -379,7 +386,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, addDoc, serverTimestamp, getDocs
+    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, query, orderBy, limit, addDoc, serverTimestamp, getDocs, increment
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -414,21 +421,47 @@
   let allAccountsCache = [];
   let accountsUnsub = null;
 
-  const HISTORY_LABELS = {
-    videoBalanceAdd: '🪙 কয়েন ব্যালেন্স যোগ হয়েছে',
-    videoSpend: '🎬 ভিডিও আপলোডে খরচ হয়েছে',
-    videoWatchReward: '📈 ভিডিও দেখে ইনকাম হয়েছে'
-  };
-  // কোন হিস্ট্রি টাইপ কোন সেকশনে (পেমেন্ট / ভিডিও) দেখাবে তার ম্যাপিং
-  const HISTORY_CATEGORY = {
-    videoBalanceAdd: 'payment',
-    videoSpend: 'video',
-    videoWatchReward: 'video'
-  };
-  const HISTORY_SECTIONS = [
-    { cat: 'payment', label: '💳 পেমেন্ট হিস্ট্রি' },
-    { cat: 'video', label: '🎬 ভিডিও হিস্ট্রি' }
-  ];
+  // ---- প্রতিটি একাউন্টের দৈনিক/মাসিক আয়-ব্যয়ের যোগফল আলাদাভাবে জমা থাকে
+  //      (users/{uid}/dailyStats ও users/{uid}/monthlyStats) — video.html-এর logHistory()
+  //      যেভাবে বাড়ায়, এডমিন থেকে ব্যালেন্স এডিট করলেও ঠিক সেভাবেই bumpStats() দিয়ে বাড়ানো হয় ----
+  function pad2(n) { return String(n).padStart(2, "0"); }
+  function dayKey(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+  function monthKeyStr(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1); }
+  const BN_MONTHS = ["জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর"];
+  async function bumpStats(uid, amount) {
+    const amt = Number(amount || 0);
+    if (!amt) return;
+    const now = new Date(), inc = amt > 0 ? amt : 0, exp = amt < 0 ? -amt : 0;
+    try {
+      await setDoc(doc(db, "users", uid, "dailyStats", dayKey(now)), { income: increment(inc), expense: increment(exp) }, { merge: true });
+      await setDoc(doc(db, "users", uid, "monthlyStats", monthKeyStr(now)), { income: increment(inc), expense: increment(exp) }, { merge: true });
+    } catch (e) { }
+  }
+  async function fetchDailyStats(uid) {
+    const now = new Date(), year = now.getFullYear(), month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const jobs = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const key = year + "-" + pad2(month + 1) + "-" + pad2(day);
+      jobs.push(getDoc(doc(db, "users", uid, "dailyStats", key)).then(s => {
+        const d = s.exists() ? s.data() : {};
+        return { label: 'তারিখ ' + day, income: Number(d.income || 0), expense: Number(d.expense || 0) };
+      }));
+    }
+    return Promise.all(jobs);
+  }
+  async function fetchMonthlyStats(uid) {
+    const now = new Date(), jobs = [];
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = monthKeyStr(d);
+      jobs.push(getDoc(doc(db, "users", uid, "monthlyStats", key)).then(s => {
+        const x = s.exists() ? s.data() : {};
+        return { label: BN_MONTHS[d.getMonth()] + ' ' + d.getFullYear(), income: Number(x.income || 0), expense: Number(x.expense || 0) };
+      }));
+    }
+    return Promise.all(jobs);
+  }
 
   function startAccountsListener() {
     const listEl = document.getElementById('accountsList');
@@ -531,6 +564,10 @@
   // পুশ করা হয়। ফোনের ব্যাক বাটন বা "ফিরে যান" বাটনে চাপলে সেই state-টাই পপ হয়ে শুধু
   // ওভারলেটা বন্ধ হয় — সরাসরি পেজ থেকে বের করে দেয় না।
   let overlayStack = [];
+  // fs (একাউন্ট ডিটেইল) ওভারলের ভেতরে হিস্ট্রি ভিউয়ের দৈনিক/মাসিক ট্যাব বদলালে সেটাও একটা
+  // আলাদা ব্যাক-স্টেপ হিসেবে গণ্য হয় — statTabGoto সেট থাকলে বোঝা যায় বর্তমানে fs-এর ভেতরে
+  // ট্যাব-ভিত্তিক সাব-নেভিগেশন চলছে, তাই ব্যাক চাপলে সরাসরি fs বন্ধ না করে আগের ট্যাবে ফেরত যায়।
+  let statTabGoto = null;
 
   function pushOverlay(name) {
     overlayStack.push(name);
@@ -542,12 +579,18 @@
     history.back();
   }
 
-  window.addEventListener('popstate', () => {
+  window.addEventListener('popstate', (e) => {
     if (!overlayStack.length) return;
+    const state = e.state;
+    if (state && state.onuvutiOverlay === 'fs' && statTabGoto) {
+      statTabGoto(state.statTab || 'daily');
+      return;
+    }
     const name = overlayStack.pop();
     if (name === 'fs') {
       fsView.classList.remove('show');
       fsBody.innerHTML = '';
+      statTabGoto = null;
     } else if (name === 'addAccountModal') {
       addAccountModal.classList.remove('show');
     }
@@ -569,6 +612,7 @@
 
   function openBalanceView(id, data) {
     openFsView(data.name, id);
+    statTabGoto = null;
     const videoBal = Number(data.videoBalance || 0);
     fsBody.innerHTML = `
       <div class="balanceBigRow">
@@ -595,6 +639,7 @@
           await addDoc(collection(db, "users", id, "history"), {
             type: 'videoBalanceAdd', amount: videoVal - prevVideo, createdAt: serverTimestamp()
           });
+          await bumpStats(id, videoVal - prevVideo);
         }
         data.videoBalance = videoVal;
         document.getElementById('fsVideoBalanceBig').textContent = videoVal;
@@ -608,68 +653,45 @@
     });
   }
 
-  // ---- ফুলস্ক্রিন: হিস্ট্রি (পেমেন্ট / ভিডিও) ----
-  function openHistoryView(id, data) {
-    openFsView(data.name, id);
-    fsBody.innerHTML = HISTORY_SECTIONS.map(sec => `
-      <div class="historySection" data-cat="${sec.cat}">
-        <button type="button" class="historySectionHeader">
-          <span>${sec.label}</span><span class="chev">▾</span>
-        </button>
-        <div class="historySectionBody hidden"><div class="listEmpty">ট্যাপ করে দেখুন</div></div>
-      </div>
-    `).join('');
-
-    let allHistoryCache = null;
-
-    fsBody.querySelectorAll('.historySection').forEach(secEl => {
-      const header = secEl.querySelector('.historySectionHeader');
-      const body = secEl.querySelector('.historySectionBody');
-      const cat = secEl.dataset.cat;
-      let loaded = false;
-
-      header.addEventListener('click', async () => {
-        const isOpen = header.classList.toggle('open');
-        body.classList.toggle('hidden', !isOpen);
-        if (!isOpen || loaded) return;
-        loaded = true;
-        body.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
-        try {
-          if (!allHistoryCache) {
-            const q = query(collection(db, "users", id, "history"), orderBy("createdAt", "desc"), limit(30));
-            const snap = await getDocs(q);
-            allHistoryCache = [];
-            snap.forEach(docSnap => allHistoryCache.push(docSnap.data()));
-          }
-          const entries = allHistoryCache.filter(h => HISTORY_CATEGORY[h.type] === cat).slice(0, 5);
-          renderHistoryEntries(body, entries);
-        } catch (e) {
-          body.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
-        }
-      });
-    });
+  // ---- ফুলস্ক্রিন: হিস্ট্রি (গত ৩১ দিন / গত ১২ মাস) ----
+  function renderStatsList(items) {
+    let totalIn = 0, totalOut = 0;
+    const rows = items.map(it => {
+      totalIn += it.income; totalOut += it.expense;
+      return `<div class="historyRow"><div class="historyType">${it.label}</div><div class="historyAmount"><div class="pos">+${it.income}</div><div class="neg">-${it.expense}</div></div></div>`;
+    }).join('');
+    return `<div class="historySummary"><div><div class="historyDate">মোট আয়</div><strong style="color:#4ade80">+${totalIn}</strong></div><div><div class="historyDate">মোট ব্যয়</div><strong style="color:#f87171">-${totalOut}</strong></div></div><div class="historyList">${rows}</div>`;
   }
 
-  function renderHistoryEntries(containerEl, entries) {
-    if (!entries.length) {
-      containerEl.innerHTML = '<div class="listEmpty">কোনো হিস্ট্রি পাওয়া যায়নি</div>';
-      return;
+  function openHistoryView(id, data) {
+    openFsView(data.name, id);
+    fsBody.innerHTML = `
+      <div class="statTabs" id="statTabs_${id}">
+        <button data-tab="daily" class="active">গত ৩১ দিন</button>
+        <button data-tab="monthly">গত ১২ মাস</button>
+      </div>
+      <div id="statBody_${id}"><div class="listEmpty">লোড হচ্ছে...</div></div>
+    `;
+    const tabsEl = document.getElementById(`statTabs_${id}`);
+    const bodyEl = document.getElementById(`statBody_${id}`);
+    let currentTab = 'daily';
+    async function loadTab(tab, fromBack) {
+      if (!fromBack && tab !== currentTab) {
+        history.pushState({ onuvutiOverlay: 'fs', statTab: tab }, '');
+      }
+      currentTab = tab;
+      tabsEl.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+      bodyEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+      try {
+        const items = tab === 'daily' ? await fetchDailyStats(id) : await fetchMonthlyStats(id);
+        bodyEl.innerHTML = renderStatsList(items);
+      } catch (e) {
+        bodyEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+      }
     }
-    containerEl.innerHTML = '';
-    entries.forEach(h => {
-      const amount = Number(h.amount || 0);
-      const dateStr = (h.createdAt && h.createdAt.toDate) ? h.createdAt.toDate().toLocaleString('bn-BD') : '—';
-      const row = document.createElement('div');
-      row.className = 'historyRow';
-      row.innerHTML = `
-        <div>
-          <div class="historyType">${HISTORY_LABELS[h.type] || h.type}</div>
-          <div class="historyDate">${dateStr}</div>
-        </div>
-        <div class="historyAmount ${amount >= 0 ? 'pos' : 'neg'}">${amount >= 0 ? '+' : ''}${amount}</div>
-      `;
-      containerEl.appendChild(row);
-    });
+    tabsEl.querySelectorAll('button').forEach(b => b.addEventListener('click', () => loadTab(b.dataset.tab)));
+    statTabGoto = (tab) => loadTab(tab, true);
+    loadTab('daily', true);
   }
 
   document.getElementById('accountSearch').addEventListener('input', applyAccountFilter);
