@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>কুইজ এডমিন প্যানেল</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#fff;min-height:100vh;padding-bottom:40px}
+#app{max-width:760px;margin:0 auto;padding:16px}
+header{text-align:center;padding:14px 0 20px;font-size:20px;font-weight:700}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
+.tabs button{flex-shrink:0;background:#161b22;color:#9ca3af;border:1px solid #262c36;border-radius:20px;padding:8px 16px;font-size:13px;cursor:pointer}
+.tabs button.active{background:#4285F4;color:#fff;border-color:#4285F4}
+.tabPanel{display:none}.tabPanel.active{display:block}
+.box{background:#161b22;border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:14px}
+.box h3{font-size:15px;margin-bottom:12px}
+label{display:block;font-size:12px;color:#9ca3af;margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit}
+textarea{min-height:70px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.optRow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.optRow input[type=radio]{width:auto}
+.primary{width:100%;padding:11px;background:#4285F4;color:#fff;border:0;border-radius:9px;font-weight:700;cursor:pointer;margin-top:12px;font-size:13px}
+.danger{padding:6px 12px;background:#35171c;color:#ff9da8;border:1px solid #632b34;border-radius:7px;cursor:pointer;font-size:12px}
+.ghost{padding:6px 12px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:7px;cursor:pointer;font-size:12px}
+.listItem{background:#0d1117;border:1px solid #262c36;border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.listItem .info{min-width:0;flex:1}
+.listItem .title{font-size:13px;font-weight:700}
+.listItem .sub{font-size:11px;color:#9ca3af;margin-top:2px}
+.actionsWrap{display:flex;gap:6px;flex-shrink:0}
+.notice{font-size:12px;color:#9ca3af;margin-top:8px}
+.status{font-size:12px;margin-top:8px;min-height:16px}
+.status.ok{color:#4ade80}.status.err{color:#f87171}
+.loginGate{max-width:340px;margin:80px auto;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>🛠️ কুইজ এডমিন প্যানেল</header>
+
+  <!-- ---- এডমিন লগইন গেট ---- -->
+  <div id="loginGate" class="loginGate">
+    <p class="notice" style="margin-bottom:16px">এই প্যানেল ব্যবহার করতে এডমিন Google একাউন্ট দিয়ে লগইন করুন</p>
+    <button class="primary" id="adminLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginGateStatus" class="status"></div>
+  </div>
+
+  <div id="adminBody" style="display:none">
+    <div class="tabs">
+      <button class="active" data-tab="tabCategories">ক্যাটাগরি</button>
+      <button data-tab="tabQuestions">প্রশ্ন</button>
+      <button data-tab="tabSettings">সেটিংস</button>
+      <button data-tab="tabAttempts">অ্যাটেম্পট</button>
+    </div>
+
+    <!-- ---- ক্যাটাগরি ---- -->
+    <section id="tabCategories" class="tabPanel active">
+      <div class="box">
+        <h3>➕ নতুন ক্যাটাগরি</h3>
+        <label>নাম</label><input id="catName" placeholder="যেমন: সাধারণ জ্ঞান">
+        <label>আইকন (ইমোজি)</label><input id="catIcon" placeholder="🧠">
+        <label>অর্ডার (নাম্বার, ছোট আগে দেখাবে)</label><input id="catOrder" type="number" value="1">
+        <button class="primary" id="addCatBtn">যোগ করুন</button>
+        <div class="status" id="catStatus"></div>
+      </div>
+      <div class="box">
+        <h3>📂 বিদ্যমান ক্যাটাগরি</h3>
+        <div id="catList"><div class="notice">লোড হচ্ছে...</div></div>
+      </div>
+    </section>
+
+    <!-- ---- প্রশ্ন ---- -->
+    <section id="tabQuestions" class="tabPanel">
+      <div class="box">
+        <h3>➕ নতুন প্রশ্ন</h3>
+        <label>ক্যাটাগরি</label><select id="qCategory"></select>
+        <label>প্রশ্ন</label><textarea id="qText" placeholder="প্রশ্নটি লিখুন"></textarea>
+        <label>অপশনসমূহ (সঠিক উত্তরের পাশের রেডিও বাটনে ক্লিক করুন)</label>
+        <div class="optRow"><input type="radio" name="qCorrect" value="0" checked><input id="qOpt0" placeholder="অপশন ১"></div>
+        <div class="optRow"><input type="radio" name="qCorrect" value="1"><input id="qOpt1" placeholder="অপশন ২"></div>
+        <div class="optRow"><input type="radio" name="qCorrect" value="2"><input id="qOpt2" placeholder="অপশন ৩"></div>
+        <div class="optRow"><input type="radio" name="qCorrect" value="3"><input id="qOpt3" placeholder="অপশন ৪"></div>
+        <button class="primary" id="addQBtn">প্রশ্ন যোগ করুন</button>
+        <div class="status" id="qStatus"></div>
+      </div>
+      <div class="box">
+        <h3>📋 বিদ্যমান প্রশ্ন</h3>
+        <label>ক্যাটাগরি অনুযায়ী ফিল্টার</label>
+        <select id="qFilterCategory"></select>
+        <div id="qList" style="margin-top:10px"><div class="notice">উপরে ক্যাটাগরি বাছাই করুন</div></div>
+      </div>
+    </section>
+
+    <!-- ---- সেটিংস ---- -->
+    <section id="tabSettings" class="tabPanel">
+      <div class="box">
+        <h3>⚙️ কয়েন সেটিংস</h3>
+        <div class="row2">
+          <div><label>কয়েনের নাম</label><input id="setUnitName" value="Coin"></div>
+          <div><label>প্রতি সঠিক উত্তরে কয়েন</label><input id="setCoinPerCorrect" type="number" value="1"></div>
+        </div>
+        <div class="row2">
+          <div><label>কুইজ শুরুর এন্ট্রি ফি (০ = ফ্রি)</label><input id="setEntryFee" type="number" value="0"></div>
+          <div><label>প্রতিদিন সর্বোচ্চ আয় (কুইজ থেকে)</label><input id="setMaxCoinsPerDay" type="number" value="50"></div>
+        </div>
+        <div class="row2">
+          <div><label>প্রতি কুইজে প্রশ্ন সংখ্যা</label><input id="setQuestionsPerQuiz" type="number" value="10"></div>
+          <div><label>প্রতি প্রশ্নে টাইমার (সেকেন্ড, ০ = টাইমার ছাড়া)</label><input id="setTimerSeconds" type="number" value="15"></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>📢 বিজ্ঞাপন সেটিংস</h3>
+        <div class="row2">
+          <div><label>বিজ্ঞাপন চালু আছে?</label><select id="setAdsEnabled"><option value="true">হ্যাঁ</option><option value="false">না</option></select></div>
+          <div><label>প্রতি কত প্রশ্ন পরপর বিজ্ঞাপন</label><input id="setInterstitialEvery" type="number" value="5"></div>
+        </div>
+        <label>বিজ্ঞাপন স্কিপ করা যাবে কত সেকেন্ড পর</label><input id="setAdSkipSeconds" type="number" value="5">
+        <label>বিজ্ঞাপনের HTML/স্ক্রিপ্ট কোড (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
+        <textarea id="setAdScriptHtml" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;"></textarea>
+        <div class="row2">
+          <div><label>রিওয়ার্ডেড অ্যাডে কয়েন</label><input id="setRewardedAdCoins" type="number" value="2"></div>
+          <div><label>প্রতিদিন সর্বোচ্চ রিওয়ার্ডেড অ্যাড</label><input id="setMaxRewardedAdsPerDay" type="number" value="5"></div>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>📣 নোটিশ বার টেক্সট</h3>
+        <input id="setNoticeText" placeholder="কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ">
+      </div>
+
+      <button class="primary" id="saveSettingsBtn">সব সেটিংস সেভ করুন</button>
+      <div class="status" id="settingsStatus"></div>
+    </section>
+
+    <!-- ---- অ্যাটেম্পট ---- -->
+    <section id="tabAttempts" class="tabPanel">
+      <div class="box">
+        <h3>📊 সাম্প্রতিক অ্যাটেম্পট (সর্বশেষ ৫০টি)</h3>
+        <div id="attemptsList"><div class="notice">লোড হচ্ছে...</div></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc,
+  addDoc, deleteDoc, updateDoc, serverTimestamp, limit
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+  authDomain: "onuvuti-5c9e3.firebaseapp.com",
+  projectId: "onuvuti-5c9e3",
+  storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+  messagingSenderId: "846713879232",
+  appId: "1:846713879232:web:538c47101eade3e2df8b25",
+  measurementId: "G-2K2L45CMWR"
+};
+const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+/* ---- এডমিন ইমেইল অ্যালাউলিস্ট: নিচে নিজের এডমিন Gmail বসিয়ে দিন ----
+       (এখানে ইমেইল যোগ না করলে যে কেউ Google দিয়ে লগইন করে এই প্যানেল খুলতে পারবে,
+        তাই লাইভ করার আগে অবশ্যই নিজের ইমেইল বসিয়ে নিন।) ---- */
+const ADMIN_EMAILS = [
+  // "youremail@gmail.com"
+];
+
+onAuthStateChanged(auth, (u) => {
+  const isAllowed = u && (ADMIN_EMAILS.length === 0 || ADMIN_EMAILS.includes(u.email));
+  $('loginGate').style.display = isAllowed ? 'none' : 'block';
+  $('adminBody').style.display = isAllowed ? 'block' : 'none';
+  $('loginGateStatus').textContent = (u && !isAllowed) ? 'আপনার একাউন্ট (' + u.email + ') এডমিন লিস্টে নেই।' : '';
+  if (isAllowed) initAdmin();
+});
+$('adminLoginBtn').addEventListener('click', async () => {
+  try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
+});
+
+/* ---- ট্যাব সুইচ ---- */
+document.querySelectorAll('.tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tabPanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    $(btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'tabAttempts') loadAttempts();
+  });
+});
+
+let adminInited = false;
+function initAdmin() {
+  if (adminInited) return;
+  adminInited = true;
+  loadCategories();
+  loadSettings();
+}
+
+/* ================= ক্যাটাগরি ================= */
+let categoriesCache = [];
+async function loadCategories() {
+  try {
+    const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
+    categoriesCache = s.docs.map(x => ({ id: x.id, ...x.data() }));
+    renderCatList();
+    fillCategorySelects();
+  } catch (e) { $('catList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
+}
+function renderCatList() {
+  $('catList').innerHTML = categoriesCache.length ? categoriesCache.map(c => `
+    <div class="listItem">
+      <div class="info"><div class="title">${esc(c.icon || '❓')} ${esc(c.name || '')}</div><div class="sub">অর্ডার: ${c.order ?? 0} · ${c.active === false ? 'নিষ্ক্রিয়' : 'সক্রিয়'}</div></div>
+      <div class="actionsWrap">
+        <button class="ghost" onclick="window.toggleCatActive('${c.id}', ${c.active === false})">${c.active === false ? 'সক্রিয় করুন' : 'নিষ্ক্রিয় করুন'}</button>
+        <button class="danger" onclick="window.deleteCat('${c.id}')">ডিলিট</button>
+      </div>
+    </div>`).join('') : '<div class="notice">কোনো ক্যাটাগরি নেই।</div>';
+}
+function fillCategorySelects() {
+  const opts = categoriesCache.map(c => `<option value="${c.id}">${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
+  $('qCategory').innerHTML = opts || '<option value="">প্রথমে একটি ক্যাটাগরি বানান</option>';
+  $('qFilterCategory').innerHTML = '<option value="">-- ক্যাটাগরি বাছাই করুন --</option>' + opts;
+}
+$('addCatBtn').addEventListener('click', async () => {
+  const name = $('catName').value.trim();
+  if (!name) { $('catStatus').textContent = 'নাম দিন'; $('catStatus').className = 'status err'; return; }
+  try {
+    await addDoc(collection(db, 'quizCategories'), {
+      name, icon: $('catIcon').value.trim() || '❓', order: Number($('catOrder').value || 1),
+      active: true, createdAt: serverTimestamp()
+    });
+    $('catName').value = ''; $('catIcon').value = '';
+    $('catStatus').textContent = '✅ যোগ হয়েছে'; $('catStatus').className = 'status ok';
+    loadCategories();
+  } catch (e) { $('catStatus').textContent = 'এরর: ' + e.message; $('catStatus').className = 'status err'; }
+});
+window.toggleCatActive = async (id, makeActive) => {
+  try { await updateDoc(doc(db, 'quizCategories', id), { active: makeActive }); loadCategories(); }
+  catch (e) { alert('এরর: ' + e.message); }
+};
+window.deleteCat = async (id) => {
+  if (!confirm('এই ক্যাটাগরি ও এর সব প্রশ্ন কি ডিলিট করতে চান? (প্রশ্নগুলো আলাদাভাবে ডিলিট করতে হবে)')) return;
+  try { await deleteDoc(doc(db, 'quizCategories', id)); loadCategories(); }
+  catch (e) { alert('এরর: ' + e.message); }
+};
+
+/* ================= প্রশ্ন ================= */
+$('addQBtn').addEventListener('click', async () => {
+  const categoryId = $('qCategory').value;
+  const question = $('qText').value.trim();
+  const options = [$('qOpt0').value.trim(), $('qOpt1').value.trim(), $('qOpt2').value.trim(), $('qOpt3').value.trim()];
+  const correctIndex = Number(document.querySelector('input[name=qCorrect]:checked').value);
+  if (!categoryId || !question || options.some(o => !o)) {
+    $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন'; $('qStatus').className = 'status err'; return;
+  }
+  try {
+    await addDoc(collection(db, 'quizQuestions'), { categoryId, question, options, correctIndex, createdAt: serverTimestamp() });
+    $('qText').value = ''; $('qOpt0').value = ''; $('qOpt1').value = ''; $('qOpt2').value = ''; $('qOpt3').value = '';
+    $('qStatus').textContent = '✅ প্রশ্ন যোগ হয়েছে'; $('qStatus').className = 'status ok';
+    if ($('qFilterCategory').value === categoryId) loadQuestions(categoryId);
+  } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
+});
+$('qFilterCategory').addEventListener('change', () => {
+  const id = $('qFilterCategory').value;
+  if (id) loadQuestions(id); else $('qList').innerHTML = '<div class="notice">উপরে ক্যাটাগরি বাছাই করুন</div>';
+});
+async function loadQuestions(categoryId) {
+  $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', categoryId)));
+    const list = s.docs.map(x => ({ id: x.id, ...x.data() }));
+    $('qList').innerHTML = list.length ? list.map(q => `
+      <div class="listItem">
+        <div class="info"><div class="title">${esc(q.question)}</div>
+          <div class="sub">সঠিক উত্তর: ${esc((q.options || [])[q.correctIndex] || '')}</div></div>
+        <div class="actionsWrap"><button class="danger" onclick="window.deleteQuestion('${q.id}','${categoryId}')">ডিলিট</button></div>
+      </div>`).join('') : '<div class="notice">এই ক্যাটাগরিতে কোনো প্রশ্ন নেই।</div>';
+  } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
+}
+window.deleteQuestion = async (id, categoryId) => {
+  if (!confirm('এই প্রশ্নটি ডিলিট করতে চান?')) return;
+  try { await deleteDoc(doc(db, 'quizQuestions', id)); loadQuestions(categoryId); }
+  catch (e) { alert('এরর: ' + e.message); }
+};
+
+/* ================= সেটিংস ================= */
+async function loadSettings() {
+  try {
+    const s = await getDoc(doc(db, 'settings', 'quiz'));
+    const d = s.exists() ? s.data() : {};
+    $('setUnitName').value = d.unitName || 'Coin';
+    $('setCoinPerCorrect').value = d.coinPerCorrect ?? 1;
+    $('setEntryFee').value = d.entryFee ?? 0;
+    $('setMaxCoinsPerDay').value = d.maxCoinsPerDay ?? 50;
+    $('setQuestionsPerQuiz').value = d.questionsPerQuiz ?? 10;
+    $('setTimerSeconds').value = d.timerSeconds ?? 15;
+    $('setAdsEnabled').value = String(d.adsEnabled !== false);
+    $('setInterstitialEvery').value = d.interstitialEvery ?? 5;
+    $('setAdSkipSeconds').value = d.adSkipSeconds ?? 5;
+    $('setAdScriptHtml').value = d.adScriptHtml || '';
+    $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
+    $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
+    $('setNoticeText').value = d.noticeText || '';
+  } catch (e) {}
+}
+$('saveSettingsBtn').addEventListener('click', async () => {
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), {
+      unitName: $('setUnitName').value.trim() || 'Coin',
+      coinPerCorrect: Number($('setCoinPerCorrect').value || 0),
+      entryFee: Number($('setEntryFee').value || 0),
+      maxCoinsPerDay: Number($('setMaxCoinsPerDay').value || 0),
+      questionsPerQuiz: Number($('setQuestionsPerQuiz').value || 10),
+      timerSeconds: Number($('setTimerSeconds').value || 0),
+      adsEnabled: $('setAdsEnabled').value === 'true',
+      interstitialEvery: Number($('setInterstitialEvery').value || 0),
+      adSkipSeconds: Number($('setAdSkipSeconds').value || 5),
+      adScriptHtml: $('setAdScriptHtml').value,
+      rewardedAdCoins: Number($('setRewardedAdCoins').value || 0),
+      maxRewardedAdsPerDay: Number($('setMaxRewardedAdsPerDay').value || 5),
+      noticeText: $('setNoticeText').value.trim(),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    $('settingsStatus').textContent = '✅ সেটিংস সেভ হয়েছে'; $('settingsStatus').className = 'status ok';
+  } catch (e) { $('settingsStatus').textContent = 'এরর: ' + e.message; $('settingsStatus').className = 'status err'; }
+});
+
+/* ================= অ্যাটেম্পট ================= */
+async function loadAttempts() {
+  $('attemptsList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(query(collection(db, 'quizAttempts'), orderBy('createdAt', 'desc'), limit(50)));
+    const list = s.docs.map(x => x.data());
+    $('attemptsList').innerHTML = list.length ? list.map(a => `
+      <div class="listItem">
+        <div class="info"><div class="title">${esc(a.name || 'User')} — ${esc(a.categoryName || '')}</div>
+        <div class="sub">স্কোর: ${a.score}/${a.total} · অর্জিত: ${a.coinsEarned || 0}</div></div>
+      </div>`).join('') : '<div class="notice">এখনো কোনো অ্যাটেম্পট নেই।</div>';
+  } catch (e) { $('attemptsList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
+}
+</script>
+</body>
+</html>

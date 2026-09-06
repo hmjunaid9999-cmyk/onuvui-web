@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>কুইজ | Onuvuti</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#fff;--max-width:640px}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;padding-bottom:70px}
+#app{max-width:var(--max-width);margin:0 auto}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--card-color);border-bottom:1px solid #262c36;text-align:center;font-weight:700;font-size:17px}
+.menuBackBtn{position:absolute;left:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
+.noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}
+.noticeBar span{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite;font-size:13px;color:#facc15}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+main{padding:16px}
+.panel{display:none}.panel.active{display:block}
+.search{display:flex;align-items:center;gap:8px;background:var(--card-color);border:1px solid #262c36;border-radius:20px;padding:10px 14px;margin-bottom:16px}
+.search input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}
+.balanceBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
+.balanceBox .amt{font-size:26px;font-weight:700;margin-top:4px}
+.catGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.catCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer}
+.catCard .icon{font-size:32px;margin-bottom:8px}
+.catCard .name{font-size:14px;font-weight:700}
+.catCard .cnt{font-size:11px;color:#9ca3af;margin-top:4px}
+.empty,.loading,.error{padding:24px;text-align:center;color:#9ca3af;background:var(--card-color);border:1px solid #262c36;border-radius:14px}
+.box{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:14px}
+.box h3{font-size:15px;margin-bottom:8px}
+.notice{font-size:12px;color:#9ca3af;line-height:1.6}
+.primary{width:100%;padding:12px;background:var(--primary-color);color:#fff;border:0;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
+.primary:disabled{opacity:.6;cursor:not-allowed}
+.ghost{width:100%;padding:11px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:10px;font-size:13px;cursor:pointer;margin-top:8px}
+/* ---- খেলার স্ক্রিন ---- */
+#quizTopBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#9ca3af}
+#timerWrap{height:6px;background:#21262d;border-radius:4px;overflow:hidden;margin-bottom:16px}
+#timerBar{height:100%;background:var(--primary-color);width:100%;transition:width 1s linear}
+#questionBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:20px 16px;margin-bottom:16px;font-size:16px;font-weight:700;line-height:1.6;min-height:90px;display:flex;align-items:center}
+.optBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:14px;border-radius:12px;font-size:14px;margin-bottom:10px;cursor:pointer}
+.optBtn.correct{background:#1f4d2e;border-color:#2ea043}
+.optBtn.wrong{background:#4d1f24;border-color:#f85149}
+.optBtn:disabled{cursor:default}
+/* ---- ফলাফল স্ক্রিন ---- */
+#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px}
+#resultPoster .score{font-size:38px;font-weight:800}
+#resultPoster .sub{font-size:14px;opacity:.9;margin-top:6px}
+.posterColors{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
+.posterSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}
+.posterSwatch.selected{border-color:#fff}
+/* ---- বটম নেভ ---- */
+nav.bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid #262c36;z-index:30}
+nav.bottomNav div{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.bottomNav button{background:none;border:0;color:#9ca3af;padding:9px 4px;font-size:11px;cursor:pointer}
+nav.bottomNav button b{display:block;font-size:18px;margin-bottom:2px}
+nav.bottomNav button.active{color:#fff}
+/* ---- লগইন মোডাল ---- */
+.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:24px}
+.loginModalOverlay.open{display:flex}
+.loginModalBox{position:relative;width:100%;max-width:340px;background:var(--card-color);border-radius:18px;padding:28px 22px;text-align:center}
+#loginCloseBtn{position:absolute;right:10px;top:10px;background:none;border:0;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}
+#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:0;padding:12px 22px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer}
+/* ---- এক্সিট টোস্ট ---- */
+#exitToast{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;z-index:250}
+/* ---- ছাড়ার কনফার্মেশন ---- */
+.confirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:410;align-items:center;justify-content:center;padding:24px}
+.confirmOverlay.open{display:flex}
+.confirmBox{background:var(--card-color);border-radius:16px;padding:22px;max-width:320px;text-align:center}
+.confirmBox p{font-size:14px;margin-bottom:16px;line-height:1.6}
+.confirmBtns{display:flex;gap:8px}
+.confirmBtns button{flex:1;padding:10px;border-radius:10px;border:0;font-size:13px;cursor:pointer}
+#confirmStayBtn{background:var(--primary-color);color:#fff}
+#confirmLeaveBtn{background:#21262d;color:#f87171}
+/* ---- বিজ্ঞাপন ওভারলে ---- */
+.adOverlay{display:none;position:fixed;inset:0;background:#000;z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.adOverlay.show{display:flex}
+.adOverlay .adLabel{color:#fbbf24;font-size:12px;margin-bottom:10px;letter-spacing:.5px}
+.adOverlay .adBox{width:100%;max-width:640px;min-height:250px;background:#111;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.adSkipBtn{width:100%;max-width:640px;margin-top:14px;padding:11px;background:#262c36;color:#fff;border:1px solid #30363d;border-radius:8px;font-weight:700;cursor:not-allowed;opacity:.6}
+.adSkipBtn.enabled{cursor:pointer;opacity:1;background:var(--primary-color);border-color:var(--primary-color)}
+.leaderRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #21262d}
+.leaderRow:last-child{border-bottom:0}
+.leaderRow img{width:34px;height:34px;border-radius:50%;background:#333}
+.leaderRow .rank{width:22px;text-align:center;font-weight:700;color:#9ca3af}
+.leaderRow .lname{flex:1;font-size:13px}
+.leaderRow .lscore{font-size:12px;color:#4ade80;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="menuBackBtn" id="topBackBtn" style="display:none">←</button>
+    <span id="headerTitle">🧠 কুইজ</span>
+  </header>
+  <div class="noticeBar"><span id="noticeText">লোড হচ্ছে...</span></div>
+
+  <main>
+    <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
+    <section id="panelHome" class="panel active">
+      <div class="balanceBox">
+        <div class="notice">🪙 <span id="unitLabel1">Coin</span> ব্যালেন্স</div>
+        <div class="amt" id="balanceAmt">0</div>
+      </div>
+      <div class="search">🔎<input id="searchInput" placeholder="ক্যাটাগরি খুঁজুন..." oninput="renderCategories()"></div>
+      <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
+    </section>
+
+    <!-- ---- সক্রিয় কুইজ ---- -->
+    <section id="panelPlay" class="panel">
+      <div id="quizTopBar">
+        <span id="quizProgress">প্রশ্ন ১/১০</span>
+        <span id="quizScoreLive">স্কোর: ০</span>
+      </div>
+      <div id="timerWrap"><div id="timerBar"></div></div>
+      <div id="questionBox">প্রশ্ন লোড হচ্ছে...</div>
+      <div id="optionsBox"></div>
+    </section>
+
+    <!-- ---- ফলাফল ---- -->
+    <section id="panelResult" class="panel">
+      <div id="resultPoster">
+        <div class="score" id="resultScoreText">০/১০</div>
+        <div class="sub" id="resultCoinsText">+০ Coin অর্জিত</div>
+      </div>
+      <div class="posterColors" id="posterColors"></div>
+      <button class="primary" id="sharePosterBtn">📤 ফিডে পোস্টার হিসেবে শেয়ার করুন</button>
+      <div class="notice" id="shareStatus" style="text-align:center;margin-top:8px"></div>
+      <button class="ghost" id="playAgainBtn">🔁 আবার খেলুন</button>
+      <button class="ghost" id="backHomeBtn">🏠 ক্যাটাগরিতে ফিরে যান</button>
+    </section>
+
+    <!-- ---- কয়েন / রিওয়ার্ডেড অ্যাড ---- -->
+    <section id="panelCoin" class="panel">
+      <div class="balanceBox">
+        <div class="notice">🪙 <span id="unitLabel2">Coin</span> ব্যালেন্স</div>
+        <div class="amt" id="balanceAmt2">0</div>
+      </div>
+      <div class="box">
+        <h3>🎬 বিজ্ঞাপন দেখে কয়েন নিন</h3>
+        <p class="notice" id="rewardedAdNote"></p>
+        <button class="primary" id="watchAdBtn">▶️ বিজ্ঞাপন দেখুন</button>
+      </div>
+      <div class="box">
+        <h3>ℹ️ কয়েন আয়ের নিয়ম</h3>
+        <p class="notice" id="coinRuleNote"></p>
+      </div>
+    </section>
+
+    <!-- ---- লিডারবোর্ড ---- -->
+    <section id="panelLeader" class="panel">
+      <div class="box">
+        <h3>🏆 টপ স্কোরার</h3>
+        <div id="leaderList"><div class="loading">লোড হচ্ছে...</div></div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottomNav">
+    <div>
+      <button id="navHome" class="active" onclick="showPanel('panelHome')"><b>🧠</b>কুইজ</button>
+      <button id="navCoin" onclick="showPanel('panelCoin')"><b>🪙</b>কয়েন</button>
+      <button id="navLeader" onclick="showPanel('panelLeader')"><b>🏆</b>লিডারবোর্ড</button>
+    </div>
+  </nav>
+</div>
+
+<div id="exitToast">আবার ব্যাক চাপুন — অ্যাপ থেকে বের হতে</div>
+
+<!-- ---- লগইন মোডাল ---- -->
+<div class="loginModalOverlay" id="loginModalOverlay">
+  <div class="loginModalBox">
+    <button id="loginCloseBtn">✕</button>
+    <h1 style="font-size:19px;margin-bottom:6px">লগইন করুন</h1>
+    <p class="notice" style="margin-bottom:20px">কুইজ খেলতে ও কয়েন জমা রাখতে Google দিয়ে লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginStatus" class="notice" style="color:#f87171;margin-top:12px;min-height:16px"></div>
+  </div>
+</div>
+
+<!-- ---- কুইজ ছাড়ার কনফার্মেশন ---- -->
+<div class="confirmOverlay" id="leaveConfirmOverlay">
+  <div class="confirmBox">
+    <p>আপনি কি কুইজ ছেড়ে যেতে চান?<br>এখন বের হলে চলমান স্কোর সেভ হবে না।</p>
+    <div class="confirmBtns">
+      <button id="confirmStayBtn">খেলা চালিয়ে যান</button>
+      <button id="confirmLeaveBtn">হ্যাঁ, বের হবো</button>
+    </div>
+  </div>
+</div>
+
+<!-- ---- বিজ্ঞাপন ওভারলে ---- -->
+<div class="adOverlay" id="adOverlay">
+  <div class="adLabel">🔻 বিজ্ঞাপন</div>
+  <div class="adBox" id="adBoxContent"></div>
+  <button class="adSkipBtn" id="adSkipBtn">স্কিপ করুন (৫)</button>
+</div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc,
+  addDoc, serverTimestamp, limit, runTransaction, increment
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+  authDomain: "onuvuti-5c9e3.firebaseapp.com",
+  projectId: "onuvuti-5c9e3",
+  storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+  messagingSenderId: "846713879232",
+  appId: "1:846713879232:web:538c47101eade3e2df8b25",
+  measurementId: "G-2K2L45CMWR"
+};
+const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+let currentUser = null;
+let categories = [];
+let settings = {
+  unitName: 'Coin', entryFee: 0, coinPerCorrect: 1, maxCoinsPerDay: 50,
+  timerSeconds: 15, questionsPerQuiz: 10, adsEnabled: true, interstitialEvery: 5,
+  adSkipSeconds: 5, adScriptHtml: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
+  noticeText: 'কুইজ খেলুন, কয়েন জিতুন! 🎉'
+};
+const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#8B5CF6', '#F59E0B', '#EC4899'];
+function unit() { return settings.unitName || 'Coin'; }
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+
+/* ================= সেটিংস লোড ================= */
+async function loadSettings() {
+  try {
+    const s = await getDoc(doc(db, 'settings', 'quiz'));
+    if (s.exists()) Object.assign(settings, s.data());
+  } catch (e) {}
+  $('unitLabel1').textContent = unit();
+  $('unitLabel2').textContent = unit();
+  $('noticeText').textContent = settings.noticeText || 'কুইজে স্বাগতম!';
+  $('rewardedAdNote').textContent = `বিজ্ঞাপন দেখলেই পাবেন +${settings.rewardedAdCoins} ${unit()} (প্রতিদিন সর্বোচ্চ ${settings.maxRewardedAdsPerDay} বার)।`;
+  $('coinRuleNote').textContent = `প্রতিটি সঠিক উত্তরে +${settings.coinPerCorrect} ${unit()}` +
+    (settings.entryFee > 0 ? `, প্রতি কুইজ শুরুতে ${settings.entryFee} ${unit()} খরচ হবে` : '') +
+    `। দৈনিক সর্বোচ্চ ${settings.maxCoinsPerDay} ${unit()} আয় করা যাবে।`;
+}
+
+/* ================= ব্যবহারকারী / ব্যালেন্স ================= */
+onAuthStateChanged(auth, async (u) => {
+  currentUser = u;
+  if (u) {
+    try {
+      const uref = doc(db, 'users', u.uid);
+      const snap = await getDoc(uref);
+      if (!snap.exists()) {
+        await setDoc(uref, { name: u.displayName || '', email: u.email || '', photoURL: u.photoURL || '', quizBalance: 0, createdAt: serverTimestamp() });
+      } else {
+        await setDoc(uref, { name: u.displayName || '', email: u.email || '', photoURL: u.photoURL || '' }, { merge: true });
+      }
+    } catch (e) {}
+    closeLoginModal();
+  }
+  await refreshBalance();
+});
+
+async function refreshBalance() {
+  let bal = 0;
+  if (currentUser) {
+    try {
+      const s = await getDoc(doc(db, 'users', currentUser.uid));
+      if (s.exists()) bal = Number(s.data().quizBalance || 0);
+    } catch (e) {}
+  }
+  $('balanceAmt').textContent = bal + ' ' + unit();
+  $('balanceAmt2').textContent = bal + ' ' + unit();
+  return bal;
+}
+
+async function getTodayEarned(uid) {
+  try {
+    const s = await getDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())));
+    return s.exists() ? Number(s.data().earned || 0) : 0;
+  } catch (e) { return 0; }
+}
+async function bumpTodayEarned(uid, amt) {
+  try {
+    await setDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())), { earned: increment(amt) }, { merge: true });
+  } catch (e) {}
+}
+
+/* ================= লগইন মোডাল ================= */
+function openLoginModal() { $('loginModalOverlay').classList.add('open'); pushGuard(); }
+function closeLoginModal() { $('loginModalOverlay').classList.remove('open'); }
+function requireLogin() { if (!currentUser) { openLoginModal(); return false; } return true; }
+$('googleLoginBtn').addEventListener('click', async () => {
+  $('loginStatus').textContent = '';
+  try { await signInWithPopup(auth, provider); } catch (e) { $('loginStatus').textContent = 'লগইন এরর: ' + e.message; }
+});
+$('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.back(); });
+
+/* ================= ক্যাটাগরি ================= */
+async function loadCategories() {
+  try {
+    const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
+    categories = s.docs.map(x => ({ id: x.id, ...x.data() })).filter(c => c.active !== false);
+    for (const c of categories) {
+      try {
+        const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', c.id)));
+        c.qCount = qs.size;
+      } catch (e) { c.qCount = 0; }
+    }
+    renderCategories();
+  } catch (e) {
+    $('catGrid').innerHTML = '<div class="error">ক্যাটাগরি লোড করা যায়নি: ' + esc(e.message) + '</div>';
+  }
+}
+function renderCategories() {
+  const term = ($('searchInput').value || '').toLowerCase();
+  const list = categories.filter(c => (c.name || '').toLowerCase().includes(term));
+  $('catGrid').innerHTML = list.length ? list.map(c => `
+    <div class="catCard" onclick="window.startCategory('${c.id}')">
+      <div class="icon">${esc(c.icon || '❓')}</div>
+      <div class="name">${esc(c.name || 'কুইজ')}</div>
+      <div class="cnt">${c.qCount || 0}টি প্রশ্ন</div>
+    </div>`).join('') : '<div class="empty">কোনো ক্যাটাগরি পাওয়া যায়নি।</div>';
+}
+
+/* ================= কুইজ খেলা ================= */
+let activeQuestions = [], activeIndex = 0, activeScore = 0, activeCategory = null, activeCoinsEarned = 0;
+let timerInterval = null, timeLeft = 0, questionAnswered = false;
+
+window.startCategory = async function (catId) {
+  if (!requireLogin()) return;
+  activeCategory = categories.find(c => c.id === catId);
+  if (!activeCategory) return;
+  try {
+    const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', catId)));
+    let all = qs.docs.map(x => ({ id: x.id, ...x.data() }));
+    if (!all.length) { alert('এই ক্যাটাগরিতে এখনো কোনো প্রশ্ন যোগ করা হয়নি।'); return; }
+    all.sort(() => Math.random() - 0.5);
+    activeQuestions = all.slice(0, settings.questionsPerQuiz || 10);
+  } catch (e) { alert('প্রশ্ন লোড করা যায়নি: ' + e.message); return; }
+
+  // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে
+  if (settings.entryFee > 0) {
+    try {
+      await runTransaction(db, async (tx) => {
+        const uref = doc(db, 'users', currentUser.uid);
+        const us = await tx.get(uref);
+        const bal = Number(us.data()?.quizBalance || 0);
+        if (bal < settings.entryFee) throw new Error(`কুইজ শুরু করতে ${settings.entryFee} ${unit()} লাগবে, আপনার ব্যালেন্স যথেষ্ট নয়।`);
+        tx.update(uref, { quizBalance: bal - settings.entryFee });
+      });
+      await refreshBalance();
+    } catch (e) { alert(e.message); return; }
+  }
+
+  activeIndex = 0; activeScore = 0; activeCoinsEarned = 0;
+  showPanel('panelPlay', true);
+  renderQuestion();
+};
+
+function renderQuestion() {
+  clearInterval(timerInterval);
+  questionAnswered = false;
+  const q = activeQuestions[activeIndex];
+  $('quizProgress').textContent = `প্রশ্ন ${activeIndex + 1}/${activeQuestions.length}`;
+  $('quizScoreLive').textContent = `স্কোর: ${activeScore}`;
+  $('questionBox').textContent = q.question || '';
+  $('optionsBox').innerHTML = (q.options || []).map((opt, i) =>
+    `<button class="optBtn" data-i="${i}" onclick="window.answerQuestion(${i})">${esc(opt)}</button>`).join('');
+
+  if (settings.timerSeconds > 0) {
+    timeLeft = settings.timerSeconds;
+    $('timerWrap').style.display = 'block';
+    updateTimerBar();
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimerBar();
+      if (timeLeft <= 0) { clearInterval(timerInterval); window.answerQuestion(-1); }
+    }, 1000);
+  } else {
+    $('timerWrap').style.display = 'none';
+  }
+}
+function updateTimerBar() {
+  const pct = Math.max(0, (timeLeft / (settings.timerSeconds || 1)) * 100);
+  $('timerBar').style.width = pct + '%';
+}
+
+window.answerQuestion = function (chosenIndex) {
+  if (questionAnswered) return;
+  questionAnswered = true;
+  clearInterval(timerInterval);
+  const q = activeQuestions[activeIndex];
+  const correct = Number(q.correctIndex);
+  document.querySelectorAll('.optBtn').forEach(btn => {
+    const i = Number(btn.dataset.i);
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosenIndex) btn.classList.add('wrong');
+  });
+  if (chosenIndex === correct) activeScore++;
+
+  setTimeout(async () => {
+    activeIndex++;
+    const showAd = settings.adsEnabled && settings.interstitialEvery > 0 &&
+      activeIndex % settings.interstitialEvery === 0 && activeIndex < activeQuestions.length;
+    if (showAd) { await showInterstitialAd(); }
+    if (activeIndex >= activeQuestions.length) { finishQuiz(); } else { renderQuestion(); }
+  }, 900);
+};
+
+async function finishQuiz() {
+  clearInterval(timerInterval);
+  const total = activeQuestions.length;
+  let coinsToAward = activeScore * (settings.coinPerCorrect || 0);
+
+  if (coinsToAward > 0 && currentUser) {
+    try {
+      const already = await getTodayEarned(currentUser.uid);
+      const room = Math.max(0, (settings.maxCoinsPerDay || 0) - already);
+      coinsToAward = Math.min(coinsToAward, room);
+      if (coinsToAward > 0) {
+        await runTransaction(db, async (tx) => {
+          const uref = doc(db, 'users', currentUser.uid);
+          const us = await tx.get(uref);
+          const bal = Number(us.data()?.quizBalance || 0);
+          tx.update(uref, { quizBalance: bal + coinsToAward });
+        });
+        await bumpTodayEarned(currentUser.uid, coinsToAward);
+      }
+    } catch (e) {}
+  }
+  activeCoinsEarned = coinsToAward;
+
+  try {
+    await addDoc(collection(db, 'quizAttempts'), {
+      uid: currentUser.uid, name: currentUser.displayName || 'User', photoURL: currentUser.photoURL || '',
+      categoryId: activeCategory.id, categoryName: activeCategory.name || '',
+      score: activeScore, total: total, coinsEarned: coinsToAward, createdAt: serverTimestamp()
+    });
+  } catch (e) {}
+
+  await refreshBalance();
+  $('resultScoreText').textContent = `${activeScore}/${total}`;
+  $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
+  showPanel('panelResult', true);
+  buildPosterColors();
+}
+
+/* ================= পোস্টার শেয়ার (মূল ফিডে) ================= */
+let selectedPosterColor = DEFAULT_POSTER_COLORS[0];
+function buildPosterColors() {
+  $('posterColors').innerHTML = DEFAULT_POSTER_COLORS.map(c =>
+    `<div class="posterSwatch${c === selectedPosterColor ? ' selected' : ''}" style="background:${c}" data-c="${c}"></div>`).join('');
+  $('resultPoster').style.background = selectedPosterColor;
+  document.querySelectorAll('.posterSwatch').forEach(sw => sw.addEventListener('click', () => {
+    selectedPosterColor = sw.dataset.c;
+    buildPosterColors();
+  }));
+}
+$('sharePosterBtn').addEventListener('click', async () => {
+  if (!requireLogin()) return;
+  $('shareStatus').textContent = 'পোস্ট হচ্ছে...';
+  try {
+    const text = `আমি "${activeCategory?.name || 'কুইজ'}" ক্যাটাগরিতে ${activeScore}/${activeQuestions.length} স্কোর করেছি এবং ${activeCoinsEarned} ${unit()} অর্জন করেছি! 🎉\nতুমিও খেলে দেখো Onuvuti কুইজে।`;
+    await addDoc(collection(db, 'posts'), {
+      authorUid: currentUser.uid, authorName: currentUser.displayName || 'User',
+      authorEmail: currentUser.email || '', authorPhoto: currentUser.photoURL || '',
+      type: 'poster', text: text, posterColor: selectedPosterColor,
+      likedBy: [], commentCount: 0, createdAt: serverTimestamp()
+    });
+    $('shareStatus').textContent = '✅ ফিডে পোস্ট হয়ে গেছে!';
+  } catch (e) { $('shareStatus').textContent = 'এরর: ' + e.message; }
+});
+$('playAgainBtn').addEventListener('click', () => { if (activeCategory) window.startCategory(activeCategory.id); });
+$('backHomeBtn').addEventListener('click', () => { history.back(); });
+
+/* ================= রিওয়ার্ডেড অ্যাড ================= */
+$('watchAdBtn').addEventListener('click', async () => {
+  if (!requireLogin()) return;
+  const already = await getTodayEarned(currentUser.uid + ':ads');
+  await showRewardedAd(async () => {
+    try {
+      await runTransaction(db, async (tx) => {
+        const uref = doc(db, 'users', currentUser.uid);
+        const us = await tx.get(uref);
+        const bal = Number(us.data()?.quizBalance || 0);
+        tx.update(uref, { quizBalance: bal + settings.rewardedAdCoins });
+      });
+      await refreshBalance();
+      alert(`+${settings.rewardedAdCoins} ${unit()} জমা হয়েছে!`);
+    } catch (e) { alert('এরর: ' + e.message); }
+  });
+});
+
+/* ================= বিজ্ঞাপন ওভারলে (ইন্টারস্টিশিয়াল + রিওয়ার্ডেড) ================= */
+function showInterstitialAd() {
+  return new Promise((resolve) => {
+    if (!settings.adsEnabled) { resolve(); return; }
+    runAdOverlay(resolve);
+  });
+}
+function showRewardedAd(onComplete) {
+  runAdOverlay(async () => { await onComplete(); });
+}
+function runAdOverlay(onDone) {
+  const overlay = $('adOverlay'), box = $('adBoxContent'), skipBtn = $('adSkipBtn');
+  box.innerHTML = settings.adScriptHtml || '<div style="color:#666;padding:40px;text-align:center">বিজ্ঞাপন এখানে দেখানো হবে</div>';
+  overlay.classList.add('show');
+  pushGuard();
+  let secs = settings.adSkipSeconds || 5;
+  skipBtn.textContent = `স্কিপ করুন (${secs})`;
+  skipBtn.classList.remove('enabled');
+  const t = setInterval(() => {
+    secs--;
+    if (secs <= 0) {
+      clearInterval(t);
+      skipBtn.textContent = 'স্কিপ করুন ✕';
+      skipBtn.classList.add('enabled');
+    } else {
+      skipBtn.textContent = `স্কিপ করুন (${secs})`;
+    }
+  }, 1000);
+  skipBtn.onclick = () => {
+    if (!skipBtn.classList.contains('enabled')) return;
+    clearInterval(t);
+    overlay.classList.remove('show');
+    onDone();
+  };
+}
+
+/* ================= লিডারবোর্ড ================= */
+async function loadLeaderboard() {
+  try {
+    const s = await getDocs(query(collection(db, 'quizAttempts'), orderBy('score', 'desc'), limit(20)));
+    const rows = s.docs.map(x => x.data());
+    $('leaderList').innerHTML = rows.length ? rows.map((r, i) => `
+      <div class="leaderRow">
+        <div class="rank">${i + 1}</div>
+        <img src="${esc(r.photoURL || '')}" onerror="this.style.visibility='hidden'">
+        <div class="lname">${esc(r.name || 'User')} — ${esc(r.categoryName || '')}</div>
+        <div class="lscore">${r.score}/${r.total}</div>
+      </div>`).join('') : '<div class="empty">এখনো কেউ খেলেনি।</div>';
+  } catch (e) { $('leaderList').innerHTML = '<div class="error">লোড করা যায়নি।</div>'; }
+}
+
+/* ================= প্যানেল সুইচ + ব্যাক বাটন গার্ড ================= */
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+let panelStack = ['panelHome'];
+function pushGuard() { history.pushState({ guard: true }, '', location.href); }
+
+window.showPanel = function (id, isSubStep) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  $(id).classList.add('active');
+  document.querySelectorAll('.bottomNav button').forEach(b => b.classList.remove('active'));
+  if (id === 'panelHome') $('navHome').classList.add('active');
+  if (id === 'panelCoin') { $('navCoin').classList.add('active'); refreshBalance(); }
+  if (id === 'panelLeader') { $('navLeader').classList.add('active'); loadLeaderboard(); }
+  $('topBackBtn').style.display = id === 'panelHome' ? 'none' : '';
+  $('headerTitle').textContent = id === 'panelPlay' ? (activeCategory?.name || 'কুইজ') :
+    id === 'panelResult' ? 'ফলাফল' : id === 'panelCoin' ? 'কয়েন' : id === 'panelLeader' ? 'লিডারবোর্ড' : '🧠 কুইজ';
+  if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; }
+};
+$('topBackBtn').addEventListener('click', () => history.back());
+
+let backPressCount = 0, backPressTimer = null;
+function handleBack() {
+  // ১) বিজ্ঞাপন চলাকালীন ব্যাক করে বের হওয়া যাবে না (স্কিপযোগ্য হলে স্কিপ বাটন থেকেই বন্ধ হবে)
+  if ($('adOverlay').classList.contains('show')) { pushGuard(); return; }
+  // ২) ছাড়ার কনফার্মেশন খোলা থাকলে বন্ধ করা
+  if ($('leaveConfirmOverlay').classList.contains('open')) { $('leaveConfirmOverlay').classList.remove('open'); pushGuard(); return; }
+  // ৩) লগইন মোডাল খোলা থাকলে বন্ধ করা
+  if ($('loginModalOverlay').classList.contains('open')) { closeLoginModal(); return; }
+  // ৪) সক্রিয় কুইজ চলাকালীন — সরাসরি বের না করে কনফার্মেশন দেখানো
+  const activePanel = document.querySelector('.panel.active').id;
+  if (activePanel === 'panelPlay') {
+    $('leaveConfirmOverlay').classList.add('open');
+    pushGuard();
+    return;
+  }
+  // ৫) ফলাফল/কয়েন/লিডারবোর্ড থেকে হোমে ফিরে যাওয়া
+  if (activePanel !== 'panelHome') {
+    clearInterval(timerInterval);
+    window.showPanel('panelHome');
+    return;
+  }
+  // ৬) হোম স্ক্রিনে ডবল-ব্যাকে এক্সিট
+  if (backPressCount === 0) {
+    backPressCount = 1;
+    $('exitToast').style.display = 'block';
+    pushGuard();
+    backPressTimer = setTimeout(() => { backPressCount = 0; $('exitToast').style.display = 'none'; }, 2000);
+  } else {
+    clearTimeout(backPressTimer);
+    $('exitToast').style.display = 'none';
+  }
+}
+$('confirmStayBtn').addEventListener('click', () => { $('leaveConfirmOverlay').classList.remove('open'); pushGuard(); });
+$('confirmLeaveBtn').addEventListener('click', () => {
+  $('leaveConfirmOverlay').classList.remove('open');
+  clearInterval(timerInterval);
+  window.showPanel('panelHome');
+});
+pushGuard();
+window.addEventListener('popstate', handleBack);
+
+/* ================= শুরু ================= */
+(async function init() {
+  await loadSettings();
+  await loadCategories();
+  await refreshBalance();
+})();
+</script>
+</body>
+</html>
