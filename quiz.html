@@ -13,11 +13,18 @@ header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-
 .menuBackBtn{position:absolute;left:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
 .noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}
 .noticeBar span{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite;font-size:13px;color:#facc15}
+.topBannerAdBox{display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg-color);padding:8px 0}
+.topBannerAdBox iframe{border:0;width:320px;height:50px;max-width:100%}
 @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
 main{padding:16px}
 .panel{display:none}.panel.active{display:block}
 .search{display:flex;align-items:center;gap:8px;background:var(--card-color);border:1px solid #262c36;border-radius:20px;padding:10px 14px;margin-bottom:16px}
 .search input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}
+.search select{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}
+.search select option{background:#161b22;color:#fff}
+.bannerAdBox{margin-top:14px;background:var(--card-color);border:1px solid #262c36;border-radius:12px;min-height:266px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.bannerAdBox iframe{border:0;width:300px;height:250px;max-width:100%}
+.adPlaceholder{color:#666;font-size:12px;text-align:center;padding:20px}
 .balanceBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
 .balanceBox .amt{font-size:26px;font-weight:700;margin-top:4px}
 .catGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -93,6 +100,7 @@ nav.bottomNav button.active{color:#fff}
     <span id="headerTitle">🧠 কুইজ</span>
   </header>
   <div class="noticeBar"><span id="noticeText">লোড হচ্ছে...</span></div>
+  <div class="topBannerAdBox" id="topBannerAd"></div>
 
   <main>
     <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
@@ -101,7 +109,7 @@ nav.bottomNav button.active{color:#fff}
         <div class="notice">🪙 <span id="unitLabel1">Coin</span> ব্যালেন্স</div>
         <div class="amt" id="balanceAmt">0</div>
       </div>
-      <div class="search">🔎<input id="searchInput" placeholder="ক্যাটাগরি খুঁজুন..." oninput="renderCategories()"></div>
+      <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">ক্যাটাগরি সিলেক্ট করুন</option></select></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
@@ -114,6 +122,7 @@ nav.bottomNav button.active{color:#fff}
       <div id="timerWrap"><div id="timerBar"></div></div>
       <div id="questionBox">প্রশ্ন লোড হচ্ছে...</div>
       <div id="optionsBox"></div>
+      <div id="playBannerAd" class="bannerAdBox" style="display:none"></div>
     </section>
 
     <!-- ---- ফলাফল ---- -->
@@ -224,10 +233,32 @@ let currentUser = null;
 let categories = [];
 let settings = {
   unitName: 'Coin', entryFee: 0, coinPerCorrect: 1, maxCoinsPerDay: 50,
-  timerSeconds: 15, questionsPerQuiz: 10, adsEnabled: true, interstitialEvery: 5,
-  adSkipSeconds: 5, adScriptHtml: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
+  timerSeconds: 15, questionsPerQuiz: 10, adsEnabled: true, interstitialEvery: 1,
+  adSkipSeconds: 5, adScriptHtml: '', adScriptHtml2: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
   noticeText: 'কুইজ খেলুন, কয়েন জিতুন! 🎉'
 };
+const DEFAULT_AD_SCRIPT_A = `<script>
+  atOptions = {
+    'key' : '5a3f11ee05184dbd6b902eb0e3f8bde1',
+    'format' : 'iframe',
+    'height' : 250,
+    'width' : 300,
+    'params' : {}
+  };
+<\/script>
+<script src="https://www.highrevenueformat.com/5a3f11ee05184dbd6b902eb0e3f8bde1/invoke.js"><\/script>`;
+const DEFAULT_AD_SCRIPT_B = `<script async="async" data-cfasync="false" src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js"><\/script>
+<div id="container-e11b62d0d7d59d1d067e466e43ac58a8"></div>`;
+const TOP_BANNER_AD_SCRIPT = `<script>
+  atOptions = {
+    'key' : '637576a22a8ac384bc75c05afc089bb6',
+    'format' : 'iframe',
+    'height' : 50,
+    'width' : 320,
+    'params' : {}
+  };
+<\/script>
+<script src="https://www.highrevenueformat.com/637576a22a8ac384bc75c05afc089bb6/invoke.js"><\/script>`;
 const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#8B5CF6', '#F59E0B', '#EC4899'];
 function unit() { return settings.unitName || 'Coin'; }
 
@@ -247,6 +278,17 @@ async function loadSettings() {
   $('coinRuleNote').textContent = `প্রতিটি সঠিক উত্তরে +${settings.coinPerCorrect} ${unit()}` +
     (settings.entryFee > 0 ? `, প্রতি কুইজ শুরুতে ${settings.entryFee} ${unit()} খরচ হবে` : '') +
     `। দৈনিক সর্বোচ্চ ${settings.maxCoinsPerDay} ${unit()} আয় করা যাবে।`;
+  renderTopBannerAd();
+}
+function renderTopBannerAd() {
+  const box = $('topBannerAd');
+  if (!settings.adsEnabled) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = 'flex';
+  box.innerHTML = '';
+  const frame = document.createElement('iframe');
+  frame.setAttribute('scrolling', 'no');
+  frame.srcdoc = buildAdSrcdoc(TOP_BANNER_AD_SCRIPT);
+  box.appendChild(frame);
 }
 
 /* ================= ব্যবহারকারী / ব্যালেন্স ================= */
@@ -302,48 +344,69 @@ $('googleLoginBtn').addEventListener('click', async () => {
 });
 $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.back(); });
 
-/* ================= ক্যাটাগরি ================= */
+/* ================= ক্যাটাগরি সিলেক্ট ================= */
+let selectedCategory = null;
+let categoryQuestions = [];
+
 async function loadCategories() {
   try {
     const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
     categories = s.docs.map(x => ({ id: x.id, ...x.data() })).filter(c => c.active !== false);
-    for (const c of categories) {
-      try {
-        const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', c.id)));
-        c.qCount = qs.size;
-      } catch (e) { c.qCount = 0; }
-    }
-    renderCategories();
+    fillCategorySelect();
   } catch (e) {
     $('catGrid').innerHTML = '<div class="error">ক্যাটাগরি লোড করা যায়নি: ' + esc(e.message) + '</div>';
+    return;
   }
+  renderCategoryArea();
 }
-function renderCategories() {
-  const term = ($('searchInput').value || '').toLowerCase();
-  const list = categories.filter(c => (c.name || '').toLowerCase().includes(term));
-  $('catGrid').innerHTML = list.length ? list.map(c => `
-    <div class="catCard" onclick="window.startCategory('${c.id}')">
-      <div class="icon">${esc(c.icon || '❓')}</div>
-      <div class="name">${esc(c.name || 'কুইজ')}</div>
-      <div class="cnt">${c.qCount || 0}টি প্রশ্ন</div>
-    </div>`).join('') : '<div class="empty">কোনো ক্যাটাগরি পাওয়া যায়নি।</div>';
+function fillCategorySelect() {
+  const sel = $('categorySelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">ক্যাটাগরি সিলেক্ট করুন</option>' +
+    categories.map(c => `<option value="${c.id}">${esc(c.icon || '❓')} ${esc(c.name || 'কুইজ')}</option>`).join('');
+  if (current) sel.value = current;
+}
+window.onCategoryChange = async function () {
+  const id = $('categorySelect').value;
+  if (!id) { selectedCategory = null; categoryQuestions = []; renderCategoryArea(); return; }
+  selectedCategory = categories.find(c => c.id === id);
+  $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
+  try {
+    const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', id)));
+    categoryQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
+    categoryQuestions.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  } catch (e) {
+    $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
+    return;
+  }
+  renderCategoryArea();
+};
+function renderCategoryArea() {
+  if (!selectedCategory) {
+    $('catGrid').innerHTML = '<div class="empty">উপরে থেকে একটি ক্যাটাগরি সিলেক্ট করুন।</div>';
+    return;
+  }
+  if (!categoryQuestions.length) {
+    $('catGrid').innerHTML = '<div class="empty">এই ক্যাটাগরিতে এখনো কোনো প্রশ্ন যোগ করা হয়নি।</div>';
+    return;
+  }
+  $('catGrid').innerHTML = categoryQuestions.map((q, i) => `
+    <div class="catCard" onclick="window.startQuestion(${i})">
+      <div class="icon">❓</div>
+      <div class="name">কুইজ ${i + 1}</div>
+      <div class="cnt">${esc(selectedCategory.name || '')}</div>
+    </div>`).join('');
 }
 
-/* ================= কুইজ খেলা ================= */
-let activeQuestions = [], activeIndex = 0, activeScore = 0, activeCategory = null, activeCoinsEarned = 0;
+/* ================= কুইজ খেলা (একটি করে প্রশ্ন) ================= */
+let activeQuestion = null, activeQuestionIndex = -1, activeCoinsEarned = 0, lastIsCorrect = false;
 let timerInterval = null, timeLeft = 0, questionAnswered = false;
 
-window.startCategory = async function (catId) {
+window.startQuestion = async function (index) {
   if (!requireLogin()) return;
-  activeCategory = categories.find(c => c.id === catId);
-  if (!activeCategory) return;
-  try {
-    const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', catId)));
-    let all = qs.docs.map(x => ({ id: x.id, ...x.data() }));
-    if (!all.length) { alert('এই ক্যাটাগরিতে এখনো কোনো প্রশ্ন যোগ করা হয়নি।'); return; }
-    all.sort(() => Math.random() - 0.5);
-    activeQuestions = all.slice(0, settings.questionsPerQuiz || 10);
-  } catch (e) { alert('প্রশ্ন লোড করা যায়নি: ' + e.message); return; }
+  activeQuestion = categoryQuestions[index];
+  if (!activeQuestion) return;
+  activeQuestionIndex = index;
 
   // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে
   if (settings.entryFee > 0) {
@@ -359,7 +422,6 @@ window.startCategory = async function (catId) {
     } catch (e) { alert(e.message); return; }
   }
 
-  activeIndex = 0; activeScore = 0; activeCoinsEarned = 0;
   showPanel('panelPlay', true);
   renderQuestion();
 };
@@ -367,12 +429,13 @@ window.startCategory = async function (catId) {
 function renderQuestion() {
   clearInterval(timerInterval);
   questionAnswered = false;
-  const q = activeQuestions[activeIndex];
-  $('quizProgress').textContent = `প্রশ্ন ${activeIndex + 1}/${activeQuestions.length}`;
-  $('quizScoreLive').textContent = `স্কোর: ${activeScore}`;
+  const q = activeQuestion;
+  $('quizProgress').textContent = `কুইজ ${activeQuestionIndex + 1}`;
+  $('quizScoreLive').textContent = esc(selectedCategory?.name || '');
   $('questionBox').textContent = q.question || '';
   $('optionsBox').innerHTML = (q.options || []).map((opt, i) =>
     `<button class="optBtn" data-i="${i}" onclick="window.answerQuestion(${i})">${esc(opt)}</button>`).join('');
+  renderBannerAd();
 
   if (settings.timerSeconds > 0) {
     timeLeft = settings.timerSeconds;
@@ -391,12 +454,38 @@ function updateTimerBar() {
   const pct = Math.max(0, (timeLeft / (settings.timerSeconds || 1)) * 100);
   $('timerBar').style.width = pct + '%';
 }
+function buildAdSrcdoc(codeHtml) {
+  return `<!DOCTYPE html><html><head><style>html,body{margin:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}</style></head><body>${codeHtml}</body></html>`;
+}
+function renderBannerAd() {
+  const box = $('playBannerAd');
+  if (!settings.adsEnabled) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  // কত নম্বর কুইজ পরপর ব্যানার দেখাবে (admin সেটিংস থেকে)
+  const every = Math.max(1, Number(settings.interstitialEvery) || 1);
+  const qNum = activeQuestionIndex + 1;
+  if (qNum % every !== 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  // কোম্পানি ১ ও কোম্পানি ২ থাকলে পালাক্রমে দেখানো হবে (বট-শনাক্তকরণ এড়াতে)
+  const codeA = (settings.adScriptHtml || DEFAULT_AD_SCRIPT_A).trim();
+  const codeB = (settings.adScriptHtml2 || DEFAULT_AD_SCRIPT_B).trim();
+  const showTurn = Math.floor(qNum / every); // এই ব্যানারটি কততম বার দেখানো হচ্ছে
+  const code = (codeB && showTurn % 2 === 0) ? codeB : (codeA || codeB);
+  if (!code) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  box.style.display = 'flex';
+  box.innerHTML = '';
+  const frame = document.createElement('iframe');
+  frame.setAttribute('scrolling', 'no');
+  frame.srcdoc = buildAdSrcdoc(code);
+  box.appendChild(frame);
+}
 
 window.answerQuestion = function (chosenIndex) {
   if (questionAnswered) return;
   questionAnswered = true;
   clearInterval(timerInterval);
-  const q = activeQuestions[activeIndex];
+  const q = activeQuestion;
   const correct = Number(q.correctIndex);
   document.querySelectorAll('.optBtn').forEach(btn => {
     const i = Number(btn.dataset.i);
@@ -404,21 +493,14 @@ window.answerQuestion = function (chosenIndex) {
     if (i === correct) btn.classList.add('correct');
     else if (i === chosenIndex) btn.classList.add('wrong');
   });
-  if (chosenIndex === correct) activeScore++;
-
-  setTimeout(async () => {
-    activeIndex++;
-    const showAd = settings.adsEnabled && settings.interstitialEvery > 0 &&
-      activeIndex % settings.interstitialEvery === 0 && activeIndex < activeQuestions.length;
-    if (showAd) { await showInterstitialAd(); }
-    if (activeIndex >= activeQuestions.length) { finishQuiz(); } else { renderQuestion(); }
-  }, 900);
+  const isCorrect = chosenIndex === correct;
+  setTimeout(() => { finishQuestion(isCorrect); }, 900);
 };
 
-async function finishQuiz() {
+async function finishQuestion(isCorrect) {
   clearInterval(timerInterval);
-  const total = activeQuestions.length;
-  let coinsToAward = activeScore * (settings.coinPerCorrect || 0);
+  lastIsCorrect = isCorrect;
+  let coinsToAward = isCorrect ? (settings.coinPerCorrect || 0) : 0;
 
   if (coinsToAward > 0 && currentUser) {
     try {
@@ -441,13 +523,14 @@ async function finishQuiz() {
   try {
     await addDoc(collection(db, 'quizAttempts'), {
       uid: currentUser.uid, name: currentUser.displayName || 'User', photoURL: currentUser.photoURL || '',
-      categoryId: activeCategory.id, categoryName: activeCategory.name || '',
-      score: activeScore, total: total, coinsEarned: coinsToAward, createdAt: serverTimestamp()
+      categoryId: selectedCategory.id, categoryName: selectedCategory.name || '',
+      questionId: activeQuestion.id,
+      score: isCorrect ? 1 : 0, total: 1, coinsEarned: coinsToAward, createdAt: serverTimestamp()
     });
   } catch (e) {}
 
   await refreshBalance();
-  $('resultScoreText').textContent = `${activeScore}/${total}`;
+  $('resultScoreText').textContent = isCorrect ? '১/১' : '০/১';
   $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
   showPanel('panelResult', true);
   buildPosterColors();
@@ -468,7 +551,7 @@ $('sharePosterBtn').addEventListener('click', async () => {
   if (!requireLogin()) return;
   $('shareStatus').textContent = 'পোস্ট হচ্ছে...';
   try {
-    const text = `আমি "${activeCategory?.name || 'কুইজ'}" ক্যাটাগরিতে ${activeScore}/${activeQuestions.length} স্কোর করেছি এবং ${activeCoinsEarned} ${unit()} অর্জন করেছি! 🎉\nতুমিও খেলে দেখো Onuvuti কুইজে।`;
+    const text = `আমি "${selectedCategory?.name || 'কুইজ'}" ক্যাটাগরির "কুইজ ${activeQuestionIndex + 1}" এ ${lastIsCorrect ? 'সঠিক উত্তর দিয়েছি' : 'চেষ্টা করেছি'} এবং ${activeCoinsEarned} ${unit()} অর্জন করেছি! 🎉\nতুমিও খেলে দেখো Onuvuti কুইজে।`;
     await addDoc(collection(db, 'posts'), {
       authorUid: currentUser.uid, authorName: currentUser.displayName || 'User',
       authorEmail: currentUser.email || '', authorPhoto: currentUser.photoURL || '',
@@ -478,7 +561,7 @@ $('sharePosterBtn').addEventListener('click', async () => {
     $('shareStatus').textContent = '✅ ফিডে পোস্ট হয়ে গেছে!';
   } catch (e) { $('shareStatus').textContent = 'এরর: ' + e.message; }
 });
-$('playAgainBtn').addEventListener('click', () => { if (activeCategory) window.startCategory(activeCategory.id); });
+$('playAgainBtn').addEventListener('click', () => { if (activeQuestionIndex > -1) window.startQuestion(activeQuestionIndex); });
 $('backHomeBtn').addEventListener('click', () => { history.back(); });
 
 /* ================= রিওয়ার্ডেড অ্যাড ================= */
@@ -563,7 +646,7 @@ window.showPanel = function (id, isSubStep) {
   if (id === 'panelCoin') { $('navCoin').classList.add('active'); refreshBalance(); }
   if (id === 'panelLeader') { $('navLeader').classList.add('active'); loadLeaderboard(); }
   $('topBackBtn').style.display = id === 'panelHome' ? 'none' : '';
-  $('headerTitle').textContent = id === 'panelPlay' ? (activeCategory?.name || 'কুইজ') :
+  $('headerTitle').textContent = id === 'panelPlay' ? ((selectedCategory?.name ? selectedCategory.name + ' — ' : '') + 'কুইজ ' + (activeQuestionIndex + 1)) :
     id === 'panelResult' ? 'ফলাফল' : id === 'panelCoin' ? 'কয়েন' : id === 'panelLeader' ? 'লিডারবোর্ড' : '🧠 কুইজ';
   if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; }
 };

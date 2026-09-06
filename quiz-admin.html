@@ -77,11 +77,9 @@ textarea{min-height:70px;resize:vertical}
         <h3>➕ নতুন প্রশ্ন</h3>
         <label>ক্যাটাগরি</label><select id="qCategory"></select>
         <label>প্রশ্ন</label><textarea id="qText" placeholder="প্রশ্নটি লিখুন"></textarea>
-        <label>অপশনসমূহ (সঠিক উত্তরের পাশের রেডিও বাটনে ক্লিক করুন)</label>
-        <div class="optRow"><input type="radio" name="qCorrect" value="0" checked><input id="qOpt0" placeholder="অপশন ১"></div>
-        <div class="optRow"><input type="radio" name="qCorrect" value="1"><input id="qOpt1" placeholder="অপশন ২"></div>
-        <div class="optRow"><input type="radio" name="qCorrect" value="2"><input id="qOpt2" placeholder="অপশন ৩"></div>
-        <div class="optRow"><input type="radio" name="qCorrect" value="3"><input id="qOpt3" placeholder="অপশন ৪"></div>
+        <label>অপশনসমূহ (সঠিক উত্তরের পাশের রেডিও বাটনে ক্লিক করুন) — যত খুশি অপশন রাখা যাবে, কমপক্ষে ২টি</label>
+        <div id="qOptionsContainer"></div>
+        <button type="button" class="ghost" id="addQOptionBtn" style="margin-top:8px">➕ আরও অপশন যোগ করুন</button>
         <button class="primary" id="addQBtn">প্রশ্ন যোগ করুন</button>
         <div class="status" id="qStatus"></div>
       </div>
@@ -115,11 +113,14 @@ textarea{min-height:70px;resize:vertical}
         <h3>📢 বিজ্ঞাপন সেটিংস</h3>
         <div class="row2">
           <div><label>বিজ্ঞাপন চালু আছে?</label><select id="setAdsEnabled"><option value="true">হ্যাঁ</option><option value="false">না</option></select></div>
-          <div><label>প্রতি কত প্রশ্ন পরপর বিজ্ঞাপন</label><input id="setInterstitialEvery" type="number" value="5"></div>
+          <div><label>কত নম্বর কুইজ পরপর ব্যানার বিজ্ঞাপন দেখাবে (১ = প্রতিটি কুইজে, ২ = প্রতি ২য় কুইজে, ৩ = প্রতি ৩য় কুইজে...)</label><input id="setInterstitialEvery" type="number" value="1" min="1"></div>
         </div>
-        <label>বিজ্ঞাপন স্কিপ করা যাবে কত সেকেন্ড পর</label><input id="setAdSkipSeconds" type="number" value="5">
-        <label>বিজ্ঞাপনের HTML/স্ক্রিপ্ট কোড (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
+        <label>বিজ্ঞাপন স্কিপ করা যাবে কত সেকেন্ড পর (পুরোনো ফিচার, এখন ব্যবহার হচ্ছে না)</label><input id="setAdSkipSeconds" type="number" value="5">
+        <label>বিজ্ঞাপন কোড — কোম্পানি ১ / Slot A (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
         <textarea id="setAdScriptHtml" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;"></textarea>
+        <label>বিজ্ঞাপন কোড — কোম্পানি ২ / Slot B (খালি রাখলে সবসময় কোম্পানি ১-এর কোডই দেখাবে)</label>
+        <textarea id="setAdScriptHtml2" placeholder="দ্বিতীয় বিজ্ঞাপন কোম্পানির কোড (অপশনাল)"></textarea>
+        <p class="notice">কোম্পানি ১ ও কোম্পানি ২-এর কোড থাকলে, বিজ্ঞাপন যতবার দেখানো হবে ততবার পালাক্রমে (একবার কোম্পানি ১, একবার কোম্পানি ২) দেখানো হবে — যাতে একই কোম্পানির অ্যাড বারবার না দেখিয়ে বট-শনাক্তকরণ এড়ানো যায়।</p>
         <div class="row2">
           <div><label>রিওয়ার্ডেড অ্যাডে কয়েন</label><input id="setRewardedAdCoins" type="number" value="2"></div>
           <div><label>প্রতিদিন সর্বোচ্চ রিওয়ার্ডেড অ্যাড</label><input id="setMaxRewardedAdsPerDay" type="number" value="5"></div>
@@ -254,18 +255,50 @@ window.deleteCat = async (id) => {
   catch (e) { alert('এরর: ' + e.message); }
 };
 
-/* ================= প্রশ্ন ================= */
+/* ================= প্রশ্ন — ডাইনামিক অপশন ================= */
+const MIN_QOPTIONS = 2, MAX_QOPTIONS = 8;
+let qOptions = ['', ''];
+let qCorrectIndex = 0;
+function renderQOptions() {
+  $('qOptionsContainer').innerHTML = qOptions.map((val, i) => `
+    <div class="optRow">
+      <input type="radio" name="qCorrect" value="${i}" ${i === qCorrectIndex ? 'checked' : ''} onchange="window.setQCorrect(${i})">
+      <input class="qOptInput" data-i="${i}" placeholder="অপশন ${i + 1}" value="${esc(val)}">
+      ${qOptions.length > MIN_QOPTIONS ? `<button type="button" class="danger" onclick="window.removeQOption(${i})">✕</button>` : ''}
+    </div>`).join('');
+  document.querySelectorAll('.qOptInput').forEach(inp => {
+    inp.addEventListener('input', (e) => { qOptions[Number(e.target.dataset.i)] = e.target.value; });
+  });
+  $('addQOptionBtn').style.display = qOptions.length >= MAX_QOPTIONS ? 'none' : '';
+}
+window.setQCorrect = (i) => { qCorrectIndex = i; };
+window.removeQOption = (i) => {
+  if (qOptions.length <= MIN_QOPTIONS) return;
+  qOptions.splice(i, 1);
+  if (qCorrectIndex === i) qCorrectIndex = 0;
+  else if (qCorrectIndex > i) qCorrectIndex--;
+  renderQOptions();
+};
+$('addQOptionBtn').addEventListener('click', () => {
+  if (qOptions.length >= MAX_QOPTIONS) return;
+  qOptions.push('');
+  renderQOptions();
+});
+renderQOptions();
+
+/* ================= প্রশ্ন যোগ করা ================= */
 $('addQBtn').addEventListener('click', async () => {
   const categoryId = $('qCategory').value;
   const question = $('qText').value.trim();
-  const options = [$('qOpt0').value.trim(), $('qOpt1').value.trim(), $('qOpt2').value.trim(), $('qOpt3').value.trim()];
-  const correctIndex = Number(document.querySelector('input[name=qCorrect]:checked').value);
-  if (!categoryId || !question || options.some(o => !o)) {
-    $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন'; $('qStatus').className = 'status err'; return;
+  const options = qOptions.map(o => o.trim());
+  const correctIndex = qCorrectIndex;
+  if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) {
+    $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'; $('qStatus').className = 'status err'; return;
   }
   try {
     await addDoc(collection(db, 'quizQuestions'), { categoryId, question, options, correctIndex, createdAt: serverTimestamp() });
-    $('qText').value = ''; $('qOpt0').value = ''; $('qOpt1').value = ''; $('qOpt2').value = ''; $('qOpt3').value = '';
+    $('qText').value = '';
+    qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
     $('qStatus').textContent = '✅ প্রশ্ন যোগ হয়েছে'; $('qStatus').className = 'status ok';
     if ($('qFilterCategory').value === categoryId) loadQuestions(categoryId);
   } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
@@ -293,6 +326,20 @@ window.deleteQuestion = async (id, categoryId) => {
   catch (e) { alert('এরর: ' + e.message); }
 };
 
+const DEFAULT_AD_SCRIPT_A = `<script>
+  atOptions = {
+    'key' : '5a3f11ee05184dbd6b902eb0e3f8bde1',
+    'format' : 'iframe',
+    'height' : 250,
+    'width' : 300,
+    'params' : {}
+  };
+<\/script>
+<script src="https://www.highrevenueformat.com/5a3f11ee05184dbd6b902eb0e3f8bde1/invoke.js"><\/script>`;
+
+const DEFAULT_AD_SCRIPT_B = `<script async="async" data-cfasync="false" src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js"><\/script>
+<div id="container-e11b62d0d7d59d1d067e466e43ac58a8"></div>`;
+
 /* ================= সেটিংস ================= */
 async function loadSettings() {
   try {
@@ -305,9 +352,10 @@ async function loadSettings() {
     $('setQuestionsPerQuiz').value = d.questionsPerQuiz ?? 10;
     $('setTimerSeconds').value = d.timerSeconds ?? 15;
     $('setAdsEnabled').value = String(d.adsEnabled !== false);
-    $('setInterstitialEvery').value = d.interstitialEvery ?? 5;
+    $('setInterstitialEvery').value = d.interstitialEvery ?? 1;
     $('setAdSkipSeconds').value = d.adSkipSeconds ?? 5;
-    $('setAdScriptHtml').value = d.adScriptHtml || '';
+    $('setAdScriptHtml').value = d.adScriptHtml || DEFAULT_AD_SCRIPT_A;
+    $('setAdScriptHtml2').value = d.adScriptHtml2 || DEFAULT_AD_SCRIPT_B;
     $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
     $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
     $('setNoticeText').value = d.noticeText || '';
@@ -326,6 +374,7 @@ $('saveSettingsBtn').addEventListener('click', async () => {
       interstitialEvery: Number($('setInterstitialEvery').value || 0),
       adSkipSeconds: Number($('setAdSkipSeconds').value || 5),
       adScriptHtml: $('setAdScriptHtml').value,
+      adScriptHtml2: $('setAdScriptHtml2').value,
       rewardedAdCoins: Number($('setRewardedAdCoins').value || 0),
       maxRewardedAdsPerDay: Number($('setMaxRewardedAdsPerDay').value || 5),
       noticeText: $('setNoticeText').value.trim(),
