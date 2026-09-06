@@ -457,6 +457,26 @@ function updateTimerBar() {
 function buildAdSrcdoc(codeHtml) {
   return `<!DOCTYPE html><html><head><style>html,body{margin:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}</style></head><body>${codeHtml}</body></html>`;
 }
+/* ---- বিজ্ঞাপন কোড রোটেশন: একাধিক নামসহ বিজ্ঞাপন কোড থাকলে পালাক্রমে দেখানো হবে, ---- */
+/* ---- কোনোটা খালি থাকলে বাকিগুলো থেকেই নেওয়া হবে, একটাও না থাকলে ডিফল্ট কোড ব্যবহার হবে ---- */
+function getAdCodes() {
+  let codes;
+  if (Array.isArray(settings.adSlots) && settings.adSlots.length) {
+    codes = settings.adSlots.map(s => (s.code || '').trim()).filter(Boolean);
+  } else {
+    codes = [(settings.adScriptHtml || '').trim(), (settings.adScriptHtml2 || '').trim()].filter(Boolean);
+  }
+  if (!codes.length) codes = [DEFAULT_AD_SCRIPT_A, DEFAULT_AD_SCRIPT_B];
+  return codes;
+}
+function pickAdCode() {
+  const codes = getAdCodes();
+  if (!codes.length) return '';
+  const key = 'quizAdRotationIndex';
+  const idx = Number(localStorage.getItem(key) || 0);
+  localStorage.setItem(key, String(idx + 1));
+  return codes[idx % codes.length];
+}
 function renderBannerAd() {
   const box = $('playBannerAd');
   if (!settings.adsEnabled) { box.style.display = 'none'; box.innerHTML = ''; return; }
@@ -466,11 +486,8 @@ function renderBannerAd() {
   const qNum = activeQuestionIndex + 1;
   if (qNum % every !== 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
-  // কোম্পানি ১ ও কোম্পানি ২ থাকলে পালাক্রমে দেখানো হবে (বট-শনাক্তকরণ এড়াতে)
-  const codeA = (settings.adScriptHtml || DEFAULT_AD_SCRIPT_A).trim();
-  const codeB = (settings.adScriptHtml2 || DEFAULT_AD_SCRIPT_B).trim();
-  const showTurn = Math.floor(qNum / every); // এই ব্যানারটি কততম বার দেখানো হচ্ছে
-  const code = (codeB && showTurn % 2 === 0) ? codeB : (codeA || codeB);
+  // একাধিক নামসহ বিজ্ঞাপন কোড থাকলে পালাক্রমে দেখানো হবে (বট-শনাক্তকরণ এড়াতে)
+  const code = pickAdCode();
   if (!code) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
   box.style.display = 'flex';
@@ -594,7 +611,8 @@ function showRewardedAd(onComplete) {
 }
 function runAdOverlay(onDone) {
   const overlay = $('adOverlay'), box = $('adBoxContent'), skipBtn = $('adSkipBtn');
-  box.innerHTML = settings.adScriptHtml || '<div style="color:#666;padding:40px;text-align:center">বিজ্ঞাপন এখানে দেখানো হবে</div>';
+  const code = pickAdCode();
+  box.innerHTML = code || '<div style="color:#666;padding:40px;text-align:center">বিজ্ঞাপন এখানে দেখানো হবে</div>';
   overlay.classList.add('show');
   pushGuard();
   let secs = settings.adSkipSeconds || 5;

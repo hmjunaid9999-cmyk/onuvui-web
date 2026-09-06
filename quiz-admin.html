@@ -52,6 +52,16 @@ textarea{min-height:70px;resize:vertical}
 .editForm .row2{margin-bottom:0}
 .editFormBtns{display:flex;gap:8px;margin-top:10px}
 .editFormBtns button{flex:1}
+/* ---- ক্যাটাগরি ক্রম সাজানো (ট্যাপ করে) ---- */
+.orderTappable{cursor:pointer}
+.orderTapped{border-color:#4285F4;background:#12203a}
+.orderBadge{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#4285F4;color:#fff;border-radius:50%;font-size:11px;margin-right:6px;flex-shrink:0}
+.orderModeBtnsRow{display:flex;gap:8px}
+.orderModeBtnsRow button{flex:1}
+/* ---- বিজ্ঞাপন — একাধিক নামসহ কোড স্লট ---- */
+.adSlotBox{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px;margin-bottom:10px}
+.adSlotHeadRow{display:flex;gap:10px;align-items:flex-end;margin-bottom:6px}
+.adSlotHeadRow > div:first-child{flex:1}
 </style>
 </head>
 <body>
@@ -86,6 +96,14 @@ textarea{min-height:70px;resize:vertical}
       <div class="box">
         <h3>📂 বিদ্যমান ক্যাটাগরি</h3>
         <div class="searchBox"><input id="catSearchInput" placeholder="🔍 ক্যাটাগরি খুঁজুন..."></div>
+        <div id="catOrderControls" style="margin-bottom:10px">
+          <button class="ghost" id="startOrderModeBtn" style="width:100%">🔃 ক্রম সাজান (ট্যাপ করে)</button>
+        </div>
+        <div id="catOrderModeControls" class="orderModeBtnsRow" style="display:none;margin-bottom:10px">
+          <button class="primary" id="saveOrderBtn" style="margin-top:0">✅ ক্রম সেভ করুন</button>
+          <button class="ghost" id="cancelOrderBtn">✖ বাতিল</button>
+        </div>
+        <p class="notice" id="orderModeNotice" style="display:none">যে ক্রমে ক্যাটাগরিগুলো সাইটে দেখাতে চান, সেই ক্রমে একটার পর একটায় ট্যাপ করুন। প্রথমে ট্যাপ করা ক্যাটাগরি সবার উপরে থাকবে। ভুল হলে আবার ট্যাপ করলে সেটা বাদ যাবে।</p>
         <div id="catList"><div class="notice">লোড হচ্ছে...</div></div>
       </div>
     </section>
@@ -178,11 +196,10 @@ textarea{min-height:70px;resize:vertical}
             <div><label>বিজ্ঞাপন চালু আছে?</label><select id="setAdsEnabled"><option value="true">হ্যাঁ</option><option value="false">না</option></select></div>
             <div><label>কত নম্বর কুইজ পরপর ব্যানার বিজ্ঞাপন দেখাবে (১ = প্রতিটি কুইজে, ২ = প্রতি ২য় কুইজে, ৩ = প্রতি ৩য় কুইজে...)</label><input id="setInterstitialEvery" type="number" value="1" min="1"></div>
           </div>
-          <label>বিজ্ঞাপন কোড — কোম্পানি ১ / Slot A (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
-          <textarea id="setAdScriptHtml" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;"></textarea>
-          <label>বিজ্ঞাপন কোড — কোম্পানি ২ / Slot B (খালি রাখলে সবসময় কোম্পানি ১-এর কোডই দেখাবে)</label>
-          <textarea id="setAdScriptHtml2" placeholder="দ্বিতীয় বিজ্ঞাপন কোম্পানির কোড (অপশনাল)"></textarea>
-          <p class="notice">কোম্পানি ১ ও কোম্পানি ২-এর কোড থাকলে, বিজ্ঞাপন যতবার দেখানো হবে ততবার পালাক্রমে (একবার কোম্পানি ১, একবার কোম্পানি ২) দেখানো হবে — যাতে একই কোম্পানির অ্যাড বারবার না দেখিয়ে বট-শনাক্তকরণ এড়ানো যায়।</p>
+          <label>বিজ্ঞাপনের কোড (একাধিক যোগ করা যায়, প্রতিটার একটা নাম দিন যাতে চেনা যায়)</label>
+          <div id="adSlotsContainer"></div>
+          <button type="button" class="ghost" id="addAdSlotBtn" style="width:100%;margin-top:4px">➕ আরও বিজ্ঞাপন কোড যোগ করুন</button>
+          <p class="notice">একাধিক বিজ্ঞাপন কোড যোগ করলে প্রতিবার পালাক্রমে ভিন্ন ভিন্ন কোডটি দেখানো হবে (একই বিজ্ঞাপন বারবার আসবে না)। কোনো একটার কোড খালি রাখলে সেটা বাদ দিয়ে বাকিগুলো থেকেই দেখানো হবে।</p>
         </div>
         <button class="primary" id="saveAdSettingsBtn">বিজ্ঞাপন সেটিংস সেভ করুন</button>
         <div class="status" id="adSettingsStatus"></div>
@@ -288,11 +305,29 @@ async function loadCategories() {
   } catch (e) { $('catList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
 let editingCatId = null;
+let orderModeActive = false;
+let orderTapSequence = [];
 function renderCatList() {
   const term = ($('catSearchInput')?.value || '').trim().toLowerCase();
-  const list = term ? categoriesCache.filter(c => (c.name || '').toLowerCase().includes(term)) : categoriesCache;
+  let list = term ? categoriesCache.filter(c => (c.name || '').toLowerCase().includes(term)) : categoriesCache.slice();
+  if (orderModeActive) {
+    list = list.slice().sort((a, b) => {
+      const ai = orderTapSequence.indexOf(a.id), bi = orderTapSequence.indexOf(b.id);
+      if (ai === -1 && bi === -1) return 0;
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+  }
   if (!list.length) { $('catList').innerHTML = `<div class="notice">${term ? 'কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।' : 'কোনো ক্যাটাগরি নেই।'}</div>`; return; }
   $('catList').innerHTML = list.map(c => {
+    if (orderModeActive) {
+      const pos = orderTapSequence.indexOf(c.id);
+      return `
+      <div class="listItem orderTappable ${pos >= 0 ? 'orderTapped' : ''}" onclick="window.toggleOrderTap('${c.id}')">
+        <div class="info"><div class="title">${pos >= 0 ? `<span class="orderBadge">${pos + 1}</span>` : ''}${esc(c.icon || '❓')} ${esc(c.name || '')}</div></div>
+      </div>`;
+    }
     if (editingCatId === c.id) {
       return `
       <div class="editForm">
@@ -329,6 +364,42 @@ window.saveCatEdit = async (id) => {
     editingCatId = null;
     loadCategories();
   } catch (e) { alert('এরর: ' + e.message); }
+};
+/* ---- ক্রম সাজানো (ট্যাপ করে) ---- */
+$('startOrderModeBtn').addEventListener('click', () => {
+  orderModeActive = true;
+  orderTapSequence = [];
+  editingCatId = null;
+  $('catOrderControls').style.display = 'none';
+  $('catOrderModeControls').style.display = 'flex';
+  $('orderModeNotice').style.display = 'block';
+  renderCatList();
+});
+$('cancelOrderBtn').addEventListener('click', () => {
+  orderModeActive = false;
+  orderTapSequence = [];
+  $('catOrderControls').style.display = '';
+  $('catOrderModeControls').style.display = 'none';
+  $('orderModeNotice').style.display = 'none';
+  renderCatList();
+});
+$('saveOrderBtn').addEventListener('click', async () => {
+  const remaining = categoriesCache.map(c => c.id).filter(id => !orderTapSequence.includes(id));
+  const finalOrder = [...orderTapSequence, ...remaining];
+  try {
+    await Promise.all(finalOrder.map((id, i) => updateDoc(doc(db, 'quizCategories', id), { order: i + 1 })));
+    orderModeActive = false;
+    orderTapSequence = [];
+    $('catOrderControls').style.display = '';
+    $('catOrderModeControls').style.display = 'none';
+    $('orderModeNotice').style.display = 'none';
+    loadCategories();
+  } catch (e) { alert('এরর: ' + e.message); }
+});
+window.toggleOrderTap = (id) => {
+  const idx = orderTapSequence.indexOf(id);
+  if (idx >= 0) orderTapSequence.splice(idx, 1); else orderTapSequence.push(id);
+  renderCatList();
 };
 function fillCategorySelects() {
   const opts = categoriesCache.map(c => `<option value="${c.id}">${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
@@ -427,12 +498,19 @@ $('qSearchInput').addEventListener('input', () => {
   }, 300);
 });
 
+function sortByNewest(list) {
+  return list.slice().sort((a, b) => {
+    const at = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+    const bt = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+    return bt - at;
+  });
+}
 async function loadAllQuestions() {
   qListMode = { type: 'all' };
   $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
   try {
     const s = await getDocs(collection(db, 'quizQuestions'));
-    renderQList(s.docs.map(x => ({ id: x.id, ...x.data() })));
+    renderQList(sortByNewest(s.docs.map(x => ({ id: x.id, ...x.data() }))));
   } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
 async function loadQuestionsByCategory(categoryId) {
@@ -440,7 +518,7 @@ async function loadQuestionsByCategory(categoryId) {
   $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
   try {
     const s = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', categoryId)));
-    renderQList(s.docs.map(x => ({ id: x.id, ...x.data() })));
+    renderQList(sortByNewest(s.docs.map(x => ({ id: x.id, ...x.data() }))));
   } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
 async function loadQuestionsBySearch(term) {
@@ -450,7 +528,7 @@ async function loadQuestionsBySearch(term) {
     const s = await getDocs(collection(db, 'quizQuestions'));
     const all = s.docs.map(x => ({ id: x.id, ...x.data() }));
     const t = term.toLowerCase();
-    renderQList(all.filter(q => (q.question || '').toLowerCase().includes(t)));
+    renderQList(sortByNewest(all.filter(q => (q.question || '').toLowerCase().includes(t))));
   } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
 function refreshQList() {
@@ -555,6 +633,28 @@ const DEFAULT_AD_SCRIPT_A = `<script>
 const DEFAULT_AD_SCRIPT_B = `<script async="async" data-cfasync="false" src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js"><\/script>
 <div id="container-e11b62d0d7d59d1d067e466e43ac58a8"></div>`;
 
+/* ================= বিজ্ঞাপন — একাধিক নামসহ কোড স্লট ================= */
+let adSlots = [];
+function renderAdSlots() {
+  $('adSlotsContainer').innerHTML = adSlots.map((slot, i) => `
+    <div class="adSlotBox">
+      <div class="adSlotHeadRow">
+        <div><label>নাম (যেমন: কুইজ বক্সের নিচের ব্যানার)</label><input class="adSlotName" data-i="${i}" value="${esc(slot.name || '')}" placeholder="বিজ্ঞাপনের নাম দিন"></div>
+        <button type="button" class="danger" onclick="window.removeAdSlot(${i})">🗑️ ডিলিট</button>
+      </div>
+      <label>বিজ্ঞাপন কোড</label>
+      <textarea class="adSlotCode" data-i="${i}" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;">${esc(slot.code || '')}</textarea>
+    </div>`).join('') || '<p class="notice">কোনো বিজ্ঞাপন কোড যোগ করা নেই।</p>';
+  document.querySelectorAll('.adSlotName').forEach(inp => {
+    inp.addEventListener('input', e => { adSlots[Number(e.target.dataset.i)].name = e.target.value; });
+  });
+  document.querySelectorAll('.adSlotCode').forEach(inp => {
+    inp.addEventListener('input', e => { adSlots[Number(e.target.dataset.i)].code = e.target.value; });
+  });
+}
+window.removeAdSlot = (i) => { adSlots.splice(i, 1); renderAdSlots(); };
+$('addAdSlotBtn').addEventListener('click', () => { adSlots.push({ name: '', code: '' }); renderAdSlots(); });
+
 /* ================= সেটিংস ================= */
 async function loadSettings() {
   try {
@@ -568,8 +668,13 @@ async function loadSettings() {
     $('setTimerSeconds').value = d.timerSeconds ?? 15;
     $('setAdsEnabled').value = String(d.adsEnabled !== false);
     $('setInterstitialEvery').value = d.interstitialEvery ?? 1;
-    $('setAdScriptHtml').value = d.adScriptHtml || DEFAULT_AD_SCRIPT_A;
-    $('setAdScriptHtml2').value = d.adScriptHtml2 || DEFAULT_AD_SCRIPT_B;
+    adSlots = Array.isArray(d.adSlots) && d.adSlots.length
+      ? d.adSlots.map(s => ({ name: s.name || '', code: s.code || '' }))
+      : [
+          { name: 'কোম্পানি ১', code: d.adScriptHtml || DEFAULT_AD_SCRIPT_A },
+          { name: 'কোম্পানি ২', code: d.adScriptHtml2 || DEFAULT_AD_SCRIPT_B }
+        ];
+    renderAdSlots();
     $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
     $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
     $('setNoticeText').value = d.noticeText || '';
@@ -605,8 +710,7 @@ $('saveAdSettingsBtn').addEventListener('click', async () => {
     await setDoc(doc(db, 'settings', 'quiz'), {
       adsEnabled: $('setAdsEnabled').value === 'true',
       interstitialEvery: Number($('setInterstitialEvery').value || 0),
-      adScriptHtml: $('setAdScriptHtml').value,
-      adScriptHtml2: $('setAdScriptHtml2').value,
+      adSlots: adSlots,
       updatedAt: serverTimestamp()
     }, { merge: true });
     $('adSettingsStatus').textContent = '✅ বিজ্ঞাপন সেটিংস সেভ হয়েছে'; $('adSettingsStatus').className = 'status ok';
