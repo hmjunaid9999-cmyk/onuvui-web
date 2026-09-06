@@ -237,18 +237,6 @@ let settings = {
   adSkipSeconds: 5, adScriptHtml: '', adScriptHtml2: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
   noticeText: 'কুইজ খেলুন, কয়েন জিতুন! 🎉'
 };
-const DEFAULT_AD_SCRIPT_A = `<script>
-  atOptions = {
-    'key' : '5a3f11ee05184dbd6b902eb0e3f8bde1',
-    'format' : 'iframe',
-    'height' : 250,
-    'width' : 300,
-    'params' : {}
-  };
-<\/script>
-<script src="https://www.highrevenueformat.com/5a3f11ee05184dbd6b902eb0e3f8bde1/invoke.js"><\/script>`;
-const DEFAULT_AD_SCRIPT_B = `<script async="async" data-cfasync="false" src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js"><\/script>
-<div id="container-e11b62d0d7d59d1d067e466e43ac58a8"></div>`;
 const TOP_BANNER_AD_SCRIPT = `<script>
   atOptions = {
     'key' : '637576a22a8ac384bc75c05afc089bb6',
@@ -460,14 +448,11 @@ function buildAdSrcdoc(codeHtml) {
 /* ---- বিজ্ঞাপন কোড রোটেশন: একাধিক নামসহ বিজ্ঞাপন কোড থাকলে পালাক্রমে দেখানো হবে, ---- */
 /* ---- কোনোটা খালি থাকলে বাকিগুলো থেকেই নেওয়া হবে, একটাও না থাকলে ডিফল্ট কোড ব্যবহার হবে ---- */
 function getAdCodes() {
-  let codes;
   if (Array.isArray(settings.adSlots) && settings.adSlots.length) {
-    codes = settings.adSlots.map(s => (s.code || '').trim()).filter(Boolean);
-  } else {
-    codes = [(settings.adScriptHtml || '').trim(), (settings.adScriptHtml2 || '').trim()].filter(Boolean);
+    return settings.adSlots.map(s => (s.code || '').trim()).filter(Boolean);
   }
-  if (!codes.length) codes = [DEFAULT_AD_SCRIPT_A, DEFAULT_AD_SCRIPT_B];
-  return codes;
+  // পুরনো (লিগ্যাসি) সেটিংস থেকে — যদি এডমিন আগে থেকে কোনো কোড বসিয়ে থাকেন
+  return [(settings.adScriptHtml || '').trim(), (settings.adScriptHtml2 || '').trim()].filter(Boolean);
 }
 function pickAdCode() {
   const codes = getAdCodes();
@@ -599,13 +584,7 @@ $('watchAdBtn').addEventListener('click', async () => {
   });
 });
 
-/* ================= বিজ্ঞাপন ওভারলে (ইন্টারস্টিশিয়াল + রিওয়ার্ডেড) ================= */
-function showInterstitialAd() {
-  return new Promise((resolve) => {
-    if (!settings.adsEnabled) { resolve(); return; }
-    runAdOverlay(resolve);
-  });
-}
+/* ================= বিজ্ঞাপন ওভারলে (রিওয়ার্ডেড) ================= */
 function showRewardedAd(onComplete) {
   runAdOverlay(async () => { await onComplete(); });
 }

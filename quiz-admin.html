@@ -62,6 +62,8 @@ textarea{min-height:70px;resize:vertical}
 .adSlotBox{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px;margin-bottom:10px}
 .adSlotHeadRow{display:flex;gap:10px;align-items:flex-end;margin-bottom:6px}
 .adSlotHeadRow > div:first-child{flex:1}
+/* ---- ব্যাক বাটনে বের হওয়ার টোস্ট ---- */
+#adminExitToast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;z-index:900}
 </style>
 </head>
 <body>
@@ -74,6 +76,7 @@ textarea{min-height:70px;resize:vertical}
     <button class="primary" id="adminLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
     <div id="loginGateStatus" class="status"></div>
   </div>
+  <div id="adminExitToast">আবার ব্যাক চাপুন — প্যানেল থেকে বের হতে</div>
 
   <div id="adminBody" style="display:none">
     <div class="tabs">
@@ -258,16 +261,57 @@ $('adminLoginBtn').addEventListener('click', async () => {
   try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
 });
 
+/* ---- ব্যাক বাটন গার্ড সিস্টেম (সবখানে) ---- */
+function pushGuard() { history.pushState({ guard: true }, '', location.href); }
+
 /* ---- ট্যাব সুইচ ---- */
+function switchTab(tabId) {
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+  document.querySelectorAll('.tabPanel').forEach(p => p.classList.toggle('active', p.id === tabId));
+  if (tabId === 'tabAttempts') loadAttempts();
+}
 document.querySelectorAll('.tabs button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tabPanel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    $(btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'tabAttempts') loadAttempts();
-  });
+  btn.addEventListener('click', () => { switchTab(btn.dataset.tab); pushGuard(); });
 });
+
+/* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা ---- */
+function openSettingsOverlay(id) { $(id).classList.add('open'); pushGuard(); }
+function closeSettingsOverlay(id) { $(id).classList.remove('open'); }
+$('openCoinSettingsBtn').addEventListener('click', () => openSettingsOverlay('coinSettingsOverlay'));
+$('openQuizSettingsBtn').addEventListener('click', () => openSettingsOverlay('quizSettingsOverlay'));
+$('openAdSettingsBtn').addEventListener('click', () => openSettingsOverlay('adSettingsOverlay'));
+$('coinSettingsBackBtn').addEventListener('click', () => history.back());
+$('quizSettingsBackBtn').addEventListener('click', () => history.back());
+$('adSettingsBackBtn').addEventListener('click', () => history.back());
+
+/* ---- সব জায়গার জন্য একটাই ব্যাক-বাটন হ্যান্ডলার ---- */
+let backPressCount = 0, backPressTimer = null;
+function handleBack() {
+  // ১) সেটিংস ফুলস্ক্রিন খোলা থাকলে বন্ধ করা
+  const openOverlay = document.querySelector('.settingsOverlay.open');
+  if (openOverlay) { openOverlay.classList.remove('open'); pushGuard(); return; }
+  // ২) ক্যাটাগরি ক্রম সাজানো মোড চালু থাকলে বাতিল করা
+  if (orderModeActive) { $('cancelOrderBtn').click(); pushGuard(); return; }
+  // ৩) ক্যাটাগরি এডিট ফর্ম খোলা থাকলে বাতিল করা
+  if (editingCatId) { window.cancelCatEdit(); pushGuard(); return; }
+  // ৪) প্রশ্ন এডিট ফর্ম খোলা থাকলে বাতিল করা
+  if (editingQId) { window.cancelQEdit(); pushGuard(); return; }
+  // ৫) ডিফল্ট ট্যাব (ক্যাটাগরি) ছাড়া অন্য ট্যাবে থাকলে ডিফল্ট ট্যাবে ফেরত যাওয়া
+  const activeTabBtn = document.querySelector('.tabs button.active');
+  if (activeTabBtn && activeTabBtn.dataset.tab !== 'tabCategories') { switchTab('tabCategories'); pushGuard(); return; }
+  // ৬) ডিফল্ট ট্যাবে থাকলে ডাবল-ব্যাকে প্যানেল থেকে বের হওয়া
+  if (backPressCount === 0) {
+    backPressCount = 1;
+    $('adminExitToast').style.display = 'block';
+    pushGuard();
+    backPressTimer = setTimeout(() => { backPressCount = 0; $('adminExitToast').style.display = 'none'; }, 2000);
+  } else {
+    clearTimeout(backPressTimer);
+    $('adminExitToast').style.display = 'none';
+  }
+}
+pushGuard();
+window.addEventListener('popstate', handleBack);
 
 let adminInited = false;
 async function initAdmin() {
@@ -277,22 +321,6 @@ async function initAdmin() {
   loadAllQuestions();
   loadSettings();
 }
-
-/* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা (ব্যাক বাটন গার্ড সহ) ---- */
-function openSettingsOverlay(id) {
-  $(id).classList.add('open');
-  history.pushState({ settingsOverlay: id }, '', location.href);
-}
-function closeSettingsOverlay(id) { $(id).classList.remove('open'); }
-window.addEventListener('popstate', () => {
-  document.querySelectorAll('.settingsOverlay.open').forEach(el => el.classList.remove('open'));
-});
-$('openCoinSettingsBtn').addEventListener('click', () => openSettingsOverlay('coinSettingsOverlay'));
-$('openQuizSettingsBtn').addEventListener('click', () => openSettingsOverlay('quizSettingsOverlay'));
-$('openAdSettingsBtn').addEventListener('click', () => openSettingsOverlay('adSettingsOverlay'));
-$('coinSettingsBackBtn').addEventListener('click', () => history.back());
-$('quizSettingsBackBtn').addEventListener('click', () => history.back());
-$('adSettingsBackBtn').addEventListener('click', () => history.back());
 
 /* ================= ক্যাটাগরি ================= */
 let categoriesCache = [];
@@ -619,20 +647,6 @@ window.deleteQuestion = async (id) => {
   catch (e) { alert('এরর: ' + e.message); }
 };
 
-const DEFAULT_AD_SCRIPT_A = `<script>
-  atOptions = {
-    'key' : '5a3f11ee05184dbd6b902eb0e3f8bde1',
-    'format' : 'iframe',
-    'height' : 250,
-    'width' : 300,
-    'params' : {}
-  };
-<\/script>
-<script src="https://www.highrevenueformat.com/5a3f11ee05184dbd6b902eb0e3f8bde1/invoke.js"><\/script>`;
-
-const DEFAULT_AD_SCRIPT_B = `<script async="async" data-cfasync="false" src="https://pl31130170.profitableratecpmnetwork.com/e11b62d0d7d59d1d067e466e43ac58a8/invoke.js"><\/script>
-<div id="container-e11b62d0d7d59d1d067e466e43ac58a8"></div>`;
-
 /* ================= বিজ্ঞাপন — একাধিক নামসহ কোড স্লট ================= */
 let adSlots = [];
 function renderAdSlots() {
@@ -670,10 +684,7 @@ async function loadSettings() {
     $('setInterstitialEvery').value = d.interstitialEvery ?? 1;
     adSlots = Array.isArray(d.adSlots) && d.adSlots.length
       ? d.adSlots.map(s => ({ name: s.name || '', code: s.code || '' }))
-      : [
-          { name: 'কোম্পানি ১', code: d.adScriptHtml || DEFAULT_AD_SCRIPT_A },
-          { name: 'কোম্পানি ২', code: d.adScriptHtml2 || DEFAULT_AD_SCRIPT_B }
-        ];
+      : [d.adScriptHtml, d.adScriptHtml2].filter(c => c && c.trim()).map((code, i) => ({ name: `বিজ্ঞাপন ${i + 1}`, code }));
     renderAdSlots();
     $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
     $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
