@@ -107,7 +107,7 @@ textarea{min-height:70px;resize:vertical}
         <div class="searchBox"><input id="qSearchInput" placeholder="🔍 প্রশ্ন খুঁজুন... (সব ক্যাটাগরি জুড়ে)"></div>
         <label>অথবা ক্যাটাগরি অনুযায়ী ফিল্টার</label>
         <select id="qFilterCategory"></select>
-        <div id="qList" style="margin-top:10px"><div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div></div>
+        <div id="qList" style="margin-top:10px"><div class="notice">লোড হচ্ছে...</div></div>
       </div>
     </section>
 
@@ -253,22 +253,29 @@ document.querySelectorAll('.tabs button').forEach(btn => {
 });
 
 let adminInited = false;
-function initAdmin() {
+async function initAdmin() {
   if (adminInited) return;
   adminInited = true;
-  loadCategories();
+  await loadCategories();
+  loadAllQuestions();
   loadSettings();
 }
 
-/* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা ---- */
-function openSettingsOverlay(id) { $(id).classList.add('open'); }
+/* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা (ব্যাক বাটন গার্ড সহ) ---- */
+function openSettingsOverlay(id) {
+  $(id).classList.add('open');
+  history.pushState({ settingsOverlay: id }, '', location.href);
+}
 function closeSettingsOverlay(id) { $(id).classList.remove('open'); }
+window.addEventListener('popstate', () => {
+  document.querySelectorAll('.settingsOverlay.open').forEach(el => el.classList.remove('open'));
+});
 $('openCoinSettingsBtn').addEventListener('click', () => openSettingsOverlay('coinSettingsOverlay'));
 $('openQuizSettingsBtn').addEventListener('click', () => openSettingsOverlay('quizSettingsOverlay'));
 $('openAdSettingsBtn').addEventListener('click', () => openSettingsOverlay('adSettingsOverlay'));
-$('coinSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('coinSettingsOverlay'));
-$('quizSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('quizSettingsOverlay'));
-$('adSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('adSettingsOverlay'));
+$('coinSettingsBackBtn').addEventListener('click', () => history.back());
+$('quizSettingsBackBtn').addEventListener('click', () => history.back());
+$('adSettingsBackBtn').addEventListener('click', () => history.back());
 
 /* ================= ক্যাটাগরি ================= */
 let categoriesCache = [];
@@ -400,15 +407,15 @@ $('addQBtn').addEventListener('click', async () => {
   } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
 });
 
-/* ---- প্রশ্ন তালিকা: ক্যাটাগরি ফিল্টার অথবা সার্চ (সব ক্যাটাগরি জুড়ে) ---- */
+/* ---- প্রশ্ন তালিকা: ডিফল্টে সব প্রশ্ন, ক্যাটাগরি ফিল্টার অথবা সার্চ দিয়ে সংকীর্ণ করা যায় ---- */
 let qListCache = [];
-let qListMode = null; // { type: 'category', categoryId } | { type: 'search', term }
+let qListMode = null; // { type: 'all' } | { type: 'category', categoryId } | { type: 'search', term }
 let editingQId = null, editQOptions = [], editQCorrectIndex = 0, editQCategoryId = null;
 
 $('qFilterCategory').addEventListener('change', () => {
   const id = $('qFilterCategory').value;
   $('qSearchInput').value = '';
-  if (id) loadQuestionsByCategory(id); else { qListMode = null; $('qList').innerHTML = '<div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div>'; }
+  if (id) loadQuestionsByCategory(id); else loadAllQuestions();
 });
 let qSearchDebounce = null;
 $('qSearchInput').addEventListener('input', () => {
@@ -416,10 +423,18 @@ $('qSearchInput').addEventListener('input', () => {
   const term = $('qSearchInput').value.trim();
   qSearchDebounce = setTimeout(() => {
     if (term) { $('qFilterCategory').value = ''; loadQuestionsBySearch(term); }
-    else { const catId = $('qFilterCategory').value; if (catId) loadQuestionsByCategory(catId); else { qListMode = null; $('qList').innerHTML = '<div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div>'; } }
+    else { const catId = $('qFilterCategory').value; if (catId) loadQuestionsByCategory(catId); else loadAllQuestions(); }
   }, 300);
 });
 
+async function loadAllQuestions() {
+  qListMode = { type: 'all' };
+  $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(collection(db, 'quizQuestions'));
+    renderQList(s.docs.map(x => ({ id: x.id, ...x.data() })));
+  } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
+}
 async function loadQuestionsByCategory(categoryId) {
   qListMode = { type: 'category', categoryId };
   $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
@@ -439,7 +454,7 @@ async function loadQuestionsBySearch(term) {
   } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
 function refreshQList() {
-  if (!qListMode) return;
+  if (!qListMode || qListMode.type === 'all') { loadAllQuestions(); return; }
   if (qListMode.type === 'category') loadQuestionsByCategory(qListMode.categoryId);
   else loadQuestionsBySearch(qListMode.term);
 }
