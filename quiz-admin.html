@@ -34,6 +34,24 @@ textarea{min-height:70px;resize:vertical}
 .status{font-size:12px;margin-top:8px;min-height:16px}
 .status.ok{color:#4ade80}.status.err{color:#f87171}
 .loginGate{max-width:340px;margin:80px auto;text-align:center}
+/* ---- সেটিংস তিন ভাগ ---- */
+.settingsBtnGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.settingsGroupBtn{background:#161b22;border:1px solid #262c36;border-radius:14px;padding:22px 8px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-align:center;line-height:1.9}
+.settingsGroupBtn .ic{font-size:26px;display:block}
+.settingsGroupBtn:active{background:#1c2128}
+.settingsOverlay{display:none;position:fixed;inset:0;background:#0d1117;z-index:600;overflow-y:auto}
+.settingsOverlay.open{display:block}
+.settingsOverlayHeader{position:sticky;top:0;background:#161b22;border-bottom:1px solid #262c36;padding:14px 16px;display:flex;align-items:center;gap:12px;font-size:16px;font-weight:700;z-index:2}
+.settingsBackBtn{background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:2px 6px}
+.settingsOverlayBody{max-width:760px;margin:0 auto;padding:16px}
+/* ---- সার্চ ---- */
+.searchBox{margin-bottom:10px}
+.searchBox input{width:100%}
+/* ---- ইনলাইন এডিট ফর্ম ---- */
+.editForm{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px;margin-bottom:8px}
+.editForm .row2{margin-bottom:0}
+.editFormBtns{display:flex;gap:8px;margin-top:10px}
+.editFormBtns button{flex:1}
 </style>
 </head>
 <body>
@@ -67,6 +85,7 @@ textarea{min-height:70px;resize:vertical}
       </div>
       <div class="box">
         <h3>📂 বিদ্যমান ক্যাটাগরি</h3>
+        <div class="searchBox"><input id="catSearchInput" placeholder="🔍 ক্যাটাগরি খুঁজুন..."></div>
         <div id="catList"><div class="notice">লোড হচ্ছে...</div></div>
       </div>
     </section>
@@ -85,56 +104,90 @@ textarea{min-height:70px;resize:vertical}
       </div>
       <div class="box">
         <h3>📋 বিদ্যমান প্রশ্ন</h3>
-        <label>ক্যাটাগরি অনুযায়ী ফিল্টার</label>
+        <div class="searchBox"><input id="qSearchInput" placeholder="🔍 প্রশ্ন খুঁজুন... (সব ক্যাটাগরি জুড়ে)"></div>
+        <label>অথবা ক্যাটাগরি অনুযায়ী ফিল্টার</label>
         <select id="qFilterCategory"></select>
-        <div id="qList" style="margin-top:10px"><div class="notice">উপরে ক্যাটাগরি বাছাই করুন</div></div>
+        <div id="qList" style="margin-top:10px"><div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div></div>
       </div>
     </section>
 
-    <!-- ---- সেটিংস ---- -->
+    <!-- ---- সেটিংস (৩ ভাগে বিভক্ত) ---- -->
     <section id="tabSettings" class="tabPanel">
-      <div class="box">
-        <h3>⚙️ কয়েন সেটিংস</h3>
-        <div class="row2">
-          <div><label>কয়েনের নাম</label><input id="setUnitName" value="Coin"></div>
-          <div><label>প্রতি সঠিক উত্তরে কয়েন</label><input id="setCoinPerCorrect" type="number" value="1"></div>
-        </div>
-        <div class="row2">
-          <div><label>কুইজ শুরুর এন্ট্রি ফি (০ = ফ্রি)</label><input id="setEntryFee" type="number" value="0"></div>
-          <div><label>প্রতিদিন সর্বোচ্চ আয় (কুইজ থেকে)</label><input id="setMaxCoinsPerDay" type="number" value="50"></div>
-        </div>
-        <div class="row2">
-          <div><label>প্রতি কুইজে প্রশ্ন সংখ্যা</label><input id="setQuestionsPerQuiz" type="number" value="10"></div>
-          <div><label>প্রতি প্রশ্নে টাইমার (সেকেন্ড, ০ = টাইমার ছাড়া)</label><input id="setTimerSeconds" type="number" value="15"></div>
-        </div>
+      <div class="settingsBtnGrid">
+        <button class="settingsGroupBtn" id="openCoinSettingsBtn"><span class="ic">🪙</span>কয়েন</button>
+        <button class="settingsGroupBtn" id="openQuizSettingsBtn"><span class="ic">🧠</span>কুইজ</button>
+        <button class="settingsGroupBtn" id="openAdSettingsBtn"><span class="ic">📢</span>বিজ্ঞাপন</button>
       </div>
-
-      <div class="box">
-        <h3>📢 বিজ্ঞাপন সেটিংস</h3>
-        <div class="row2">
-          <div><label>বিজ্ঞাপন চালু আছে?</label><select id="setAdsEnabled"><option value="true">হ্যাঁ</option><option value="false">না</option></select></div>
-          <div><label>কত নম্বর কুইজ পরপর ব্যানার বিজ্ঞাপন দেখাবে (১ = প্রতিটি কুইজে, ২ = প্রতি ২য় কুইজে, ৩ = প্রতি ৩য় কুইজে...)</label><input id="setInterstitialEvery" type="number" value="1" min="1"></div>
-        </div>
-        <label>বিজ্ঞাপন স্কিপ করা যাবে কত সেকেন্ড পর (পুরোনো ফিচার, এখন ব্যবহার হচ্ছে না)</label><input id="setAdSkipSeconds" type="number" value="5">
-        <label>বিজ্ঞাপন কোড — কোম্পানি ১ / Slot A (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
-        <textarea id="setAdScriptHtml" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;"></textarea>
-        <label>বিজ্ঞাপন কোড — কোম্পানি ২ / Slot B (খালি রাখলে সবসময় কোম্পানি ১-এর কোডই দেখাবে)</label>
-        <textarea id="setAdScriptHtml2" placeholder="দ্বিতীয় বিজ্ঞাপন কোম্পানির কোড (অপশনাল)"></textarea>
-        <p class="notice">কোম্পানি ১ ও কোম্পানি ২-এর কোড থাকলে, বিজ্ঞাপন যতবার দেখানো হবে ততবার পালাক্রমে (একবার কোম্পানি ১, একবার কোম্পানি ২) দেখানো হবে — যাতে একই কোম্পানির অ্যাড বারবার না দেখিয়ে বট-শনাক্তকরণ এড়ানো যায়।</p>
-        <div class="row2">
-          <div><label>রিওয়ার্ডেড অ্যাডে কয়েন</label><input id="setRewardedAdCoins" type="number" value="2"></div>
-          <div><label>প্রতিদিন সর্বোচ্চ রিওয়ার্ডেড অ্যাড</label><input id="setMaxRewardedAdsPerDay" type="number" value="5"></div>
-        </div>
-      </div>
-
-      <div class="box">
-        <h3>📣 নোটিশ বার টেক্সট</h3>
-        <input id="setNoticeText" placeholder="কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ">
-      </div>
-
-      <button class="primary" id="saveSettingsBtn">সব সেটিংস সেভ করুন</button>
-      <div class="status" id="settingsStatus"></div>
     </section>
+
+    <!-- ---- ফুলস্ক্রিন: কয়েন সেটিংস ---- -->
+    <div class="settingsOverlay" id="coinSettingsOverlay">
+      <div class="settingsOverlayHeader">
+        <button class="settingsBackBtn" id="coinSettingsBackBtn">←</button>
+        <span>🪙 কয়েন সেটিংস</span>
+      </div>
+      <div class="settingsOverlayBody">
+        <div class="box">
+          <div class="row2">
+            <div><label>কয়েনের নাম</label><input id="setUnitName" value="Coin"></div>
+            <div><label>প্রতি সঠিক উত্তরে কয়েন</label><input id="setCoinPerCorrect" type="number" value="1"></div>
+          </div>
+          <div class="row2">
+            <div><label>কুইজ শুরুর এন্ট্রি ফি (০ = ফ্রি)</label><input id="setEntryFee" type="number" value="0"></div>
+            <div><label>প্রতিদিন সর্বোচ্চ আয় (কুইজ থেকে)</label><input id="setMaxCoinsPerDay" type="number" value="50"></div>
+          </div>
+          <div class="row2">
+            <div><label>রিওয়ার্ডেড অ্যাডে কয়েন</label><input id="setRewardedAdCoins" type="number" value="2"></div>
+            <div><label>প্রতিদিন সর্বোচ্চ রিওয়ার্ডেড অ্যাড</label><input id="setMaxRewardedAdsPerDay" type="number" value="5"></div>
+          </div>
+        </div>
+        <button class="primary" id="saveCoinSettingsBtn">কয়েন সেটিংস সেভ করুন</button>
+        <div class="status" id="coinSettingsStatus"></div>
+      </div>
+    </div>
+
+    <!-- ---- ফুলস্ক্রিন: কুইজ সেটিংস ---- -->
+    <div class="settingsOverlay" id="quizSettingsOverlay">
+      <div class="settingsOverlayHeader">
+        <button class="settingsBackBtn" id="quizSettingsBackBtn">←</button>
+        <span>🧠 কুইজ সেটিংস</span>
+      </div>
+      <div class="settingsOverlayBody">
+        <div class="box">
+          <div class="row2">
+            <div><label>প্রতি কুইজে প্রশ্ন সংখ্যা</label><input id="setQuestionsPerQuiz" type="number" value="10"></div>
+            <div><label>প্রতি প্রশ্নে টাইমার (সেকেন্ড, ০ = টাইমার ছাড়া)</label><input id="setTimerSeconds" type="number" value="15"></div>
+          </div>
+          <label>নোটিশ বার টেক্সট (কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ)</label>
+          <input id="setNoticeText" placeholder="কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ">
+        </div>
+        <button class="primary" id="saveQuizSettingsBtn">কুইজ সেটিংস সেভ করুন</button>
+        <div class="status" id="quizSettingsStatus"></div>
+      </div>
+    </div>
+
+    <!-- ---- ফুলস্ক্রিন: বিজ্ঞাপন সেটিংস ---- -->
+    <div class="settingsOverlay" id="adSettingsOverlay">
+      <div class="settingsOverlayHeader">
+        <button class="settingsBackBtn" id="adSettingsBackBtn">←</button>
+        <span>📢 বিজ্ঞাপন সেটিংস</span>
+      </div>
+      <div class="settingsOverlayBody">
+        <div class="box">
+          <div class="row2">
+            <div><label>বিজ্ঞাপন চালু আছে?</label><select id="setAdsEnabled"><option value="true">হ্যাঁ</option><option value="false">না</option></select></div>
+            <div><label>কত নম্বর কুইজ পরপর ব্যানার বিজ্ঞাপন দেখাবে (১ = প্রতিটি কুইজে, ২ = প্রতি ২য় কুইজে, ৩ = প্রতি ৩য় কুইজে...)</label><input id="setInterstitialEvery" type="number" value="1" min="1"></div>
+          </div>
+          <label>বিজ্ঞাপন কোড — কোম্পানি ১ / Slot A (AdSense/Adsterra ইত্যাদির কোড এখানে বসান)</label>
+          <textarea id="setAdScriptHtml" placeholder="&lt;script&gt;...&lt;/script&gt; অথবা &lt;ins class=&quot;adsbygoogle&quot;...&gt;"></textarea>
+          <label>বিজ্ঞাপন কোড — কোম্পানি ২ / Slot B (খালি রাখলে সবসময় কোম্পানি ১-এর কোডই দেখাবে)</label>
+          <textarea id="setAdScriptHtml2" placeholder="দ্বিতীয় বিজ্ঞাপন কোম্পানির কোড (অপশনাল)"></textarea>
+          <p class="notice">কোম্পানি ১ ও কোম্পানি ২-এর কোড থাকলে, বিজ্ঞাপন যতবার দেখানো হবে ততবার পালাক্রমে (একবার কোম্পানি ১, একবার কোম্পানি ২) দেখানো হবে — যাতে একই কোম্পানির অ্যাড বারবার না দেখিয়ে বট-শনাক্তকরণ এড়ানো যায়।</p>
+        </div>
+        <button class="primary" id="saveAdSettingsBtn">বিজ্ঞাপন সেটিংস সেভ করুন</button>
+        <div class="status" id="adSettingsStatus"></div>
+      </div>
+    </div>
 
     <!-- ---- অ্যাটেম্পট ---- -->
     <section id="tabAttempts" class="tabPanel">
@@ -207,6 +260,16 @@ function initAdmin() {
   loadSettings();
 }
 
+/* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা ---- */
+function openSettingsOverlay(id) { $(id).classList.add('open'); }
+function closeSettingsOverlay(id) { $(id).classList.remove('open'); }
+$('openCoinSettingsBtn').addEventListener('click', () => openSettingsOverlay('coinSettingsOverlay'));
+$('openQuizSettingsBtn').addEventListener('click', () => openSettingsOverlay('quizSettingsOverlay'));
+$('openAdSettingsBtn').addEventListener('click', () => openSettingsOverlay('adSettingsOverlay'));
+$('coinSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('coinSettingsOverlay'));
+$('quizSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('quizSettingsOverlay'));
+$('adSettingsBackBtn').addEventListener('click', () => closeSettingsOverlay('adSettingsOverlay'));
+
 /* ================= ক্যাটাগরি ================= */
 let categoriesCache = [];
 async function loadCategories() {
@@ -217,16 +280,49 @@ async function loadCategories() {
     fillCategorySelects();
   } catch (e) { $('catList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
+let editingCatId = null;
 function renderCatList() {
-  $('catList').innerHTML = categoriesCache.length ? categoriesCache.map(c => `
+  const term = ($('catSearchInput')?.value || '').trim().toLowerCase();
+  const list = term ? categoriesCache.filter(c => (c.name || '').toLowerCase().includes(term)) : categoriesCache;
+  if (!list.length) { $('catList').innerHTML = `<div class="notice">${term ? 'কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।' : 'কোনো ক্যাটাগরি নেই।'}</div>`; return; }
+  $('catList').innerHTML = list.map(c => {
+    if (editingCatId === c.id) {
+      return `
+      <div class="editForm">
+        <label>নাম</label><input id="editCatName_${c.id}" value="${esc(c.name || '')}">
+        <label>আইকন (ইমোজি)</label><input id="editCatIcon_${c.id}" value="${esc(c.icon || '')}">
+        <label>অর্ডার</label><input id="editCatOrder_${c.id}" type="number" value="${c.order ?? 0}">
+        <div class="editFormBtns">
+          <button class="primary" onclick="window.saveCatEdit('${c.id}')">সেভ করুন</button>
+          <button class="ghost" onclick="window.cancelCatEdit()">বাতিল</button>
+        </div>
+      </div>`;
+    }
+    return `
     <div class="listItem">
       <div class="info"><div class="title">${esc(c.icon || '❓')} ${esc(c.name || '')}</div><div class="sub">অর্ডার: ${c.order ?? 0} · ${c.active === false ? 'নিষ্ক্রিয়' : 'সক্রিয়'}</div></div>
       <div class="actionsWrap">
+        <button class="ghost" onclick="window.editCatStart('${c.id}')">✏️ এডিট</button>
         <button class="ghost" onclick="window.toggleCatActive('${c.id}', ${c.active === false})">${c.active === false ? 'সক্রিয় করুন' : 'নিষ্ক্রিয় করুন'}</button>
         <button class="danger" onclick="window.deleteCat('${c.id}')">ডিলিট</button>
       </div>
-    </div>`).join('') : '<div class="notice">কোনো ক্যাটাগরি নেই।</div>';
+    </div>`;
+  }).join('');
 }
+$('catSearchInput').addEventListener('input', renderCatList);
+window.editCatStart = (id) => { editingCatId = id; renderCatList(); };
+window.cancelCatEdit = () => { editingCatId = null; renderCatList(); };
+window.saveCatEdit = async (id) => {
+  const name = $(`editCatName_${id}`).value.trim();
+  if (!name) { alert('নাম দিন'); return; }
+  try {
+    await updateDoc(doc(db, 'quizCategories', id), {
+      name, icon: $(`editCatIcon_${id}`).value.trim() || '❓', order: Number($(`editCatOrder_${id}`).value || 0)
+    });
+    editingCatId = null;
+    loadCategories();
+  } catch (e) { alert('এরর: ' + e.message); }
+};
 function fillCategorySelects() {
   const opts = categoriesCache.map(c => `<option value="${c.id}">${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
   $('qCategory').innerHTML = opts || '<option value="">প্রথমে একটি ক্যাটাগরি বানান</option>';
@@ -300,29 +396,133 @@ $('addQBtn').addEventListener('click', async () => {
     $('qText').value = '';
     qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
     $('qStatus').textContent = '✅ প্রশ্ন যোগ হয়েছে'; $('qStatus').className = 'status ok';
-    if ($('qFilterCategory').value === categoryId) loadQuestions(categoryId);
+    refreshQList();
   } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
 });
+
+/* ---- প্রশ্ন তালিকা: ক্যাটাগরি ফিল্টার অথবা সার্চ (সব ক্যাটাগরি জুড়ে) ---- */
+let qListCache = [];
+let qListMode = null; // { type: 'category', categoryId } | { type: 'search', term }
+let editingQId = null, editQOptions = [], editQCorrectIndex = 0, editQCategoryId = null;
+
 $('qFilterCategory').addEventListener('change', () => {
   const id = $('qFilterCategory').value;
-  if (id) loadQuestions(id); else $('qList').innerHTML = '<div class="notice">উপরে ক্যাটাগরি বাছাই করুন</div>';
+  $('qSearchInput').value = '';
+  if (id) loadQuestionsByCategory(id); else { qListMode = null; $('qList').innerHTML = '<div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div>'; }
 });
-async function loadQuestions(categoryId) {
+let qSearchDebounce = null;
+$('qSearchInput').addEventListener('input', () => {
+  clearTimeout(qSearchDebounce);
+  const term = $('qSearchInput').value.trim();
+  qSearchDebounce = setTimeout(() => {
+    if (term) { $('qFilterCategory').value = ''; loadQuestionsBySearch(term); }
+    else { const catId = $('qFilterCategory').value; if (catId) loadQuestionsByCategory(catId); else { qListMode = null; $('qList').innerHTML = '<div class="notice">সার্চ করুন অথবা উপরে ক্যাটাগরি বাছাই করুন</div>'; } }
+  }, 300);
+});
+
+async function loadQuestionsByCategory(categoryId) {
+  qListMode = { type: 'category', categoryId };
   $('qList').innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
   try {
     const s = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', categoryId)));
-    const list = s.docs.map(x => ({ id: x.id, ...x.data() }));
-    $('qList').innerHTML = list.length ? list.map(q => `
-      <div class="listItem">
-        <div class="info"><div class="title">${esc(q.question)}</div>
-          <div class="sub">সঠিক উত্তর: ${esc((q.options || [])[q.correctIndex] || '')}</div></div>
-        <div class="actionsWrap"><button class="danger" onclick="window.deleteQuestion('${q.id}','${categoryId}')">ডিলিট</button></div>
-      </div>`).join('') : '<div class="notice">এই ক্যাটাগরিতে কোনো প্রশ্ন নেই।</div>';
+    renderQList(s.docs.map(x => ({ id: x.id, ...x.data() })));
   } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
 }
-window.deleteQuestion = async (id, categoryId) => {
+async function loadQuestionsBySearch(term) {
+  qListMode = { type: 'search', term };
+  $('qList').innerHTML = '<div class="notice">খোঁজা হচ্ছে...</div>';
+  try {
+    const s = await getDocs(collection(db, 'quizQuestions'));
+    const all = s.docs.map(x => ({ id: x.id, ...x.data() }));
+    const t = term.toLowerCase();
+    renderQList(all.filter(q => (q.question || '').toLowerCase().includes(t)));
+  } catch (e) { $('qList').innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>'; }
+}
+function refreshQList() {
+  if (!qListMode) return;
+  if (qListMode.type === 'category') loadQuestionsByCategory(qListMode.categoryId);
+  else loadQuestionsBySearch(qListMode.term);
+}
+
+function renderQList(list) {
+  qListCache = list;
+  if (!list.length) { $('qList').innerHTML = '<div class="notice">কোনো প্রশ্ন পাওয়া যায়নি।</div>'; return; }
+  $('qList').innerHTML = list.map(q => {
+    if (editingQId === q.id) {
+      const catOpts = categoriesCache.map(c => `<option value="${c.id}" ${c.id === editQCategoryId ? 'selected' : ''}>${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
+      return `
+      <div class="editForm">
+        <label>ক্যাটাগরি</label><select id="editQCategorySelect">${catOpts}</select>
+        <label>প্রশ্ন</label><textarea id="editQTextArea">${esc(q.question || '')}</textarea>
+        <label>অপশনসমূহ</label>
+        <div id="editQOptionsContainer"></div>
+        <button type="button" class="ghost" id="addEditQOptionBtn" style="margin-top:8px">➕ আরও অপশন যোগ করুন</button>
+        <div class="editFormBtns">
+          <button class="primary" onclick="window.saveQEdit('${q.id}')">সেভ করুন</button>
+          <button class="ghost" onclick="window.cancelQEdit()">বাতিল</button>
+        </div>
+      </div>`;
+    }
+    const catName = (categoriesCache.find(c => c.id === q.categoryId) || {}).name || '';
+    return `
+      <div class="listItem">
+        <div class="info"><div class="title">${esc(q.question)}</div>
+          <div class="sub">${catName ? esc(catName) + ' · ' : ''}সঠিক উত্তর: ${esc((q.options || [])[q.correctIndex] || '')}</div></div>
+        <div class="actionsWrap">
+          <button class="ghost" onclick="window.editQStart('${q.id}')">✏️ এডিট</button>
+          <button class="danger" onclick="window.deleteQuestion('${q.id}')">ডিলিট</button>
+        </div>
+      </div>`;
+  }).join('');
+  if (editingQId && list.some(q => q.id === editingQId)) {
+    renderEditQOptions();
+    $('addEditQOptionBtn').addEventListener('click', () => { if (editQOptions.length >= MAX_QOPTIONS) return; editQOptions.push(''); renderEditQOptions(); });
+  }
+}
+function renderEditQOptions() {
+  $('editQOptionsContainer').innerHTML = editQOptions.map((val, i) => `
+    <div class="optRow">
+      <input type="radio" name="editQCorrect" value="${i}" ${i === editQCorrectIndex ? 'checked' : ''} onchange="window.setEditQCorrect(${i})">
+      <input class="editQOptInput" data-i="${i}" placeholder="অপশন ${i + 1}" value="${esc(val)}">
+      ${editQOptions.length > MIN_QOPTIONS ? `<button type="button" class="danger" onclick="window.removeEditQOption(${i})">✕</button>` : ''}
+    </div>`).join('');
+  document.querySelectorAll('.editQOptInput').forEach(inp => {
+    inp.addEventListener('input', e => { editQOptions[Number(e.target.dataset.i)] = e.target.value; });
+  });
+  $('addEditQOptionBtn').style.display = editQOptions.length >= MAX_QOPTIONS ? 'none' : '';
+}
+window.setEditQCorrect = (i) => { editQCorrectIndex = i; };
+window.removeEditQOption = (i) => {
+  if (editQOptions.length <= MIN_QOPTIONS) return;
+  editQOptions.splice(i, 1);
+  if (editQCorrectIndex === i) editQCorrectIndex = 0;
+  else if (editQCorrectIndex > i) editQCorrectIndex--;
+  renderEditQOptions();
+};
+window.editQStart = (id) => {
+  const q = qListCache.find(x => x.id === id);
+  if (!q) return;
+  editingQId = id;
+  editQCategoryId = q.categoryId;
+  editQOptions = (q.options && q.options.length ? q.options.slice() : ['', '']);
+  editQCorrectIndex = q.correctIndex || 0;
+  renderQList(qListCache);
+};
+window.cancelQEdit = () => { editingQId = null; renderQList(qListCache); };
+window.saveQEdit = async (id) => {
+  const categoryId = $('editQCategorySelect').value;
+  const question = $('editQTextArea').value.trim();
+  const options = editQOptions.map(o => o.trim());
+  if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) { alert('সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'); return; }
+  try {
+    await updateDoc(doc(db, 'quizQuestions', id), { categoryId, question, options, correctIndex: editQCorrectIndex });
+    editingQId = null;
+    refreshQList();
+  } catch (e) { alert('এরর: ' + e.message); }
+};
+window.deleteQuestion = async (id) => {
   if (!confirm('এই প্রশ্নটি ডিলিট করতে চান?')) return;
-  try { await deleteDoc(doc(db, 'quizQuestions', id)); loadQuestions(categoryId); }
+  try { await deleteDoc(doc(db, 'quizQuestions', id)); refreshQList(); }
   catch (e) { alert('এরর: ' + e.message); }
 };
 
@@ -353,7 +553,6 @@ async function loadSettings() {
     $('setTimerSeconds').value = d.timerSeconds ?? 15;
     $('setAdsEnabled').value = String(d.adsEnabled !== false);
     $('setInterstitialEvery').value = d.interstitialEvery ?? 1;
-    $('setAdSkipSeconds').value = d.adSkipSeconds ?? 5;
     $('setAdScriptHtml').value = d.adScriptHtml || DEFAULT_AD_SCRIPT_A;
     $('setAdScriptHtml2').value = d.adScriptHtml2 || DEFAULT_AD_SCRIPT_B;
     $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
@@ -361,27 +560,42 @@ async function loadSettings() {
     $('setNoticeText').value = d.noticeText || '';
   } catch (e) {}
 }
-$('saveSettingsBtn').addEventListener('click', async () => {
+$('saveCoinSettingsBtn').addEventListener('click', async () => {
   try {
     await setDoc(doc(db, 'settings', 'quiz'), {
       unitName: $('setUnitName').value.trim() || 'Coin',
       coinPerCorrect: Number($('setCoinPerCorrect').value || 0),
       entryFee: Number($('setEntryFee').value || 0),
       maxCoinsPerDay: Number($('setMaxCoinsPerDay').value || 0),
-      questionsPerQuiz: Number($('setQuestionsPerQuiz').value || 10),
-      timerSeconds: Number($('setTimerSeconds').value || 0),
-      adsEnabled: $('setAdsEnabled').value === 'true',
-      interstitialEvery: Number($('setInterstitialEvery').value || 0),
-      adSkipSeconds: Number($('setAdSkipSeconds').value || 5),
-      adScriptHtml: $('setAdScriptHtml').value,
-      adScriptHtml2: $('setAdScriptHtml2').value,
       rewardedAdCoins: Number($('setRewardedAdCoins').value || 0),
       maxRewardedAdsPerDay: Number($('setMaxRewardedAdsPerDay').value || 5),
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    $('coinSettingsStatus').textContent = '✅ কয়েন সেটিংস সেভ হয়েছে'; $('coinSettingsStatus').className = 'status ok';
+  } catch (e) { $('coinSettingsStatus').textContent = 'এরর: ' + e.message; $('coinSettingsStatus').className = 'status err'; }
+});
+$('saveQuizSettingsBtn').addEventListener('click', async () => {
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), {
+      questionsPerQuiz: Number($('setQuestionsPerQuiz').value || 10),
+      timerSeconds: Number($('setTimerSeconds').value || 0),
       noticeText: $('setNoticeText').value.trim(),
       updatedAt: serverTimestamp()
     }, { merge: true });
-    $('settingsStatus').textContent = '✅ সেটিংস সেভ হয়েছে'; $('settingsStatus').className = 'status ok';
-  } catch (e) { $('settingsStatus').textContent = 'এরর: ' + e.message; $('settingsStatus').className = 'status err'; }
+    $('quizSettingsStatus').textContent = '✅ কুইজ সেটিংস সেভ হয়েছে'; $('quizSettingsStatus').className = 'status ok';
+  } catch (e) { $('quizSettingsStatus').textContent = 'এরর: ' + e.message; $('quizSettingsStatus').className = 'status err'; }
+});
+$('saveAdSettingsBtn').addEventListener('click', async () => {
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), {
+      adsEnabled: $('setAdsEnabled').value === 'true',
+      interstitialEvery: Number($('setInterstitialEvery').value || 0),
+      adScriptHtml: $('setAdScriptHtml').value,
+      adScriptHtml2: $('setAdScriptHtml2').value,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    $('adSettingsStatus').textContent = '✅ বিজ্ঞাপন সেটিংস সেভ হয়েছে'; $('adSettingsStatus').className = 'status ok';
+  } catch (e) { $('adSettingsStatus').textContent = 'এরর: ' + e.message; $('adSettingsStatus').className = 'status err'; }
 });
 
 /* ================= অ্যাটেম্পট ================= */
