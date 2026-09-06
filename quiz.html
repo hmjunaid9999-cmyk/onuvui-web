@@ -235,6 +235,7 @@ let settings = {
   unitName: 'Coin', entryFee: 0, coinPerCorrect: 1, maxCoinsPerDay: 50,
   timerSeconds: 15, questionsPerQuiz: 10, adsEnabled: true, interstitialEvery: 1,
   adSkipSeconds: 5, adScriptHtml: '', adScriptHtml2: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
+  dailyQuizLimit: 0, hourlyQuizLimit: 0,
   noticeText: 'কুইজ খেলুন, কয়েন জিতুন! 🎉'
 };
 const TOP_BANNER_AD_SCRIPT = `<script>
@@ -252,6 +253,7 @@ function unit() { return settings.unitName || 'Coin'; }
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function hourKey(d) { return dayKey(d) + '-' + pad2(d.getHours()); }
 
 /* ================= সেটিংস লোড ================= */
 async function loadSettings() {
@@ -322,6 +324,46 @@ async function bumpTodayEarned(uid, amt) {
   } catch (e) {}
 }
 
+/* ================= দৈনিক/ঘন্টাভিত্তিক কুইজ খেলার সীমা ================= */
+async function getQuizCountToday(uid) {
+  try {
+    const s = await getDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())));
+    return s.exists() ? Number(s.data().quizCount || 0) : 0;
+  } catch (e) { return 0; }
+}
+async function getQuizCountThisHour(uid) {
+  try {
+    const s = await getDoc(doc(db, 'users', uid, 'quizHourlyStats', hourKey(new Date())));
+    return s.exists() ? Number(s.data().quizCount || 0) : 0;
+  } catch (e) { return 0; }
+}
+function bumpQuizCount(uid) {
+  const now = new Date();
+  setDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(now)), { quizCount: increment(1) }, { merge: true }).catch(() => {});
+  setDoc(doc(db, 'users', uid, 'quizHourlyStats', hourKey(now)), { quizCount: increment(1) }, { merge: true }).catch(() => {});
+}
+async function checkQuizLimit() {
+  if (!currentUser) return { allowed: true };
+  const dailyLimit = Number(settings.dailyQuizLimit) || 0;
+  const hourlyLimit = Number(settings.hourlyQuizLimit) || 0;
+  if (dailyLimit > 0) {
+    const usedToday = await getQuizCountToday(currentUser.uid);
+    if (usedToday >= dailyLimit) {
+      return { allowed: false, message: `আজকের জন্য আপনার কুইজ খেলার সীমা (${dailyLimit}টি) শেষ হয়ে গেছে। আগামীকাল আবার খেলতে পারবেন।` };
+    }
+  }
+  if (hourlyLimit > 0) {
+    const usedThisHour = await getQuizCountThisHour(currentUser.uid);
+    if (usedThisHour >= hourlyLimit) {
+      const now = new Date();
+      const nextHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours() + 1, 0, 0);
+      const hh = pad2(nextHour.getHours());
+      return { allowed: false, message: `এই ঘন্টার জন্য আপনার কুইজ খেলার সীমা (${hourlyLimit}টি) শেষ হয়ে গেছে। ${hh}:০০ এর পরে আবার খেলতে পারবেন।` };
+    }
+  }
+  return { allowed: true };
+}
+
 /* ================= লগইন মোডাল ================= */
 function openLoginModal() { $('loginModalOverlay').classList.add('open'); pushGuard(); }
 function closeLoginModal() { $('loginModalOverlay').classList.remove('open'); }
@@ -359,6 +401,16 @@ window.onCategoryChange = async function () {
   if (!id) { selectedCategory = null; categoryQuestions = []; renderCategoryArea(); return; }
   selectedCategory = categories.find(c => c.id === id);
   $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
+
+  if (currentUser) {
+    const limitCheck = await checkQuizLimit();
+    if (!limitCheck.allowed) {
+      categoryQuestions = [];
+      $('catGrid').innerHTML = `<div class="empty">⏳ ${esc(limitCheck.message)}</div>`;
+      return;
+    }
+  }
+
   try {
     const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', id)));
     categoryQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
@@ -392,6 +444,8 @@ let timerInterval = null, timeLeft = 0, questionAnswered = false;
 
 window.startQuestion = async function (index) {
   if (!requireLogin()) return;
+  const limitCheck = await checkQuizLimit();
+  if (!limitCheck.allowed) { alert(limitCheck.message); renderCategoryArea(); return; }
   activeQuestion = categoryQuestions[index];
   if (!activeQuestion) return;
   activeQuestionIndex = index;
@@ -410,6 +464,7 @@ window.startQuestion = async function (index) {
     } catch (e) { alert(e.message); return; }
   }
 
+  bumpQuizCount(currentUser.uid);
   showPanel('panelPlay', true);
   renderQuestion();
 };

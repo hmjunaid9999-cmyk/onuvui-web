@@ -182,6 +182,14 @@ textarea{min-height:70px;resize:vertical}
           <label>নোটিশ বার টেক্সট (কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ)</label>
           <input id="setNoticeText" placeholder="কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ">
         </div>
+        <div class="box">
+          <h3>⏱️ কুইজ খেলার সীমা</h3>
+          <div class="row2">
+            <div><label>একজন ইউজার দৈনিক সর্বোচ্চ কতগুলো কুইজ খেলতে পারবে (০ = সীমাহীন)</label><input id="setDailyQuizLimit" type="number" value="0" min="0"></div>
+            <div><label>একজন ইউজার প্রতি ঘন্টায় সর্বোচ্চ কতগুলো কুইজ খেলতে পারবে (০ = সীমাহীন)</label><input id="setHourlyQuizLimit" type="number" value="0" min="0"></div>
+          </div>
+          <p class="notice">সীমা শেষ হয়ে গেলে ইউজার আর কোনো কুইজ দেখতে/খেলতে পারবেন না — কোনো ক্যাটাগরিতে ঢুকলেই তাকে জানানো হবে পরবর্তী ঘন্টা বা পরবর্তী দিন আবার কখন খেলতে পারবেন।</p>
+        </div>
         <button class="primary" id="saveQuizSettingsBtn">কুইজ সেটিংস সেভ করুন</button>
         <div class="status" id="quizSettingsStatus"></div>
       </div>
@@ -689,6 +697,8 @@ async function loadSettings() {
     $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
     $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
     $('setNoticeText').value = d.noticeText || '';
+    $('setDailyQuizLimit').value = d.dailyQuizLimit ?? 0;
+    $('setHourlyQuizLimit').value = d.hourlyQuizLimit ?? 0;
   } catch (e) {}
 }
 $('saveCoinSettingsBtn').addEventListener('click', async () => {
@@ -711,6 +721,8 @@ $('saveQuizSettingsBtn').addEventListener('click', async () => {
       questionsPerQuiz: Number($('setQuestionsPerQuiz').value || 10),
       timerSeconds: Number($('setTimerSeconds').value || 0),
       noticeText: $('setNoticeText').value.trim(),
+      dailyQuizLimit: Number($('setDailyQuizLimit').value || 0),
+      hourlyQuizLimit: Number($('setHourlyQuizLimit').value || 0),
       updatedAt: serverTimestamp()
     }, { merge: true });
     $('quizSettingsStatus').textContent = '✅ কুইজ সেটিংস সেভ হয়েছে'; $('quizSettingsStatus').className = 'status ok';
