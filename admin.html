@@ -86,6 +86,10 @@
     background: #262c36; color: #f87171; border: none; border-radius: 8px;
     padding: 8px 10px; font-size: 13px; font-weight: normal; cursor: pointer; flex-shrink: 0;
   }
+  .gridDeleteBtn {
+    background: #262c36; color: #f87171; border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; font-weight: normal; cursor: pointer; flex-shrink: 0;
+  }
   .addRowBtn {
     width: 100%; background: #21262d; color: #9ca3af; border: 1px dashed #30363d;
     padding: 9px; border-radius: 10px; font-size: 13px; font-weight: normal; margin-bottom: 4px; cursor: pointer;
@@ -401,6 +405,19 @@
           <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
           <div class="sectionStatus" id="statusColors"></div>
         </div>
+        </div>
+      </div>
+
+      <!-- ================= রিপোর্ট ================= -->
+      <div class="swipePanel" id="panel-reports">
+        <div class="swipePanelInner">
+        <div class="folderTitle">🚩 রিপোর্ট</div>
+        <div class="addTypeRow">
+          <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+        </div>
+        <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
         </div>
       </div>
 
@@ -810,13 +827,12 @@
     });
   });
 
-  // ---- নেভিগেশন: সোয়াইপ করে থিম → পোস্ট → কমেন্ট → রিপ্লাই → সেটিংস ----
+  // ---- নেভিগেশন: সোয়াইপ করে থিম → পোস্ট → কমেন্ট → রিপ্লাই → সেটিংস → রিপোর্ট ----
   const SWIPE_PANELS = [
     { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
-    { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' }
+    { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' },
+    { key: 'reports', icon: '🚩', label: 'রিপোর্ট', panel: 'panel-reports', onShow: () => loadAdminReports(currentReportType) }
   ];
-
-  // ---- রিপোর্ট এখন আলাদাভাবে profile-admin.html-এ দেখা ও ম্যানেজ করা হয় ----
 
   const swipeContainer = document.getElementById('swipeContainer');
   const swipeIndicator = document.getElementById('swipeIndicator');
@@ -853,6 +869,72 @@
     currentPanelIndex = idx;
     const node = SWIPE_PANELS[idx];
     if (node && node.onShow) node.onShow();
+  }
+
+  // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
+  let currentReportType = 'post';
+  document.querySelectorAll('[data-report-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentReportType = btn.getAttribute('data-report-type');
+      loadAdminReports(currentReportType);
+    });
+  });
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ---- রিপোর্ট: পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট লোড (টাইপ অনুযায়ী ফিল্টার) ----
+  async function loadAdminReports(type) {
+    const listEl = document.getElementById('reportsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      let snap;
+      try {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type), orderBy("createdAt", "desc")));
+      } catch (indexErr) {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type)));
+      }
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো রিপোর্ট নেই</div>'; return; }
+      const items = [];
+      snap.forEach(docSnap => items.push({ id: docSnap.id, d: docSnap.data() }));
+      items.sort((a, b) => {
+        const ta = a.d.createdAt && a.d.createdAt.toMillis ? a.d.createdAt.toMillis() : 0;
+        const tb = b.d.createdAt && b.d.createdAt.toMillis ? b.d.createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+      listEl.innerHTML = '';
+      items.forEach(({ id, d }) => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>রিপোর্টার: ${d.reporterEmail || ''}</span><span>${timeAgo(d.createdAt)}</span></div>
+          <div class="metaRow"><span>লেখক: ${d.authorName || ''}</span><span></span></div>
+          ${d.reason ? `<div class="metaRow"><span>🚩 কারণ: ${(d.reason + '').replace(/</g, '&lt;')}</span><span></span></div>` : ''}
+          <div class="bodyText">${(d.text || '(কোনো টেক্সট নেই)').replace(/</g, '&lt;')}</div>
+          <button type="button" class="gridDeleteBtn" data-report-id="${id}" style="margin-top:8px;">🗑️ রিপোর্ট মুছুন</button>
+        `;
+        card.querySelector('[data-report-id]').addEventListener('click', async (e) => {
+          if (!confirm('এই রিপোর্টটি মুছে ফেলতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "reports", id));
+            card.remove();
+          } catch (err) { alert('এরর: ' + err.message); }
+        });
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
   }
 
   // ---- থিম গ্রিড তৈরি (আগে buildGridRows ছিল, এখন fillGrid([]) দিয়ে উপরেই করা হয়েছে) ----
