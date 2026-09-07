@@ -81,13 +81,6 @@ nav.bottomNav button.active{color:#fff}
 .confirmBtns button{flex:1;padding:10px;border-radius:10px;border:0;font-size:13px;cursor:pointer}
 #confirmStayBtn{background:var(--primary-color);color:#fff}
 #confirmLeaveBtn{background:#21262d;color:#f87171}
-/* ---- বিজ্ঞাপন ওভারলে ---- */
-.adOverlay{display:none;position:fixed;inset:0;background:#000;z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:16px}
-.adOverlay.show{display:flex}
-.adOverlay .adLabel{color:#fbbf24;font-size:12px;margin-bottom:10px;letter-spacing:.5px}
-.adOverlay .adBox{width:100%;max-width:640px;min-height:250px;background:#111;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.adSkipBtn{width:100%;max-width:640px;margin-top:14px;padding:11px;background:#262c36;color:#fff;border:1px solid #30363d;border-radius:8px;font-weight:700;cursor:not-allowed;opacity:.6}
-.adSkipBtn.enabled{cursor:pointer;opacity:1;background:var(--primary-color);border-color:var(--primary-color)}
 .leaderRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #21262d}
 .leaderRow:last-child{border-bottom:0}
 .leaderRow img{width:34px;height:34px;border-radius:50%;background:#333}
@@ -164,20 +157,22 @@ nav.bottomNav button.active{color:#fff}
       <button class="ghost" id="backHomeBtn">🏠 ক্যাটাগরিতে ফিরে যান</button>
     </section>
 
-    <!-- ---- কয়েন / রিওয়ার্ডেড অ্যাড ---- -->
+    <!-- ---- কয়েন ---- -->
     <section id="panelCoin" class="panel">
-      <div class="balanceBox">
-        <div class="notice">🪙 <span id="unitLabel2">Coin</span> ব্যালেন্স</div>
-        <div class="amt" id="balanceAmt2">0</div>
+      <div class="box" id="coinLoginBox" style="display:none">
+        <h3>🔒 লগইন করুন</h3>
+        <p class="notice">কয়েন সেকশনের সবকিছু দেখতে ও ব্যবহার করতে অবশ্যই Google দিয়ে লগইন করতে হবে।</p>
+        <button class="primary" id="coinLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
       </div>
-      <div class="box">
-        <h3>🎬 বিজ্ঞাপন দেখে কয়েন নিন</h3>
-        <p class="notice" id="rewardedAdNote"></p>
-        <button class="primary" id="watchAdBtn">▶️ বিজ্ঞাপন দেখুন</button>
-      </div>
-      <div class="box">
-        <h3>ℹ️ কয়েন আয়ের নিয়ম</h3>
-        <p class="notice" id="coinRuleNote"></p>
+      <div id="coinContentBox">
+        <div class="balanceBox">
+          <div class="notice">🪙 <span id="unitLabel2">Coin</span> ব্যালেন্স</div>
+          <div class="amt" id="balanceAmt2">0</div>
+        </div>
+        <div class="box">
+          <h3>ℹ️ কয়েন আয়ের নিয়ম</h3>
+          <p class="notice" id="coinRuleNote"></p>
+        </div>
       </div>
     </section>
 
@@ -221,13 +216,6 @@ nav.bottomNav button.active{color:#fff}
       <button id="confirmLeaveBtn">হ্যাঁ, বের হবো</button>
     </div>
   </div>
-</div>
-
-<!-- ---- বিজ্ঞাপন ওভারলে ---- -->
-<div class="adOverlay" id="adOverlay">
-  <div class="adLabel">🔻 বিজ্ঞাপন</div>
-  <div class="adBox" id="adBoxContent"></div>
-  <button class="adSkipBtn" id="adSkipBtn">স্কিপ করুন (৫)</button>
 </div>
 
 <script type="module">
@@ -289,7 +277,6 @@ async function loadSettings() {
   } catch (e) {}
   $('unitLabel2').textContent = unit();
   $('noticeText').textContent = settings.noticeText || 'কুইজে স্বাগতম!';
-  $('rewardedAdNote').textContent = `বিজ্ঞাপন দেখলেই পাবেন +${settings.rewardedAdCoins} ${unit()} (প্রতিদিন সর্বোচ্চ ${settings.maxRewardedAdsPerDay} বার)।`;
   $('coinRuleNote').textContent = `প্রতিটি সঠিক উত্তরে +${settings.coinPerCorrect} ${unit()}` +
     (settings.entryFee > 0 ? `, প্রতি কুইজ শুরুতে ${settings.entryFee} ${unit()} খরচ হবে` : '') +
     `। দৈনিক সর্বোচ্চ ${settings.maxCoinsPerDay} ${unit()} আয় করা যাবে।`;
@@ -368,6 +355,7 @@ onAuthStateChanged(auth, async (u) => {
     } catch (e) {}
     closeLoginModal();
   }
+  updateCoinLoginUI();
   await refreshBalance();
 });
 
@@ -381,6 +369,13 @@ async function refreshBalance() {
   }
   $('balanceAmt2').textContent = bal + ' ' + unit();
   return bal;
+}
+
+/* ================= কয়েন প্যানেলে লগইন-প্রম্পট দেখানো/লুকানো ================= */
+function updateCoinLoginUI() {
+  const loggedIn = !!currentUser;
+  $('coinLoginBox').style.display = loggedIn ? 'none' : '';
+  $('coinContentBox').style.display = loggedIn ? '' : 'none';
 }
 
 async function getTodayEarned(uid) {
@@ -444,11 +439,11 @@ $('googleLoginBtn').addEventListener('click', async () => {
   try { await signInWithPopup(auth, provider); } catch (e) { $('loginStatus').textContent = 'লগইন এরর: ' + e.message; }
 });
 $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.back(); });
+$('coinLoginBtn').addEventListener('click', () => { openLoginModal(); });
 
 /* ================= ক্যাটাগরি সিলেক্ট ================= */
 let selectedCategory = null;
 let categoryQuestions = [];
-let allQuestions = [];
 let homeViewMode = 'categories'; // 'categories' | 'questions'
 
 async function loadCategories() {
@@ -465,17 +460,7 @@ async function loadCategories() {
   if (!categories.length) {
     console.warn('[quiz] quizCategories কুয়েরি সফল হয়েছে কিন্তু ০টি ক্যাটাগরি এসেছে (active:false অথবা "order" ফিল্ড মিসিং হতে পারে)');
   }
-  await loadAllQuestions();
   window.backToCategories();
-}
-async function loadAllQuestions() {
-  try {
-    const qs = await getDocs(collection(db, 'quizQuestions'));
-    allQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
-    allQuestions.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
-  } catch (e) {
-    $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
-  }
 }
 /* ---- হোম: ক্যাটাগরি গ্রিড (সার্চ বার দিয়ে নাম সার্চ করা যায়) ---- */
 window.onCategorySearchInput = function () {
@@ -490,12 +475,10 @@ function renderCategoryGrid(term) {
   const list = t ? categories.filter(c => (c.name || '').toLowerCase().includes(t)) : categories;
   if (!list.length) { $('catGrid').innerHTML = '<div class="empty">কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।</div>'; return; }
   $('catGrid').innerHTML = list.map(c => {
-    const cnt = allQuestions.filter(q => q.categoryId === c.id).length;
     return `
     <div class="catCard" onclick="window.openCategory('${c.id}')">
       <div class="icon">${esc(c.icon || '❓')}</div>
       <div class="name">${esc(c.name || 'ক্যাটাগরি')}</div>
-      <div class="cnt">${cnt} টি প্রশ্ন</div>
     </div>`;
   }).join('');
 }
@@ -520,7 +503,7 @@ window.openCategory = async function (id) {
   try {
     const qs = await getDocs(query(collection(db, 'quizQuestions'), where('categoryId', '==', id)));
     categoryQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
-    categoryQuestions.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+    categoryQuestions.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   } catch (e) {
     $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
     return;
@@ -738,55 +721,6 @@ $('nextQuestionBtn').addEventListener('click', () => {
 $('playAgainBtn').addEventListener('click', () => { if (activeQuestionIndex > -1) window.startQuestion(activeQuestionIndex); });
 $('backHomeBtn').addEventListener('click', () => { history.back(); });
 
-/* ================= রিওয়ার্ডেড অ্যাড ================= */
-$('watchAdBtn').addEventListener('click', async () => {
-  if (!requireLogin()) return;
-  const already = await getTodayEarned(currentUser.uid + ':ads');
-  await showRewardedAd(async () => {
-    try {
-      await runTransaction(db, async (tx) => {
-        const uref = doc(db, 'users', currentUser.uid);
-        const us = await tx.get(uref);
-        const bal = Number(us.data()?.quizBalance || 0);
-        tx.update(uref, { quizBalance: bal + settings.rewardedAdCoins });
-      });
-      await refreshBalance();
-      alert(`+${settings.rewardedAdCoins} ${unit()} জমা হয়েছে!`);
-    } catch (e) { alert('এরর: ' + e.message); }
-  });
-});
-
-/* ================= বিজ্ঞাপন ওভারলে (রিওয়ার্ডেড) ================= */
-function showRewardedAd(onComplete) {
-  runAdOverlay(async () => { await onComplete(); });
-}
-function runAdOverlay(onDone) {
-  const overlay = $('adOverlay'), box = $('adBoxContent'), skipBtn = $('adSkipBtn');
-  const code = pickAdCode();
-  box.innerHTML = code || '<div style="color:#666;padding:40px;text-align:center">বিজ্ঞাপন এখানে দেখানো হবে</div>';
-  overlay.classList.add('show');
-  pushGuard();
-  let secs = settings.adSkipSeconds || 5;
-  skipBtn.textContent = `স্কিপ করুন (${secs})`;
-  skipBtn.classList.remove('enabled');
-  const t = setInterval(() => {
-    secs--;
-    if (secs <= 0) {
-      clearInterval(t);
-      skipBtn.textContent = 'স্কিপ করুন ✕';
-      skipBtn.classList.add('enabled');
-    } else {
-      skipBtn.textContent = `স্কিপ করুন (${secs})`;
-    }
-  }, 1000);
-  skipBtn.onclick = () => {
-    if (!skipBtn.classList.contains('enabled')) return;
-    clearInterval(t);
-    overlay.classList.remove('show');
-    onDone();
-  };
-}
-
 /* ================= লিডারবোর্ড ================= */
 async function loadLeaderboard() {
   try {
@@ -812,7 +746,7 @@ window.showPanel = function (id, isSubStep) {
   $(id).classList.add('active');
   document.querySelectorAll('.bottomNav button').forEach(b => b.classList.remove('active'));
   if (id === 'panelHome') $('navHome').classList.add('active');
-  if (id === 'panelCoin') { $('navCoin').classList.add('active'); refreshBalance(); }
+  if (id === 'panelCoin') { $('navCoin').classList.add('active'); updateCoinLoginUI(); refreshBalance(); }
   if (id === 'panelLeader') { $('navLeader').classList.add('active'); loadLeaderboard(); }
   $('topBackBtn').style.display = id === 'panelHome' ? 'none' : '';
   $('sideMenuBtn').style.display = (sideMenuHasEntries && id === 'panelHome') ? '' : 'none';
@@ -824,10 +758,8 @@ $('topBackBtn').addEventListener('click', () => history.back());
 
 let backPressCount = 0, backPressTimer = null;
 function handleBack() {
-  // ০) সাইড মেনু খোলা থাকলে বন্ধ করা
+  // ১) সাইড মেনু খোলা থাকলে বন্ধ করা
   if ($('sideMenuOverlay').classList.contains('open')) { window.closeSideMenu(); return; }
-  // ১) বিজ্ঞাপন চলাকালীন ব্যাক করে বের হওয়া যাবে না (স্কিপযোগ্য হলে স্কিপ বাটন থেকেই বন্ধ হবে)
-  if ($('adOverlay').classList.contains('show')) { pushGuard(); return; }
   // ২) ছাড়ার কনফার্মেশন খোলা থাকলে বন্ধ করা
   if ($('leaveConfirmOverlay').classList.contains('open')) { $('leaveConfirmOverlay').classList.remove('open'); pushGuard(); return; }
   // ৩) লগইন মোডাল খোলা থাকলে বন্ধ করা
