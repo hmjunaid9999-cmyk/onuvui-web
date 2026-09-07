@@ -105,11 +105,7 @@ nav.bottomNav button.active{color:#fff}
   <main>
     <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
     <section id="panelHome" class="panel active">
-      <div class="balanceBox">
-        <div class="notice">🪙 <span id="unitLabel1">Coin</span> ব্যালেন্স</div>
-        <div class="amt" id="balanceAmt">0</div>
-      </div>
-      <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">ক্যাটাগরি সিলেক্ট করুন</option></select></div>
+      <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">সব ক্যাটাগরি</option></select></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
@@ -261,7 +257,6 @@ async function loadSettings() {
     const s = await getDoc(doc(db, 'settings', 'quiz'));
     if (s.exists()) Object.assign(settings, s.data());
   } catch (e) {}
-  $('unitLabel1').textContent = unit();
   $('unitLabel2').textContent = unit();
   $('noticeText').textContent = settings.noticeText || 'কুইজে স্বাগতম!';
   $('rewardedAdNote').textContent = `বিজ্ঞাপন দেখলেই পাবেন +${settings.rewardedAdCoins} ${unit()} (প্রতিদিন সর্বোচ্চ ${settings.maxRewardedAdsPerDay} বার)।`;
@@ -307,7 +302,6 @@ async function refreshBalance() {
       if (s.exists()) bal = Number(s.data().quizBalance || 0);
     } catch (e) {}
   }
-  $('balanceAmt').textContent = bal + ' ' + unit();
   $('balanceAmt2').textContent = bal + ' ' + unit();
   return bal;
 }
@@ -377,6 +371,7 @@ $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.
 /* ================= ক্যাটাগরি সিলেক্ট ================= */
 let selectedCategory = null;
 let categoryQuestions = [];
+let allQuestions = [];
 
 async function loadCategories() {
   try {
@@ -387,18 +382,31 @@ async function loadCategories() {
     $('catGrid').innerHTML = '<div class="error">ক্যাটাগরি লোড করা যায়নি: ' + esc(e.message) + '</div>';
     return;
   }
+  await loadAllQuestions();
+}
+async function loadAllQuestions() {
+  $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
+  try {
+    const qs = await getDocs(collection(db, 'quizQuestions'));
+    allQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
+    allQuestions.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+  } catch (e) {
+    $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
+    return;
+  }
+  categoryQuestions = allQuestions;
   renderCategoryArea();
 }
 function fillCategorySelect() {
   const sel = $('categorySelect');
   const current = sel.value;
-  sel.innerHTML = '<option value="">ক্যাটাগরি সিলেক্ট করুন</option>' +
+  sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' +
     categories.map(c => `<option value="${c.id}">${esc(c.icon || '❓')} ${esc(c.name || 'কুইজ')}</option>`).join('');
   if (current) sel.value = current;
 }
 window.onCategoryChange = async function () {
   const id = $('categorySelect').value;
-  if (!id) { selectedCategory = null; categoryQuestions = []; renderCategoryArea(); return; }
+  if (!id) { selectedCategory = null; categoryQuestions = allQuestions; renderCategoryArea(); return; }
   selectedCategory = categories.find(c => c.id === id);
   $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
 
@@ -422,20 +430,19 @@ window.onCategoryChange = async function () {
   renderCategoryArea();
 };
 function renderCategoryArea() {
-  if (!selectedCategory) {
-    $('catGrid').innerHTML = '<div class="empty">উপরে থেকে একটি ক্যাটাগরি সিলেক্ট করুন।</div>';
-    return;
-  }
   if (!categoryQuestions.length) {
-    $('catGrid').innerHTML = '<div class="empty">এই ক্যাটাগরিতে এখনো কোনো প্রশ্ন যোগ করা হয়নি।</div>';
+    $('catGrid').innerHTML = '<div class="empty">এখনো কোনো প্রশ্ন যোগ করা হয়নি।</div>';
     return;
   }
-  $('catGrid').innerHTML = categoryQuestions.map((q, i) => `
+  $('catGrid').innerHTML = categoryQuestions.map((q, i) => {
+    const cat = categories.find(c => c.id === q.categoryId);
+    return `
     <div class="catCard" onclick="window.startQuestion(${i})">
-      <div class="icon">❓</div>
+      <div class="icon">${esc(cat?.icon || '❓')}</div>
       <div class="name">কুইজ ${i + 1}</div>
-      <div class="cnt">${esc(selectedCategory.name || '')}</div>
-    </div>`).join('');
+      <div class="cnt">${esc(cat?.name || '')}</div>
+    </div>`;
+  }).join('');
 }
 
 /* ================= কুইজ খেলা (একটি করে প্রশ্ন) ================= */
@@ -449,6 +456,7 @@ window.startQuestion = async function (index) {
   activeQuestion = categoryQuestions[index];
   if (!activeQuestion) return;
   activeQuestionIndex = index;
+  selectedCategory = categories.find(c => c.id === activeQuestion.categoryId) || selectedCategory;
 
   // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে
   if (settings.entryFee > 0) {
