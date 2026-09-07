@@ -263,8 +263,7 @@ textarea{min-height:70px;resize:vertical}
             <div><label>প্রতিদিন সর্বোচ্চ আয় (কুইজ থেকে)</label><input id="setMaxCoinsPerDay" type="number" value="50"></div>
           </div>
           <div class="row2">
-            <div><label>রিওয়ার্ডেড অ্যাডে কয়েন</label><input id="setRewardedAdCoins" type="number" value="2"></div>
-            <div><label>প্রতিদিন সর্বোচ্চ রিওয়ার্ডেড অ্যাড</label><input id="setMaxRewardedAdsPerDay" type="number" value="5"></div>
+            <div><label>প্রতি ভুল উত্তরে কয়েন (০ = কিছু না)</label><input id="setCoinPerWrong" type="number" value="0"></div>
           </div>
         </div>
         <button class="primary" id="saveCoinSettingsBtn">কয়েন সেটিংস সেভ করুন</button>
@@ -403,7 +402,6 @@ document.querySelectorAll('.tabs button').forEach(btn => {
 
 /* ---- সেটিংস ফুলস্ক্রিন ওভারলে খোলা/বন্ধ করা ---- */
 function openSettingsOverlay(id) { $(id).classList.add('open'); pushGuard(); }
-function closeSettingsOverlay(id) { $(id).classList.remove('open'); }
 $('openCoinSettingsBtn').addEventListener('click', () => openSettingsOverlay('coinSettingsOverlay'));
 $('openQuizSettingsBtn').addEventListener('click', () => openSettingsOverlay('quizSettingsOverlay'));
 $('openAdSettingsBtn').addEventListener('click', () => openSettingsOverlay('adSettingsOverlay'));
@@ -1030,6 +1028,7 @@ async function loadSettings() {
     const d = s.exists() ? s.data() : {};
     $('setUnitName').value = d.unitName || 'Coin';
     $('setCoinPerCorrect').value = d.coinPerCorrect ?? 1;
+    $('setCoinPerWrong').value = d.coinPerWrong ?? Math.floor((d.coinPerCorrect ?? 1) / 2);
     $('setEntryFee').value = d.entryFee ?? 0;
     $('setMaxCoinsPerDay').value = d.maxCoinsPerDay ?? 50;
     $('setQuestionsPerQuiz').value = d.questionsPerQuiz ?? 10;
@@ -1040,8 +1039,6 @@ async function loadSettings() {
       ? d.adSlots.map(s => ({ name: s.name || '', code: s.code || '' }))
       : [d.adScriptHtml, d.adScriptHtml2].filter(c => c && c.trim()).map((code, i) => ({ name: `বিজ্ঞাপন ${i + 1}`, code }));
     renderAdSlots();
-    $('setRewardedAdCoins').value = d.rewardedAdCoins ?? 2;
-    $('setMaxRewardedAdsPerDay').value = d.maxRewardedAdsPerDay ?? 5;
     $('setNoticeText').value = d.noticeText || '';
     $('setDailyQuizLimit').value = d.dailyQuizLimit ?? 0;
     $('setHourlyQuizLimit').value = d.hourlyQuizLimit ?? 0;
@@ -1052,10 +1049,9 @@ $('saveCoinSettingsBtn').addEventListener('click', async () => {
     await setDoc(doc(db, 'settings', 'quiz'), {
       unitName: $('setUnitName').value.trim() || 'Coin',
       coinPerCorrect: Number($('setCoinPerCorrect').value || 0),
+      coinPerWrong: Number($('setCoinPerWrong').value || 0),
       entryFee: Number($('setEntryFee').value || 0),
       maxCoinsPerDay: Number($('setMaxCoinsPerDay').value || 0),
-      rewardedAdCoins: Number($('setRewardedAdCoins').value || 0),
-      maxRewardedAdsPerDay: Number($('setMaxRewardedAdsPerDay').value || 5),
       updatedAt: serverTimestamp()
     }, { merge: true });
     $('coinSettingsStatus').textContent = '✅ কয়েন সেটিংস সেভ হয়েছে'; $('coinSettingsStatus').className = 'status ok';
