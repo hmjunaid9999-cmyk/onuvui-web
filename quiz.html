@@ -380,7 +380,13 @@ async function loadCategories() {
     fillCategorySelect();
   } catch (e) {
     $('catGrid').innerHTML = '<div class="error">ক্যাটাগরি লোড করা যায়নি: ' + esc(e.message) + '</div>';
+    $('noticeText').textContent = '⚠️ ক্যাটাগরি এরর: ' + e.message;
+    $('noticeText').style.color = '#f87171';
+    console.error('[quiz] loadCategories failed:', e);
     return;
+  }
+  if (!categories.length) {
+    console.warn('[quiz] quizCategories কুয়েরি সফল হয়েছে কিন্তু ০টি ক্যাটাগরি এসেছে (active:false অথবা "order" ফিল্ড মিসিং হতে পারে)');
   }
   await loadAllQuestions();
 }
