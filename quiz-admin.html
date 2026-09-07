@@ -280,9 +280,10 @@ textarea{min-height:70px;resize:vertical}
       <div class="settingsOverlayBody">
         <div class="box">
           <div class="row2">
-            <div><label>প্রতি কুইজে প্রশ্ন সংখ্যা</label><input id="setQuestionsPerQuiz" type="number" value="10"></div>
+            <div><label>একই প্রশ্ন আবার খেলার কুলডাউন (দিন, ০ = সীমাহীন)</label><input id="setQuestionReplayDays" type="number" value="0" min="0"></div>
             <div><label>প্রতি প্রশ্নে টাইমার (সেকেন্ড, ০ = টাইমার ছাড়া)</label><input id="setTimerSeconds" type="number" value="15"></div>
           </div>
+          <p class="notice">একজন লগইন করা ইউজার একটা প্রশ্ন একবার খেললে, এই কুলডাউন শেষ না হওয়া পর্যন্ত সেই প্রশ্নটা আবার খেলতে পারবেন না (কয়েন-ফার্মিং ঠেকাতে)। লগইন না থাকলে এই সীমা প্রযোজ্য না।</p>
           <label>নোটিশ বার টেক্সট (কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ)</label>
           <input id="setNoticeText" placeholder="কুইজ পেজের উপরে স্ক্রল হওয়া নোটিশ">
         </div>
@@ -1031,7 +1032,7 @@ async function loadSettings() {
     $('setCoinPerWrong').value = d.coinPerWrong ?? Math.floor((d.coinPerCorrect ?? 1) / 2);
     $('setEntryFee').value = d.entryFee ?? 0;
     $('setMaxCoinsPerDay').value = d.maxCoinsPerDay ?? 50;
-    $('setQuestionsPerQuiz').value = d.questionsPerQuiz ?? 10;
+    $('setQuestionReplayDays').value = d.questionReplayDays ?? 0;
     $('setTimerSeconds').value = d.timerSeconds ?? 15;
     $('setAdsEnabled').value = String(d.adsEnabled !== false);
     $('setInterstitialEvery').value = d.interstitialEvery ?? 1;
@@ -1060,7 +1061,7 @@ $('saveCoinSettingsBtn').addEventListener('click', async () => {
 $('saveQuizSettingsBtn').addEventListener('click', async () => {
   try {
     await setDoc(doc(db, 'settings', 'quiz'), {
-      questionsPerQuiz: Number($('setQuestionsPerQuiz').value || 10),
+      questionReplayDays: Number($('setQuestionReplayDays').value || 0),
       timerSeconds: Number($('setTimerSeconds').value || 0),
       noticeText: $('setNoticeText').value.trim(),
       dailyQuizLimit: Number($('setDailyQuizLimit').value || 0),

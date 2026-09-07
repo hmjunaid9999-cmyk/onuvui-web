@@ -150,6 +150,7 @@ nav.bottomNav button.active{color:#fff}
         <div class="sub" id="resultCoinsText">+০ Coin অর্জিত</div>
       </div>
       <div class="posterColors" id="posterColors"></div>
+      <button class="primary" id="resultLoginBtn" style="display:none">🔵 কয়েন জমা রাখতে Google দিয়ে লগইন করুন</button>
       <button class="primary" id="sharePosterBtn">📤 ফিডে পোস্টার হিসেবে শেয়ার করুন</button>
       <div class="notice" id="shareStatus" style="text-align:center;margin-top:8px"></div>
       <button class="ghost" id="nextQuestionBtn">➡️ পরবর্তী প্রশ্ন দেখুন</button>
@@ -201,7 +202,7 @@ nav.bottomNav button.active{color:#fff}
   <div class="loginModalBox">
     <button id="loginCloseBtn">✕</button>
     <h1 style="font-size:19px;margin-bottom:6px">লগইন করুন</h1>
-    <p class="notice" style="margin-bottom:20px">কুইজ খেলতে ও কয়েন জমা রাখতে Google দিয়ে লগইন করুন</p>
+    <p class="notice" style="margin-bottom:20px">অর্জিত কয়েন জমা রাখতে Google দিয়ে লগইন করুন</p>
     <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
     <div id="loginStatus" class="notice" style="color:#f87171;margin-top:12px;min-height:16px"></div>
   </div>
@@ -246,9 +247,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 let currentUser = null;
 let categories = [];
 let settings = {
-  unitName: 'Coin', entryFee: 0, coinPerCorrect: 1, maxCoinsPerDay: 50,
-  timerSeconds: 15, questionsPerQuiz: 10, adsEnabled: true, interstitialEvery: 1,
-  adSkipSeconds: 5, adScriptHtml: '', adScriptHtml2: '', rewardedAdCoins: 2, maxRewardedAdsPerDay: 5,
+  unitName: 'Coin', entryFee: 0, coinPerCorrect: 1, coinPerWrong: 0, maxCoinsPerDay: 50,
+  timerSeconds: 15, questionReplayDays: 0, adsEnabled: true, interstitialEvery: 1,
+  adScriptHtml: '', adScriptHtml2: '',
   dailyQuizLimit: 0, hourlyQuizLimit: 0,
   noticeText: 'কুইজ খেলুন, কয়েন জিতুন! 🎉'
 };
@@ -275,9 +276,13 @@ async function loadSettings() {
     const s = await getDoc(doc(db, 'settings', 'quiz'));
     if (s.exists()) Object.assign(settings, s.data());
   } catch (e) {}
+  if (typeof settings.coinPerWrong !== 'number') {
+    settings.coinPerWrong = Math.floor((Number(settings.coinPerCorrect) || 0) / 2);
+  }
   $('unitLabel2').textContent = unit();
   $('noticeText').textContent = settings.noticeText || 'কুইজে স্বাগতম!';
   $('coinRuleNote').textContent = `প্রতিটি সঠিক উত্তরে +${settings.coinPerCorrect} ${unit()}` +
+    (settings.coinPerWrong > 0 ? `, ভুল উত্তরে +${settings.coinPerWrong} ${unit()}` : '') +
     (settings.entryFee > 0 ? `, প্রতি কুইজ শুরুতে ${settings.entryFee} ${unit()} খরচ হবে` : '') +
     `। দৈনিক সর্বোচ্চ ${settings.maxCoinsPerDay} ${unit()} আয় করা যাবে।`;
   renderTopBannerAd();
@@ -357,6 +362,7 @@ onAuthStateChanged(auth, async (u) => {
   }
   updateCoinLoginUI();
   await refreshBalance();
+  if (homeViewMode === 'categories') window.backToCategories();
 });
 
 async function refreshBalance() {
@@ -430,7 +436,45 @@ async function checkQuizLimit() {
   return { allowed: true };
 }
 
-/* ================= লগইন মোডাল ================= */
+/* ================= একই প্রশ্ন আবার খেলার কুলডাউন ================= */
+async function getLastPlayedAt(uid, questionId) {
+  try {
+    const s = await getDoc(doc(db, 'users', uid, 'questionPlays', questionId));
+    return s.exists() ? s.data().lastPlayedAt : null;
+  } catch (e) { return null; }
+}
+function markQuestionPlayed(uid, questionId) {
+  setDoc(doc(db, 'users', uid, 'questionPlays', questionId), { lastPlayedAt: serverTimestamp() }, { merge: true }).catch(() => {});
+}
+async function getUserQuestionPlaysMap(uid) {
+  try {
+    const s = await getDocs(collection(db, 'users', uid, 'questionPlays'));
+    const map = {};
+    s.forEach(d => { map[d.id] = d.data().lastPlayedAt; });
+    return map;
+  } catch (e) { return {}; }
+}
+function isQuestionOnCooldown(lastPlayedAt) {
+  const days = Number(settings.questionReplayDays) || 0;
+  if (days <= 0 || !lastPlayedAt) return false;
+  const lastMs = lastPlayedAt.toMillis ? lastPlayedAt.toMillis() : (Number(lastPlayedAt.seconds || 0) * 1000);
+  return (lastMs + days * 24 * 60 * 60 * 1000) > Date.now();
+}
+async function checkQuestionCooldown(questionId) {
+  if (!currentUser) return { allowed: true };
+  const days = Number(settings.questionReplayDays) || 0;
+  if (days <= 0) return { allowed: true };
+  const last = await getLastPlayedAt(currentUser.uid, questionId);
+  if (!last) return { allowed: true };
+  const lastMs = last.toMillis ? last.toMillis() : (Number(last.seconds || 0) * 1000);
+  const nextMs = lastMs + days * 24 * 60 * 60 * 1000;
+  const remainMs = nextMs - Date.now();
+  if (remainMs > 0) {
+    const remainDays = Math.ceil(remainMs / (24 * 60 * 60 * 1000));
+    return { allowed: false, message: `এই প্রশ্নটি আপনি আগে খেলেছেন। আবার খেলতে পারবেন প্রায় ${remainDays} দিন পরে।` };
+  }
+  return { allowed: true };
+}
 function openLoginModal() { $('loginModalOverlay').classList.add('open'); pushGuard(); }
 function closeLoginModal() { $('loginModalOverlay').classList.remove('open'); }
 function requireLogin() { if (!currentUser) { openLoginModal(); return false; } return true; }
@@ -440,11 +484,22 @@ $('googleLoginBtn').addEventListener('click', async () => {
 });
 $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.back(); });
 $('coinLoginBtn').addEventListener('click', () => { openLoginModal(); });
+$('resultLoginBtn').addEventListener('click', () => { openLoginModal(); });
 
 /* ================= ক্যাটাগরি সিলেক্ট ================= */
 let selectedCategory = null;
 let categoryQuestions = [];
 let homeViewMode = 'categories'; // 'categories' | 'questions'
+let allQuestionsCoolingDown = false;
+let homeBlockedMessage = null; // null = ব্লক নেই, স্ট্রিং হলে দৈনিক/ঘন্টার সীমা শেষ
+
+async function refreshHomeLimitState() {
+  homeBlockedMessage = null;
+  if (currentUser) {
+    const limitCheck = await checkQuizLimit();
+    if (!limitCheck.allowed) homeBlockedMessage = limitCheck.message;
+  }
+}
 
 async function loadCategories() {
   try {
@@ -470,6 +525,10 @@ function renderCategoryGrid(term) {
   homeViewMode = 'categories';
   selectedCategory = null;
   $('catBackRow').style.display = 'none';
+  if (homeBlockedMessage) {
+    $('catGrid').innerHTML = `<div class="empty">⏳ ${esc(homeBlockedMessage)}</div>`;
+    return;
+  }
   if (!categories.length) { $('catGrid').innerHTML = '<div class="empty">কোনো ক্যাটাগরি নেই।</div>'; return; }
   const t = (term || '').toLowerCase();
   const list = t ? categories.filter(c => (c.name || '').toLowerCase().includes(t)) : categories;
@@ -495,6 +554,7 @@ window.openCategory = async function (id) {
     const limitCheck = await checkQuizLimit();
     if (!limitCheck.allowed) {
       categoryQuestions = [];
+      allQuestionsCoolingDown = false;
       $('catGrid').innerHTML = `<div class="empty">⏳ ${esc(limitCheck.message)}</div>`;
       return;
     }
@@ -508,16 +568,28 @@ window.openCategory = async function (id) {
     $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
     return;
   }
+
+  // যেসব প্রশ্ন ইউজার সম্প্রতি খেলেছেন (কুলডাউন চলছে) — সেগুলো তালিকা থেকে বাদ, একদম দেখাই যাবে না
+  const totalFetched = categoryQuestions.length;
+  if (currentUser && Number(settings.questionReplayDays) > 0 && totalFetched) {
+    const playsMap = await getUserQuestionPlaysMap(currentUser.uid);
+    categoryQuestions = categoryQuestions.filter(q => !isQuestionOnCooldown(playsMap[q.id]));
+  }
+  allQuestionsCoolingDown = totalFetched > 0 && categoryQuestions.length === 0;
+
   renderCategoryArea();
 };
 /* ---- ক্যাটাগরির প্রশ্ন তালিকা থেকে সব ক্যাটাগরিতে ফিরে যাওয়া ---- */
-window.backToCategories = function () {
+window.backToCategories = async function () {
   $('categorySearchInput').value = '';
+  await refreshHomeLimitState();
   renderCategoryGrid('');
 };
 function renderCategoryArea() {
   if (!categoryQuestions.length) {
-    $('catGrid').innerHTML = '<div class="empty">এখনো কোনো প্রশ্ন যোগ করা হয়নি।</div>';
+    $('catGrid').innerHTML = allQuestionsCoolingDown
+      ? '<div class="empty">⏳ এই ক্যাটাগরির সব প্রশ্নই আপনি সম্প্রতি খেলেছেন। কিছুদিন পরে আবার নতুন প্রশ্ন আসবে।</div>'
+      : '<div class="empty">এখনো কোনো প্রশ্ন যোগ করা হয়নি।</div>';
     return;
   }
   $('catGrid').innerHTML = categoryQuestions.map((q, i) => {
@@ -536,7 +608,6 @@ let activeQuestion = null, activeQuestionIndex = -1, activeCoinsEarned = 0, last
 let timerInterval = null, timeLeft = 0, questionAnswered = false;
 
 window.startQuestion = async function (index) {
-  if (!requireLogin()) return;
   const limitCheck = await checkQuizLimit();
   if (!limitCheck.allowed) { alert(limitCheck.message); renderCategoryArea(); return; }
   activeQuestion = categoryQuestions[index];
@@ -544,8 +615,12 @@ window.startQuestion = async function (index) {
   activeQuestionIndex = index;
   selectedCategory = categories.find(c => c.id === activeQuestion.categoryId) || selectedCategory;
 
-  // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে
+  const cooldownCheck = await checkQuestionCooldown(activeQuestion.id);
+  if (!cooldownCheck.allowed) { alert(cooldownCheck.message); return; }
+
+  // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে (এন্ট্রি ফি কয়েন থেকে কাটা হয় বলে এক্ষেত্রে লগইন আবশ্যক)
   if (settings.entryFee > 0) {
+    if (!requireLogin()) return;
     try {
       await runTransaction(db, async (tx) => {
         const uref = doc(db, 'users', currentUser.uid);
@@ -558,7 +633,7 @@ window.startQuestion = async function (index) {
     } catch (e) { alert(e.message); return; }
   }
 
-  bumpQuizCount(currentUser.uid);
+  if (currentUser) bumpQuizCount(currentUser.uid);
   showPanel('panelPlay', true);
   renderQuestion();
 };
@@ -651,7 +726,8 @@ window.answerQuestion = function (chosenIndex) {
 async function finishQuestion(isCorrect) {
   clearInterval(timerInterval);
   lastIsCorrect = isCorrect;
-  let coinsToAward = isCorrect ? (settings.coinPerCorrect || 0) : 0;
+  let coinsToAward = isCorrect ? (settings.coinPerCorrect || 0) : (settings.coinPerWrong || 0);
+  const guestPotentialCoins = coinsToAward; // লগইন ছাড়া কয়েন জমা হবে না, শুধু জানানোর জন্য
 
   if (coinsToAward > 0 && currentUser) {
     try {
@@ -669,20 +745,30 @@ async function finishQuestion(isCorrect) {
       }
     } catch (e) {}
   }
-  activeCoinsEarned = coinsToAward;
+  activeCoinsEarned = currentUser ? coinsToAward : 0;
 
-  try {
-    await addDoc(collection(db, 'quizAttempts'), {
-      uid: currentUser.uid, name: currentUser.displayName || 'User', photoURL: currentUser.photoURL || '',
-      categoryId: selectedCategory.id, categoryName: selectedCategory.name || '',
-      questionId: activeQuestion.id,
-      score: isCorrect ? 1 : 0, total: 1, coinsEarned: coinsToAward, createdAt: serverTimestamp()
-    });
-  } catch (e) {}
+  // কয়েন জমা রাখতে হলে লগইন লাগবে, তাই attempt-রেকর্ড ও কুলডাউন রেকর্ড শুধু লগইন করা থাকলেই সেভ করা হচ্ছে
+  if (currentUser) {
+    markQuestionPlayed(currentUser.uid, activeQuestion.id);
+    try {
+      await addDoc(collection(db, 'quizAttempts'), {
+        uid: currentUser.uid, name: currentUser.displayName || 'User', photoURL: currentUser.photoURL || '',
+        categoryId: selectedCategory.id, categoryName: selectedCategory.name || '',
+        questionId: activeQuestion.id,
+        score: isCorrect ? 1 : 0, total: 1, coinsEarned: coinsToAward, createdAt: serverTimestamp()
+      });
+    } catch (e) {}
+  }
 
   await refreshBalance();
   $('resultScoreText').textContent = isCorrect ? '১/১' : '০/১';
-  $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
+  if (!currentUser && guestPotentialCoins > 0) {
+    $('resultCoinsText').textContent = `আপনি ${guestPotentialCoins} ${unit()} অর্জন করেছেন! এটি জমা রাখতে Google দিয়ে লগইন করুন।`;
+    $('resultLoginBtn').style.display = 'block';
+  } else {
+    $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
+    $('resultLoginBtn').style.display = 'none';
+  }
   $('nextQuestionBtn').disabled = (activeQuestionIndex + 1 >= categoryQuestions.length);
   showPanel('panelResult', true);
   buildPosterColors();
@@ -738,7 +824,6 @@ async function loadLeaderboard() {
 
 /* ================= প্যানেল সুইচ + ব্যাক বাটন গার্ড ================= */
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-let panelStack = ['panelHome'];
 function pushGuard() { history.pushState({ guard: true }, '', location.href); }
 
 window.showPanel = function (id, isSubStep) {
@@ -752,7 +837,7 @@ window.showPanel = function (id, isSubStep) {
   $('sideMenuBtn').style.display = (sideMenuHasEntries && id === 'panelHome') ? '' : 'none';
   $('headerTitle').textContent = id === 'panelPlay' ? ((selectedCategory?.name ? selectedCategory.name + ' — ' : '') + 'কুইজ ' + (activeQuestionIndex + 1)) :
     id === 'panelResult' ? 'ফলাফল' : id === 'panelCoin' ? 'কয়েন' : id === 'panelLeader' ? 'লিডারবোর্ড' : '🧠 কুইজ';
-  if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; window.backToCategories(); }
+  if (isSubStep) { pushGuard(); } else if (id === 'panelHome') { window.backToCategories(); }
 };
 $('topBackBtn').addEventListener('click', () => history.back());
 
