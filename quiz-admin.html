@@ -8,7 +8,9 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#fff;min-height:100vh;padding-bottom:40px}
 #app{max-width:760px;margin:0 auto;padding:16px}
-header{text-align:center;padding:14px 0 20px;font-size:20px;font-weight:700}
+header{position:relative;text-align:center;padding:14px 0 20px;font-size:20px;font-weight:700}
+#headerAuthBtn{position:absolute;left:14px;top:14px;background:#262c36;color:#fff;border:0;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+#headerAuthBtn.loggedIn{color:#f87171}
 .tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
 .tabs button{flex-shrink:0;background:#161b22;color:#9ca3af;border:1px solid #262c36;border-radius:20px;padding:8px 16px;font-size:13px;cursor:pointer}
 .tabs button.active{background:#4285F4;color:#fff;border-color:#4285F4}
@@ -64,11 +66,46 @@ textarea{min-height:70px;resize:vertical}
 .adSlotHeadRow > div:first-child{flex:1}
 /* ---- ব্যাক বাটনে বের হওয়ার টোস্ট ---- */
 #adminExitToast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;z-index:900}
+/* ---- সোয়াইপ থিম প্যানেল ---- */
+#swipeIndicator{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+.swipeTab{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;padding:8px 10px;border-radius:12px;cursor:pointer;color:#6b7280;font-size:11px;background:#161b22;border:1px solid #262c36}
+.swipeTab .swipeTabIcon{font-size:18px}
+.swipeTab.active{background:#21262d;color:#fff;border-color:#4285F4}
+#swipeContainer{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#swipeContainer::-webkit-scrollbar{display:none}
+.swipePanel{width:100%;max-width:100%;min-width:100%;flex-shrink:0;scroll-snap-align:start}
+/* ---- থিম পেজ: মেনু বার সিস্টেম (এড পেজ / এড গেজেট) ---- */
+.accordionBtn{display:block;width:100%;text-align:left;background:#0d1117;color:#fff;border:1px solid #30363d;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px}
+.accordionBtn:first-of-type{margin-top:0}
+.menuTypeBox.collapsed{display:none}
+.menuTypeBox{padding:10px 2px 2px}
+.addTypeRow{display:flex;gap:6px;margin-bottom:10px}
+.addTypeBtn{flex:1;min-width:0;background:#0d1117;color:#9ca3af;border:1px solid #30363d;padding:8px 2px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer}
+.addTypeBtn.active{background:#4285F4;color:#fff;border-color:#4285F4}
+.createForm{background:#0d1117;border:1px dashed #30363d;border-radius:10px;padding:10px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px}
+.createForm .createBtn{background:#238636;color:#fff;border:0;padding:9px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:2px}
+.createForm textarea.gridCode{min-height:120px}
+.gridTable{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.gridRow2{display:flex;align-items:flex-start;gap:8px;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:8px}
+.gridRow2.gridRowChecked{border-color:#4285F4}
+.gridRow2 input[type=checkbox]{width:18px;height:18px;margin-top:8px;flex-shrink:0;accent-color:#4285F4;cursor:pointer}
+.gridRow2 .gridFields{flex:1;display:flex;flex-direction:column;gap:6px;min-width:0}
+.gridTypeTag{font-size:10px;font-weight:700;color:#6b7280;letter-spacing:.3px}
+.gridRow2 .gridCode{width:100%;background:#0d1117;border:1px solid #30363d;color:#9ca3af;padding:8px 10px;border-radius:8px;font-size:12px;font-family:monospace;min-height:120px;resize:vertical}
+.gridRow2 input:disabled,.gridRow2 textarea:disabled{opacity:.65;background:#0b0f14;cursor:default}
+.gridBtnCol{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.gridEditBtn{background:#262c36;color:#60a5fa;border:0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer}
+.gridCopyBtn{background:#262c36;color:#34d399;border:0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer}
+.gridDeleteBtn{background:#262c36;color:#f87171;border:0;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0}
+.listEmpty{text-align:center;color:#6b7280;font-size:13px;padding:24px 0}
 </style>
 </head>
 <body>
 <div id="app">
-  <header>🛠️ কুইজ এডমিন প্যানেল</header>
+  <header>
+    <button id="headerAuthBtn" style="display:none">লগইন</button>
+    🛠️ কুইজ এডমিন প্যানেল
+  </header>
 
   <!-- ---- এডমিন লগইন গেট ---- -->
   <div id="loginGate" class="loginGate">
@@ -79,6 +116,74 @@ textarea{min-height:70px;resize:vertical}
   <div id="adminExitToast">আবার ব্যাক চাপুন — প্যানেল থেকে বের হতে</div>
 
   <div id="adminBody" style="display:none">
+    <div id="swipeIndicator">
+      <div class="swipeTab active" data-idx="0"><span class="swipeTabIcon">🎨</span><span>থিম</span></div>
+      <div class="swipeTab" data-idx="1"><span class="swipeTabIcon">🛠️</span><span>ম্যানেজ</span></div>
+    </div>
+    <div id="swipeContainer">
+
+    <!-- ---- থিম (ডিফল্ট/প্রথম প্যানেল) ---- -->
+    <div class="swipePanel" id="panel-theme">
+      <div class="box">
+        <h3>📝 নোটিশ বক্স</h3>
+        <label>নোটিশ বারের লেখা (quiz.html-এর উপরে স্ক্রল হওয়া নোটিশ)</label>
+        <input id="themeNoticeText" placeholder="এখানে নোটিশের লেখা লিখুন...">
+        <button class="primary" id="saveThemeNoticeBtn">নোটিশ সেভ করুন</button>
+        <div class="status" id="themeNoticeStatus"></div>
+      </div>
+
+      <div class="box">
+        <h3>📋 মেনু বার</h3>
+        <p class="notice" style="margin-bottom:6px">এখানে যা সেভ করে রাখবেন তা quiz.html-এ পরে দেখানোর জন্য প্রস্তুত থাকবে।</p>
+
+        <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
+        <div class="menuTypeBox collapsed" id="mtTop">
+          <div class="addTypeRow">
+            <button type="button" class="addTypeBtn active" data-form="topPageForm">📄 এড পেজ</button>
+            <button type="button" class="addTypeBtn" data-form="topGadgetForm">🧩 এড গেজেট</button>
+          </div>
+          <div class="createForm" id="topPageForm">
+            <input type="text" class="createLabel" id="topPageCreateLabel" placeholder="নাম/আইকন">
+            <input type="text" class="createUrl" id="topPageCreateUrl" placeholder="লিংক">
+            <button type="button" class="createBtn" data-list="topCombinedList" data-kind="page">➕ তৈরি করুন</button>
+          </div>
+          <div class="createForm" id="topGadgetForm" style="display:none">
+            <input type="text" class="createLabel" id="topGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+            <textarea class="gridCode" id="topGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+            <button type="button" class="createBtn" data-list="topCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+          </div>
+          <div class="gridTable" id="topCombinedList"></div>
+          <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম।</div>
+          <button class="primary" id="saveTopMenuBtn">টপ মেনু সেভ করুন</button>
+          <div class="status" id="topMenuStatus"></div>
+        </div>
+
+        <button type="button" class="accordionBtn" data-toggle="mtSide">২. সাইড মেনু</button>
+        <div class="menuTypeBox collapsed" id="mtSide">
+          <div class="addTypeRow">
+            <button type="button" class="addTypeBtn active" data-form="sidePageForm">📄 এড পেজ</button>
+            <button type="button" class="addTypeBtn" data-form="sideGadgetForm">🧩 এড গেজেট</button>
+          </div>
+          <div class="createForm" id="sidePageForm">
+            <input type="text" class="createLabel" id="sidePageCreateLabel" placeholder="নাম/আইকন">
+            <input type="text" class="createUrl" id="sidePageCreateUrl" placeholder="লিংক">
+            <button type="button" class="createBtn" data-list="sideCombinedList" data-kind="page">➕ তৈরি করুন</button>
+          </div>
+          <div class="createForm" id="sideGadgetForm" style="display:none">
+            <input type="text" class="createLabel" id="sideGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+            <textarea class="gridCode" id="sideGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+            <button type="button" class="createBtn" data-list="sideCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+          </div>
+          <div class="gridTable" id="sideCombinedList"></div>
+          <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম।</div>
+          <button class="primary" id="saveSideMenuBtn">সাইড মেনু সেভ করুন</button>
+          <div class="status" id="sideMenuStatus"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- এখন যা আছে তাই (ম্যানেজ প্যানেল, ডান দিকে সোয়াইপ করলে আসবে) ---- -->
+    <div class="swipePanel" id="panel-main">
     <div class="tabs">
       <button class="active" data-tab="tabCategories">ক্যাটাগরি</button>
       <button data-tab="tabQuestions">প্রশ্ন</button>
@@ -224,12 +329,15 @@ textarea{min-height:70px;resize:vertical}
         <div id="attemptsList"><div class="notice">লোড হচ্ছে...</div></div>
       </div>
     </section>
+    </div><!-- /panel-main -->
+
+    </div><!-- /swipeContainer -->
   </div>
 </div>
 
 <script type="module">
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import {
   getFirestore, collection, query, orderBy, where, getDocs, doc, getDoc, setDoc,
   addDoc, deleteDoc, updateDoc, serverTimestamp, limit
@@ -263,7 +371,18 @@ onAuthStateChanged(auth, (u) => {
   $('loginGate').style.display = isAllowed ? 'none' : 'block';
   $('adminBody').style.display = isAllowed ? 'block' : 'none';
   $('loginGateStatus').textContent = (u && !isAllowed) ? 'আপনার একাউন্ট (' + u.email + ') এডমিন লিস্টে নেই।' : '';
+  const authBtn = $('headerAuthBtn');
+  authBtn.style.display = '';
+  authBtn.textContent = u ? 'লগ আউট' : 'লগইন';
+  authBtn.classList.toggle('loggedIn', !!u);
   if (isAllowed) initAdmin();
+});
+$('headerAuthBtn').addEventListener('click', async () => {
+  if (auth.currentUser) {
+    try { await signOut(auth); } catch (e) { alert('লগ আউট এরর: ' + e.message); }
+  } else {
+    try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
+  }
 });
 $('adminLoginBtn').addEventListener('click', async () => {
   try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
@@ -304,10 +423,12 @@ function handleBack() {
   if (editingCatId) { window.cancelCatEdit(); pushGuard(); return; }
   // ৪) প্রশ্ন এডিট ফর্ম খোলা থাকলে বাতিল করা
   if (editingQId) { window.cancelQEdit(); pushGuard(); return; }
-  // ৫) ডিফল্ট ট্যাব (ক্যাটাগরি) ছাড়া অন্য ট্যাবে থাকলে ডিফল্ট ট্যাবে ফেরত যাওয়া
+  // ৫) "ম্যানেজ" প্যানেলে থাকলে, ডিফল্ট ট্যাব (ক্যাটাগরি) ছাড়া অন্য ট্যাবে থাকলে আগে ডিফল্ট ট্যাবে ফেরত যাওয়া
   const activeTabBtn = document.querySelector('.tabs button.active');
-  if (activeTabBtn && activeTabBtn.dataset.tab !== 'tabCategories') { switchTab('tabCategories'); pushGuard(); return; }
-  // ৬) ডিফল্ট ট্যাবে থাকলে ডাবল-ব্যাকে প্যানেল থেকে বের হওয়া
+  if (currentPanelIndex === 1 && activeTabBtn && activeTabBtn.dataset.tab !== 'tabCategories') { switchTab('tabCategories'); pushGuard(); return; }
+  // ৬) "ম্যানেজ" প্যানেলে থাকলে আগে থিম প্যানেলে (ডিফল্ট) ফিরে যাওয়া
+  if (currentPanelIndex !== 0) { scrollToPanel(0); pushGuard(); return; }
+  // ৭) থিম প্যানেলে (ডিফল্ট) থাকলে ডাবল-ব্যাকে প্যানেল থেকে বের হওয়া
   if (backPressCount === 0) {
     backPressCount = 1;
     $('adminExitToast').style.display = 'block';
@@ -321,6 +442,230 @@ function handleBack() {
 pushGuard();
 window.addEventListener('popstate', handleBack);
 
+/* ================= সোয়াইপ প্যানেল নেভিগেশন (থিম ⇄ ম্যানেজ) ================= */
+const swipeContainer = $('swipeContainer');
+let currentPanelIndex = 0;
+document.querySelectorAll('#swipeIndicator .swipeTab').forEach(tab => {
+  tab.addEventListener('click', () => scrollToPanel(Number(tab.dataset.idx)));
+});
+function updateSwipeIndicator(idx) {
+  document.querySelectorAll('#swipeIndicator .swipeTab').forEach((tab, i) => tab.classList.toggle('active', i === idx));
+}
+function scrollToPanel(idx) {
+  swipeContainer.scrollTo({ left: idx * swipeContainer.clientWidth, behavior: 'smooth' });
+}
+let swipeSettleTimer = null;
+swipeContainer.addEventListener('scroll', () => {
+  clearTimeout(swipeSettleTimer);
+  swipeSettleTimer = setTimeout(() => {
+    const idx = Math.round(swipeContainer.scrollLeft / swipeContainer.clientWidth);
+    updateSwipeIndicator(idx);
+    currentPanelIndex = idx;
+  }, 120);
+});
+
+/* ================= থিম পেজ: মেনু বার সিস্টেম (এড পেজ / এড গেজেট) ================= */
+function copyText(text, btnEl) {
+  const done = () => {
+    const original = btnEl.textContent;
+    btnEl.textContent = '✅';
+    setTimeout(() => { btnEl.textContent = original; }, 1200);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else { fallbackCopy(text, done); }
+}
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+function makeSeqCounter() { let n = 0; return () => ++n; }
+const topSeq = makeSeqCounter();
+const sideSeq = makeSeqCounter();
+function wireCheckReorder(row, getNextSeq) {
+  const check = row.querySelector('.gridCheck');
+  check.addEventListener('change', () => {
+    row.classList.toggle('gridRowChecked', check.checked);
+    if (check.checked) {
+      row.dataset.seq = String(getNextSeq());
+      const container = row.parentElement;
+      if (!container) return;
+      const checkedRows = Array.from(container.querySelectorAll('.gridRow2.gridRowChecked')).filter(r => r !== row);
+      const lastChecked = checkedRows[checkedRows.length - 1];
+      if (lastChecked && lastChecked.nextSibling) container.insertBefore(row, lastChecked.nextSibling);
+      else if (lastChecked) container.appendChild(row);
+      else container.insertBefore(row, container.firstChild);
+    } else { delete row.dataset.seq; }
+  });
+}
+function wireEditDelete(row) {
+  const editBtn = row.querySelector('.gridEditBtn');
+  const copyBtn = row.querySelector('.gridCopyBtn');
+  const deleteBtn = row.querySelector('.gridDeleteBtn');
+  deleteBtn.addEventListener('click', () => { if (confirm('আইটেমটি ডিলিট করবেন?')) row.remove(); });
+  editBtn.addEventListener('click', () => {
+    const fields = row.querySelectorAll('.gridLabel, .gridUrl, .gridCode');
+    const wasEditing = editBtn.dataset.editing === '1';
+    fields.forEach(f => { f.disabled = wasEditing; });
+    editBtn.dataset.editing = wasEditing ? '0' : '1';
+    editBtn.textContent = wasEditing ? '✏️' : '✅';
+    if (!wasEditing && fields[0]) fields[0].focus();
+  });
+  copyBtn.addEventListener('click', () => {
+    const source = row.dataset.type === 'gadget' ? row.querySelector('.gridCode') : row.querySelector('.gridUrl');
+    copyText(source.value, copyBtn);
+  });
+}
+function createGridRow(label, url, getNextSeq) {
+  const row = document.createElement('div');
+  row.className = 'gridRow2'; row.dataset.type = 'page';
+  row.innerHTML = `
+    <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+    <div class="gridFields">
+      <div class="gridTypeTag">📄 পেজ</div>
+      <input type="text" class="gridLabel" placeholder="নাম/আইকন" value="${esc(label)}" disabled>
+      <input type="text" class="gridUrl" placeholder="লিংক" value="${esc(url)}" disabled>
+    </div>
+    <div class="gridBtnCol">
+      <button type="button" class="gridEditBtn">✏️</button>
+      <button type="button" class="gridCopyBtn" title="লিংক কপি করুন">📋</button>
+      <button type="button" class="gridDeleteBtn">🗑️</button>
+    </div>`;
+  wireCheckReorder(row, getNextSeq); wireEditDelete(row);
+  return row;
+}
+function createGadgetRow(title, code, getNextSeq) {
+  const row = document.createElement('div');
+  row.className = 'gridRow2'; row.dataset.type = 'gadget';
+  row.innerHTML = `
+    <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+    <div class="gridFields">
+      <div class="gridTypeTag">🧩 গেজেট</div>
+      <input type="text" class="gridLabel" placeholder="টাইটেল (ঐচ্ছিক)" value="${esc(title)}" disabled>
+      <textarea class="gridCode" placeholder="এখানে HTML/CSS/JS কোড বসান" disabled>${(code || '').replace(/</g, '&lt;')}</textarea>
+    </div>
+    <div class="gridBtnCol">
+      <button type="button" class="gridEditBtn">✏️</button>
+      <button type="button" class="gridCopyBtn" title="কোড কপি করুন">📋</button>
+      <button type="button" class="gridDeleteBtn">🗑️</button>
+    </div>`;
+  wireCheckReorder(row, getNextSeq); wireEditDelete(row);
+  return row;
+}
+function fillCombinedList(container, entries, getNextSeq) {
+  container.innerHTML = '';
+  (entries || []).forEach((entry, idx) => {
+    let row = null;
+    if (entry && entry.type === 'gadget') row = createGadgetRow(entry.title, entry.code, getNextSeq);
+    else if (entry) row = createGridRow(entry.label, entry.url, getNextSeq);
+    if (row) { row.dataset.origIndex = String(idx); container.appendChild(row); }
+  });
+  if (container.children.length === 0) container.innerHTML = '<div class="listEmpty">এখনো কোনো আইটেম তৈরি হয়নি</div>';
+}
+function clearListEmpty(container) {
+  const empty = container.querySelector('.listEmpty');
+  if (empty) empty.remove();
+}
+function readCombinedList(container) {
+  const rows = [];
+  container.querySelectorAll('.gridRow2').forEach(row => {
+    const seq = row.dataset.seq ? Number(row.dataset.seq) : null;
+    const orig = row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999;
+    if (row.dataset.type === 'gadget') {
+      const title = row.querySelector('.gridLabel').value.trim();
+      const code = row.querySelector('.gridCode').value;
+      if (!code.trim()) return;
+      rows.push({ entry: { type: 'gadget', title, code }, seq, orig });
+    } else {
+      const label = row.querySelector('.gridLabel').value.trim();
+      const url = row.querySelector('.gridUrl').value.trim();
+      if (!label) return;
+      rows.push({ entry: { type: 'page', label, url: url || '#' }, seq, orig });
+    }
+  });
+  const checked = rows.filter(r => r.seq !== null).sort((a, b) => a.seq - b.seq);
+  const unchecked = rows.filter(r => r.seq === null).sort((a, b) => a.orig - b.orig);
+  return [...checked, ...unchecked].map(r => r.entry);
+}
+const topCombinedList = $('topCombinedList');
+const sideCombinedList = $('sideCombinedList');
+fillCombinedList(topCombinedList, [], topSeq);
+fillCombinedList(sideCombinedList, [], sideSeq);
+const SEQ_BY_LIST = { topCombinedList: topSeq, sideCombinedList: sideSeq };
+document.querySelectorAll('.createBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const listId = btn.dataset.list, kind = btn.dataset.kind;
+    const container = $(listId), seqFor = SEQ_BY_LIST[listId], form = btn.closest('.createForm');
+    if (kind === 'page') {
+      const labelInput = form.querySelector('.createLabel'), urlInput = form.querySelector('.createUrl');
+      const label = labelInput.value.trim(), url = urlInput.value.trim();
+      if (!label) { alert('নাম/আইকন লিখুন'); return; }
+      clearListEmpty(container);
+      const row = createGridRow(label, url, seqFor);
+      row.dataset.origIndex = '999999';
+      container.appendChild(row);
+      labelInput.value = ''; urlInput.value = '';
+    } else {
+      const titleInput = form.querySelector('.createLabel'), codeInput = form.querySelector('.gridCode');
+      const title = titleInput.value.trim(), code = codeInput.value;
+      if (!code.trim()) { alert('কোড লিখুন'); return; }
+      clearListEmpty(container);
+      const row = createGadgetRow(title, code, seqFor);
+      row.dataset.origIndex = '999999';
+      container.appendChild(row);
+      titleInput.value = ''; codeInput.value = '';
+    }
+  });
+});
+document.querySelectorAll('.accordionBtn').forEach(btn => {
+  btn.addEventListener('click', () => { $(btn.dataset.toggle).classList.toggle('collapsed'); });
+});
+document.querySelectorAll('.addTypeBtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const box = btn.closest('.menuTypeBox');
+    box.querySelectorAll('.addTypeBtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    box.querySelectorAll('.createForm').forEach(f => { f.style.display = 'none'; });
+    $(btn.dataset.form).style.display = 'flex';
+  });
+});
+
+/* ================= থিম: নোটিশ + টপ/সাইড মেনু — লোড ও সেভ (settings/quiz ডকুমেন্টে) ================= */
+async function loadTheme() {
+  try {
+    const s = await getDoc(doc(db, 'settings', 'quiz'));
+    const d = s.exists() ? s.data() : {};
+    $('themeNoticeText').value = d.noticeText || '';
+    fillCombinedList(topCombinedList, d.topMenuEntries || [], topSeq);
+    fillCombinedList(sideCombinedList, d.sideMenuEntries || [], sideSeq);
+  } catch (e) {}
+}
+$('saveThemeNoticeBtn').addEventListener('click', async () => {
+  const text = $('themeNoticeText').value.trim();
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), { noticeText: text, updatedAt: serverTimestamp() }, { merge: true });
+    $('setNoticeText').value = text;
+    $('themeNoticeStatus').textContent = '✅ সেভ হয়েছে'; $('themeNoticeStatus').className = 'status ok';
+  } catch (e) { $('themeNoticeStatus').textContent = 'এরর: ' + e.message; $('themeNoticeStatus').className = 'status err'; }
+});
+$('saveTopMenuBtn').addEventListener('click', async () => {
+  const entries = readCombinedList(topCombinedList);
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), { topMenuEntries: entries, updatedAt: serverTimestamp() }, { merge: true });
+    $('topMenuStatus').textContent = '✅ সেভ হয়েছে'; $('topMenuStatus').className = 'status ok';
+  } catch (e) { $('topMenuStatus').textContent = 'এরর: ' + e.message; $('topMenuStatus').className = 'status err'; }
+});
+$('saveSideMenuBtn').addEventListener('click', async () => {
+  const entries = readCombinedList(sideCombinedList);
+  try {
+    await setDoc(doc(db, 'settings', 'quiz'), { sideMenuEntries: entries, updatedAt: serverTimestamp() }, { merge: true });
+    $('sideMenuStatus').textContent = '✅ সেভ হয়েছে'; $('sideMenuStatus').className = 'status ok';
+  } catch (e) { $('sideMenuStatus').textContent = 'এরর: ' + e.message; $('sideMenuStatus').className = 'status err'; }
+});
+
 let adminInited = false;
 async function initAdmin() {
   if (adminInited) return;
@@ -328,6 +673,7 @@ async function initAdmin() {
   await loadCategories();
   loadAllQuestions();
   loadSettings();
+  loadTheme();
 }
 
 /* ================= ক্যাটাগরি ================= */
@@ -725,6 +1071,7 @@ $('saveQuizSettingsBtn').addEventListener('click', async () => {
       hourlyQuizLimit: Number($('setHourlyQuizLimit').value || 0),
       updatedAt: serverTimestamp()
     }, { merge: true });
+    if ($('themeNoticeText')) $('themeNoticeText').value = $('setNoticeText').value;
     $('quizSettingsStatus').textContent = '✅ কুইজ সেটিংস সেভ হয়েছে'; $('quizSettingsStatus').className = 'status ok';
   } catch (e) { $('quizSettingsStatus').textContent = 'এরর: ' + e.message; $('quizSettingsStatus').className = 'status err'; }
 });
