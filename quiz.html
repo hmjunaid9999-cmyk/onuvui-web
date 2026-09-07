@@ -39,6 +39,9 @@ main{padding:16px}
 .primary{width:100%;padding:12px;background:var(--primary-color);color:#fff;border:0;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
 .primary:disabled{opacity:.6;cursor:not-allowed}
 .ghost{width:100%;padding:11px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:10px;font-size:13px;cursor:pointer;margin-top:8px}
+.ghost:disabled{opacity:.5;cursor:not-allowed}
+#catBackRow{margin-bottom:12px}
+#catBackRow .ghost{margin-top:0}
 /* ---- খেলার স্ক্রিন ---- */
 #quizTopBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#9ca3af}
 #timerWrap{height:6px;background:#21262d;border-radius:4px;overflow:hidden;margin-bottom:16px}
@@ -130,7 +133,8 @@ nav.bottomNav button.active{color:#fff}
   <main>
     <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
     <section id="panelHome" class="panel active">
-      <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">সব ক্যাটাগরি</option></select></div>
+      <div class="search">🔎<input id="categorySearchInput" placeholder="ক্যাটাগরি সার্চ করুন" oninput="window.onCategorySearchInput()"></div>
+      <div id="catBackRow" style="display:none"><button class="ghost" id="catBackBtn" onclick="history.back()">← সব ক্যাটাগরি</button></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
@@ -155,7 +159,8 @@ nav.bottomNav button.active{color:#fff}
       <div class="posterColors" id="posterColors"></div>
       <button class="primary" id="sharePosterBtn">📤 ফিডে পোস্টার হিসেবে শেয়ার করুন</button>
       <div class="notice" id="shareStatus" style="text-align:center;margin-top:8px"></div>
-      <button class="ghost" id="playAgainBtn">🔁 আবার খেলুন</button>
+      <button class="ghost" id="nextQuestionBtn">➡️ পরবর্তী প্রশ্ন দেখুন</button>
+      <button class="ghost" id="playAgainBtn">🔁 আবার দেখুন</button>
       <button class="ghost" id="backHomeBtn">🏠 ক্যাটাগরিতে ফিরে যান</button>
     </section>
 
@@ -444,12 +449,12 @@ $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.
 let selectedCategory = null;
 let categoryQuestions = [];
 let allQuestions = [];
+let homeViewMode = 'categories'; // 'categories' | 'questions'
 
 async function loadCategories() {
   try {
     const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
     categories = s.docs.map(x => ({ id: x.id, ...x.data() })).filter(c => c.active !== false);
-    fillCategorySelect();
   } catch (e) {
     $('catGrid').innerHTML = '<div class="error">ক্যাটাগরি লোড করা যায়নি: ' + esc(e.message) + '</div>';
     $('noticeText').textContent = '⚠️ ক্যাটাগরি এরর: ' + e.message;
@@ -461,31 +466,46 @@ async function loadCategories() {
     console.warn('[quiz] quizCategories কুয়েরি সফল হয়েছে কিন্তু ০টি ক্যাটাগরি এসেছে (active:false অথবা "order" ফিল্ড মিসিং হতে পারে)');
   }
   await loadAllQuestions();
+  window.backToCategories();
 }
 async function loadAllQuestions() {
-  $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
   try {
     const qs = await getDocs(collection(db, 'quizQuestions'));
     allQuestions = qs.docs.map(x => ({ id: x.id, ...x.data() }));
     allQuestions.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
   } catch (e) {
     $('catGrid').innerHTML = '<div class="error">প্রশ্ন লোড করা যায়নি: ' + esc(e.message) + '</div>';
-    return;
   }
-  categoryQuestions = allQuestions;
-  renderCategoryArea();
 }
-function fillCategorySelect() {
-  const sel = $('categorySelect');
-  const current = sel.value;
-  sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' +
-    categories.map(c => `<option value="${c.id}">${esc(c.icon || '❓')} ${esc(c.name || 'কুইজ')}</option>`).join('');
-  if (current) sel.value = current;
+/* ---- হোম: ক্যাটাগরি গ্রিড (সার্চ বার দিয়ে নাম সার্চ করা যায়) ---- */
+window.onCategorySearchInput = function () {
+  renderCategoryGrid($('categorySearchInput').value.trim());
+};
+function renderCategoryGrid(term) {
+  homeViewMode = 'categories';
+  selectedCategory = null;
+  $('catBackRow').style.display = 'none';
+  if (!categories.length) { $('catGrid').innerHTML = '<div class="empty">কোনো ক্যাটাগরি নেই।</div>'; return; }
+  const t = (term || '').toLowerCase();
+  const list = t ? categories.filter(c => (c.name || '').toLowerCase().includes(t)) : categories;
+  if (!list.length) { $('catGrid').innerHTML = '<div class="empty">কোনো ক্যাটাগরি খুঁজে পাওয়া যায়নি।</div>'; return; }
+  $('catGrid').innerHTML = list.map(c => {
+    const cnt = allQuestions.filter(q => q.categoryId === c.id).length;
+    return `
+    <div class="catCard" onclick="window.openCategory('${c.id}')">
+      <div class="icon">${esc(c.icon || '❓')}</div>
+      <div class="name">${esc(c.name || 'ক্যাটাগরি')}</div>
+      <div class="cnt">${cnt} টি প্রশ্ন</div>
+    </div>`;
+  }).join('');
 }
-window.onCategoryChange = async function () {
-  const id = $('categorySelect').value;
-  if (!id) { selectedCategory = null; categoryQuestions = allQuestions; renderCategoryArea(); return; }
+/* ---- ক্যাটাগরিতে ঢুকলে তার প্রশ্নগুলোর তালিকা ---- */
+window.openCategory = async function (id) {
   selectedCategory = categories.find(c => c.id === id);
+  if (!selectedCategory) return;
+  homeViewMode = 'questions';
+  pushGuard();
+  $('catBackRow').style.display = 'block';
   $('catGrid').innerHTML = '<div class="loading">লোড হচ্ছে...</div>';
 
   if (currentUser) {
@@ -506,6 +526,11 @@ window.onCategoryChange = async function () {
     return;
   }
   renderCategoryArea();
+};
+/* ---- ক্যাটাগরির প্রশ্ন তালিকা থেকে সব ক্যাটাগরিতে ফিরে যাওয়া ---- */
+window.backToCategories = function () {
+  $('categorySearchInput').value = '';
+  renderCategoryGrid('');
 };
 function renderCategoryArea() {
   if (!categoryQuestions.length) {
@@ -675,6 +700,7 @@ async function finishQuestion(isCorrect) {
   await refreshBalance();
   $('resultScoreText').textContent = isCorrect ? '১/১' : '০/১';
   $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
+  $('nextQuestionBtn').disabled = (activeQuestionIndex + 1 >= categoryQuestions.length);
   showPanel('panelResult', true);
   buildPosterColors();
 }
@@ -703,6 +729,11 @@ $('sharePosterBtn').addEventListener('click', async () => {
     });
     $('shareStatus').textContent = '✅ ফিডে পোস্ট হয়ে গেছে!';
   } catch (e) { $('shareStatus').textContent = 'এরর: ' + e.message; }
+});
+$('nextQuestionBtn').addEventListener('click', () => {
+  const nextIndex = activeQuestionIndex + 1;
+  if (nextIndex >= categoryQuestions.length) { alert('এই ক্যাটাগরিতে আর কোনো প্রশ্ন নেই।'); return; }
+  window.startQuestion(nextIndex);
 });
 $('playAgainBtn').addEventListener('click', () => { if (activeQuestionIndex > -1) window.startQuestion(activeQuestionIndex); });
 $('backHomeBtn').addEventListener('click', () => { history.back(); });
@@ -787,7 +818,7 @@ window.showPanel = function (id, isSubStep) {
   $('sideMenuBtn').style.display = (sideMenuHasEntries && id === 'panelHome') ? '' : 'none';
   $('headerTitle').textContent = id === 'panelPlay' ? ((selectedCategory?.name ? selectedCategory.name + ' — ' : '') + 'কুইজ ' + (activeQuestionIndex + 1)) :
     id === 'panelResult' ? 'ফলাফল' : id === 'panelCoin' ? 'কয়েন' : id === 'panelLeader' ? 'লিডারবোর্ড' : '🧠 কুইজ';
-  if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; }
+  if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; window.backToCategories(); }
 };
 $('topBackBtn').addEventListener('click', () => history.back());
 
@@ -812,6 +843,11 @@ function handleBack() {
   if (activePanel !== 'panelHome') {
     clearInterval(timerInterval);
     window.showPanel('panelHome');
+    return;
+  }
+  // ৫.৫) হোমে ক্যাটাগরির প্রশ্ন-তালিকা দেখানো অবস্থায় — সব ক্যাটাগরিতে ফিরে যাওয়া
+  if (homeViewMode === 'questions') {
+    window.backToCategories();
     return;
   }
   // ৬) হোম স্ক্রিনে ডবল-ব্যাকে এক্সিট
