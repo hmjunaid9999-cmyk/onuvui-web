@@ -569,10 +569,25 @@
     renderCombined(sidebarGrid, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets));
   }
 
+  // ---- সেটিংস (postsPerPage সহ) লোড হওয়ার আগেই যেন ফিড ডিফল্ট মান দিয়ে লোড না হয়ে যায়,
+  //      তাই প্রথমবার সেটিংস আসার পরেই (অথবা এরর/টাইমআউট হলে ফলব্যাক হিসেবে) ফিড লোড করা হচ্ছে ----
+  let firstSettingsHandled = false;
+  function startFeedOnce() {
+    if (firstSettingsHandled) return;
+    firstSettingsHandled = true;
+    resetFeed();
+  }
+
   function listenSettings() {
     onSnapshot(doc(db, "settings", "site"), (snap) => {
       if (snap.exists()) applySettings(snap.data());
+      startFeedOnce();
+    }, (err) => {
+      console.error(err);
+      startFeedOnce();
     });
+    // ---- নেটওয়ার্ক ধীর হলে বা কোনো কারণে স্ন্যাপশট না এলে ফিড যেন আটকে না থাকে, তাই ফলব্যাক ----
+    setTimeout(startFeedOnce, 3000);
   }
 
   // ---- কম্পোজার: মোড পরিবর্তন ----
@@ -1387,7 +1402,6 @@
       appInitialized = true;
       appScreen.style.display = 'block';
       listenSettings();
-      resetFeed();
       openSharedPostIfAny();
       initBackGuard();
     } else if (allLoadedPosts.length) {
