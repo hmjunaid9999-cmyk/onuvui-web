@@ -473,6 +473,33 @@
     return false;
   }
 
+  // ---- সাসপেনশন চেক: পোস্ট/কমেন্ট/রিপ্লাই করার আগে দেখে নেয় ইউজার এখন সাসপেন্ড আছে কিনা ----
+  //      থাকলে বাকি সময় (মিলিসেকেন্ড) রিটার্ন করে, নাহলে null ----
+  async function getSuspensionRemainingMs() {
+    if (!currentUser) return null;
+    try {
+      const snap = await getDoc(doc(db, "users", currentUser.uid));
+      if (!snap.exists()) return null;
+      const u = snap.data();
+      if (!u.suspendedUntil) return null;
+      const untilMs = u.suspendedUntil.toMillis ? u.suspendedUntil.toMillis() : new Date(u.suspendedUntil).getTime();
+      const diffMs = untilMs - Date.now();
+      return diffMs > 0 ? diffMs : null;
+    } catch (e) { return null; }
+  }
+
+  function formatSuspensionRemaining(ms) {
+    const totalMin = Math.max(1, Math.ceil(ms / 60000));
+    const days = Math.floor(totalMin / 1440);
+    const hrs = Math.floor((totalMin % 1440) / 60);
+    const mins = totalMin % 60;
+    const parts = [];
+    if (days > 0) parts.push(days + ' দিন');
+    if (hrs > 0) parts.push(hrs + ' ঘণ্টা');
+    if (mins > 0 || parts.length === 0) parts.push(mins + ' মিনিট');
+    return parts.join(' ');
+  }
+
   loginModalCloseBtn.addEventListener('click', closeLoginModal);
   loginModalOverlay.addEventListener('click', (e) => { if (e.target === loginModalOverlay) closeLoginModal(); });
 
@@ -632,6 +659,13 @@
   // ---- পোস্ট সাবমিট ----
   submitPostBtn.addEventListener('click', async () => {
     if (!requireLogin()) return;
+
+    const suspendedMs = await getSuspensionRemainingMs();
+    if (suspendedMs) {
+      composerStatus.textContent = `⛔ আপনি আর ${formatSuspensionRemaining(suspendedMs)} এর জন্য পোস্ট করতে পারবেন না`;
+      return;
+    }
+
     const text = composerText.value.trim();
 
     if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
@@ -1041,6 +1075,7 @@
               text: d.text || '',
               authorName: d.authorName || '',
               authorUid: d.authorUid || '',
+              authorEmail: d.authorEmail || '',
               reason: reason,
               reporterUid: currentUser.uid,
               reporterEmail: currentUser.email || '',
@@ -1137,6 +1172,13 @@
     if (!currentUser) return;
     const t = (text || '').trim();
     if (!t) return;
+
+    const suspendedMs = await getSuspensionRemainingMs();
+    if (suspendedMs) {
+      alert(`⛔ আপনি আর ${formatSuspensionRemaining(suspendedMs)} এর জন্য কমেন্ট বা রিপ্লাই করতে পারবেন না`);
+      return;
+    }
+
     const payload = {
       uid: currentUser.uid,
       name: currentUser.displayName || 'User',
@@ -1327,6 +1369,7 @@
               text: d.text || '',
               authorName: d.name || '',
               authorUid: d.uid || '',
+              authorEmail: d.email || '',
               reason: reason,
               reporterUid: currentUser.uid,
               reporterEmail: currentUser.email || '',
