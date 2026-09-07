@@ -106,6 +106,7 @@ nav.bottomNav button.active{color:#fff}
     <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
     <section id="panelHome" class="panel active">
       <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">সব ক্যাটাগরি</option></select></div>
+      <div id="catSelectDebug" style="font-size:11px;color:#facc15;margin:-8px 0 12px 4px"></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
@@ -409,6 +410,9 @@ function fillCategorySelect() {
   sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' +
     categories.map(c => `<option value="${c.id}">${esc(c.icon || '❓')} ${esc(c.name || 'কুইজ')}</option>`).join('');
   if (current) sel.value = current;
+  const dbg = $('catSelectDebug');
+  if (dbg) dbg.textContent = 'ডিবাগ: ড্রপডাউনে ' + categories.length + ' টি ক্যাটাগরি অপশন যোগ হয়েছে' +
+    (categories.length ? ' — ' + categories.map(c => c.name || '(নাম নেই)').join(', ') : '');
 }
 window.onCategoryChange = async function () {
   const id = $('categorySelect').value;
