@@ -91,22 +91,46 @@ nav.bottomNav button.active{color:#fff}
 .leaderRow .rank{width:22px;text-align:center;font-weight:700;color:#9ca3af}
 .leaderRow .lname{flex:1;font-size:13px}
 .leaderRow .lscore{font-size:12px;color:#4ade80;font-weight:700}
+/* ---- টপ মেনু (এডমিন প্যানেলের থিম > টপ মেনু থেকে) ---- */
+#sideMenuBtn{position:absolute;right:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
+#topMenuBar{gap:8px;overflow-x:auto;padding:10px 14px;background:var(--bg-color);border-bottom:1px solid #262c36;scrollbar-width:none}
+#topMenuBar::-webkit-scrollbar{display:none}
+#topMenuBar button{flex-shrink:0;background:var(--card-color);color:#c9d1d9;border:1px solid #262c36;border-radius:20px;padding:7px 16px;font-size:13px;white-space:nowrap;cursor:pointer}
+.topMenuGadgetBox{flex-shrink:0;display:flex;align-items:center}
+/* ---- সাইড মেনু (এডমিন প্যানেলের থিম > সাইড মেনু থেকে) ---- */
+.sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:350}
+.sideMenuOverlay.open{display:block}
+.sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--bg-color);z-index:351;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column}
+.sideMenuOverlay.open .sideMenuPanel{transform:translateX(0)}
+.sideMenuPanel .sideMenuHead{padding:16px;font-size:16px;font-weight:700;border-bottom:1px solid #262c36;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.sideMenuPanel .sideMenuHead button{background:transparent;border:0;color:#9ca3af;font-size:20px;cursor:pointer}
+.sideMenuPanel .sideMenuList{flex:1;overflow-y:auto;padding:8px 0}
+.sideMenuPanel .sideMenuList button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:13px 18px;font-size:14px;cursor:pointer}
+.sideMenuPanel .sideMenuGadgetBox{padding:8px 18px}
 </style>
 </head>
 <body>
 <div id="app">
   <header>
     <button class="menuBackBtn" id="topBackBtn" style="display:none">←</button>
+    <button id="sideMenuBtn" onclick="window.openSideMenu()" style="display:none">☰</button>
     <span id="headerTitle">🧠 কুইজ</span>
   </header>
   <div class="noticeBar"><span id="noticeText">লোড হচ্ছে...</span></div>
   <div class="topBannerAdBox" id="topBannerAd"></div>
+  <nav id="topMenuBar" style="display:none"></nav>
+
+  <div class="sideMenuOverlay" id="sideMenuOverlay">
+    <div class="sideMenuPanel">
+      <div class="sideMenuHead"><span>মেনু</span><button onclick="window.closeSideMenu(); history.back();">✕</button></div>
+      <div class="sideMenuList" id="sideMenuList"></div>
+    </div>
+  </div>
 
   <main>
     <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
     <section id="panelHome" class="panel active">
       <div class="search">📂<select id="categorySelect" onchange="window.onCategoryChange()"><option value="">সব ক্যাটাগরি</option></select></div>
-      <div id="catSelectDebug" style="font-size:11px;color:#facc15;margin:-8px 0 12px 4px"></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
@@ -265,7 +289,54 @@ async function loadSettings() {
     (settings.entryFee > 0 ? `, প্রতি কুইজ শুরুতে ${settings.entryFee} ${unit()} খরচ হবে` : '') +
     `। দৈনিক সর্বোচ্চ ${settings.maxCoinsPerDay} ${unit()} আয় করা যাবে।`;
   renderTopBannerAd();
+  renderTopMenuBar(settings.topMenuEntries);
+  renderSideMenuList(settings.sideMenuEntries);
 }
+/* ================= টপ মেনু / সাইড মেনু (এডমিন প্যানেলের থিম থেকে) ================= */
+function renderGadgetBox(container, className, code) {
+  if (!code) return;
+  const box = document.createElement('div');
+  box.className = className;
+  const scripts = [];
+  box.innerHTML = code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, js) => { scripts.push(js); return ''; });
+  container.appendChild(box);
+  scripts.forEach(js => { try { const s = document.createElement('script'); s.textContent = js; box.appendChild(s); } catch (e) {} });
+}
+function renderTopMenuBar(entries) {
+  const container = $('topMenuBar');
+  if (!Array.isArray(entries) || !entries.length) { container.style.display = 'none'; container.innerHTML = ''; return; }
+  container.style.display = 'flex';
+  container.innerHTML = '';
+  entries.forEach(entry => {
+    if (!entry) return;
+    if (entry.type === 'gadget') { renderGadgetBox(container, 'topMenuGadgetBox', entry.code); return; }
+    if (!entry.label) return;
+    const btn = document.createElement('button');
+    btn.textContent = entry.label;
+    btn.addEventListener('click', () => { if (entry.url) location.href = entry.url; });
+    container.appendChild(btn);
+  });
+}
+let sideMenuHasEntries = false;
+function renderSideMenuList(entries) {
+  const listEl = $('sideMenuList');
+  listEl.innerHTML = '';
+  sideMenuHasEntries = Array.isArray(entries) && entries.length > 0;
+  if (sideMenuHasEntries) {
+    entries.forEach(entry => {
+      if (!entry) return;
+      if (entry.type === 'gadget') { renderGadgetBox(listEl, 'sideMenuGadgetBox', entry.code); return; }
+      if (!entry.label) return;
+      const b = document.createElement('button');
+      b.textContent = entry.label;
+      b.addEventListener('click', () => { window.closeSideMenu(); if (entry.url) location.href = entry.url; });
+      listEl.appendChild(b);
+    });
+  }
+  $('sideMenuBtn').style.display = (sideMenuHasEntries && document.querySelector('.panel.active')?.id === 'panelHome') ? '' : 'none';
+}
+window.openSideMenu = () => { $('sideMenuOverlay').classList.add('open'); pushGuard(); };
+window.closeSideMenu = () => { $('sideMenuOverlay').classList.remove('open'); };
 function renderTopBannerAd() {
   const box = $('topBannerAd');
   if (!settings.adsEnabled) { box.style.display = 'none'; box.innerHTML = ''; return; }
@@ -410,9 +481,6 @@ function fillCategorySelect() {
   sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' +
     categories.map(c => `<option value="${c.id}">${esc(c.icon || '❓')} ${esc(c.name || 'কুইজ')}</option>`).join('');
   if (current) sel.value = current;
-  const dbg = $('catSelectDebug');
-  if (dbg) dbg.textContent = 'ডিবাগ: ড্রপডাউনে ' + categories.length + ' টি ক্যাটাগরি অপশন যোগ হয়েছে' +
-    (categories.length ? ' — ' + categories.map(c => c.name || '(নাম নেই)').join(', ') : '');
 }
 window.onCategoryChange = async function () {
   const id = $('categorySelect').value;
@@ -716,6 +784,7 @@ window.showPanel = function (id, isSubStep) {
   if (id === 'panelCoin') { $('navCoin').classList.add('active'); refreshBalance(); }
   if (id === 'panelLeader') { $('navLeader').classList.add('active'); loadLeaderboard(); }
   $('topBackBtn').style.display = id === 'panelHome' ? 'none' : '';
+  $('sideMenuBtn').style.display = (sideMenuHasEntries && id === 'panelHome') ? '' : 'none';
   $('headerTitle').textContent = id === 'panelPlay' ? ((selectedCategory?.name ? selectedCategory.name + ' — ' : '') + 'কুইজ ' + (activeQuestionIndex + 1)) :
     id === 'panelResult' ? 'ফলাফল' : id === 'panelCoin' ? 'কয়েন' : id === 'panelLeader' ? 'লিডারবোর্ড' : '🧠 কুইজ';
   if (isSubStep) { panelStack.push(id); pushGuard(); } else if (id === 'panelHome') { panelStack = ['panelHome']; }
@@ -724,6 +793,8 @@ $('topBackBtn').addEventListener('click', () => history.back());
 
 let backPressCount = 0, backPressTimer = null;
 function handleBack() {
+  // ০) সাইড মেনু খোলা থাকলে বন্ধ করা
+  if ($('sideMenuOverlay').classList.contains('open')) { window.closeSideMenu(); return; }
   // ১) বিজ্ঞাপন চলাকালীন ব্যাক করে বের হওয়া যাবে না (স্কিপযোগ্য হলে স্কিপ বাটন থেকেই বন্ধ হবে)
   if ($('adOverlay').classList.contains('show')) { pushGuard(); return; }
   // ২) ছাড়ার কনফার্মেশন খোলা থাকলে বন্ধ করা
