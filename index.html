@@ -105,6 +105,22 @@
   }
   #submitPostBtn:disabled { opacity: 0.6; }
 
+  /* ---- ব্লগ মোড: শিরোনাম ইনপুট ও 'অন্য পোস্ট যুক্ত করুন' অংশ ---- */
+  #composerBlogTitle {
+    display: none; width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 10px; border-radius: 10px; font-size: 15px; font-weight: bold; margin-bottom: 8px; font-family: inherit;
+  }
+  #blogLinkSection { display: none; margin-top: 10px; }
+  #blogLinkPickBtn {
+    background: #21262d; color: #c9d1d9; border: none; padding: 8px 12px; border-radius: 10px; font-size: 12px; cursor: pointer;
+  }
+  #blogLinkChosen {
+    display: none; align-items: center; gap: 8px; margin-top: 8px; background: #0d1117; border: 1px solid #30363d;
+    border-radius: 10px; padding: 8px 10px; font-size: 12px; color: #9ca3af;
+  }
+  #blogLinkChosen .blogLinkChosenText { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #blogLinkRemoveBtn { background: none; border: none; color: #f87171; font-size: 14px; cursor: pointer; padding: 0 4px; }
+
   /* ---- সার্চ বার ---- */
   #searchBar {
     width: 100%; background: var(--card-color); border: 1px solid #262c36; color: #fff;
@@ -131,6 +147,14 @@
     padding: 10px 12px; font-size: 12px; cursor: pointer;
   }
   .postMenuDropdown button:hover { background: #30363d; }
+  /* ---- ব্লগ পোস্টের শিরোনাম ও সংযুক্ত পোস্ট বক্স ---- */
+  .postBlogTitle { font-size: 17px; font-weight: bold; margin-bottom: 6px; line-height: 1.4; }
+  .blogLinkedPost {
+    margin-top: 8px; background: #0d1117; border: 1px solid #30363d; border-radius: 10px; padding: 10px 12px;
+    font-size: 13px; color: var(--primary-color); cursor: pointer;
+  }
+  .blogLinkedPost:hover { background: #161b22; }
+
   .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 4px; }
   .postText.clamped {
     display: -webkit-box; -webkit-box-orient: vertical;
@@ -318,11 +342,21 @@
         <div id="composerTabs">
           <button class="active" data-mode="text">📝 টেক্সট</button>
           <button data-mode="poster">🎨 পোস্টার</button>
+          <button data-mode="blog">📰 ব্লগ</button>
         </div>
+        <input type="text" id="composerBlogTitle" placeholder="ব্লগের শিরোনাম">
         <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
 
         <div id="posterColors"></div>
         <div id="posterPreview"></div>
+
+        <div id="blogLinkSection">
+          <button id="blogLinkPickBtn" type="button">🔗 অন্য পোস্ট যুক্ত করুন</button>
+          <div id="blogLinkChosen">
+            <span class="blogLinkChosenText"></span>
+            <button id="blogLinkRemoveBtn" type="button" title="সরিয়ে দিন">✕</button>
+          </div>
+        </div>
 
         <button id="submitPostBtn">পোস্ট করুন</button>
         <div class="postStatus" id="composerStatus"></div>
@@ -391,6 +425,8 @@
   let lastVisibleDoc = null;
   let allLoadedPosts = [];
   let composerMode = 'text';
+  let composerLinkedPostId = null;
+  let composerLinkedPostPreview = '';
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete', 'report'] };
@@ -445,8 +481,13 @@
   const sidebarOverlay = document.getElementById('sidebarOverlay');
 
   const composerText = document.getElementById('composerText');
+  const composerBlogTitle = document.getElementById('composerBlogTitle');
   const posterColorsEl = document.getElementById('posterColors');
   const posterPreview = document.getElementById('posterPreview');
+  const blogLinkSection = document.getElementById('blogLinkSection');
+  const blogLinkPickBtn = document.getElementById('blogLinkPickBtn');
+  const blogLinkChosen = document.getElementById('blogLinkChosen');
+  const blogLinkRemoveBtn = document.getElementById('blogLinkRemoveBtn');
   const submitPostBtn = document.getElementById('submitPostBtn');
   const composerStatus = document.getElementById('composerStatus');
   const searchBar = document.getElementById('searchBar');
@@ -642,8 +683,36 @@
       btn.classList.add('active');
       posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
       posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
+      composerBlogTitle.style.display = composerMode === 'blog' ? 'block' : 'none';
+      blogLinkSection.style.display = composerMode === 'blog' ? 'block' : 'none';
       if (composerMode === 'poster') updatePosterPreview();
     });
+  });
+
+  // ---- ব্লগ: অন্য একটা পোস্টের লিংক যুক্ত করা (পোস্টের '🔗 লিংক কপি' থেকে পাওয়া লিংক/আইডি দিয়ে) ----
+  blogLinkPickBtn.addEventListener('click', async () => {
+    const input = prompt('যে পোস্টটি যুক্ত করতে চান, তার লিংক বা আইডি পেস্ট করুন (পোস্টের "🔗 লিংক কপি" বাটন থেকে লিংকটি নিন):');
+    if (input === null) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    let pid = trimmed;
+    const m = trimmed.match(/#post-(.+)$/);
+    if (m) pid = decodeURIComponent(m[1]);
+    try {
+      const snap = await getDoc(doc(db, "posts", pid));
+      if (!snap.exists()) { alert('এই লিংক/আইডির পোস্ট খুঁজে পাওয়া যায়নি।'); return; }
+      const pd = snap.data();
+      composerLinkedPostId = pid;
+      composerLinkedPostPreview = (pd.title || pd.text || '').slice(0, 60);
+      blogLinkChosen.style.display = 'flex';
+      blogLinkChosen.querySelector('.blogLinkChosenText').textContent = '🔗 ' + (composerLinkedPostPreview || 'সংযুক্ত পোস্ট');
+    } catch (e) { alert('এরর: ' + e.message); }
+  });
+
+  blogLinkRemoveBtn.addEventListener('click', () => {
+    composerLinkedPostId = null;
+    composerLinkedPostPreview = '';
+    blogLinkChosen.style.display = 'none';
   });
 
   composerText.addEventListener('input', () => {
@@ -666,9 +735,12 @@
     }
 
     const text = composerText.value.trim();
+    const blogTitle = composerBlogTitle.value.trim();
 
     if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
     if (composerMode === 'poster' && !text) { composerStatus.textContent = 'পোস্টারের জন্য লেখা দিন'; return; }
+    if (composerMode === 'blog' && !blogTitle) { composerStatus.textContent = 'ব্লগের শিরোনাম দিন'; return; }
+    if (composerMode === 'blog' && !text) { composerStatus.textContent = 'ব্লগের লেখা দিন'; return; }
 
     submitPostBtn.disabled = true;
     composerStatus.textContent = 'পোস্ট হচ্ছে...';
@@ -681,6 +753,8 @@
         authorPhoto: currentUser.photoURL || '',
         type: composerMode,
         text: text,
+        title: composerMode === 'blog' ? blogTitle : null,
+        linkedPostId: composerMode === 'blog' ? (composerLinkedPostId || null) : null,
         posterColor: composerMode === 'poster' ? selectedPosterColor : null,
         likedBy: [],
         commentCount: 0,
@@ -690,6 +764,10 @@
       await addDoc(collection(db, "posts"), postData);
 
       composerText.value = '';
+      composerBlogTitle.value = '';
+      composerLinkedPostId = null;
+      composerLinkedPostPreview = '';
+      blogLinkChosen.style.display = 'none';
       composerStatus.textContent = '✅ পোস্ট হয়েছে!';
       setTimeout(() => { composerStatus.textContent = ''; }, 2000);
       resetFeed();
@@ -753,15 +831,13 @@
     loadPosts(true);
   }
 
-  // ---- শেয়ার করা লিংক (#post-<id>) থেকে সরাসরি সেই পোস্টে নিয়ে যাওয়া ----
-  async function openSharedPostIfAny() {
-    const m = location.hash.match(/^#post-(.+)$/);
-    if (!m) return;
-    const postId = decodeURIComponent(m[1]);
+  // ---- কোনো পোস্ট আইডি দিয়ে সরাসরি সেই পোস্টে নিয়ে যাওয়া (শেয়ার-লিংক ও ব্লগের 'সংযুক্ত পোস্ট' দুই জায়গাতেই ব্যবহার হয়) ----
+  async function goToPost(postId) {
+    if (!postId) return;
     try {
-      const snap = await getDoc(doc(db, "posts", postId));
-      if (!snap.exists()) return;
       if (!allLoadedPosts.some(p => p.id === postId)) {
+        const snap = await getDoc(doc(db, "posts", postId));
+        if (!snap.exists()) return;
         allLoadedPosts.unshift({ id: postId, data: snap.data() });
         renderPosts();
       }
@@ -775,6 +851,13 @@
     } catch (e) {
       console.error(e);
     }
+  }
+
+  // ---- শেয়ার করা লিংক (#post-<id>) থেকে সরাসরি সেই পোস্টে নিয়ে যাওয়া ----
+  async function openSharedPostIfAny() {
+    const m = location.hash.match(/^#post-(.+)$/);
+    if (!m) return;
+    goToPost(decodeURIComponent(m[1]));
   }
 
   loadMoreBtn.addEventListener('click', () => loadPosts(false));
@@ -860,7 +943,7 @@
     postsList.innerHTML = '';
 
     allLoadedPosts
-      .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm))
+      .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm) || (p.data.title || '').toLowerCase().includes(searchTerm))
       .forEach((p, i) => {
         postsList.appendChild(buildPostCard(p.id, p.data));
         // ---- ৩০০x২৫০ ব্যানার সবসময় প্রথম পোস্টের পরে, নেটিভ কনটেইনার অ্যাড দ্বিতীয় পোস্টের পরে ----
@@ -897,8 +980,10 @@
           <div class="postMenuDropdown"></div>
         </div>
       </div>
+      ${d.type === 'blog' && d.title ? `<div class="postBlogTitle">${escapeHtml(d.title)}</div>` : ''}
       ${d.type !== 'poster' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${escapeHtml(d.text)}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
+      ${d.type === 'blog' && d.linkedPostId ? `<div class="blogLinkedPost">🔗 সম্পর্কিত পোস্ট দেখুন</div>` : ''}
       <div class="postButtons"></div>
       <div class="postStatus"></div>
       <div class="commentsWrap">
@@ -928,6 +1013,12 @@
         postTextEl.classList.toggle('clamped', !expanded);
         readMoreBtn.textContent = expanded ? 'সংক্ষেপ করুন' : 'আরও পড়ুন';
       });
+    }
+
+    // ---- ব্লগ পোস্টের সাথে সংযুক্ত অন্য পোস্টে ক্লিক করলে সেখানে নিয়ে যাওয়া ----
+    const linkedPostEl = card.querySelector('.blogLinkedPost');
+    if (linkedPostEl) {
+      linkedPostEl.addEventListener('click', () => goToPost(d.linkedPostId));
     }
 
     const bottomContainer = card.querySelector('.postButtons');
@@ -1015,6 +1106,34 @@
         b.textContent = '✏️ এডিট';
         b.addEventListener('click', () => {
           menuContainer.classList.remove('open');
+
+          // ---- ব্লগ পোস্ট হলে শিরোনাম ও লেখা আলাদা করে এডিট করা হয় ----
+          if (d.type === 'blog') {
+            const newTitle = prompt('ব্লগের শিরোনাম এডিট করুন:', d.title || '');
+            if (newTitle === null) return;
+            const newText = prompt('ব্লগের লেখা এডিট করুন:', d.text || '');
+            if (newText === null) return;
+            updateDoc(doc(db, "posts", postId), { title: newTitle, text: newText }).then(() => {
+              d.title = newTitle;
+              d.text = newText;
+              const titleEl = card.querySelector('.postBlogTitle');
+              if (titleEl) titleEl.textContent = newTitle;
+              const textEl = card.querySelector('.postText, .postTextContent');
+              if (textEl) {
+                textEl.textContent = newText;
+                if (textEl.classList.contains('postText') && readMoreBtn) {
+                  textEl.classList.add('clamped');
+                  readMoreBtn.textContent = 'আরও পড়ুন';
+                  readMoreBtn.style.display = 'none';
+                  requestAnimationFrame(() => {
+                    if (textEl.scrollHeight > textEl.clientHeight + 1) readMoreBtn.style.display = 'block';
+                  });
+                }
+              }
+            }).catch(e => alert('এরর: ' + e.message));
+            return;
+          }
+
           const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
           if (newText === null) return;
           updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
