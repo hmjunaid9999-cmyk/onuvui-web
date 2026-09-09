@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>লাইভ স্ট্রিম - Onuvuti</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root{
+    --primary-color:#4285F4;
+    --bg-color:#0d1117;
+    --card-color:#161b22;
+    --text-color:#e6edf3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--bg-color); color:var(--text-color); font-family:'Segoe UI', Arial, sans-serif; }
+  ::-webkit-scrollbar { width:0; height:0; }
+
+  /* ---- গিফট পাঠালে ইমোজি উপরের দিকে ভেসে উঠে মিলিয়ে যাওয়ার অ্যানিমেশন ---- */
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(0.5); opacity:0; }
+    15%  { opacity:1; transform: translateY(-10px) scale(1); }
+    100% { transform: translateY(-280px) scale(1.15); opacity:0; }
+  }
+  .giftFloat { position:absolute; bottom:70px; font-size:34px; animation: floatUp 2.2s ease-out forwards; pointer-events:none; }
+
+  #chatMessages { scroll-behavior: smooth; }
+  #chatMessages > div { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  /* ---- অডিও লাইভে ভিডিওর বদলে দেখানো ওয়েভবার অ্যানিমেশন ---- */
+  .audioBar { width:5px; height:10px; background:rgba(255,255,255,.8); border-radius:3px; animation: audioBounce 1s ease-in-out infinite; }
+  @keyframes audioBounce { 0%,100% { height:8px; } 50% { height:28px; } }
+</style>
+</head>
+<body>
+
+  <!-- ---- লগইন গেট: লাইভ দেখতে/করতে লগইন বাধ্যতামূলক ---- -->
+  <div id="authGate" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center gap-4 p-6 text-center">
+    <div class="text-5xl">🔴</div>
+    <h2 class="text-lg font-bold">লাইভ দেখতে বা লাইভ করতে লগইন করুন</h2>
+    <p class="text-sm text-gray-400 max-w-xs">আপনার Onuvuti অ্যাকাউন্ট দিয়ে লগইন করলেই লাইভ স্ট্রিম দেখা, চ্যাট করা এবং গিফট পাঠানো যাবে।</p>
+    <button id="authLoginBtn" class="bg-white text-black font-bold px-6 py-3 rounded-full flex items-center gap-2">
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt=""> গুগল দিয়ে লগইন করুন
+    </button>
+    <a href="index.html" class="text-gray-500 text-sm underline">← হোমপেজে ফিরে যান</a>
+  </div>
+
+  <!-- ---- হেডার ---- -->
+  <header class="flex items-center justify-between px-4 py-3 bg-[var(--card-color)] border-b border-gray-800 sticky top-0 z-30">
+    <a href="index.html" id="headerBackBtn" class="text-xl leading-none">←</a>
+    <h1 class="text-base font-bold">🔴 লাইভ স্ট্রিমিং</h1>
+    <div id="userBadge" class="flex items-center gap-2"></div>
+  </header>
+
+  <!-- ---- লবি: সব চলমান লাইভের তালিকা + লাইভ শুরু করার বাটন ---- -->
+  <div id="lobbyView" class="p-4 max-w-lg mx-auto">
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <button id="goLiveVideoBtn" class="bg-red-600 active:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-900/30">
+        🎥 ভিডিও লাইভ
+      </button>
+      <button id="goLiveAudioBtn" class="bg-purple-600 active:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-purple-900/30">
+        🎙️ অডিও লাইভ
+      </button>
+    </div>
+    <h2 class="text-sm text-gray-400 mb-2 font-semibold">এখন যারা লাইভে আছেন</h2>
+    <div id="liveStreamsList" class="grid grid-cols-2 gap-3"></div>
+    <p id="noLiveMsg" class="text-center text-gray-500 mt-10 hidden">এই মুহূর্তে কেউ লাইভ নেই। আপনি প্রথম হয়ে লাইভ শুরু করতে পারেন!</p>
+  </div>
+
+  <!-- ---- স্টেজ: হোস্ট ও ভিউয়ার দুজনেই এই একই লেআউট ব্যবহার করে (ভূমিকা অনুযায়ী বাটন বদলায়) ---- -->
+  <div id="stageView" class="hidden max-w-lg mx-auto">
+    <div class="relative bg-black" style="aspect-ratio:9/14; max-height:78vh;">
+      <video id="mainVideo" autoplay playsinline class="w-full h-full object-cover bg-gray-900"></video>
+
+      <!-- ---- অডিও লাইভে ভিডিওর বদলে এই কভারটা দেখানো হয় (অডিও স্ট্রিম চলতেই থাকে) ---- -->
+      <div id="audioCoverArea" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-purple-900 via-gray-900 to-black">
+        <img id="audioCoverAvatar" class="w-24 h-24 rounded-full border-4 border-white object-cover bg-gray-700" alt="">
+        <div id="audioCoverName" class="text-sm font-bold"></div>
+        <div class="flex items-end gap-1 h-8">
+          <span class="audioBar" style="animation-delay:0s"></span>
+          <span class="audioBar" style="animation-delay:.15s"></span>
+          <span class="audioBar" style="animation-delay:.3s"></span>
+          <span class="audioBar" style="animation-delay:.45s"></span>
+          <span class="audioBar" style="animation-delay:.2s"></span>
+        </div>
+        <div class="text-xs text-gray-300">🎙️ অডিও লাইভ চলছে</div>
+      </div>
+
+      <div id="connectingMsg" class="absolute inset-0 flex items-center justify-center text-sm text-gray-300 bg-black/40">
+        সংযুক্ত হচ্ছে...
+      </div>
+
+      <div class="absolute top-3 left-3 bg-red-600 text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+        <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span> LIVE
+      </div>
+      <div id="viewerCountBadge" class="absolute top-3 right-3 bg-black/60 text-xs px-2 py-1 rounded">👁 0</div>
+
+      <div id="giftFloatArea" class="absolute inset-0 overflow-hidden"></div>
+
+      <!-- ---- লাইক বাটন (হোস্ট ও ভিউয়ার দুজনেই লাইক দিতে/দেখতে পারবে) ---- -->
+      <button id="likeBtn" type="button" class="absolute bottom-16 right-3 flex flex-col items-center bg-black/50 rounded-2xl px-2.5 py-1.5">
+        <span id="likeIcon" class="text-lg leading-none">🤍</span>
+        <span id="likeCount" class="text-[10px] font-bold leading-none mt-0.5">0</span>
+      </button>
+
+      <div class="absolute bottom-3 left-3 flex items-center gap-2 max-w-[65%]">
+        <img id="hostAvatar" class="w-8 h-8 rounded-full border-2 border-white object-cover bg-gray-700" alt="">
+        <span id="hostNameLabel" class="text-sm font-semibold drop-shadow truncate"></span>
+      </div>
+
+      <button id="endLiveBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-red-400 text-xs font-bold px-3 py-2 rounded-full">⏹ লাইভ শেষ করুন</button>
+      <button id="leaveViewBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-xs font-bold px-3 py-2 rounded-full">✖ বের হোন</button>
+    </div>
+
+    <!-- ---- রিয়েল-টাইম চ্যাট ---- -->
+    <div id="chatMessages" class="h-52 overflow-y-auto px-3 py-2 space-y-1.5 bg-[var(--card-color)] text-sm"></div>
+
+    <!-- ---- গিফট বার ---- -->
+    <div id="giftBar" class="flex gap-2 overflow-x-auto px-3 py-2 bg-[var(--card-color)] border-t border-gray-800"></div>
+
+    <!-- ---- চ্যাট ইনপুট + কয়েন ব্যালেন্স ---- -->
+    <form id="chatForm" class="flex items-center gap-2 p-3 bg-[var(--card-color)] border-t border-gray-800">
+      <div class="flex flex-col items-center leading-none">
+        <span id="coinBalance" class="text-yellow-400 text-xs font-bold whitespace-nowrap">🪙 0</span>
+        <button type="button" id="topUpBtn" class="text-[10px] text-gray-500 underline whitespace-nowrap">+৫০ (ডেমো)</button>
+      </div>
+      <input id="chatInput" type="text" placeholder="মন্তব্য লিখুন..." autocomplete="off"
+        class="flex-1 bg-gray-800 border border-gray-700 rounded-full px-4 py-2 text-sm outline-none text-white">
+      <button type="submit" class="bg-[var(--primary-color)] px-4 py-2 rounded-full text-sm font-bold text-white">পাঠান</button>
+    </form>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot,
+    collection, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion, arrayRemove
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  // ---- এই একই সাইটের ফায়ারবেস প্রজেক্ট, index.html এর সাথে মিলিয়ে ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:538c47101eade3e2df8b25"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // ---- P2P WebRTC এর জন্য ফ্রি পাবলিক STUN সার্ভার (কোনো পেইড থার্ড-পার্টি সার্ভিস নেই) ----
+  const rtcConfig = { iceServers: [
+    { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+  ]};
+
+  const GIFTS = [
+    { id: 'heart',   emoji: '❤️', name: 'হার্ট',      cost: 10 },
+    { id: 'rose',    emoji: '🌹', name: 'গোলাপ',      cost: 50 },
+    { id: 'diamond', emoji: '💎', name: 'হীরা',        cost: 200 },
+    { id: 'crown',   emoji: '👑', name: 'রাজমুকুট',    cost: 500 }
+  ];
+
+  // ---- এলিমেন্ট রেফারেন্স ----
+  const authGate = document.getElementById('authGate');
+  const authLoginBtn = document.getElementById('authLoginBtn');
+  const userBadge = document.getElementById('userBadge');
+  const headerBackBtn = document.getElementById('headerBackBtn');
+
+  const lobbyView = document.getElementById('lobbyView');
+  const goLiveVideoBtn = document.getElementById('goLiveVideoBtn');
+  const goLiveAudioBtn = document.getElementById('goLiveAudioBtn');
+  const liveStreamsList = document.getElementById('liveStreamsList');
+  const noLiveMsg = document.getElementById('noLiveMsg');
+
+  const stageView = document.getElementById('stageView');
+  const mainVideo = document.getElementById('mainVideo');
+  const audioCoverArea = document.getElementById('audioCoverArea');
+  const audioCoverAvatar = document.getElementById('audioCoverAvatar');
+  const audioCoverName = document.getElementById('audioCoverName');
+  const connectingMsg = document.getElementById('connectingMsg');
+  const viewerCountBadge = document.getElementById('viewerCountBadge');
+  const giftFloatArea = document.getElementById('giftFloatArea');
+  const likeBtn = document.getElementById('likeBtn');
+  const likeIcon = document.getElementById('likeIcon');
+  const likeCount = document.getElementById('likeCount');
+  const hostAvatar = document.getElementById('hostAvatar');
+  const hostNameLabel = document.getElementById('hostNameLabel');
+  const endLiveBtn = document.getElementById('endLiveBtn');
+  const leaveViewBtn = document.getElementById('leaveViewBtn');
+
+  const chatMessages = document.getElementById('chatMessages');
+  const giftBar = document.getElementById('giftBar');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const coinBalance = document.getElementById('coinBalance');
+  const topUpBtn = document.getElementById('topUpBtn');
+
+  // ---- স্টেট ----
+  let currentUser = null;
+  let coins = 0;
+  let currentStreamId = null;
+  let isHost = false;
+  let liveMode = 'video';              // 'video' অথবা 'audio'
+  let localStream = null;
+  let viewerPC = null;                 // ভিউয়ার সাইডে একটাই peer connection (হোস্টের সাথে)
+  let peerConnections = {};            // হোস্ট সাইডে প্রতিটা ভিউয়ারের জন্য আলাদা peer connection
+  let peerUnsubs = {};                 // প্রতিটা ভিউয়ার-কানেকশনের ফায়ারবেস লিসেনার আনসাব
+  let activeUnsubs = [];               // চলমান সেশনের বাকি সব onSnapshot আনসাব
+
+  function escapeHtml(str) {
+    return (str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // ================= ব্যাক বাটন হ্যান্ডলিং: স্টেজে থাকলে ব্যাক চাপলে সরাসরি পেজ থেকে বের
+  // না করে আগে লবিতে ফিরিয়ে আনা (হার্ডওয়্যার/ব্রাউজার ব্যাক বাটন + হেডারের ← বাটন দুটোতেই) =================
+  try { history.replaceState({ section: 'lobby' }, '', location.href); } catch (e) {}
+
+  function enterStageHistory() {
+    try { history.pushState({ section: 'stage' }, '', '#live'); } catch (e) {}
+  }
+
+  function performExitStage() {
+    if (isHost) {
+      if (currentStreamId) {
+        updateDoc(doc(db, 'liveStreams', currentStreamId), { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
+      }
+      if (localStream) localStream.getTracks().forEach(t => t.stop());
+    } else if (currentStreamId && currentUser) {
+      deleteDoc(doc(db, 'liveStreams', currentStreamId, 'viewers', currentUser.uid)).catch(() => {});
+    }
+    cleanupSession();
+    showLobby();
+    // ---- হিস্ট্রি স্ট্যাকের বর্তমান এন্ট্রিকে 'lobby' হিসেবে ঠিক করে দেওয়া হচ্ছে, যাতে
+    // পরের বার ব্যাক চাপলে ঠিকঠাক আচরণ করে (এখানে থেকে বের হওয়া মানেই সাইট থেকে বের হওয়া) ----
+    try { history.replaceState({ section: 'lobby' }, '', location.pathname); } catch (e) {}
+  }
+
+  function exitStageUI() {
+    if (history.state && history.state.section === 'stage') {
+      history.back(); // ---- popstate হ্যান্ডলারই আসল ক্লিনআপ (performExitStage) চালাবে ----
+    } else {
+      performExitStage();
+    }
+  }
+
+  window.addEventListener('popstate', (e) => {
+    if (currentStreamId && (!e.state || e.state.section !== 'stage')) {
+      performExitStage();
+    }
+  });
+
+  headerBackBtn.addEventListener('click', (e) => {
+    if (currentStreamId) {
+      e.preventDefault();
+      exitStageUI();
+    }
+  });
+
+
+  // ================= অথেন্টিকেশন =================
+  authLoginBtn.addEventListener('click', () => {
+    signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert('লগইন ব্যর্থ হয়েছে: ' + e.message));
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      authGate.classList.add('hidden');
+      userBadge.innerHTML = `<img src="${user.photoURL || ''}" class="w-7 h-7 rounded-full object-cover bg-gray-700"><button id="logoutBtn2" class="text-xs text-gray-400 underline">লগআউট</button>`;
+      document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+      listenCoins(user.uid);
+      showLobby();
+      listenLobby();
+    } else {
+      currentUser = null;
+      authGate.classList.remove('hidden');
+      cleanupSession();
+    }
+  });
+
+  // ================= কয়েন ব্যালেন্স =================
+  function listenCoins(uid) {
+    const uRef = doc(db, 'users', uid);
+    onSnapshot(uRef, async (snap) => {
+      if (!snap.exists() || snap.data().coins === undefined) {
+        // ---- নতুন ইউজারের জন্য শুরুতে ১০০ কয়েন ফ্রি (ডেমো ব্যালেন্স) ----
+        await setDoc(uRef, { coins: 100 }, { merge: true }).catch(() => {});
+        return;
+      }
+      coins = snap.data().coins || 0;
+      coinBalance.textContent = '🪙 ' + coins;
+    });
+  }
+
+  topUpBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+    await setDoc(doc(db, 'users', currentUser.uid), { coins: increment(50) }, { merge: true }).catch(() => {});
+  });
+
+  // ================= লবি (চলমান লাইভের তালিকা) =================
+  function listenLobby() {
+    const q = query(collection(db, 'liveStreams'), where('status', '==', 'live'));
+    onSnapshot(q, (snap) => {
+      liveStreamsList.innerHTML = '';
+      noLiveMsg.classList.toggle('hidden', !snap.empty);
+      snap.forEach(d => liveStreamsList.appendChild(buildStreamCard(d.id, d.data())));
+    });
+  }
+
+  function buildStreamCard(id, d) {
+    const card = document.createElement('div');
+    card.className = 'relative rounded-xl overflow-hidden cursor-pointer aspect-[9/12] flex flex-col justify-end p-2';
+    card.style.background = 'linear-gradient(160deg,#1f2937,#0d1117)';
+    card.innerHTML = `
+      <div class="absolute top-2 left-2 bg-red-600 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
+        <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>${d.mode === 'audio' ? '🎙️' : '🎥'} LIVE
+      </div>
+      <div class="absolute top-2 right-2 bg-black/60 text-[10px] px-2 py-0.5 rounded">👁 ${d.viewerCount || 0}</div>
+      <img src="${d.hostPhoto || ''}" class="w-10 h-10 rounded-full border-2 border-white mb-1 object-cover bg-gray-700">
+      <div class="text-xs font-semibold truncate">${escapeHtml(d.hostName || 'হোস্ট')}</div>
+    `;
+    card.addEventListener('click', () => watchStream(id));
+    return card;
+  }
+
+  function showLobby() {
+    lobbyView.classList.remove('hidden');
+    stageView.classList.add('hidden');
+  }
+  function showStage() {
+    lobbyView.classList.add('hidden');
+    stageView.classList.remove('hidden');
+    connectingMsg.classList.remove('hidden');
+  }
+
+  // ================= হোস্ট: লাইভ শুরু করা (ভিডিও অথবা অডিও) =================
+  goLiveVideoBtn.addEventListener('click', () => requestGoLive('video'));
+  goLiveAudioBtn.addEventListener('click', () => requestGoLive('audio'));
+
+  async function requestGoLive(mode) {
+    if (currentStreamId) return;
+    try {
+      const constraints = mode === 'audio' ? { audio: true } : { video: true, audio: true };
+      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+    } catch (e) {
+      const need = mode === 'audio' ? 'মাইক্রোফোনের' : 'ক্যামেরা ও মাইক্রোফোনের';
+      alert('লাইভ শুরু করতে ' + need + ' অনুমতি দরকার: ' + e.message);
+      return;
+    }
+    await startHosting(mode);
+  }
+
+  function toggleAudioCover(isAudio, name, photo) {
+    audioCoverArea.classList.toggle('hidden', !isAudio);
+    mainVideo.style.opacity = isAudio ? '0' : '1'; // ---- opacity ব্যবহার করা হয়েছে যাতে হাইড করলেও অডিও ট্র্যাক বাজতে থাকে ----
+    if (isAudio) {
+      audioCoverAvatar.src = photo || '';
+      audioCoverName.textContent = name || '';
+    }
+  }
+
+  async function startHosting(mode) {
+    isHost = true;
+    liveMode = mode;
+    mainVideo.srcObject = localStream;
+    mainVideo.muted = true; // ---- নিজের ভিডিও/অডিও নিজে শুনলে ইকো হবে, তাই হোস্টের প্রিভিউ মিউট ----
+    toggleAudioCover(mode === 'audio', currentUser.displayName, currentUser.photoURL);
+    showStage();
+    enterStageHistory();
+    connectingMsg.classList.add('hidden');
+    endLiveBtn.classList.remove('hidden');
+    leaveViewBtn.classList.add('hidden');
+    hostAvatar.src = currentUser.photoURL || '';
+    hostNameLabel.textContent = currentUser.displayName || 'হোস্ট';
+
+    const streamRef = await addDoc(collection(db, 'liveStreams'), {
+      hostUid: currentUser.uid,
+      hostName: currentUser.displayName || 'হোস্ট',
+      hostPhoto: currentUser.photoURL || '',
+      status: 'live',
+      mode: mode,
+      viewerCount: 0,
+      likedBy: [],
+      startedAt: serverTimestamp()
+    });
+    currentStreamId = streamRef.id;
+    listenStreamMeta(currentStreamId);
+
+    // ---- ভিউয়ার সাবকালেকশন লিসেন করা: নতুন ভিউয়ার জয়েন করলেই তার জন্য আলাদা peer connection তৈরি হবে ----
+    const viewersColRef = collection(db, 'liveStreams', currentStreamId, 'viewers');
+    const unsubViewers = onSnapshot(viewersColRef, (snap) => {
+      updateDoc(doc(db, 'liveStreams', currentStreamId), { viewerCount: snap.size }).catch(() => {});
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') connectToViewer(change.doc.id);
+        if (change.type === 'removed') closeViewerConnection(change.doc.id);
+      });
+    });
+    activeUnsubs.push(unsubViewers);
+
+    listenChat(currentStreamId);
+  }
+
+  async function connectToViewer(viewerUid) {
+    if (peerConnections[viewerUid]) return;
+    const pc = new RTCPeerConnection(rtcConfig);
+    peerConnections[viewerUid] = pc;
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    const viewerDocRef = doc(db, 'liveStreams', currentStreamId, 'viewers', viewerUid);
+    const hostCandidatesRef = collection(viewerDocRef, 'hostCandidates');
+    const viewerCandidatesRef = collection(viewerDocRef, 'viewerCandidates');
+
+    pc.onicecandidate = (e) => {
+      if (e.candidate) addDoc(hostCandidatesRef, e.candidate.toJSON()).catch(() => {});
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await updateDoc(viewerDocRef, { offer: { type: offer.type, sdp: offer.sdp } });
+
+    const unsubAnswer = onSnapshot(viewerDocRef, (snap) => {
+      const data = snap.data();
+      if (data && data.answer && !pc.currentRemoteDescription) {
+        pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(console.error);
+      }
+    });
+    const unsubCand = onSnapshot(viewerCandidatesRef, (snap) => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'added') pc.addIceCandidate(new RTCIceCandidate(ch.doc.data())).catch(console.error);
+      });
+    });
+    peerUnsubs[viewerUid] = [unsubAnswer, unsubCand];
+  }
+
+  function closeViewerConnection(viewerUid) {
+    const pc = peerConnections[viewerUid];
+    if (pc) { pc.close(); delete peerConnections[viewerUid]; }
+    if (peerUnsubs[viewerUid]) { peerUnsubs[viewerUid].forEach(u => u()); delete peerUnsubs[viewerUid]; }
+  }
+
+  endLiveBtn.addEventListener('click', exitStageUI);
+
+  // ================= লাইক + স্ট্রিমের মেটাডেটা (ভিউয়ার-কাউন্ট, লাইভ শেষ কিনা) লিসেন করা,
+  // হোস্ট ও ভিউয়ার দুজনের জন্যই ব্যবহৃত হয় =================
+  function listenStreamMeta(streamId) {
+    const streamDocRef = doc(db, 'liveStreams', streamId);
+    const unsub = onSnapshot(streamDocRef, (snap) => {
+      const d = snap.data();
+      if (!d) return;
+      viewerCountBadge.textContent = '👁 ' + (d.viewerCount || 0);
+      const likedBy = d.likedBy || [];
+      likeCount.textContent = likedBy.length;
+      likeIcon.textContent = (currentUser && likedBy.includes(currentUser.uid)) ? '❤️' : '🤍';
+      if (d.status === 'ended' && !isHost) {
+        alert('হোস্ট লাইভ শেষ করে দিয়েছেন');
+        performExitStage();
+      }
+    });
+    activeUnsubs.push(unsub);
+  }
+
+  likeBtn.addEventListener('click', async () => {
+    if (!currentStreamId || !currentUser) return;
+    const liked = likeIcon.textContent === '❤️';
+    try {
+      await updateDoc(doc(db, 'liveStreams', currentStreamId), {
+        likedBy: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  // ================= ভিউয়ার: লাইভ দেখা =================
+  async function watchStream(streamId) {
+    if (currentStreamId || !currentUser) return;
+    currentStreamId = streamId;
+    isHost = false;
+
+    const streamDocRef = doc(db, 'liveStreams', streamId);
+    const streamSnap = await getDoc(streamDocRef);
+    if (!streamSnap.exists() || streamSnap.data().status !== 'live') {
+      alert('এই লাইভটি এখন আর চলছে না');
+      currentStreamId = null;
+      return;
+    }
+    const sd = streamSnap.data();
+
+    showStage();
+    enterStageHistory();
+    endLiveBtn.classList.add('hidden');
+    leaveViewBtn.classList.remove('hidden');
+    mainVideo.muted = false;
+    toggleAudioCover(sd.mode === 'audio', sd.hostName, sd.hostPhoto);
+    hostAvatar.src = sd.hostPhoto || '';
+    hostNameLabel.textContent = sd.hostName || 'হোস্ট';
+
+    listenStreamMeta(streamId);
+
+    const viewerDocRef = doc(db, 'liveStreams', streamId, 'viewers', currentUser.uid);
+    await setDoc(viewerDocRef, {
+      uid: currentUser.uid,
+      name: currentUser.displayName || 'ভিউয়ার',
+      joinedAt: serverTimestamp()
+    });
+
+    viewerPC = new RTCPeerConnection(rtcConfig);
+    viewerPC.ontrack = (e) => {
+      mainVideo.srcObject = e.streams[0];
+      connectingMsg.classList.add('hidden');
+    };
+
+    const hostCandidatesRef = collection(viewerDocRef, 'hostCandidates');
+    const viewerCandidatesRef = collection(viewerDocRef, 'viewerCandidates');
+
+    viewerPC.onicecandidate = (e) => {
+      if (e.candidate) addDoc(viewerCandidatesRef, e.candidate.toJSON()).catch(() => {});
+    };
+
+    const unsubOffer = onSnapshot(viewerDocRef, async (snap) => {
+      const data = snap.data();
+      if (data && data.offer && !viewerPC.currentRemoteDescription) {
+        await viewerPC.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await viewerPC.createAnswer();
+        await viewerPC.setLocalDescription(answer);
+        await updateDoc(viewerDocRef, { answer: { type: answer.type, sdp: answer.sdp } });
+      }
+    });
+    activeUnsubs.push(unsubOffer);
+
+    const unsubCand = onSnapshot(hostCandidatesRef, (snap) => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'added') viewerPC.addIceCandidate(new RTCIceCandidate(ch.doc.data())).catch(console.error);
+      });
+    });
+    activeUnsubs.push(unsubCand);
+
+    listenChat(streamId);
+  }
+
+  leaveViewBtn.addEventListener('click', exitStageUI);
+
+  // ================= রিয়েল-টাইম চ্যাট =================
+  function listenChat(streamId) {
+    chatMessages.innerHTML = '';
+    const chatQ = query(collection(db, 'liveStreams', streamId, 'chat'), orderBy('createdAt', 'asc'), limit(200));
+    const unsub = onSnapshot(chatQ, (snap) => {
+      snap.docChanges().forEach(ch => {
+        if (ch.type === 'added') renderChatMessage(ch.doc.data());
+      });
+    });
+    activeUnsubs.push(unsub);
+  }
+
+  function renderChatMessage(msg) {
+    const row = document.createElement('div');
+    if (msg.type === 'gift') {
+      row.className = 'bg-yellow-500/10 border border-yellow-600/30 rounded-lg px-2 py-1 text-xs';
+      row.innerHTML = `<span class="font-bold text-yellow-400">${escapeHtml(msg.name || 'কেউ')}</span> পাঠালেন ${msg.giftEmoji} <span class="text-yellow-400">${escapeHtml(msg.giftName)}</span> <span class="text-gray-400">(${msg.coins} কয়েন)</span>`;
+      floatGift(msg.giftEmoji);
+    } else {
+      row.className = 'text-xs';
+      row.innerHTML = `<span class="font-bold text-blue-400">${escapeHtml(msg.name || 'ব্যবহারকারী')}: </span><span>${escapeHtml(msg.text || '')}</span>`;
+    }
+    chatMessages.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function floatGift(emoji) {
+    const el = document.createElement('div');
+    el.className = 'giftFloat';
+    el.style.left = (10 + Math.random() * 70) + '%';
+    el.textContent = emoji;
+    giftFloatArea.appendChild(el);
+    setTimeout(() => el.remove(), 2300);
+  }
+
+  chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text || !currentStreamId) return;
+    chatInput.value = '';
+    await addDoc(collection(db, 'liveStreams', currentStreamId, 'chat'), {
+      uid: currentUser.uid,
+      name: currentUser.displayName || 'ব্যবহারকারী',
+      text,
+      type: 'chat',
+      createdAt: serverTimestamp()
+    }).catch(() => {});
+  });
+
+  // ================= কয়েন/গিফটিং =================
+  function buildGiftBar() {
+    giftBar.innerHTML = '';
+    GIFTS.forEach(g => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'flex-shrink-0 flex flex-col items-center gap-0.5 bg-gray-800 rounded-xl px-3 py-2';
+      btn.innerHTML = `<span class="text-xl">${g.emoji}</span><span class="text-[10px] text-yellow-400">🪙${g.cost}</span>`;
+      btn.addEventListener('click', () => sendGift(g));
+      giftBar.appendChild(btn);
+    });
+  }
+  buildGiftBar();
+
+  async function sendGift(gift) {
+    if (!currentStreamId || !currentUser) return;
+    if (coins < gift.cost) { alert('আপনার পর্যাপ্ত কয়েন নেই'); return; }
+    try {
+      await updateDoc(doc(db, 'users', currentUser.uid), { coins: increment(-gift.cost) });
+      if (!isHost) {
+        const streamSnap = await getDoc(doc(db, 'liveStreams', currentStreamId));
+        const hostUid = streamSnap.data()?.hostUid;
+        if (hostUid) {
+          await setDoc(doc(db, 'users', hostUid), { coins: increment(gift.cost) }, { merge: true });
+        }
+      }
+      await addDoc(collection(db, 'liveStreams', currentStreamId, 'chat'), {
+        uid: currentUser.uid,
+        name: currentUser.displayName || 'ব্যবহারকারী',
+        type: 'gift',
+        giftId: gift.id,
+        giftEmoji: gift.emoji,
+        giftName: gift.name,
+        coins: gift.cost,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      alert('গিফট পাঠাতে ব্যর্থ: ' + e.message);
+    }
+  }
+
+  // ================= সেশন ক্লিনআপ =================
+  function cleanupSession() {
+    activeUnsubs.forEach(u => u());
+    activeUnsubs = [];
+    Object.keys(peerConnections).forEach(closeViewerConnection);
+    peerConnections = {};
+    if (viewerPC) { viewerPC.close(); viewerPC = null; }
+    currentStreamId = null;
+    isHost = false;
+    liveMode = 'video';
+    mainVideo.srcObject = null;
+    mainVideo.style.opacity = '1';
+    audioCoverArea.classList.add('hidden');
+    chatMessages.innerHTML = '';
+    giftFloatArea.innerHTML = '';
+    likeIcon.textContent = '🤍';
+    likeCount.textContent = '0';
+    endLiveBtn.classList.add('hidden');
+    leaveViewBtn.classList.add('hidden');
+  }
+
+  // ---- ট্যাব বন্ধ/রিলোড করলে হোস্ট হলে লাইভ 'ended' করে দেওয়া, ভিউয়ার হলে ভিউয়ার-এন্ট্রি মুছে ফেলা (best-effort) ----
+  window.addEventListener('beforeunload', () => {
+    if (!currentStreamId) return;
+    if (isHost) {
+      updateDoc(doc(db, 'liveStreams', currentStreamId), { status: 'ended' }).catch(() => {});
+    } else if (currentUser) {
+      deleteDoc(doc(db, 'liveStreams', currentStreamId, 'viewers', currentUser.uid)).catch(() => {});
+    }
+  });
+</script>
+</body>
+</html>
