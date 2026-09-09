@@ -111,6 +111,13 @@
 
       <button id="endLiveBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-red-400 text-xs font-bold px-3 py-2 rounded-full">⏹ লাইভ শেষ করুন</button>
       <button id="leaveViewBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-xs font-bold px-3 py-2 rounded-full">✖ বের হোন</button>
+
+      <!-- ---- মোবাইল ব্রাউজার সাউন্ডসহ অটোপ্লে ব্লক করলে (Chrome/Safari-এর অটোপ্লে-পলিসি) এই
+           ওভারলে দেখানো হয় — ট্যাপ করলেই (ইউজার-জেসচার) ভিডিও+অডিও দুটোই চালু হয়ে যাবে ---- -->
+      <button id="tapToPlayBtn" type="button" class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-black/75 text-white">
+        <span class="text-4xl">🔊</span>
+        <span class="text-sm font-bold">সাউন্ড ও ভিডিও চালু করতে ট্যাপ করুন</span>
+      </button>
     </div>
 
     <!-- ---- রিয়েল-টাইম চ্যাট ---- -->
@@ -137,7 +144,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot,
+    getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot,
     collection, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
@@ -193,6 +200,7 @@
   const hostNameLabel = document.getElementById('hostNameLabel');
   const endLiveBtn = document.getElementById('endLiveBtn');
   const leaveViewBtn = document.getElementById('leaveViewBtn');
+  const tapToPlayBtn = document.getElementById('tapToPlayBtn');
 
   const chatMessages = document.getElementById('chatMessages');
   const giftBar = document.getElementById('giftBar');
@@ -212,6 +220,16 @@
   let peerConnections = {};            // হোস্ট সাইডে প্রতিটা ভিউয়ারের জন্য আলাদা peer connection
   let peerUnsubs = {};                 // প্রতিটা ভিউয়ার-কানেকশনের ফায়ারবেস লিসেনার আনসাব
   let activeUnsubs = [];               // চলমান সেশনের বাকি সব onSnapshot আনসাব
+
+  // ---- হার্টবিট: হোস্টের ব্রাউজার ক্র্যাশ করলে/ইন্টারনেট চলে গেলে/ফোর্স-ক্লোজ হলে
+  // beforeunload/popstate কোনোটাই চলার সুযোগ পায় না — ফলে Firestore-এ স্ট্যাটাস 'live'
+  // হয়েই আটকে থাকে আর লবিতে ভুতুড়ে কার্ড দেখা যায়। এটা ঠেকাতেই এই পিরিয়ডিক
+  // হার্টবিট + স্টেল-চেক সিস্টেম (নিচে listenLobby() ফাংশনে বিস্তারিত) ----
+  let hostHeartbeatInterval = null;
+  let viewerHeartbeatInterval = null;
+  let currentViewerDocRef = null;
+  const HEARTBEAT_MS = 20000;    // প্রতি ২০ সেকেন্ডে একবার হার্টবিট
+  const STALE_MS = 45000;        // ৪৫ সেকেন্ড হার্টবিট না এলে স্ট্রিমটা 'ক্র্যাশড/স্টেল' ধরা হবে
 
   function escapeHtml(str) {
     return (str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -304,12 +322,31 @@
   });
 
   // ================= লবি (চলমান লাইভের তালিকা) =================
+  // ---- বাগ ফিক্স: আগে status=='live' হলেই কার্ড দেখানো হতো — হোস্ট ঠিকভাবে "লাইভ শেষ
+  // করুন"/"বের হোন" চেপে বের না হয়ে ব্রাউজার ক্র্যাশ/ফোর্স-ক্লোজ/নেট চলে গেলে status
+  // চিরকাল 'live' থেকে যেত, আর লবিতে ভুতুড়ে কার্ড আটকে থাকত (স্ক্রিনশটে যেটা দেখা গেছে)।
+  // এখন প্রতিটা লাইভ ডকে একটা lastHeartbeat থাকে (হোস্ট প্রতি ২০ সেকেন্ডে আপডেট করে);
+  // কোনো কার্ডের হার্টবিট ৪৫ সেকেন্ডের বেশি পুরনো হলে ধরে নেওয়া হয় হোস্ট আসলে চলে গেছে,
+  // তখন এই ক্লায়েন্ট নিজেই (Firestore রুলের অনুমতি নিয়ে) সেটাকে 'ended' করে দেয় এবং
+  // কার্ডটা লবি থেকে সরিয়ে দেয় — ফলে সবার লবিতেই ভুতুড়ে কার্ড আর আটকে থাকে না ----
   function listenLobby() {
     const q = query(collection(db, 'liveStreams'), where('status', '==', 'live'));
     onSnapshot(q, (snap) => {
       liveStreamsList.innerHTML = '';
-      noLiveMsg.classList.toggle('hidden', !snap.empty);
-      snap.forEach(d => liveStreamsList.appendChild(buildStreamCard(d.id, d.data())));
+      const now = Date.now();
+      let anyVisible = false;
+      snap.forEach(d => {
+        const data = d.data();
+        const lastBeat = data.lastHeartbeat || data.startedAt; // পুরনো (মাইগ্রেশনের আগের) ডকের জন্য fallback
+        const isStale = lastBeat && (now - lastBeat.toMillis()) > STALE_MS;
+        if (isStale) {
+          updateDoc(doc(db, 'liveStreams', d.id), { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
+          return; // ---- এই ভুতুড়ে কার্ডটা আর দেখানো হবে না ----
+        }
+        anyVisible = true;
+        liveStreamsList.appendChild(buildStreamCard(d.id, data));
+      });
+      noLiveMsg.classList.toggle('hidden', anyVisible);
     });
   }
 
@@ -337,6 +374,7 @@
     lobbyView.classList.add('hidden');
     stageView.classList.remove('hidden');
     connectingMsg.classList.remove('hidden');
+    tapToPlayBtn.classList.add('hidden');
   }
 
   // ================= হোস্ট: লাইভ শুরু করা (ভিডিও অথবা অডিও) =================
@@ -365,11 +403,37 @@
     }
   }
 
+  // ---- মোবাইল ব্রাউজারে (Chrome/Safari) সাউন্ডসহ অটোপ্লে সাধারণত ব্লক করা থাকে — তাই ভিডিও/অডিও
+  // ট্র্যাক এসে পৌঁছালেও অনেক সময় ফোনে কিছুই বাজত না অথচ ইউজার বুঝতেই পারত না কেন (audio-লাইভে তো
+  // ওয়েভবার এমনিতেই অ্যানিমেট হতে থাকে, তাতে মনে হয় বাজছে)। এই ফাংশন প্রথমে সরাসরি চালানোর চেষ্টা
+  // করে; ব্রাউজার আটকে দিলে সাথে সাথে মিউট করে অন্তত ভিডিও/অডিও চালু রাখে এবং "ট্যাপ করুন" ওভারলে
+  // দেখায় — ইউজার একবার ট্যাপ করলেই (ব্রাউজারের প্রয়োজনীয় ইউজার-জেসচার হিসেবে গণ্য হয়) সাউন্ড চালু
+  // হয়ে যায়। হোস্টের নিজের প্রিভিউয়ের ক্ষেত্রে (আগে থেকেই মিউট) কখনো এই ওভারলে দেখানো হয় না। ----
+  function attemptAutoplay() {
+    const playPromise = mainVideo.play();
+    if (playPromise === undefined) return;
+    playPromise.then(() => {
+      tapToPlayBtn.classList.add('hidden');
+    }).catch(() => {
+      if (mainVideo.muted) return; // হোস্টের প্রিভিউ (আগে থেকেই মিউট) — ওভারলে দরকার নেই
+      mainVideo.muted = true;
+      mainVideo.play().catch(() => {});
+      tapToPlayBtn.classList.remove('hidden');
+    });
+  }
+
+  tapToPlayBtn.addEventListener('click', () => {
+    mainVideo.muted = false;
+    mainVideo.play().catch(() => {});
+    tapToPlayBtn.classList.add('hidden');
+  });
+
   async function startHosting(mode) {
     isHost = true;
     liveMode = mode;
     mainVideo.srcObject = localStream;
     mainVideo.muted = true; // ---- নিজের ভিডিও/অডিও নিজে শুনলে ইকো হবে, তাই হোস্টের প্রিভিউ মিউট ----
+    attemptAutoplay();
     toggleAudioCover(mode === 'audio', currentUser.displayName, currentUser.photoURL);
     showStage();
     enterStageHistory();
@@ -387,7 +451,8 @@
       mode: mode,
       viewerCount: 0,
       likedBy: [],
-      startedAt: serverTimestamp()
+      startedAt: serverTimestamp(),
+      lastHeartbeat: serverTimestamp()
     });
     currentStreamId = streamRef.id;
     listenStreamMeta(currentStreamId);
@@ -404,6 +469,31 @@
     activeUnsubs.push(unsubViewers);
 
     listenChat(currentStreamId);
+
+    // ---- হোস্টের পিরিয়ডিক হার্টবিট: চলমান আছে এটা Firestore-কে জানিয়ে রাখা, যাতে
+    // ব্রাউজার ক্র্যাশ/ফোর্স-ক্লোজ হলে ৪৫ সেকেন্ড পর অন্য যেকোনো ক্লায়েন্ট এটাকে
+    // স্টেল ধরে নিজে থেকে 'ended' করে দিতে পারে (দেখুন listenLobby()) ----
+    hostHeartbeatInterval = setInterval(() => {
+      if (!currentStreamId || !isHost) return;
+      updateDoc(doc(db, 'liveStreams', currentStreamId), { lastHeartbeat: serverTimestamp() }).catch(() => {});
+      pruneStaleViewers(currentStreamId);
+    }, HEARTBEAT_MS);
+  }
+
+  // ---- ভিউয়ার যদি হার্টবিট না পাঠিয়ে (ব্রাউজার ক্র্যাশ/ট্যাব ফোর্স-ক্লোজ) হারিয়ে যায়,
+  // তার viewers/{uid} এন্ট্রি চিরকাল থেকে যেতে পারত — viewerCount ভুল দেখাত এবং হোস্ট
+  // তার জন্য একটা অকেজো peer connection ধরে রাখত। প্রতি হার্টবিটেই এটা পরিষ্কার করা হয় ----
+  async function pruneStaleViewers(streamId) {
+    try {
+      const viewersSnap = await getDocs(collection(db, 'liveStreams', streamId, 'viewers'));
+      const now = Date.now();
+      viewersSnap.forEach(vd => {
+        const lastSeen = vd.data().lastSeen;
+        if (lastSeen && (now - lastSeen.toMillis()) > STALE_MS) {
+          deleteDoc(vd.ref).catch(() => {});
+        }
+      });
+    } catch (e) { /* best-effort, silently skip */ }
   }
 
   async function connectToViewer(viewerUid) {
@@ -504,16 +594,26 @@
     listenStreamMeta(streamId);
 
     const viewerDocRef = doc(db, 'liveStreams', streamId, 'viewers', currentUser.uid);
+    currentViewerDocRef = viewerDocRef;
     await setDoc(viewerDocRef, {
       uid: currentUser.uid,
       name: currentUser.displayName || 'ভিউয়ার',
-      joinedAt: serverTimestamp()
+      joinedAt: serverTimestamp(),
+      lastSeen: serverTimestamp()
     });
+
+    // ---- ভিউয়ারের পিরিয়ডিক হার্টবিট (lastSeen) — হোস্ট এটা দিয়েই বোঝে ভিউয়ার আসলেই
+    // এখনো আছে কিনা, ব্রাউজার ক্র্যাশ করলে এন্ট্রিটা পরিষ্কার হওয়ার জন্য (pruneStaleViewers) ----
+    viewerHeartbeatInterval = setInterval(() => {
+      if (!currentViewerDocRef || isHost) return;
+      updateDoc(currentViewerDocRef, { lastSeen: serverTimestamp() }).catch(() => {});
+    }, HEARTBEAT_MS);
 
     viewerPC = new RTCPeerConnection(rtcConfig);
     viewerPC.ontrack = (e) => {
       mainVideo.srcObject = e.streams[0];
       connectingMsg.classList.add('hidden');
+      attemptAutoplay();
     };
 
     const hostCandidatesRef = collection(viewerDocRef, 'hostCandidates');
@@ -643,6 +743,9 @@
     Object.keys(peerConnections).forEach(closeViewerConnection);
     peerConnections = {};
     if (viewerPC) { viewerPC.close(); viewerPC = null; }
+    if (hostHeartbeatInterval) { clearInterval(hostHeartbeatInterval); hostHeartbeatInterval = null; }
+    if (viewerHeartbeatInterval) { clearInterval(viewerHeartbeatInterval); viewerHeartbeatInterval = null; }
+    currentViewerDocRef = null;
     currentStreamId = null;
     isHost = false;
     liveMode = 'video';
@@ -653,19 +756,26 @@
     giftFloatArea.innerHTML = '';
     likeIcon.textContent = '🤍';
     likeCount.textContent = '0';
+    tapToPlayBtn.classList.add('hidden');
     endLiveBtn.classList.add('hidden');
     leaveViewBtn.classList.add('hidden');
   }
 
-  // ---- ট্যাব বন্ধ/রিলোড করলে হোস্ট হলে লাইভ 'ended' করে দেওয়া, ভিউয়ার হলে ভিউয়ার-এন্ট্রি মুছে ফেলা (best-effort) ----
-  window.addEventListener('beforeunload', () => {
+  // ---- ট্যাব বন্ধ/রিলোড করলে হোস্ট হলে লাইভ 'ended' করে দেওয়া, ভিউয়ার হলে ভিউয়ার-এন্ট্রি মুছে ফেলা
+  // (best-effort)। মোবাইল ব্রাউজারে 'beforeunload' একা নির্ভরযোগ্য নয় — ট্যাব সোয়াইপ করে বন্ধ
+  // করলে বা অ্যাপ সুইচ করলে এটা অনেক সময় ফায়ারই হয় না, তাই 'pagehide' ও যোগ করা হলো (এটা মোবাইলে
+  // অনেক বেশি নির্ভরযোগ্যভাবে ফায়ার করে)। তারপরও যদি দুটোই মিস হয়ে যায় (একদম ফোর্স-ক্লোজ/ক্র্যাশ/
+  // নেট চলে যাওয়া), হার্টবিট+স্টেল-চেক সিস্টেম (listenLobby দ্রষ্টব্য) শেষ নিরাপত্তা হিসেবে কাজ করে ----
+  function bestEffortExitCleanup() {
     if (!currentStreamId) return;
     if (isHost) {
-      updateDoc(doc(db, 'liveStreams', currentStreamId), { status: 'ended' }).catch(() => {});
+      updateDoc(doc(db, 'liveStreams', currentStreamId), { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
     } else if (currentUser) {
       deleteDoc(doc(db, 'liveStreams', currentStreamId, 'viewers', currentUser.uid)).catch(() => {});
     }
-  });
+  }
+  window.addEventListener('beforeunload', bestEffortExitCleanup);
+  window.addEventListener('pagehide', bestEffortExitCleanup);
 </script>
 </body>
 </html>
