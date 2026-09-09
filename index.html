@@ -90,6 +90,14 @@
   #composerText {
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
     padding: 10px; border-radius: 10px; font-size: 14px; min-height: var(--composer-height); resize: vertical; font-family: inherit;
+    transition: min-height 0.2s ease;
+  }
+  /* ---- ব্লগ মোডে কম্পোজার বক্স স্বাভাবিকের চেয়ে ৩ গুণ বড় (পোস্টার মোডে আগের মতোই থাকবে) ---- */
+  #composerText.blogSizeActive { min-height: calc(var(--composer-height) * 3); }
+  /* ---- পোস্ট এডিট মোডে "বাতিল" বাটন ---- */
+  #cancelEditBtn {
+    display: none; margin-top: 8px; width: 100%; background: #21262d; color: #f87171; border: none;
+    padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer;
   }
   #posterColors { display: none; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .posterSwatch { width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
@@ -344,6 +352,7 @@
         <div id="posterPreview"></div>
 
         <button id="submitPostBtn">পোস্ট করুন</button>
+        <button id="cancelEditBtn">❌ বাতিল</button>
         <div class="postStatus" id="composerStatus"></div>
       </div>
 
@@ -410,6 +419,7 @@
   let lastVisibleDoc = null;
   let allLoadedPosts = [];
   let composerMode = 'text';
+  let editingPostId = null; // ---- পোস্ট এডিট মোডে থাকলে সংশ্লিষ্ট পোস্টের id, নাহলে null ----
   let selectedPosterColor = '#4285F4';
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete', 'report'] };
@@ -463,11 +473,13 @@
   const sidebarDrawer = document.getElementById('sidebarDrawer');
   const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+  const composer = document.getElementById('composer');
   const composerText = document.getElementById('composerText');
   const blogSyntaxHint = document.getElementById('blogSyntaxHint');
   const posterColorsEl = document.getElementById('posterColors');
   const posterPreview = document.getElementById('posterPreview');
   const submitPostBtn = document.getElementById('submitPostBtn');
+  const cancelEditBtn = document.getElementById('cancelEditBtn');
   const composerStatus = document.getElementById('composerStatus');
   const searchBar = document.getElementById('searchBar');
   const postsList = document.getElementById('postsList');
@@ -643,6 +655,7 @@
       const sw = document.createElement('div');
       sw.className = 'posterSwatch' + (i === 0 ? ' selected' : '');
       sw.style.background = color;
+      sw.dataset.color = color;
       sw.addEventListener('click', () => {
         selectedPosterColor = color;
         document.querySelectorAll('.posterSwatch').forEach(s => s.classList.remove('selected'));
@@ -655,6 +668,12 @@
   }
   buildPosterSwatches(DEFAULT_POSTER_COLORS);
 
+  // ---- ব্লগ মোড সিলেক্ট করলে কম্পোজার টেক্সট বক্স স্বাভাবিকের চেয়ে ৩ গুণ বড় হবে,
+  //      টেক্সট/পোস্টার মোডে আগের স্বাভাবিক height-ই থাকবে ----
+  function applyComposerHeightForMode() {
+    composerText.classList.toggle('blogSizeActive', composerMode === 'blog');
+  }
+
   document.querySelectorAll('#composerTabs button').forEach(btn => {
     btn.addEventListener('click', () => {
       composerMode = btn.getAttribute('data-mode');
@@ -663,6 +682,7 @@
       posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
       posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
       blogSyntaxHint.style.display = composerMode === 'blog' ? 'block' : 'none';
+      applyComposerHeightForMode();
       if (composerMode === 'poster') updatePosterPreview();
     });
   });
@@ -676,14 +696,65 @@
     posterPreview.textContent = composerText.value || posterPlaceholderText;
   }
 
-  // ---- পোস্ট সাবমিট ----
+  // ---- পোস্ট এডিট মোড: থ্রি-ডট মেনুর "এডিট"-এ ক্লিক করলে prompt() এর বদলে উপরের কম্পোজার
+  //      বক্সটাই (টেক্সট/পোস্টার/ব্লগ সব মোড সহ) পোস্টের আগের ডেটা দিয়ে ভরে ওপেন হয়ে যায় ----
+  function enterPostEditMode(postId, d) {
+    editingPostId = postId;
+    composerMode = d.type || 'text';
+
+    document.querySelectorAll('#composerTabs button').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === composerMode);
+    });
+    posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
+    posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
+    blogSyntaxHint.style.display = composerMode === 'blog' ? 'block' : 'none';
+    applyComposerHeightForMode();
+
+    composerText.value = d.text || '';
+
+    if (composerMode === 'poster') {
+      selectedPosterColor = d.posterColor || selectedPosterColor;
+      document.querySelectorAll('.posterSwatch').forEach(sw => {
+        sw.classList.toggle('selected', sw.dataset.color === selectedPosterColor);
+      });
+      updatePosterPreview();
+    }
+
+    submitPostBtn.textContent = 'আপডেট করুন';
+    cancelEditBtn.style.display = 'block';
+    composerStatus.textContent = '';
+    composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    composerText.focus();
+  }
+
+  function exitPostEditMode() {
+    editingPostId = null;
+    composerMode = 'text';
+    document.querySelectorAll('#composerTabs button').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'text');
+    });
+    posterColorsEl.style.display = 'none';
+    posterPreview.style.display = 'none';
+    blogSyntaxHint.style.display = 'none';
+    applyComposerHeightForMode();
+    composerText.value = '';
+    submitPostBtn.textContent = 'পোস্ট করুন';
+    cancelEditBtn.style.display = 'none';
+    composerStatus.textContent = '';
+  }
+
+  cancelEditBtn.addEventListener('click', exitPostEditMode);
+
+  // ---- পোস্ট সাবমিট (নতুন পোস্ট তৈরি অথবা এডিট মোডে থাকলে বিদ্যমান পোস্ট আপডেট) ----
   submitPostBtn.addEventListener('click', async () => {
     if (!requireLogin()) return;
 
-    const suspendedMs = await getSuspensionRemainingMs();
-    if (suspendedMs) {
-      composerStatus.textContent = `⛔ আপনি আর ${formatSuspensionRemaining(suspendedMs)} এর জন্য পোস্ট করতে পারবেন না`;
-      return;
+    if (!editingPostId) {
+      const suspendedMs = await getSuspensionRemainingMs();
+      if (suspendedMs) {
+        composerStatus.textContent = `⛔ আপনি আর ${formatSuspensionRemaining(suspendedMs)} এর জন্য পোস্ট করতে পারবেন না`;
+        return;
+      }
     }
 
     const text = composerText.value.trim();
@@ -693,6 +764,38 @@
     if (composerMode === 'blog' && !text) { composerStatus.textContent = 'ব্লগের লেখা দিন'; return; }
 
     submitPostBtn.disabled = true;
+
+    if (editingPostId) {
+      // ---- এডিট মোড: নতুন পোস্ট তৈরি না করে বিদ্যমান পোস্টটাই আপডেট হবে ----
+      const postIdToUpdate = editingPostId;
+      composerStatus.textContent = 'আপডেট হচ্ছে...';
+      try {
+        const updateData = {
+          type: composerMode,
+          text: text,
+          posterColor: composerMode === 'poster' ? selectedPosterColor : null
+        };
+        await updateDoc(doc(db, "posts", postIdToUpdate), updateData);
+
+        const entry = allLoadedPosts.find(p => p.id === postIdToUpdate);
+        if (entry) {
+          entry.data.type = updateData.type;
+          entry.data.text = updateData.text;
+          entry.data.posterColor = updateData.posterColor;
+        }
+
+        exitPostEditMode();
+        composerStatus.textContent = '✅ পোস্ট আপডেট হয়েছে!';
+        setTimeout(() => { composerStatus.textContent = ''; }, 2000);
+        renderPosts();
+      } catch (e) {
+        console.error(e);
+        composerStatus.textContent = 'এরর: ' + e.message;
+      }
+      submitPostBtn.disabled = false;
+      return;
+    }
+
     composerStatus.textContent = 'পোস্ট হচ্ছে...';
 
     try {
@@ -1073,31 +1176,9 @@
         b.textContent = '✏️ এডিট';
         b.addEventListener('click', () => {
           menuContainer.classList.remove('open');
-          const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
-          if (newText === null) return;
-          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-            d.text = newText;
-            // ---- শুধু এই কার্ডের টেক্সট আপডেট, পুরো ফিড পুনর্নির্মাণ না করে ----
-            const textEl = card.querySelector('.postText, .postTextContent');
-            if (textEl) {
-              if (d.type === 'blog') {
-                textEl.innerHTML = renderBlogText(newText);
-                wireBlogLinks(card);
-              } else {
-                textEl.textContent = newText;
-              }
-              if (textEl.classList.contains('postText') && readMoreBtn) {
-                textEl.classList.add('clamped');
-                readMoreBtn.textContent = 'আরও পড়ুন';
-                readMoreBtn.style.display = 'none';
-                requestAnimationFrame(() => {
-                  if (textEl.scrollHeight > textEl.clientHeight + 1) readMoreBtn.style.display = 'block';
-                });
-              }
-            }
-            const posterEl = card.querySelector('.postPoster');
-            if (posterEl) posterEl.textContent = newText;
-          }).catch(e => alert('এরর: ' + e.message));
+          // ---- prompt() ডায়ালগের বদলে উপরের কম্পোজার বক্সটাই (টেক্সট/পোস্টার/ব্লগ সহ)
+          //      এই পোস্টের বিদ্যমান ডেটা দিয়ে ভরে এডিট মোডে খুলে যাচ্ছে ----
+          enterPostEditMode(postId, d);
         });
         return b;
       },
