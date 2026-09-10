@@ -9,9 +9,13 @@
   h1 { text-align:center; }
   .match-card {
     background:#1a1a1a; border-radius:10px; padding:15px; margin:10px 0;
+    border-left: 4px solid #0f0;
   }
-  .status { color:#0f0; font-weight:bold; }
-  .loading { text-align:center; margin-top:50px; }
+  .teams { font-size:18px; font-weight:bold; margin-bottom:6px; }
+  .score { font-size:16px; color:#ccc; margin:4px 0; }
+  .status { color:#0f0; font-weight:bold; margin-top:6px; }
+  .league { color:#888; font-size:13px; margin-bottom:6px; }
+  .loading, .empty { text-align:center; margin-top:50px; color:#aaa; }
   button {
     display:block; margin:20px auto; padding:10px 20px;
     background:#0f0; color:#000; border:none; border-radius:5px; font-weight:bold;
@@ -20,7 +24,7 @@
 </head>
 <body>
 
-<h1>🏏 ক্রিকেট স্কোর</h1>
+<h1>🏏 ক্রিকেট স্কোর (লাইভ)</h1>
 <button onclick="loadScores()">🔄 রিফ্রেশ করুন</button>
 <div id="scores" class="loading">লোড হচ্ছে...</div>
 
@@ -30,26 +34,42 @@ async function loadScores() {
   container.innerHTML = "লোড হচ্ছে...";
   try {
     const res = await fetch("/.netlify/functions/cricket-score");
-    const data = await res.json();
+    const json = await res.json();
+    const matches = json.data || [];
 
-    if (!data || data.length === 0) {
-      container.innerHTML = "<p>এখন কোনো ম্যাচ পাওয়া যায়নি।</p>";
+    const liveMatches = matches.filter(m => {
+      const desc = (m.description || "").toLowerCase();
+      const state = (m.state || "").toLowerCase();
+      return desc.includes("in play") || state.includes("live") || state.includes("in progress");
+    });
+
+    if (liveMatches.length === 0) {
+      container.innerHTML = "<p class='empty'>এই মুহূর্তে কোনো লাইভ ম্যাচ নেই।<br>একটু পরে আবার চেষ্টা করুন।</p>";
       return;
     }
 
     container.innerHTML = "";
-    data.forEach(match => {
+    liveMatches.forEach(match => {
+      const home = match.homeTeam ? match.homeTeam.name : "টিম ১";
+      const away = match.awayTeam ? match.awayTeam.name : "টিম ২";
+      const homeScore = match.home && match.home.score ? match.home.score : "-";
+      const awayScore = match.away && match.away.score ? match.away.score : "-";
+      const league = match.league ? match.league.name : "";
+      const desc = match.description || "";
+
       const card = document.createElement("div");
       card.className = "match-card";
       card.innerHTML = `
-        <div>${match.homeTeamName || "টিম ১"} vs ${match.awayTeamName || "টিম ২"}</div>
-        <div class="status">${match.status || ""}</div>
-        <div>${match.homeScore || ""} - ${match.awayScore || ""}</div>
+        <div class="league">${league}</div>
+        <div class="teams">${home} vs ${away}</div>
+        <div class="score">${home}: ${homeScore}</div>
+        <div class="score">${away}: ${awayScore}</div>
+        <div class="status">🔴 ${desc}</div>
       `;
       container.appendChild(card);
     });
   } catch (e) {
-    container.innerHTML = "<p>স্কোর আনতে সমস্যা হয়েছে।</p>";
+    container.innerHTML = "<p class='empty'>স্কোর আনতে সমস্যা হয়েছে।</p>";
   }
 }
 loadScores();
