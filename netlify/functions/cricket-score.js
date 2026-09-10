@@ -2,9 +2,11 @@ exports.handler = async function (event, context) {
   const API_KEY = "12d050ed16msh61dc65f1973a147p14a56ejsn1c6ec5d92379";
   const API_HOST = "cricket-highlights-api.p.rapidapi.com";
 
+  const today = new Date().toISOString().split("T")[0];
+
   try {
     const response = await fetch(
-      `https://${API_HOST}/matches?limit=20`,
+      `https://${API_HOST}/matches?date=${today}&limit=20`,
       {
         method: "GET",
         headers: {
