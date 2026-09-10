@@ -39,8 +39,7 @@ async function loadScores() {
 
     const liveMatches = matches.filter(m => {
       const desc = (m.description || "").toLowerCase();
-      const state = (m.state || "").toLowerCase();
-      return desc.includes("in play") || state.includes("live") || state.includes("in progress");
+      return desc.includes("in play");
     });
 
     if (liveMatches.length === 0) {
@@ -52,8 +51,18 @@ async function loadScores() {
     liveMatches.forEach(match => {
       const home = match.homeTeam ? match.homeTeam.name : "টিম ১";
       const away = match.awayTeam ? match.awayTeam.name : "টিম ২";
-      const homeScore = match.home && match.home.score ? match.home.score : "-";
-      const awayScore = match.away && match.away.score ? match.away.score : "-";
+
+      let homeScore = "-";
+      let awayScore = "-";
+      if (match.state && match.state.teams) {
+        if (match.state.teams.home && match.state.teams.home.score) {
+          homeScore = match.state.teams.home.score;
+        }
+        if (match.state.teams.away && match.state.teams.away.score) {
+          awayScore = match.state.teams.away.score;
+        }
+      }
+
       const league = match.league ? match.league.name : "";
       const desc = match.description || "";
 
