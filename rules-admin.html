@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firestore Rules Admin Panel</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+    background: #0b0f14;
+    color: #e6e6e6;
+    padding: 16px;
+  }
+  h1 {
+    font-size: 18px;
+    margin: 0 0 4px;
+  }
+  .sub {
+    color: #9aa4af;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: #131a22;
+    border: 1px solid #22303c;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  button {
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+  }
+  .btn-primary { background: #3b82f6; color: #fff; }
+  .btn-danger  { background: #dc2626; color: #fff; }
+  .btn-ghost   { background: #1f2a35; color: #cbd5e1; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  #userBox { display:flex; align-items:center; gap:10px; }
+  #userBox img { width: 32px; height: 32px; border-radius: 50%; }
+  textarea {
+    width: 100%;
+    min-height: 320px;
+    background: #0b0f14;
+    color: #d1e7dd;
+    border: 1px solid #22303c;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: ui-monospace, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre;
+    resize: vertical;
+  }
+  .status {
+    font-size: 13px;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    display: none;
+  }
+  .status.show { display: block; }
+  .status.ok   { background: #06301f; color: #6ee7b7; border: 1px solid #16693f; }
+  .status.err  { background: #350e0e; color: #fca5a5; border: 1px solid #7a1f1f; }
+  .status.info { background: #0e2a35; color: #93c5fd; border: 1px solid #1f4e63; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  label { font-size: 13px; color: #9aa4af; display:block; margin-bottom: 6px; }
+  hr { border: none; border-top: 1px solid #22303c; margin: 14px 0; }
+  code { background: #1f2a35; padding: 1px 5px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+  <h1>🔥 Firestore Rules Admin Panel</h1>
+  <div class="sub">শুধু প্রজেক্ট মালিকের Google অ্যাকাউন্ট দিয়ে সাইন-ইন করলেই রুলস পাবলিশ করা যাবে।</div>
+
+  <!-- ================= কনফিগ — নিজের প্রজেক্টের তথ্য বসান ================= -->
+  <script>
+    const PROJECT_ID = "onuvuti-5c9e3";
+    const OAUTH_CLIENT_ID = "846713879232-s0hmrno67gg4lbb0q8mdu3mkstl11ksm.apps.googleusercontent.com";
+    // ডিফল্ট (default) ডাটাবেজ হলে এটাই ঠিক থাকবে। যদি নামযুক্ত (named) ডাটাবেজ ব্যবহার করেন,
+    // তাহলে এটা হবে "cloud.firestore/আপনার-ডাটাবেজ-আইডি"
+    const RELEASE_PATH = "cloud.firestore";
+  </script>
+
+  <div class="card" id="signInCard">
+    <div id="signedOutView">
+      <p style="margin:0 0 12px;font-size:14px;">রুলস দেখতে/পাবলিশ করতে আগে Google দিয়ে সাইন-ইন করুন।</p>
+      <button class="btn-primary" id="signInBtn">🔐 Google দিয়ে সাইন-ইন করুন</button>
+    </div>
+    <div id="signedInView" style="display:none;">
+      <div id="userBox">
+        <img id="userPhoto" src="" alt="">
+        <div>
+          <div id="userName" style="font-weight:700;font-size:14px;"></div>
+          <div id="userEmail" style="font-size:12px;color:#9aa4af;"></div>
+        </div>
+        <button class="btn-ghost" style="margin-left:auto;" id="signOutBtn">সাইন-আউট</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="rulesCard" style="display:none;">
+    <label>Firestore Security Rules</label>
+    <textarea id="rulesBox" placeholder="রুলস লোড হচ্ছে..."></textarea>
+
+    <div class="row">
+      <button class="btn-ghost" id="reloadBtn">↻ বর্তমান রুলস আবার লোড করুন</button>
+      <button class="btn-danger" id="publishBtn">🚀 Publish করুন</button>
+    </div>
+
+    <div class="status" id="statusBox"></div>
+  </div>
+
+  <div class="card" style="font-size:12px;color:#697784;">
+    সতর্কতা: Publish করলে সাথে সাথেই লাইভ রুলস বদলে যাবে (প্রোপাগেট হতে কয়েক মিনিট লাগতে পারে)।
+    ভুল রুলস পাবলিশ করলে অ্যাপ কাজ করা বন্ধ করে দিতে পারে — তাই পাবলিশের আগে ভালো করে চেক করে নিন।
+  </div>
+
+<script>
+  let accessToken = null;
+  let tokenClient = null;
+
+  const signedOutView = document.getElementById('signedOutView');
+  const signedInView  = document.getElementById('signedInView');
+  const rulesCard     = document.getElementById('rulesCard');
+  const rulesBox      = document.getElementById('rulesBox');
+  const statusBox     = document.getElementById('statusBox');
+  const signInBtn     = document.getElementById('signInBtn');
+  const signOutBtn    = document.getElementById('signOutBtn');
+  const reloadBtn     = document.getElementById('reloadBtn');
+  const publishBtn    = document.getElementById('publishBtn');
+
+  function showStatus(msg, type) {
+    statusBox.textContent = msg;
+    statusBox.className = 'status show ' + type;
+  }
+  function hideStatus() {
+    statusBox.className = 'status';
+  }
+
+  // ---- Google Identity Services লোড হওয়ার পর টোকেন-ক্লায়েন্ট তৈরি করা ----
+  window.onload = () => {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: OAUTH_CLIENT_ID,
+      // firebase স্কোপ দিয়েই রুলস API কল করা যাবে; ইমেইল/প্রোফাইল শুধু নাম-ছবি দেখানোর জন্য
+      scope: 'https://www.googleapis.com/auth/firebase openid email profile',
+      callback: async (tokenResponse) => {
+        if (tokenResponse.error) {
+          showStatus('সাইন-ইন ব্যর্থ হয়েছে: ' + tokenResponse.error, 'err');
+          return;
+        }
+        accessToken = tokenResponse.access_token;
+        await onSignedIn();
+      }
+    });
+  };
+
+  signInBtn.addEventListener('click', () => {
+    tokenClient.requestAccessToken({ prompt: 'select_account' });
+  });
+
+  signOutBtn.addEventListener('click', () => {
+    if (accessToken) {
+      google.accounts.oauth2.revoke(accessToken, () => {});
+    }
+    accessToken = null;
+    signedOutView.style.display = 'block';
+    signedInView.style.display = 'none';
+    rulesCard.style.display = 'none';
+  });
+
+  async function onSignedIn() {
+    try {
+      // ---- সাইন-ইন করা ইউজারের নাম/ছবি দেখানোর জন্য (শুধু UI-এর জন্য, নিরাপত্তার জন্য নয়) ----
+      const uiResp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: 'Bearer ' + accessToken }
+      });
+      const info = await uiResp.json();
+      document.getElementById('userPhoto').src = info.picture || '';
+      document.getElementById('userName').textContent = info.name || '';
+      document.getElementById('userEmail').textContent = info.email || '';
+    } catch (e) { /* UI-only, ব্যর্থ হলেও সমস্যা নেই */ }
+
+    signedOutView.style.display = 'none';
+    signedInView.style.display = 'block';
+    rulesCard.style.display = 'block';
+    await loadCurrentRules();
+  }
+
+  // ---- বর্তমান লাইভ রুলস লোড করা: রিলিজ → তার রুলসেট → রুলসেটের ভেতরের সোর্স-কোড ----
+  async function loadCurrentRules() {
+    hideStatus();
+    rulesBox.value = '';
+    rulesBox.placeholder = 'বর্তমান রুলস লোড হচ্ছে...';
+    try {
+      const relRes = await fetch(
+        `https://firebaserules.googleapis.com/v1/projects/${PROJECT_ID}/releases/${RELEASE_PATH}`,
+        { headers: { Authorization: 'Bearer ' + accessToken } }
+      );
+      if (!relRes.ok) throw new Error(await describeError(relRes));
+      const release = await relRes.json();
+
+      const rsRes = await fetch(
+        `https://firebaserules.googleapis.com/v1/${release.rulesetName}`,
+        { headers: { Authorization: 'Bearer ' + accessToken } }
+      );
+      if (!rsRes.ok) throw new Error(await describeError(rsRes));
+      const ruleset = await rsRes.json();
+
+      const content = (ruleset.source && ruleset.source.files && ruleset.source.files[0])
+        ? ruleset.source.files[0].content : '';
+      rulesBox.value = content;
+      showStatus('বর্তমান লাইভ রুলস লোড হয়েছে (' + (ruleset.createTime || '') + ')', 'ok');
+    } catch (e) {
+      rulesBox.placeholder = 'রুলস লোড করা যায়নি।';
+      showStatus('রুলস লোড করতে সমস্যা হয়েছে: ' + e.message, 'err');
+    }
+  }
+
+  reloadBtn.addEventListener('click', loadCurrentRules);
+
+  // ---- নতুন রুলস পাবলিশ করা: প্রথমে নতুন ruleset তৈরি, তারপর সেটাকেই release-এ বসিয়ে দেওয়া ----
+  publishBtn.addEventListener('click', async () => {
+    const newRules = rulesBox.value.trim();
+    if (!newRules) {
+      showStatus('রুলস খালি রেখে পাবলিশ করা যাবে না।', 'err');
+      return;
+    }
+    const sure = confirm('আপনি কি নিশ্চিত এই নতুন রুলস এখনই লাইভ পাবলিশ করতে চান?');
+    if (!sure) return;
+
+    publishBtn.disabled = true;
+    showStatus('পাবলিশ করা হচ্ছে...', 'info');
+    try {
+      // ধাপ ১: নতুন ruleset তৈরি
+      const createRes = await fetch(
+        `https://firebaserules.googleapis.com/v1/projects/${PROJECT_ID}/rulesets`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            source: { files: [{ name: 'firestore.rules', content: newRules }] }
+          })
+        }
+      );
+      if (!createRes.ok) throw new Error(await describeError(createRes));
+      const newRuleset = await createRes.json();
+
+      // ধাপ ২: এই নতুন ruleset-কেই লাইভ release হিসেবে বসিয়ে দেওয়া
+      const releaseName = `projects/${PROJECT_ID}/releases/${RELEASE_PATH}`;
+      const patchRes = await fetch(
+        `https://firebaserules.googleapis.com/v1/${releaseName}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            release: { name: releaseName, rulesetName: newRuleset.name }
+          })
+        }
+      );
+      if (!patchRes.ok) throw new Error(await describeError(patchRes));
+
+      showStatus('✅ সফলভাবে পাবলিশ হয়েছে! (কার্যকর হতে কয়েক মিনিট লাগতে পারে)', 'ok');
+    } catch (e) {
+      showStatus('❌ পাবলিশ ব্যর্থ হয়েছে: ' + e.message, 'err');
+    } finally {
+      publishBtn.disabled = false;
+    }
+  });
+
+  async function describeError(res) {
+    try {
+      const j = await res.json();
+      return (j.error && j.error.message) ? j.error.message : (res.status + ' ' + res.statusText);
+    } catch (e) {
+      return res.status + ' ' + res.statusText;
+    }
+  }
+</script>
+</body>
+</html>
