@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ক্রিকেট স্কোর - Onuvuti</title>
+<style>
+  body { font-family: sans-serif; background:#0f0f0f; color:#fff; padding:20px; margin:0; }
+  h1 { text-align:center; }
+  .match-card {
+    background:#1a1a1a; border-radius:10px; padding:15px; margin:10px 0;
+  }
+  .status { color:#0f0; font-weight:bold; }
+  .loading { text-align:center; margin-top:50px; }
+  button {
+    display:block; margin:20px auto; padding:10px 20px;
+    background:#0f0; color:#000; border:none; border-radius:5px; font-weight:bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏏 ক্রিকেট স্কোর</h1>
+<button onclick="loadScores()">🔄 রিফ্রেশ করুন</button>
+<div id="scores" class="loading">লোড হচ্ছে...</div>
+
+<script>
+async function loadScores() {
+  const container = document.getElementById("scores");
+  container.innerHTML = "লোড হচ্ছে...";
+  try {
+    const res = await fetch("/.netlify/functions/cricket-score");
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      container.innerHTML = "<p>এখন কোনো ম্যাচ পাওয়া যায়নি।</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+    data.forEach(match => {
+      const card = document.createElement("div");
+      card.className = "match-card";
+      card.innerHTML = `
+        <div>${match.homeTeamName || "টিম ১"} vs ${match.awayTeamName || "টিম ২"}</div>
+        <div class="status">${match.status || ""}</div>
+        <div>${match.homeScore || ""} - ${match.awayScore || ""}</div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (e) {
+    container.innerHTML = "<p>স্কোর আনতে সমস্যা হয়েছে।</p>";
+  }
+}
+loadScores();
+</script>
+
+</body>
+</html>
