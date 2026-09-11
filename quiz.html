@@ -398,17 +398,10 @@ function updateCoinLoginUI() {
   $('coinContentBox').style.display = loggedIn ? '' : 'none';
 }
 
-async function getTodayEarned(uid) {
-  try {
-    const s = await getDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())));
-    return s.exists() ? Number(s.data().earned || 0) : 0;
-  } catch (e) { return 0; }
-}
-async function bumpTodayEarned(uid, amt) {
-  try {
-    await setDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())), { earned: increment(amt) }, { merge: true });
-  } catch (e) {}
-}
+// ---- দিনের সর্বমোট আয়ের হিসাব এখন সরাসরি users/{uid} ডকুমেন্টেই রাখা হয়
+// (quizDayWindowStart/quizDayEarnedAmount/lastQuizRewardAt) — কারণ Firestore
+// Security Rules-এ এই ফিল্ডগুলো একই ডকুমেন্টের ওল্ড/নিউ মান তুলনা করে ক্রমান্বয়ে
+// ক্যাপ মানা হচ্ছে কিনা যাচাই করে (দেখুন quizRewardValid() রুলে)।
 
 /* ================= দৈনিক/ঘন্টাভিত্তিক কুইজ খেলার সীমা ================= */
 async function getQuizCountToday(uid) {
@@ -746,19 +739,30 @@ async function finishQuestion(isCorrect) {
 
   if (coinsToAward > 0 && currentUser) {
     try {
-      const already = await getTodayEarned(currentUser.uid);
-      const room = Math.max(0, (settings.maxCoinsPerDay || 0) - already);
-      coinsToAward = Math.min(coinsToAward, room);
-      if (coinsToAward > 0) {
-        await runTransaction(db, async (tx) => {
-          const uref = doc(db, 'users', currentUser.uid);
-          const us = await tx.get(uref);
-          const bal = Number(us.data()?.quizBalance || 0);
-          tx.update(uref, { quizBalance: bal + coinsToAward });
-        });
-        await bumpTodayEarned(currentUser.uid, coinsToAward);
-      }
-    } catch (e) {}
+      const awarded = await runTransaction(db, async (tx) => {
+        const uref = doc(db, 'users', currentUser.uid);
+        const us = await tx.get(uref);
+        const d = us.data() || {};
+        const bal = Number(d.quizBalance || 0);
+        const dayCap = Number(settings.maxCoinsPerDay || 0);
+        const nowMs = Date.now();
+        const oldStartMs = d.quizDayWindowStart && d.quizDayWindowStart.toMillis ? d.quizDayWindowStart.toMillis() : null;
+        const oldEarned = Number(d.quizDayEarnedAmount || 0);
+        const windowLive = oldStartMs !== null && nowMs <= oldStartMs + 86400000;
+        const roomLeft = windowLive ? Math.max(0, dayCap - oldEarned) : dayCap;
+        const award = (roomLeft >= coinsToAward) ? coinsToAward : 0;
+        if (award <= 0) return 0;
+        const update = {
+          quizBalance: bal + award,
+          lastQuizRewardAt: serverTimestamp(),
+          quizDayEarnedAmount: windowLive ? (oldEarned + award) : award
+        };
+        if (!windowLive) update.quizDayWindowStart = serverTimestamp();
+        tx.update(uref, update);
+        return award;
+      });
+      coinsToAward = awarded;
+    } catch (e) { coinsToAward = 0; }
   }
   // কয়েন জমা রাখতে হলে লগইন লাগবে, তাই attempt-রেকর্ড ও কুলডাউন রেকর্ড শুধু লগইন করা থাকলেই সেভ করা হচ্ছে
   if (currentUser) {
