@@ -1,25 +1,25 @@
 const { getStore, connectLambda } = require("@netlify/blobs");
 
-// এই পাসওয়ার্ডটা পরিবর্তন করে নিজের একটা গোপন পাসওয়ার্ড বসাও
-const ADMIN_PASSWORD = "onuvuti2026";
-
 exports.handler = async function (event, context) {
   connectLambda(event);
   const store = getStore("cricket-cache");
 
   if (event.httpMethod === "GET") {
     try {
-      const settings = (await store.get("settings", { type: "json" })) || { intervalMinutes: 14 };
+      const settings = (await store.get("settings", { type: "json" })) || {};
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify(settings),
+        body: JSON.stringify({
+          intervalMinutes: settings.intervalMinutes || 14,
+          nextMatchNote: settings.nextMatchNote || "",
+        }),
       };
     } catch (e) {
       return {
         statusCode: 200,
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ intervalMinutes: 14 }),
+        body: JSON.stringify({ intervalMinutes: 14, nextMatchNote: "" }),
       };
     }
   }
@@ -27,21 +27,22 @@ exports.handler = async function (event, context) {
   if (event.httpMethod === "POST") {
     const body = JSON.parse(event.body || "{}");
 
-    if (body.password !== ADMIN_PASSWORD) {
-      return {
-        statusCode: 401,
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: "ভুল পাসওয়ার্ড" }),
-      };
+    const current = (await store.get("settings", { type: "json" })) || {};
+    const updated = { ...current };
+
+    if (body.intervalMinutes !== undefined) {
+      updated.intervalMinutes = parseInt(body.intervalMinutes) || 14;
+    }
+    if (body.nextMatchNote !== undefined) {
+      updated.nextMatchNote = body.nextMatchNote;
     }
 
-    const intervalMinutes = parseInt(body.intervalMinutes) || 14;
-    await store.setJSON("settings", { intervalMinutes });
+    await store.setJSON("settings", updated);
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ success: true, intervalMinutes }),
+      body: JSON.stringify({ success: true, ...updated }),
     };
   }
 
