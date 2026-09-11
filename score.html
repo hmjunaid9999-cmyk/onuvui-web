@@ -11,20 +11,23 @@
     background:#1a1a1a; border-radius:10px; padding:15px; margin:10px 0;
     border-left: 4px solid #0f0;
   }
+  .match-card.finished { border-left-color: #888; }
   .teams { font-size:18px; font-weight:bold; margin-bottom:6px; }
   .score { font-size:16px; color:#ccc; margin:4px 0; }
   .status { color:#0f0; font-weight:bold; margin-top:6px; }
+  .status.done { color:#aaa; }
   .league { color:#888; font-size:13px; margin-bottom:6px; }
   .loading, .empty { text-align:center; margin-top:50px; color:#aaa; }
   button {
     display:block; margin:20px auto; padding:10px 20px;
     background:#0f0; color:#000; border:none; border-radius:5px; font-weight:bold;
   }
+  h2.section { font-size:15px; color:#888; margin:20px 0 5px; border-bottom:1px solid #333; padding-bottom:5px; }
 </style>
 </head>
 <body>
 
-<h1>🏏 ক্রিকেট স্কোর (লাইভ)</h1>
+<h1>🏏 ক্রিকেট স্কোর</h1>
 <button onclick="loadScores()">🔄 রিফ্রেশ করুন</button>
 <div id="scores" class="loading">লোড হচ্ছে...</div>
 
@@ -37,46 +40,60 @@ async function loadScores() {
     const json = await res.json();
     const matches = json.data || [];
 
-    const liveMatches = matches.filter(m => {
+    const liveMatches = matches.filter(m => (m.description || "").toLowerCase().includes("in play"));
+    const finishedMatches = matches.filter(m => {
       const desc = (m.description || "").toLowerCase();
-      return desc.includes("in play");
+      return desc.includes("won") || desc.includes("finished") || desc.includes("match tied") || desc.includes("no result");
     });
 
-    if (liveMatches.length === 0) {
-      container.innerHTML = "<p class='empty'>এই মুহূর্তে কোনো লাইভ ম্যাচ নেই।<br>একটু পরে আবার চেষ্টা করুন।</p>";
+    if (liveMatches.length === 0 && finishedMatches.length === 0) {
+      container.innerHTML = "<p class='empty'>এই মুহূর্তে কোনো লাইভ বা সাম্প্রতিক ম্যাচ নেই।</p>";
       return;
     }
 
     container.innerHTML = "";
-    liveMatches.forEach(match => {
+
+    function renderCard(match, isFinished) {
       const home = match.homeTeam ? match.homeTeam.name : "টিম ১";
       const away = match.awayTeam ? match.awayTeam.name : "টিম ২";
 
       let homeScore = "-";
       let awayScore = "-";
       if (match.state && match.state.teams) {
-        if (match.state.teams.home && match.state.teams.home.score) {
-          homeScore = match.state.teams.home.score;
-        }
-        if (match.state.teams.away && match.state.teams.away.score) {
-          awayScore = match.state.teams.away.score;
-        }
+        if (match.state.teams.home && match.state.teams.home.score) homeScore = match.state.teams.home.score;
+        if (match.state.teams.away && match.state.teams.away.score) awayScore = match.state.teams.away.score;
       }
 
       const league = match.league ? match.league.name : "";
       const desc = match.description || "";
 
       const card = document.createElement("div");
-      card.className = "match-card";
+      card.className = "match-card" + (isFinished ? " finished" : "");
       card.innerHTML = `
         <div class="league">${league}</div>
         <div class="teams">${home} vs ${away}</div>
         <div class="score">${home}: ${homeScore}</div>
         <div class="score">${away}: ${awayScore}</div>
-        <div class="status">🔴 ${desc}</div>
+        <div class="status ${isFinished ? 'done' : ''}">${isFinished ? '✅' : '🔴'} ${desc}</div>
       `;
-      container.appendChild(card);
-    });
+      return card;
+    }
+
+    if (liveMatches.length > 0) {
+      const h = document.createElement("h2");
+      h.className = "section";
+      h.textContent = "🔴 লাইভ ম্যাচ";
+      container.appendChild(h);
+      liveMatches.forEach(m => container.appendChild(renderCard(m, false)));
+    }
+
+    if (finishedMatches.length > 0) {
+      const h = document.createElement("h2");
+      h.className = "section";
+      h.textContent = "সাম্প্রতিক ফলাফল";
+      container.appendChild(h);
+      finishedMatches.forEach(m => container.appendChild(renderCard(m, true)));
+    }
   } catch (e) {
     container.innerHTML = "<p class='empty'>স্কোর আনতে সমস্যা হয়েছে।</p>";
   }
