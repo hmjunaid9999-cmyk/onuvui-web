@@ -7,6 +7,10 @@
 <style>
   body { font-family: sans-serif; background:#0f0f0f; color:#fff; padding:20px; margin:0; }
   h1 { text-align:center; }
+  .notice {
+    background:#1a2a1a; border:1px solid #0f0; border-radius:10px; padding:12px 15px;
+    margin:15px 0; text-align:center; color:#7fff7f; font-size:14px; display:none;
+  }
   .match-card {
     background:#1a1a1a; border-radius:10px; padding:15px; margin:10px 0;
     border-left: 4px solid #0f0;
@@ -28,10 +32,23 @@
 <body>
 
 <h1>🏏 ক্রিকেট স্কোর</h1>
+<div id="notice" class="notice"></div>
 <button onclick="loadScores()">🔄 রিফ্রেশ করুন</button>
 <div id="scores" class="loading">লোড হচ্ছে...</div>
 
 <script>
+async function loadNotice() {
+  try {
+    const res = await fetch("/.netlify/functions/admin-settings");
+    const data = await res.json();
+    const notice = document.getElementById("notice");
+    if (data.nextMatchNote && data.nextMatchNote.trim()) {
+      notice.textContent = "📢 " + data.nextMatchNote;
+      notice.style.display = "block";
+    }
+  } catch (e) {}
+}
+
 async function loadScores() {
   const container = document.getElementById("scores");
   container.innerHTML = "লোড হচ্ছে...";
@@ -98,6 +115,8 @@ async function loadScores() {
     container.innerHTML = "<p class='empty'>স্কোর আনতে সমস্যা হয়েছে।</p>";
   }
 }
+
+loadNotice();
 loadScores();
 </script>
 

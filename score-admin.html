@@ -3,81 +3,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>স্কোর সেটিংস - এডমিন</title>
+<title>Onuvuti Score Admin</title>
 <style>
-  body { font-family: sans-serif; background:#0f0f0f; color:#fff; padding:20px; margin:0; }
-  h1 { text-align:center; font-size:20px; }
-  .box { max-width:400px; margin:30px auto; background:#1a1a1a; padding:20px; border-radius:10px; }
-  label { display:block; margin:15px 0 5px; color:#aaa; }
-  input {
-    width:100%; padding:10px; border-radius:5px; border:1px solid #333;
-    background:#0f0f0f; color:#fff; box-sizing:border-box;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #fff; min-height: 100vh; }
+  #loginScreen, #deniedScreen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
   }
+  #deniedScreen { display: none; }
+  h1 { font-size: 20px; margin-bottom: 10px; }
+  p { color: #9ca3af; font-size: 14px; margin-bottom: 24px; }
   button {
-    display:block; width:100%; margin-top:20px; padding:12px;
-    background:#0f0; color:#000; border:none; border-radius:5px; font-weight:bold;
+    background: #4285F4; color: #fff; border: none;
+    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
   }
-  .msg { text-align:center; margin-top:15px; }
-  .msg.ok { color:#0f0; }
-  .msg.err { color:#f55; }
+  #adminScreen { display: none; flex-direction: column; min-height: 100vh; }
+  header {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px 18px; background: #161b22; border-bottom: 1px solid #262c36;
+  }
+  #logoutBtn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: #262c36; color: #f87171; padding: 6px 14px; border-radius: 14px; font-size: 12px;
+  }
+  main { padding: 20px 16px; max-width: 640px; margin: 0 auto; width: 100%; }
+  .section { background: #161b22; border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .section h2 { font-size: 15px; margin-bottom: 12px; }
+  textarea {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical; margin-bottom: 10px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit;
+  }
+  .hint { font-size: 11px; color: #6b7280; margin-top: 4px; margin-bottom: 8px; }
+  .sectionSaveBtn {
+    background: #238636; color: #fff; border: none; padding: 10px; border-radius: 8px;
+    font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; width: 100%;
+  }
+  .sectionStatus { font-size: 13px; margin-top: 8px; min-height: 18px; }
+  label { display:block; font-size: 13px; color:#ccc; margin-bottom:4px; }
 </style>
 </head>
 <body>
 
-<h1>⚙️ ক্রিকেট স্কোর - এডমিন সেটিংস</h1>
+  <div id="loginScreen">
+    <h1>Onuvuti Score Admin</h1>
+    <p>এডমিন অ্যাক্সেসের জন্য লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+  </div>
 
-<div class="box">
-  <label>এডমিন পাসওয়ার্ড</label>
-  <input type="password" id="password" placeholder="পাসওয়ার্ড দিন">
+  <div id="deniedScreen">
+    <h1>⛔ প্রবেশাধিকার নেই</h1>
+    <p>এই অ্যাকাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
+    <button id="logoutBtn2">লগ আউট</button>
+  </div>
 
-  <label>স্কোর রিফ্রেশ ইন্টারভাল (মিনিট)</label>
-  <input type="number" id="interval" placeholder="যেমন: 14" min="1">
-  <p style="color:#666; font-size:13px;">প্রতি কত মিনিট পর পর নতুন করে RapidAPI থেকে স্কোর আনা হবে। কম সংখ্যা = বেশি আপডেট কিন্তু কোটা দ্রুত শেষ হবে।</p>
+  <div id="adminScreen">
+    <header>
+      <span>🏏 Score Admin Panel</span>
+      <button id="logoutBtn">লগ আউট</button>
+    </header>
 
-  <button onclick="saveSettings()">সংরক্ষণ করুন</button>
-  <div id="msg" class="msg"></div>
-</div>
+    <main>
+      <div class="section">
+        <h2>📢 পরবর্তী ম্যাচের নোটিশ</h2>
+        <div class="hint">এখানে যা লিখবেন তা সরাসরি স্কোর পেজের (score.html) উপরে সবাই দেখতে পাবে। যেমন: "পরবর্তী ম্যাচ: বাংলাদেশ vs ভারত, আগামীকাল রাত ৮টা"। খালি রাখলে কিছু দেখাবে না।</div>
+        <textarea id="nextMatchNote" rows="3" placeholder="পরবর্তী ম্যাচের তথ্য লিখুন..."></textarea>
+        <button class="sectionSaveBtn" id="saveNoteBtn">💾 নোটিশ সেভ করুন</button>
+        <div class="sectionStatus" id="noteStatus"></div>
+      </div>
 
-<script>
-async function loadCurrentSettings() {
-  try {
-    const res = await fetch("/.netlify/functions/admin-settings");
-    const data = await res.json();
-    document.getElementById("interval").value = data.intervalMinutes || 14;
-  } catch (e) {}
-}
+      <div class="section">
+        <h2>⏱️ স্কোর রিফ্রেশ ইন্টারভাল</h2>
+        <div class="hint">প্রতি কত মিনিট পর পর নতুন করে RapidAPI থেকে স্কোর আনা হবে। কম সংখ্যা = বেশি আপডেট কিন্তু দৈনিক কোটা দ্রুত শেষ হবে (ফ্রি প্ল্যানে দিনে ১০০ বার লিমিট)।</div>
+        <label>ইন্টারভাল (মিনিট)</label>
+        <input type="number" id="interval" min="1" placeholder="যেমন: 14">
+        <button class="sectionSaveBtn" id="saveIntervalBtn">💾 ইন্টারভাল সেভ করুন</button>
+        <div class="sectionStatus" id="intervalStatus"></div>
+      </div>
+    </main>
+  </div>
 
-async function saveSettings() {
-  const password = document.getElementById("password").value;
-  const intervalMinutes = document.getElementById("interval").value;
-  const msg = document.getElementById("msg");
-  msg.textContent = "সংরক্ষণ হচ্ছে...";
-  msg.className = "msg";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  try {
-    const res = await fetch("/.netlify/functions/admin-settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, intervalMinutes }),
-    });
-    const data = await res.json();
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:d87ae40431210088df8b25",
+    measurementId: "G-WJ8N8XLPSZ"
+  };
 
-    if (res.status === 401) {
-      msg.textContent = "❌ ভুল পাসওয়ার্ড";
-      msg.className = "msg err";
-      return;
-    }
+  // ---- এডমিন হিসেবে অনুমোদিত ইমেইল লিস্ট (শুধু এই স্কোর-এডমিন প্যানেলের জন্য) ----
+  const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
 
-    msg.textContent = "✅ সংরক্ষণ হয়েছে! এখন থেকে প্রতি " + data.intervalMinutes + " মিনিটে স্কোর আপডেট হবে।";
-    msg.className = "msg ok";
-  } catch (e) {
-    msg.textContent = "❌ সমস্যা হয়েছে, আবার চেষ্টা করুন";
-    msg.className = "msg err";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginScreen = document.getElementById('loginScreen');
+  const deniedScreen = document.getElementById('deniedScreen');
+  const adminScreen = document.getElementById('adminScreen');
+
+  document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { console.error(e); alert('লগইন এরর: ' + e.message); }
+  });
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+  document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
+
+  async function loadSettings() {
+    try {
+      const res = await fetch('/.netlify/functions/admin-settings');
+      const data = await res.json();
+      document.getElementById('interval').value = data.intervalMinutes || 14;
+      document.getElementById('nextMatchNote').value = data.nextMatchNote || '';
+    } catch (e) {}
   }
-}
 
-loadCurrentSettings();
+  document.getElementById('saveNoteBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('noteStatus');
+    const nextMatchNote = document.getElementById('nextMatchNote').value.trim();
+    statusEl.style.color = '#9ca3af';
+    statusEl.textContent = 'সংরক্ষণ হচ্ছে...';
+    try {
+      const res = await fetch('/.netlify/functions/admin-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nextMatchNote })
+      });
+      if (!res.ok) throw new Error('সার্ভার এরর');
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  document.getElementById('saveIntervalBtn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('intervalStatus');
+    const intervalMinutes = document.getElementById('interval').value;
+    statusEl.style.color = '#9ca3af';
+    statusEl.textContent = 'সংরক্ষণ হচ্ছে...';
+    try {
+      const res = await fetch('/.netlify/functions/admin-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ intervalMinutes })
+      });
+      if (!res.ok) throw new Error('সার্ভার এরর');
+      statusEl.style.color = '#4ade80';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+    } catch (e) {
+      statusEl.style.color = '#f87171';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    loginScreen.style.display = 'none';
+    deniedScreen.style.display = 'none';
+    adminScreen.style.display = 'none';
+
+    if (!user) {
+      loginScreen.style.display = 'flex';
+    } else if (ADMIN_EMAILS.includes(user.email)) {
+      adminScreen.style.display = 'flex';
+      loadSettings();
+    } else {
+      deniedScreen.style.display = 'flex';
+    }
+  });
 </script>
-
 </body>
 </html>
