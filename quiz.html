@@ -44,16 +44,18 @@ main{padding:16px}
 #catBackRow .ghost{margin-top:0}
 /* ---- খেলার স্ক্রিন ---- */
 #quizTopBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#9ca3af}
-#timerWrap{height:6px;background:#21262d;border-radius:4px;overflow:hidden;margin-bottom:16px}
+#timerRow{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+#timerWrap{flex:1;height:6px;background:#21262d;border-radius:4px;overflow:hidden}
 #timerBar{height:100%;background:var(--primary-color);width:100%;transition:width 1s linear}
+#timerSecondsText{font-size:13px;color:#9ca3af;min-width:22px;text-align:right;flex-shrink:0}
 #questionBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:20px 16px;margin-bottom:16px;font-size:16px;font-weight:700;line-height:1.6;min-height:90px;display:flex;align-items:center}
 .optBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:14px;border-radius:12px;font-size:14px;margin-bottom:10px;cursor:pointer}
 .optBtn.correct{background:#1f4d2e;border-color:#2ea043}
 .optBtn.wrong{background:#4d1f24;border-color:#f85149}
 .optBtn:disabled{cursor:default}
 /* ---- ফলাফল স্ক্রিন ---- */
-#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;background:var(--primary-color)}
-#resultPoster .score{font-size:38px;font-weight:800}
+#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;background:#000}
+#resultPoster .score{font-size:38px;font-weight:800;color:#FFD700}
 #resultPoster .sub{font-size:14px;opacity:.9;margin-top:6px}
 /* ---- বটম নেভ ---- */
 nav.bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid #262c36;z-index:30}
@@ -134,7 +136,7 @@ nav.bottomNav button.active{color:#fff}
         <span id="quizProgress">প্রশ্ন ১/১০</span>
         <span id="quizScoreLive">স্কোর: ০</span>
       </div>
-      <div id="timerWrap"><div id="timerBar"></div></div>
+      <div id="timerRow"><div id="timerWrap"><div id="timerBar"></div></div><span id="timerSecondsText"></span></div>
       <div id="questionBox">প্রশ্ন লোড হচ্ছে...</div>
       <div id="optionsBox"></div>
       <div id="playBannerAd" class="bannerAdBox" style="display:none"></div>
@@ -143,7 +145,7 @@ nav.bottomNav button.active{color:#fff}
     <!-- ---- ফলাফল ---- -->
     <section id="panelResult" class="panel">
       <div id="resultPoster">
-        <div class="score" id="resultCoinsText">+০ Coin অর্জিত</div>
+        <div class="score" id="resultCoinsText">🪙 +০ Coin</div>
         <div class="sub" id="resultAnswerText">সঠিক উত্তর: —</div>
       </div>
       <button class="primary" id="resultLoginBtn" style="display:none">🔵 কয়েন জমা রাখতে Google দিয়ে লগইন করুন</button>
@@ -663,7 +665,7 @@ function renderQuestion() {
 
   if (settings.timerSeconds > 0) {
     timeLeft = settings.timerSeconds;
-    $('timerWrap').style.display = 'block';
+    $('timerRow').style.display = 'flex';
     updateTimerBar();
     timerInterval = setInterval(() => {
       timeLeft--;
@@ -672,12 +674,13 @@ function renderQuestion() {
       if (timeLeft <= 0) { clearInterval(timerInterval); window.answerQuestion(-1); }
     }, 1000);
   } else {
-    $('timerWrap').style.display = 'none';
+    $('timerRow').style.display = 'none';
   }
 }
 function updateTimerBar() {
   const pct = Math.max(0, (timeLeft / (settings.timerSeconds || 1)) * 100);
   $('timerBar').style.width = pct + '%';
+  $('timerSecondsText').textContent = Math.max(0, timeLeft);
 }
 function buildAdSrcdoc(codeHtml) {
   return `<!DOCTYPE html><html><head><style>html,body{margin:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}</style></head><body>${codeHtml}</body></html>`;
@@ -774,10 +777,10 @@ async function finishQuestion(isCorrect) {
   const correctAnswerText = (activeQuestion.options || [])[Number(activeQuestion.correctIndex)] ?? '';
   $('resultAnswerText').textContent = `সঠিক উত্তর: ${correctAnswerText}`;
   if (!currentUser && guestPotentialCoins > 0) {
-    $('resultCoinsText').textContent = `${guestPotentialCoins} ${unit()} অর্জিত হবে — লগইন করুন`;
+    $('resultCoinsText').textContent = `🪙 ${guestPotentialCoins} ${unit()} — লগইন করুন`;
     $('resultLoginBtn').style.display = 'block';
   } else {
-    $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
+    $('resultCoinsText').textContent = `🪙 +${coinsToAward} ${unit()}`;
     $('resultLoginBtn').style.display = 'none';
   }
   $('nextQuestionBtn').disabled = (activeQuestionIndex + 1 >= categoryQuestions.length);
