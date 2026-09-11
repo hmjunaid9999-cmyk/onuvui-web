@@ -52,12 +52,9 @@ main{padding:16px}
 .optBtn.wrong{background:#4d1f24;border-color:#f85149}
 .optBtn:disabled{cursor:default}
 /* ---- ফলাফল স্ক্রিন ---- */
-#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px}
+#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;background:var(--primary-color)}
 #resultPoster .score{font-size:38px;font-weight:800}
 #resultPoster .sub{font-size:14px;opacity:.9;margin-top:6px}
-.posterColors{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;justify-content:center}
-.posterSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}
-.posterSwatch.selected{border-color:#fff}
 /* ---- বটম নেভ ---- */
 nav.bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid #262c36;z-index:30}
 nav.bottomNav div{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
@@ -146,13 +143,10 @@ nav.bottomNav button.active{color:#fff}
     <!-- ---- ফলাফল ---- -->
     <section id="panelResult" class="panel">
       <div id="resultPoster">
-        <div class="score" id="resultScoreText">০/১০</div>
-        <div class="sub" id="resultCoinsText">+০ Coin অর্জিত</div>
+        <div class="score" id="resultCoinsText">+০ Coin অর্জিত</div>
+        <div class="sub" id="resultAnswerText">সঠিক উত্তর: —</div>
       </div>
-      <div class="posterColors" id="posterColors"></div>
       <button class="primary" id="resultLoginBtn" style="display:none">🔵 কয়েন জমা রাখতে Google দিয়ে লগইন করুন</button>
-      <button class="primary" id="sharePosterBtn">📤 ফিডে পোস্টার হিসেবে শেয়ার করুন</button>
-      <div class="notice" id="shareStatus" style="text-align:center;margin-top:8px"></div>
       <button class="ghost" id="nextQuestionBtn">➡️ পরবর্তী প্রশ্ন দেখুন</button>
       <button class="ghost" id="playAgainBtn">🔁 আবার দেখুন</button>
       <button class="ghost" id="backHomeBtn">🏠 ক্যাটাগরিতে ফিরে যান</button>
@@ -263,8 +257,26 @@ const TOP_BANNER_AD_SCRIPT = `<script>
   };
 <\/script>
 <script src="https://www.highrevenueformat.com/637576a22a8ac384bc75c05afc089bb6/invoke.js"><\/script>`;
-const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#8B5CF6', '#F59E0B', '#EC4899'];
 function unit() { return settings.unitName || 'Coin'; }
+
+/* ---- টাইমারের টিক শব্দ (ঘড়ির কাঁটার মতো) ---- */
+let audioCtx = null;
+function playTick(isLast) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.value = isLast ? 440 : 880;
+    gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (isLast ? 0.18 : 0.07));
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + (isLast ? 0.2 : 0.08));
+  } catch (e) {}
+}
 
 function pad2(n) { return String(n).padStart(2, '0'); }
 function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
@@ -604,7 +616,7 @@ function renderCategoryArea() {
 }
 
 /* ================= কুইজ খেলা (একটি করে প্রশ্ন) ================= */
-let activeQuestion = null, activeQuestionIndex = -1, activeCoinsEarned = 0, lastIsCorrect = false;
+let activeQuestion = null, activeQuestionIndex = -1;
 let timerInterval = null, timeLeft = 0, questionAnswered = false;
 
 window.startQuestion = async function (index) {
@@ -656,6 +668,7 @@ function renderQuestion() {
     timerInterval = setInterval(() => {
       timeLeft--;
       updateTimerBar();
+      playTick(timeLeft <= 0);
       if (timeLeft <= 0) { clearInterval(timerInterval); window.answerQuestion(-1); }
     }, 1000);
   } else {
@@ -725,7 +738,6 @@ window.answerQuestion = function (chosenIndex) {
 
 async function finishQuestion(isCorrect) {
   clearInterval(timerInterval);
-  lastIsCorrect = isCorrect;
   let coinsToAward = isCorrect ? (settings.coinPerCorrect || 0) : (settings.coinPerWrong || 0);
   const guestPotentialCoins = coinsToAward; // লগইন ছাড়া কয়েন জমা হবে না, শুধু জানানোর জন্য
 
@@ -745,8 +757,6 @@ async function finishQuestion(isCorrect) {
       }
     } catch (e) {}
   }
-  activeCoinsEarned = currentUser ? coinsToAward : 0;
-
   // কয়েন জমা রাখতে হলে লগইন লাগবে, তাই attempt-রেকর্ড ও কুলডাউন রেকর্ড শুধু লগইন করা থাকলেই সেভ করা হচ্ছে
   if (currentUser) {
     markQuestionPlayed(currentUser.uid, activeQuestion.id);
@@ -761,9 +771,10 @@ async function finishQuestion(isCorrect) {
   }
 
   await refreshBalance();
-  $('resultScoreText').textContent = isCorrect ? '১/১' : '০/১';
+  const correctAnswerText = (activeQuestion.options || [])[Number(activeQuestion.correctIndex)] ?? '';
+  $('resultAnswerText').textContent = `সঠিক উত্তর: ${correctAnswerText}`;
   if (!currentUser && guestPotentialCoins > 0) {
-    $('resultCoinsText').textContent = `আপনি ${guestPotentialCoins} ${unit()} অর্জন করেছেন! এটি জমা রাখতে Google দিয়ে লগইন করুন।`;
+    $('resultCoinsText').textContent = `${guestPotentialCoins} ${unit()} অর্জিত হবে — লগইন করুন`;
     $('resultLoginBtn').style.display = 'block';
   } else {
     $('resultCoinsText').textContent = `+${coinsToAward} ${unit()} অর্জিত`;
@@ -771,34 +782,8 @@ async function finishQuestion(isCorrect) {
   }
   $('nextQuestionBtn').disabled = (activeQuestionIndex + 1 >= categoryQuestions.length);
   showPanel('panelResult', true);
-  buildPosterColors();
 }
 
-/* ================= পোস্টার শেয়ার (মূল ফিডে) ================= */
-let selectedPosterColor = DEFAULT_POSTER_COLORS[0];
-function buildPosterColors() {
-  $('posterColors').innerHTML = DEFAULT_POSTER_COLORS.map(c =>
-    `<div class="posterSwatch${c === selectedPosterColor ? ' selected' : ''}" style="background:${c}" data-c="${c}"></div>`).join('');
-  $('resultPoster').style.background = selectedPosterColor;
-  document.querySelectorAll('.posterSwatch').forEach(sw => sw.addEventListener('click', () => {
-    selectedPosterColor = sw.dataset.c;
-    buildPosterColors();
-  }));
-}
-$('sharePosterBtn').addEventListener('click', async () => {
-  if (!requireLogin()) return;
-  $('shareStatus').textContent = 'পোস্ট হচ্ছে...';
-  try {
-    const text = `আমি "${selectedCategory?.name || 'কুইজ'}" ক্যাটাগরির "কুইজ ${activeQuestionIndex + 1}" এ ${lastIsCorrect ? 'সঠিক উত্তর দিয়েছি' : 'চেষ্টা করেছি'} এবং ${activeCoinsEarned} ${unit()} অর্জন করেছি! 🎉\nতুমিও খেলে দেখো Onuvuti কুইজে।`;
-    await addDoc(collection(db, 'posts'), {
-      authorUid: currentUser.uid, authorName: currentUser.displayName || 'User',
-      authorEmail: currentUser.email || '', authorPhoto: currentUser.photoURL || '',
-      type: 'poster', text: text, posterColor: selectedPosterColor,
-      likedBy: [], commentCount: 0, createdAt: serverTimestamp()
-    });
-    $('shareStatus').textContent = '✅ ফিডে পোস্ট হয়ে গেছে!';
-  } catch (e) { $('shareStatus').textContent = 'এরর: ' + e.message; }
-});
 $('nextQuestionBtn').addEventListener('click', () => {
   const nextIndex = activeQuestionIndex + 1;
   if (nextIndex >= categoryQuestions.length) { alert('এই ক্যাটাগরিতে আর কোনো প্রশ্ন নেই।'); return; }

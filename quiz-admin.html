@@ -841,6 +841,17 @@ $('addQOptionBtn').addEventListener('click', () => {
 });
 renderQOptions();
 
+/* ---- একই প্রশ্ন দ্বিতীয়বার যোগ হওয়া আটকাতে চেক ---- */
+function normalizeQ(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+async function questionAlreadyExists(text, excludeId) {
+  const t = normalizeQ(text);
+  if (!t) return false;
+  try {
+    const s = await getDocs(collection(db, 'quizQuestions'));
+    return s.docs.some(d => d.id !== excludeId && normalizeQ(d.data().question) === t);
+  } catch (e) { return false; }
+}
+
 /* ================= প্রশ্ন যোগ করা ================= */
 $('addQBtn').addEventListener('click', async () => {
   const categoryId = $('qCategory').value;
@@ -849,6 +860,10 @@ $('addQBtn').addEventListener('click', async () => {
   const correctIndex = qCorrectIndex;
   if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) {
     $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'; $('qStatus').className = 'status err'; return;
+  }
+  $('qStatus').textContent = 'যাচাই করা হচ্ছে...'; $('qStatus').className = 'status';
+  if (await questionAlreadyExists(question)) {
+    $('qStatus').textContent = '⚠️ এই প্রশ্নটি আগে থেকেই যুক্ত আছে, দ্বিতীয়বার যোগ করা যাবে না।'; $('qStatus').className = 'status err'; return;
   }
   try {
     await addDoc(collection(db, 'quizQuestions'), { categoryId, question, options, correctIndex, createdAt: serverTimestamp() });
@@ -988,6 +1003,7 @@ window.saveQEdit = async (id) => {
   const question = $('editQTextArea').value.trim();
   const options = editQOptions.map(o => o.trim());
   if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) { alert('সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'); return; }
+  if (await questionAlreadyExists(question, id)) { alert('⚠️ এই প্রশ্নটি অন্য একটি এন্ট্রিতে আগে থেকেই আছে।'); return; }
   try {
     await updateDoc(doc(db, 'quizQuestions', id), { categoryId, question, options, correctIndex: editQCorrectIndex });
     editingQId = null;
