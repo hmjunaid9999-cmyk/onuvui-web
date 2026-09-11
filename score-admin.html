@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>স্কোর সেটিংস - এডমিন</title>
+<style>
+  body { font-family: sans-serif; background:#0f0f0f; color:#fff; padding:20px; margin:0; }
+  h1 { text-align:center; font-size:20px; }
+  .box { max-width:400px; margin:30px auto; background:#1a1a1a; padding:20px; border-radius:10px; }
+  label { display:block; margin:15px 0 5px; color:#aaa; }
+  input {
+    width:100%; padding:10px; border-radius:5px; border:1px solid #333;
+    background:#0f0f0f; color:#fff; box-sizing:border-box;
+  }
+  button {
+    display:block; width:100%; margin-top:20px; padding:12px;
+    background:#0f0; color:#000; border:none; border-radius:5px; font-weight:bold;
+  }
+  .msg { text-align:center; margin-top:15px; }
+  .msg.ok { color:#0f0; }
+  .msg.err { color:#f55; }
+</style>
+</head>
+<body>
+
+<h1>⚙️ ক্রিকেট স্কোর - এডমিন সেটিংস</h1>
+
+<div class="box">
+  <label>এডমিন পাসওয়ার্ড</label>
+  <input type="password" id="password" placeholder="পাসওয়ার্ড দিন">
+
+  <label>স্কোর রিফ্রেশ ইন্টারভাল (মিনিট)</label>
+  <input type="number" id="interval" placeholder="যেমন: 14" min="1">
+  <p style="color:#666; font-size:13px;">প্রতি কত মিনিট পর পর নতুন করে RapidAPI থেকে স্কোর আনা হবে। কম সংখ্যা = বেশি আপডেট কিন্তু কোটা দ্রুত শেষ হবে।</p>
+
+  <button onclick="saveSettings()">সংরক্ষণ করুন</button>
+  <div id="msg" class="msg"></div>
+</div>
+
+<script>
+async function loadCurrentSettings() {
+  try {
+    const res = await fetch("/.netlify/functions/admin-settings");
+    const data = await res.json();
+    document.getElementById("interval").value = data.intervalMinutes || 14;
+  } catch (e) {}
+}
+
+async function saveSettings() {
+  const password = document.getElementById("password").value;
+  const intervalMinutes = document.getElementById("interval").value;
+  const msg = document.getElementById("msg");
+  msg.textContent = "সংরক্ষণ হচ্ছে...";
+  msg.className = "msg";
+
+  try {
+    const res = await fetch("/.netlify/functions/admin-settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, intervalMinutes }),
+    });
+    const data = await res.json();
+
+    if (res.status === 401) {
+      msg.textContent = "❌ ভুল পাসওয়ার্ড";
+      msg.className = "msg err";
+      return;
+    }
+
+    msg.textContent = "✅ সংরক্ষণ হয়েছে! এখন থেকে প্রতি " + data.intervalMinutes + " মিনিটে স্কোর আপডেট হবে।";
+    msg.className = "msg ok";
+  } catch (e) {
+    msg.textContent = "❌ সমস্যা হয়েছে, আবার চেষ্টা করুন";
+    msg.className = "msg err";
+  }
+}
+
+loadCurrentSettings();
+</script>
+
+</body>
+</html>
