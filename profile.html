@@ -2,249 +2,9 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>প্রোফাইল - Onuvuti</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --primary-color: #4285F4;
-    --bg-color: #0d1117;
-    --card-color: #161b22;
-    --text-color: #ffffff;
-    --max-width: 640px;
-    --poster-height: 180px;
-    --own-action-scale: 1;
-    --other-action-scale: 1;
-  }
-  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
-
-  #loginScreen {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 24px; text-align: center;
-  }
-  #loginScreen img { width: 84px; height: 84px; border-radius: 20px; margin-bottom: 18px; }
-  #loginScreen h1 { font-size: 22px; margin-bottom: 6px; }
-  #loginScreen p { color: #9ca3af; font-size: 14px; margin-bottom: 28px; }
-  #googleLoginBtn {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--primary-color); color: #fff; border: none;
-    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
-  }
-  #googleLoginBtn:disabled { opacity: 0.6; }
-  #loginStatus { margin-top: 16px; font-size: 13px; color: #f87171; min-height: 18px; }
-
-  #appScreen { display: none; }
-
-  #siteHeader {
-    position: relative;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
-  }
-  #siteHeader h1 { font-size: 17px; font-weight: bold; }
-  #backBtn {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px;
-    text-decoration: none;
-  }
-  #logoutBtn {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: #262c36; color: #f87171; border: none; padding: 6px 14px; border-radius: 14px; font-size: 12px; cursor: pointer;
-  }
-  #hamburgerBtn {
-    position: absolute; left: 44px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #fff; font-size: 19px; cursor: pointer; padding: 4px 8px;
-    display: none;
-  }
-
-  /* ---- এডমিন থেকে কন্ট্রোল করা নোটিশ বার — ডান থেকে বামে চলমান (marquee) ---- */
-  #noticeBar {
-    display: none; background: #1f2937; color: #93c5fd; font-size: 12.5px;
-    padding: 9px 0; border-bottom: 1px solid #262c36; line-height: 1.5;
-    overflow: hidden; white-space: nowrap; position: relative;
-  }
-  #noticeBarText {
-    display: inline-block; padding-left: 100%; will-change: transform;
-    animation: noticeScroll linear infinite;
-  }
-  @keyframes noticeScroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-100%); }
-  }
-
-  /* ---- এডমিন থেকে কন্ট্রোল করা টপ মেনু বার (হেডারের ঠিক নিচে) ---- */
-  #topMenuBar {
-    display: none; gap: 8px; padding: 10px 14px; overflow-x: auto; background: var(--card-color);
-    border-bottom: 1px solid #262c36;
-  }
-  #topMenuBar::-webkit-scrollbar { display: none; }
-  .topMenuItem {
-    flex-shrink: 0; background: #21262d; color: #c9d1d9; border: 1px solid #30363d;
-    padding: 7px 16px; border-radius: 16px; font-size: 12.5px; font-weight: bold;
-    text-decoration: none; white-space: nowrap;
-  }
-  .topMenuGadget { flex-shrink: 0; }
-
-  /* ---- এডমিন থেকে কন্ট্রোল করা সাইড মেনু (হ্যামবার্গার) ---- */
-  #sideMenuOverlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 250;
-  }
-  #sideMenuOverlay.open { display: block; }
-  #sideMenuPanel {
-    position: fixed; top: 0; left: 0; bottom: 0; width: 78%; max-width: 300px;
-    background: var(--card-color); z-index: 251; padding: 18px 14px; overflow-y: auto;
-    transform: translateX(-100%); transition: transform 0.25s ease;
-  }
-  #sideMenuOverlay.open #sideMenuPanel { transform: translateX(0); }
-  #sideMenuPanel h2 { font-size: 15px; margin-bottom: 14px; }
-  #sideMenuCloseBtn {
-    position: absolute; right: 12px; top: 14px; background: none; border: none;
-    color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px;
-  }
-  .sideMenuItem, .sideMenuGadget {
-    display: block; padding: 12px 10px; border-radius: 10px; color: #c9d1d9;
-    text-decoration: none; font-size: 14px; margin-bottom: 8px; background: #0d1117; border: 1px solid #262c36;
-  }
-
-  main { padding: 16px; max-width: var(--max-width); margin: 0 auto; }
-
-  /* ---- প্রোফাইল কার্ড ---- */
-  #profileCover {
-    height: 90px; border-radius: 14px 14px 0 0; background: var(--primary-color);
-  }
-  #profileCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; margin-bottom: 18px; overflow: hidden; }
-  #profileBody { padding: 0 16px 16px; text-align: center; }
-  #profileAvatar {
-    width: 84px; height: 84px; border-radius: 50%; object-fit: cover; background: #333;
-    border: 4px solid var(--card-color); margin-top: -42px; margin-bottom: 10px;
-  }
-  #profileName { font-size: 18px; font-weight: bold; margin-bottom: 2px; }
-  #profileEmail { font-size: 12px; color: #6b7280; margin-bottom: 10px; }
-  #profileBio { font-size: 13px; color: #ddd; white-space: pre-wrap; margin-bottom: 6px; line-height: 1.5; }
-  #profileBioEmpty { font-size: 13px; color: #6b7280; font-style: italic; margin-bottom: 6px; }
-  #profileExtra { font-size: 12px; color: #9ca3af; margin-bottom: 6px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-  #profileJoined { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
-
-  /* ---- প্রোফাইল অ্যাকশন (সাবস্ক্রাইব/মেসেজ / এডিট) ---- */
-  #profileActions, #ownActionRow { display: none; gap: 10px; padding: 0 16px 14px; justify-content: center; align-items: flex-end; }
-  .actionCol { flex: 1; max-width: 200px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; box-sizing: border-box; }
-  .subCountLabel { text-align: center; font-size: 12px; color: #9ca3af; }
-  .subCountLabel span { color: #fff; font-weight: bold; }
-  #profileActions button, #profileActions a, #ownActionRow button {
-    width: max-content; max-width: 100%; text-align: center; background: #21262d; color: #c9d1d9;
-    border: 1px solid #30363d; padding: 0.9em 1.15em; border-radius: 1.6em;
-    font-weight: bold; cursor: pointer; text-decoration: none; box-sizing: border-box;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  /* ---- এডমিন প্যানেল থেকে নিজের প্রোফাইল (৩টা বাটন) ও অন্যের প্রোফাইল (৪টা বাটন)-এর সাইজ আলাদাভাবে কন্ট্রোল করা যায়; বাটনের বক্স টেক্সটের সাথেই ছোট/বড় হবে ---- */
-  #ownActionRow button { font-size: calc(11.5px * var(--own-action-scale, 1)); }
-  #profileActions button, #profileActions a { font-size: calc(11.5px * var(--other-action-scale, 1)); }
-  #subscribeBtn { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-  #subscribeBtn.subscribed { background: #21262d; color: #f87171; border-color: #f87171; }
-  .staticBadge { opacity: 0.85; cursor: default !important; }
-  #lockedPosts { text-align: center; color: #9ca3af; font-size: 13px; padding: 40px 16px; line-height: 1.7; }
-
-  /* ---- ট্যাব (পোস্ট / এবাউট / মাই পোস্ট) ---- */
-  #tabsOther, #tabsOwn { display: none; gap: 8px; padding: 0 16px 14px; justify-content: center; }
-  .tabBtn {
-    flex: 1; max-width: 200px; text-align: center; background: #161b22; color: #9ca3af;
-    border: 1px solid #262c36; padding: 0.7em 1.1em; border-radius: 1.4em;
-    font-weight: bold; cursor: pointer; box-sizing: border-box;
-  }
-  .tabBtn.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-  /* ---- ট্যাবও নিজের/অন্যের গ্রুপের সাথে একই স্কেলে বড়/ছোট হবে ---- */
-  #tabsOwn .tabBtn { font-size: calc(13px * var(--own-action-scale, 1)); }
-  #tabsOther .tabBtn { font-size: calc(13px * var(--other-action-scale, 1)); }
-
-  #aboutSection { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 16px; margin-bottom: 18px; text-align: center; }
-
-  /* ---- এডিট প্রোফাইল মোডাল ---- */
-  #editOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; align-items: flex-end; justify-content: center; }
-  #editOverlay.open { display: flex; }
-  #editModal {
-    background: var(--card-color); width: 100%; max-width: var(--max-width); border-radius: 18px 18px 0 0;
-    padding: 18px 16px 24px; max-height: 85vh; overflow-y: auto;
-  }
-  #editModal h2 { font-size: 16px; margin-bottom: 14px; }
-  .formRow { margin-bottom: 12px; }
-  .formRow label { display: block; font-size: 12px; color: #9ca3af; margin-bottom: 5px; }
-  .formRow input, .formRow textarea {
-    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
-    padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit;
-  }
-  .formRow textarea { resize: vertical; min-height: 70px; }
-  .formRow select { width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 9px 11px; border-radius: 10px; font-size: 13px; font-family: inherit; }
-  .readonlyNote { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
-  #coverColors { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-  .coverSwatch { width: 30px; height: 30px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; }
-  .coverSwatch.selected { border-color: #fff; }
-  #editModalBtns { display: flex; gap: 8px; margin-top: 6px; }
-  #editSaveBtn, #editCancelBtn {
-    flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; border: none;
-  }
-  #editSaveBtn { background: var(--primary-color); color: #fff; }
-  #editCancelBtn { background: #21262d; color: #ddd; }
-  #editSaveBtn:disabled { opacity: 0.6; }
-  #editStatus { font-size: 12px; text-align: center; margin-top: 8px; min-height: 15px; color: #4ade80; }
-
-  #postsHeading { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #ddd; }
-  #emptyPosts { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 0; }
-  #postsLoading { text-align: center; color: #6b7280; font-size: 13px; padding: 20px 0; }
-
-  /* ---- পোস্ট কার্ড (index.html এর সাথে সামঞ্জস্যপূর্ণ) ---- */
-  .postCard { background: var(--card-color); border: 1px solid #262c36; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
-  .postHeader { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; position: relative; }
-  .postHeader img.avatar { width: 32px; height: 32px; border-radius: 50%; background: #333; }
-  .postHeader .pName { font-size: 13px; font-weight: bold; }
-  .postHeader .pTime { font-size: 11px; color: #6b7280; }
-  .postMenuWrap { margin-left: auto; position: relative; }
-  .postMenuBtn { background: none; border: none; color: #9ca3af; font-size: 18px; cursor: pointer; padding: 4px 8px; }
-  .postMenuDropdown {
-    display: none; position: absolute; right: 0; top: 30px; background: #21262d; border: 1px solid #30363d;
-    border-radius: 10px; min-width: 140px; z-index: 10; overflow: hidden;
-  }
-  .postMenuDropdown.open { display: block; }
-  .postMenuDropdown button {
-    display: block; width: 100%; text-align: left; background: none; border: none; color: #fff;
-    padding: 10px 12px; font-size: 12px; cursor: pointer;
-  }
-  .postMenuDropdown button:hover { background: #30363d; }
-  .postText { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
-  .postPoster {
-    border-radius: 10px; padding: 50px 16px; text-align: center; font-size: 17px;
-    font-weight: bold; color: #fff; margin-bottom: 8px; min-height: var(--poster-height);
-    display: flex; align-items: center; justify-content: center; white-space: pre-wrap;
-  }
-  .postButtons { display: flex; justify-content: space-evenly; gap: 6px; border-top: 1px solid #262c36; padding-top: 8px; }
-  .postButtons button {
-    background: #21262d; color: #c9d1d9; border: none; padding: 6px 10px; border-radius: 10px; font-size: 11px; cursor: pointer;
-  }
-  .postButtons button.liked { color: #f87171; }
-  .postStatus { font-size: 11px; color: #4ade80; margin-top: 6px; min-height: 14px; }
-
-  .commentsWrap { display: none; margin-top: 10px; border-top: 1px solid #262c36; padding-top: 10px; }
-  .commentForm { display: flex; gap: 8px; margin-bottom: 10px; }
-  .commentForm textarea {
-    flex: 1; background: #0d1117; border: 1px solid #30363d; color: #fff; padding: 8px 10px;
-    border-radius: 10px; font-size: 13px; resize: vertical; min-height: 36px; font-family: inherit;
-  }
-  .commentForm button { background: var(--primary-color); color: #fff; border: none; padding: 0 14px; border-radius: 10px; font-size: 12px; }
-  .commentRow { display: flex; gap: 8px; margin-bottom: 10px; }
-  .commentRow img { width: 28px; height: 28px; border-radius: 50%; background: #333; flex-shrink: 0; }
-  .commentBody { background: #0d1117; border-radius: 12px; padding: 8px 10px; }
-  .commentBody .cName { font-size: 12px; font-weight: bold; }
-  .commentBody .cText { font-size: 13px; color: #ddd; white-space: pre-wrap; }
-  .commentMeta { font-size: 10px; color: #6b7280; margin-top: 3px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .commentMeta button { background: none; border: none; color: #4285F4; cursor: pointer; font-size: 10px; padding: 0; }
-  .repliesList { margin-left: 36px; }
-
-/* ---- স্ক্রল করলে উপরে/নিচে টানলে রাবার-ব্যান্ডের মতো বাউন্স/লাফানো বন্ধ করা (নেটিভ অ্যাপের মতো অনুভূতির জন্য) ---- */
-html, body { overscroll-behavior: none; }
-/* ---- পেজ লোড হওয়ার সময় হঠাৎ ফ্ল্যাশ না করে হালকা ফেড-ইন করে দেখানো ---- */
-body { opacity: 0; animation: forcePageShow 0s .6s forwards; }
-@keyframes forcePageShow { to { opacity: 1; } }
-body.pageReady { opacity: 1; transition: opacity .18s ease; }
-body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
-</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--poster-height:180px;--own-action-scale:1;--other-action-scale:1}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}#loginScreen h1{font-size:22px;margin-bottom:6px}#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#appScreen{display:none}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader h1{font-size:17px;font-weight:bold}#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;text-decoration:none}#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#hamburgerBtn{position:absolute;left:44px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:4px 8px;display:none}#noticeBar{display:none;background:#1f2937;color:#93c5fd;font-size:12.5px;padding:9px 0;border-bottom:1px solid #262c36;line-height:1.5;overflow:hidden;white-space:nowrap;position:relative}#noticeBarText{display:inline-block;padding-left:100%;will-change:transform;animation:noticeScroll linear infinite}@keyframes noticeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#topMenuBar{display:none;gap:8px;padding:10px 14px;overflow-x:auto;background:var(--card-color);border-bottom:1px solid #262c36}#topMenuBar::-webkit-scrollbar{display:none}.topMenuItem{flex-shrink:0;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:7px 16px;border-radius:16px;font-size:12.5px;font-weight:bold;text-decoration:none;white-space:nowrap}.topMenuGadget{flex-shrink:0}#sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:250}#sideMenuOverlay.open{display:block}#sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card-color);z-index:251;padding:18px 14px;overflow-y:auto;transform:translateX(-100%);transition:transform 0.25s ease}#sideMenuOverlay.open #sideMenuPanel{transform:translateX(0)}#sideMenuPanel h2{font-size:15px;margin-bottom:14px}#sideMenuCloseBtn{position:absolute;right:12px;top:14px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.sideMenuItem,.sideMenuGadget{display:block;padding:12px 10px;border-radius:10px;color:#c9d1d9;text-decoration:none;font-size:14px;margin-bottom:8px;background:#0d1117;border:1px solid #262c36}main{padding:16px;max-width:var(--max-width);margin:0 auto}#profileCover{height:90px;border-radius:14px 14px 0 0;background:var(--primary-color)}#profileCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;margin-bottom:18px;overflow:hidden}#profileBody{padding:0 16px 16px;text-align:center}#profileAvatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#333;border:4px solid var(--card-color);margin-top:-42px;margin-bottom:10px}#profileName{font-size:18px;font-weight:bold;margin-bottom:2px}#profileEmail{font-size:12px;color:#6b7280;margin-bottom:10px}#profileBio{font-size:13px;color:#ddd;white-space:pre-wrap;margin-bottom:6px;line-height:1.5}#profileBioEmpty{font-size:13px;color:#6b7280;font-style:italic;margin-bottom:6px}#profileExtra{font-size:12px;color:#9ca3af;margin-bottom:6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#profileJoined{font-size:11px;color:#6b7280;margin-bottom:14px}#profileActions,#ownActionRow{display:none;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}.actionCol{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}.subCountLabel{text-align:center;font-size:12px;color:#9ca3af}.subCountLabel span{color:#fff;font-weight:bold}#profileActions button,#profileActions a,#ownActionRow button{width:max-content;max-width:100%;text-align:center;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:0.9em 1.15em;border-radius:1.6em;font-weight:bold;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ownActionRow button{font-size:calc(11.5px * var(--own-action-scale,1))}#profileActions button,#profileActions a{font-size:calc(11.5px * var(--other-action-scale,1))}#subscribeBtn{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#subscribeBtn.subscribed{background:#21262d;color:#f87171;border-color:#f87171}.staticBadge{opacity:0.85;cursor:default !important}#lockedPosts{text-align:center;color:#9ca3af;font-size:13px;padding:40px 16px;line-height:1.7}#tabsOther,#tabsOwn{display:none;gap:8px;padding:0 16px 14px;justify-content:center}.tabBtn{flex:1;max-width:200px;text-align:center;background:#161b22;color:#9ca3af;border:1px solid #262c36;padding:0.7em 1.1em;border-radius:1.4em;font-weight:bold;cursor:pointer;box-sizing:border-box}.tabBtn.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}#aboutSection{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:18px;text-align:center}#editOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center}#editOverlay.open{display:flex}#editModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:18px 18px 0 0;padding:18px 16px 24px;max-height:85vh;overflow-y:auto}#editModal h2{font-size:16px;margin-bottom:14px}.formRow{margin-bottom:12px}.formRow label{display:block;font-size:12px;color:#9ca3af;margin-bottom:5px}.formRow input,.formRow textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.formRow textarea{resize:vertical;min-height:70px}.formRow select{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.readonlyNote{font-size:11px;color:#6b7280;margin-bottom:14px}#coverColors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.coverSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}.coverSwatch.selected{border-color:#fff}#editModalBtns{display:flex;gap:8px;margin-top:6px}#editSaveBtn,#editCancelBtn{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;border:none}#editSaveBtn{background:var(--primary-color);color:#fff}#editCancelBtn{background:#21262d;color:#ddd}#editSaveBtn:disabled{opacity:0.6}#editStatus{font-size:12px;text-align:center;margin-top:8px;min-height:15px;color:#4ade80}#postsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#emptyPosts{text-align:center;color:#6b7280;font-size:13px;padding:40px 0}#postsLoading{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:space-evenly;gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:36px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{display:flex;gap:8px;margin-bottom:10px}.commentRow img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap}.commentMeta{font-size:10px;color:#6b7280;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}.commentMeta button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.repliesList{margin-left:36px}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
 </head>
 <body>
 
@@ -277,7 +37,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
         </div>
       </div>
 
-      <!-- ---- অন্যের প্রোফাইলে: বামে সাবস্ক্রাইব (উপরে সংখ্যা), ডানে মেসেজ ---- -->
+      
       <div id="profileActions">
         <div class="actionCol">
           <div class="subCountLabel"><span id="statSubscribers">0</span></div>
@@ -288,7 +48,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
         </div>
       </div>
 
-      <!-- ---- নিজের প্রোফাইলে: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট ---- -->
+      
       <div id="ownActionRow">
         <div class="actionCol">
           <div class="subCountLabel"><span id="statSubscribersOwn">0</span></div>
@@ -299,13 +59,13 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
         </div>
       </div>
 
-      <!-- ---- অন্যের প্রোফাইলে ট্যাব: পোস্ট / এবাউট ---- -->
+      
       <div id="tabsOther">
         <button id="postsTabBtn" class="tabBtn active">📝 পোস্ট</button>
         <button id="aboutTabBtn" class="tabBtn">ℹ️ এবাউট</button>
       </div>
 
-      <!-- ---- নিজের প্রোফাইলে ট্যাব: মাই পোস্ট ---- -->
+      
       <div id="tabsOwn">
         <button id="myPostsTabBtn" class="tabBtn active">📝 মাই পোস্ট</button>
       </div>
@@ -327,7 +87,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     </main>
   </div>
 
-  <!-- ---- এডমিন থেকে কন্ট্রোল করা সাইড মেনু ---- -->
+  
   <div id="sideMenuOverlay">
     <div id="sideMenuPanel">
       <button id="sideMenuCloseBtn">✕</button>
@@ -336,7 +96,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     </div>
   </div>
 
-  <!-- ---- এডিট প্রোফাইল মোডাল ---- -->
+  
   <div id="editOverlay">
     <div id="editModal">
       <h2>প্রোফাইল এডিট করুন</h2>
@@ -406,7 +166,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
-  // ---- URL-এ ?uid=... থাকলে সেই ব্যবহারকারীর প্রোফাইল দেখাবে, না থাকলে নিজের প্রোফাইল ----
   const viewUid = new URLSearchParams(location.search).get('uid');
 
   const loginScreen = document.getElementById('loginScreen');
@@ -416,7 +175,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   const logoutBtn = document.getElementById('logoutBtn');
   const backBtn = document.getElementById('backBtn');
 
-  // ---- এডমিন প্যানেল (profile-admin.html) থেকে কন্ট্রোল হওয়া উপাদান ----
   const noticeBar = document.getElementById('noticeBar');
   const noticeBarText = document.getElementById('noticeBarText');
   const topMenuBar = document.getElementById('topMenuBar');
@@ -477,7 +235,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     coverColorsEl.appendChild(sw);
   });
 
-  // ---- লগইন/লগআউট ----
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
     loginStatus.textContent = 'লগইন হচ্ছে...';
@@ -489,7 +246,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   });
   logoutBtn.addEventListener('click', async () => { await signOut(auth); });
 
-  // ---- ব্যাক বাটন: ব্রাউজার হিস্টোরিতে ঠিক আগের পেজে ফিরিয়ে নেবে; হিস্টোরি না থাকলে (যেমন সরাসরি লিংক থেকে খোলা হলে) index.html-এ যাবে ----
   backBtn.addEventListener('click', () => {
     if (window.history.length > 1) {
       window.history.back();
@@ -500,7 +256,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
   function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
 
-  // ---- এডমিন প্যানেল থেকে সেভ করা HTML/CSS/JS গেজেট চালানোর জন্য (innerHTML দিয়ে <script> রান হয় না, তাই আলাদাভাবে রিক্রিয়েট করা হচ্ছে) ----
   function renderRawGadget(container, code) {
     container.innerHTML = code || '';
     container.querySelectorAll('script').forEach(oldScript => {
@@ -511,7 +266,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     });
   }
 
-  // ---- টপ মেনু / সাইড মেনুর এন্ট্রি (পেজ বা গেজেট) রেন্ডার করার জন্য ----
   function renderMenuEntries(container, entries, isTop) {
     container.innerHTML = '';
     (entries || []).forEach(entry => {
@@ -531,7 +285,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     });
   }
 
-  // ---- profile-admin.html যে settings/profilePage ডকুমেন্টে সেভ করে, সেটা লোড করে প্রোফাইল পেজে দেখানো হচ্ছে ----
   async function loadProfilePageSettings() {
     try {
       const snap = await getDoc(doc(db, "settings", "profilePage"));
@@ -539,7 +292,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
       if (d.noticeText && d.noticeText.trim()) {
         noticeBarText.textContent = d.noticeText;
-        // ---- লেখা যত লম্বা, স্ক্রল হতে তত বেশি সময় লাগবে (গতি সবসময় প্রায় একরকম থাকার জন্য) ----
         const seconds = Math.max(8, d.noticeText.length * 0.22);
         noticeBarText.style.animationDuration = seconds + 's';
         noticeBar.style.display = 'block';
@@ -555,13 +307,11 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       renderMenuEntries(sideMenuList, sideEntries, false);
       hamburgerBtn.style.display = sideEntries.length ? 'block' : 'none';
 
-      // ---- এডমিন প্যানেল থেকে নিজের প্রোফাইল / অন্যের প্রোফাইল অ্যাকশন বাটনের সাইজ (%) ----
       const ownScale = (Number(d.ownActionScale) || 100) / 100;
       const otherScale = (Number(d.otherActionScale) || 100) / 100;
       document.documentElement.style.setProperty('--own-action-scale', ownScale);
       document.documentElement.style.setProperty('--other-action-scale', otherScale);
 
-      // ---- এডমিন প্যানেল থেকে পুরো পেজের ৪টা থিম রং ----
       document.documentElement.style.setProperty('--primary-color', d.themePrimaryColor || '#4285F4');
       document.documentElement.style.setProperty('--bg-color', d.themeBgColor || '#0d1117');
       document.documentElement.style.setProperty('--card-color', d.themeCardColor || '#161b22');
@@ -595,7 +345,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     return 'যোগদান: ' + months[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  // ---- ইউজার প্রোফাইল লোড/তৈরি (নাম ও ছবি সবসময় Google অ্যাকাউন্ট থেকে সিঙ্ক হয়) ----
   async function ensureUserProfile(user) {
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
@@ -622,7 +371,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
   const GENDER_LABELS = { male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য' };
 
-  // ---- ১০০০+ সংখ্যাকে 1k, 1.1k, 2.2k আকারে দেখানোর জন্য ----
   function formatCount(n) {
     n = Number(n) || 0;
     if (n < 1000) return String(n);
@@ -646,7 +394,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     profileAvatar.src = displayPhoto;
     profileName.textContent = displayName;
 
-    // ---- গোপনীয়তার জন্য অন্য কারও ইমেইল দেখানো হবে না, শুধু নিজের প্রোফাইলে নিজের ইমেইল দেখাবে ----
     if (isOwn) {
       profileEmail.style.display = 'block';
       profileEmail.textContent = currentUser.email || '';
@@ -672,13 +419,11 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     emptyPosts.textContent = isOwn ? 'আপনি এখনো কোনো পোস্ট করেননি' : 'এখনো কোনো পোস্ট নেই';
     lockedPosts.textContent = '🔒 পোস্ট দেখতে হলে আগে ' + displayName + '-কে সাবস্ক্রাইব করুন';
 
-    // ---- সাবস্ক্রাইবার সংখ্যা সবসময় দেখাবে (নিজের ও অন্যের প্রোফাইলে), বাটনের উপরে ----
     const subCount = (profileData.subscribers || []).length;
     statSubscribers.textContent = formatCount(subCount);
     statSubscribersOwn.textContent = formatCount(subCount);
 
     if (isOwn) {
-      // ---- নিজের প্রোফাইল: বামে সাবস্ক্রাইবার সংখ্যা, ডানে প্রোফাইল এডিট + মাই পোস্ট ট্যাব ----
       profileActions.style.display = 'none';
       ownActionRow.style.display = 'flex';
       tabsOther.style.display = 'none';
@@ -686,19 +431,16 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       aboutSection.style.display = 'none';
       postsWrap.style.display = 'block';
     } else {
-      // ---- অন্যের প্রোফাইল: বামে সাবস্ক্রাইব, ডানে মেসেজ + পোস্ট/এবাউট ট্যাব ----
       profileActions.style.display = 'flex';
       ownActionRow.style.display = 'none';
       tabsOther.style.display = 'flex';
       tabsOwn.style.display = 'none';
       updateSubscribeBtnUI();
       messageBtn.href = 'messages.html?uid=' + currentTargetUid;
-      // ---- ডিফল্ট ট্যাব: পোস্ট ----
       setOtherTab('posts');
     }
   }
 
-  // ---- অন্যের প্রোফাইলে পোস্ট/এবাউট ট্যাব সুইচ ----
   function setOtherTab(tab) {
     if (tab === 'about') {
       postsWrap.style.display = 'none';
@@ -725,7 +467,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }
   }
 
-  // ---- এডিট প্রোফাইল মোডাল (শুধু নিজের প্রোফাইলে) ----
   editProfileBtn.addEventListener('click', () => {
     if (viewUid && viewUid !== currentUser.uid) return;
     editBio.value = myProfile.bio || '';
@@ -773,7 +514,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     editSaveBtn.disabled = false;
   });
 
-  // ---- টার্গেট ইউজারের পোস্ট লোড (equality filter only, client-side সর্ট — কম্পোজিট ইনডেক্স এড়াতে) ----
   let myPosts = [];
 
   async function loadUserPosts(targetUid, canView) {
@@ -817,7 +557,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
     const isPostOwner = currentUser && d.authorUid === currentUser.uid;
     const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
-    const interactive = currentIsOwnProfile; // অন্যের প্রোফাইলে পোস্ট শুধু দেখা যাবে, লাইক/কমেন্ট/রিপ্লাই করা যাবে না
+    const interactive = currentIsOwnProfile; 
 
     const card = document.createElement('div');
     card.className = 'postCard';
@@ -1018,7 +758,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     row.className = 'commentRow';
 
     row.innerHTML = `
-      <img src="${d.photoURL || ''}">
+      <img src="${d.photoURL || ''}" loading="lazy" decoding="async">
       <div style="flex:1;">
         <div class="commentBody">
           <div class="cName">${escapeHtml(d.name)}</div>
@@ -1087,7 +827,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     return row;
   }
 
-  // ---- সাবস্ক্রাইব / আনসাবস্ক্রাইব ----
   subscribeBtn.addEventListener('click', async () => {
     if (!currentUser || currentIsOwnProfile || !currentTargetUid) return;
     subscribeBtn.disabled = true;
@@ -1110,14 +849,13 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     subscribeBtn.disabled = false;
   });
 
-  // ---- অথ স্টেট ----
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
       loginScreen.style.display = 'none';
       appScreen.style.display = 'block';
-      loadProfilePageSettings(); // এডমিন প্যানেল থেকে নোটিশ/মেনু লোড হচ্ছে
-      await ensureUserProfile(user); // নিজের প্রোফাইল সবসময় সিঙ্ক/তৈরি হয়
+      loadProfilePageSettings(); 
+      await ensureUserProfile(user); 
 
       const targetUid = viewUid || user.uid;
       const isOwn = targetUid === user.uid;
@@ -1132,8 +870,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
         profileData = snap.exists() ? snap.data() : null;
       }
 
-      // ---- users/ ডকুমেন্ট না থাকলে (যেমন যে ব্যবহারকারী কখনো প্রোফাইল পেজে ঢোকেননি),
-      //      তার একটা পোস্ট থেকে শুধু নাম/ছবি নিয়ে দেখানো হচ্ছে (পোস্ট কন্টেন্ট না) ----
       if (!profileData) {
         try {
           const fq = query(collection(db, "posts"), where("authorUid", "==", targetUid), limit(1));
@@ -1151,7 +887,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
       renderProfile(profileData, isOwn);
 
-      // ---- সাবস্ক্রাইবার (বা নিজে) না হলে পোস্ট লিস্ট দেখানো হবে না ----
       await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
     } else {
       appScreen.style.display = 'none';
@@ -1163,7 +898,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 </script>
 
 <script>
-/* ---- ফেড-ইন/ফেড-আউট: পেজ বদলের সময় সাদা ফ্ল্যাশের বদলে হালকা মসৃণ ট্রানজিশন ---- */
 (function () {
   function ready() { requestAnimationFrame(function () { document.body.classList.add('pageReady'); }); }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ready); } else { ready(); }

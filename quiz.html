@@ -2,115 +2,9 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>কুইজ | Onuvuti</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#fff;--max-width:640px}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;padding-bottom:70px}
-#app{max-width:var(--max-width);margin:0 auto}
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--card-color);border-bottom:1px solid #262c36;text-align:center;font-weight:700;font-size:17px}
-.menuBackBtn{position:absolute;left:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
-.noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}
-.noticeBar span{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite;font-size:13px;color:#facc15}
-.topBannerAdBox{display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg-color);padding:8px 0}
-.topBannerAdBox iframe{border:0;width:320px;height:50px;max-width:100%}
-@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
-main{padding:16px}
-.panel{display:none}.panel.active{display:block}
-.search{display:flex;align-items:center;gap:8px;background:var(--card-color);border:1px solid #262c36;border-radius:20px;padding:10px 14px;margin-bottom:16px}
-.search input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}
-.search select{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}
-.search select option{background:#161b22;color:#fff}
-.bannerAdBox{margin-top:14px;background:var(--card-color);border:1px solid #262c36;border-radius:12px;min-height:266px;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.bannerAdBox iframe{border:0;width:300px;height:250px;max-width:100%}
-.adPlaceholder{color:#666;font-size:12px;text-align:center;padding:20px}
-.balanceBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}
-.balanceBox .amt{font-size:26px;font-weight:700;margin-top:4px}
-.catGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.catCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer}
-.catCard .icon{font-size:32px;margin-bottom:8px}
-.catCard .name{font-size:14px;font-weight:700}
-.catCard .cnt{font-size:11px;color:#9ca3af;margin-top:4px}
-.empty,.loading,.error{padding:24px;text-align:center;color:#9ca3af;background:var(--card-color);border:1px solid #262c36;border-radius:14px}
-.box{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:14px}
-.box h3{font-size:15px;margin-bottom:8px}
-.notice{font-size:12px;color:#9ca3af;line-height:1.6}
-.primary{width:100%;padding:12px;background:var(--primary-color);color:#fff;border:0;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}
-.primary:disabled{opacity:.6;cursor:not-allowed}
-.ghost{width:100%;padding:11px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:10px;font-size:13px;cursor:pointer;margin-top:8px}
-.ghost:disabled{opacity:.5;cursor:not-allowed}
-#catBackRow{margin-bottom:12px}
-#catBackRow .ghost{margin-top:0}
-/* ---- খেলার স্ক্রিন ---- */
-#quizTopBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#9ca3af}
-#timerRow{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-#timerWrap{flex:1;height:6px;background:#21262d;border-radius:4px;overflow:hidden}
-#timerBar{height:100%;background:var(--primary-color);width:100%;transition:width 1s linear}
-#timerSecondsText{font-size:13px;color:#9ca3af;min-width:22px;text-align:right;flex-shrink:0}
-#questionBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:20px 16px;margin-bottom:16px;font-size:16px;font-weight:700;line-height:1.6;min-height:90px;display:flex;align-items:center}
-.optBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:14px;border-radius:12px;font-size:14px;margin-bottom:10px;cursor:pointer}
-.optBtn.correct{background:#1f4d2e;border-color:#2ea043}
-.optBtn.wrong{background:#4d1f24;border-color:#f85149}
-.optBtn:disabled{cursor:default}
-/* ---- ফলাফল স্ক্রিন ---- */
-#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;background:#000}
-#resultPoster .score{font-size:38px;font-weight:800;color:#FFD700}
-#resultPoster .sub{font-size:14px;opacity:.9;margin-top:20px}
-/* ---- বটম নেভ ---- */
-nav.bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid #262c36;z-index:30}
-nav.bottomNav div{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
-nav.bottomNav button{background:none;border:0;color:#9ca3af;padding:9px 4px;font-size:11px;cursor:pointer}
-nav.bottomNav button b{display:block;font-size:18px;margin-bottom:2px}
-nav.bottomNav button.active{color:#fff}
-/* ---- লগইন মোডাল ---- */
-.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:24px}
-.loginModalOverlay.open{display:flex}
-.loginModalBox{position:relative;width:100%;max-width:340px;background:var(--card-color);border-radius:18px;padding:28px 22px;text-align:center}
-#loginCloseBtn{position:absolute;right:10px;top:10px;background:none;border:0;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}
-#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:0;padding:12px 22px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer}
-/* ---- এক্সিট টোস্ট ---- */
-#exitToast{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;z-index:250}
-/* ---- ছাড়ার কনফার্মেশন ---- */
-.confirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:410;align-items:center;justify-content:center;padding:24px}
-.confirmOverlay.open{display:flex}
-.confirmBox{background:var(--card-color);border-radius:16px;padding:22px;max-width:320px;text-align:center}
-.confirmBox p{font-size:14px;margin-bottom:16px;line-height:1.6}
-.confirmBtns{display:flex;gap:8px}
-.confirmBtns button{flex:1;padding:10px;border-radius:10px;border:0;font-size:13px;cursor:pointer}
-#confirmStayBtn{background:var(--primary-color);color:#fff}
-#confirmLeaveBtn{background:#21262d;color:#f87171}
-.leaderRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #21262d}
-.leaderRow:last-child{border-bottom:0}
-.leaderRow img{width:34px;height:34px;border-radius:50%;background:#333}
-.leaderRow .rank{width:22px;text-align:center;font-weight:700;color:#9ca3af}
-.leaderRow .lname{flex:1;font-size:13px}
-.leaderRow .lscore{font-size:12px;color:#4ade80;font-weight:700}
-/* ---- টপ মেনু (এডমিন প্যানেলের থিম > টপ মেনু থেকে) ---- */
-#sideMenuBtn{position:absolute;right:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
-#topMenuBar{gap:8px;overflow-x:auto;padding:10px 14px;background:var(--bg-color);border-bottom:1px solid #262c36;scrollbar-width:none}
-#topMenuBar::-webkit-scrollbar{display:none}
-#topMenuBar button{flex-shrink:0;background:var(--card-color);color:#c9d1d9;border:1px solid #262c36;border-radius:20px;padding:7px 16px;font-size:13px;white-space:nowrap;cursor:pointer}
-.topMenuGadgetBox{flex-shrink:0;display:flex;align-items:center}
-/* ---- সাইড মেনু (এডমিন প্যানেলের থিম > সাইড মেনু থেকে) ---- */
-.sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:350}
-.sideMenuOverlay.open{display:block}
-.sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--bg-color);z-index:351;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column}
-.sideMenuOverlay.open .sideMenuPanel{transform:translateX(0)}
-.sideMenuPanel .sideMenuHead{padding:16px;font-size:16px;font-weight:700;border-bottom:1px solid #262c36;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.sideMenuPanel .sideMenuHead button{background:transparent;border:0;color:#9ca3af;font-size:20px;cursor:pointer}
-.sideMenuPanel .sideMenuList{flex:1;overflow-y:auto;padding:8px 0}
-.sideMenuPanel .sideMenuList button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:13px 18px;font-size:14px;cursor:pointer}
-.sideMenuPanel .sideMenuGadgetBox{padding:8px 18px}
-
-/* ---- স্ক্রল করলে উপরে/নিচে টানলে রাবার-ব্যান্ডের মতো বাউন্স/লাফানো বন্ধ করা (নেটিভ অ্যাপের মতো অনুভূতির জন্য) ---- */
-html, body { overscroll-behavior: none; }
-/* ---- পেজ লোড হওয়ার সময় হঠাৎ ফ্ল্যাশ না করে হালকা ফেড-ইন করে দেখানো ---- */
-body { opacity: 0; animation: forcePageShow 0s .6s forwards; }
-@keyframes forcePageShow { to { opacity: 1; } }
-body.pageReady { opacity: 1; transition: opacity .18s ease; }
-body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
-</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#fff;--max-width:640px}body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;padding-bottom:70px}#app{max-width:var(--max-width);margin:0 auto}header{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--card-color);border-bottom:1px solid #262c36;text-align:center;font-weight:700;font-size:17px}.menuBackBtn{position:absolute;left:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}.noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}.noticeBar span{display:inline-block;padding-left:100%;animation:marquee 18s linear infinite;font-size:13px;color:#facc15}.topBannerAdBox{display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg-color);padding:8px 0}.topBannerAdBox iframe{border:0;width:320px;height:50px;max-width:100%}@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}main{padding:16px}.panel{display:none}.panel.active{display:block}.search{display:flex;align-items:center;gap:8px;background:var(--card-color);border:1px solid #262c36;border-radius:20px;padding:10px 14px;margin-bottom:16px}.search input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}.search select{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14px}.search select option{background:#161b22;color:#fff}.bannerAdBox{margin-top:14px;background:var(--card-color);border:1px solid #262c36;border-radius:12px;min-height:266px;display:flex;align-items:center;justify-content:center;overflow:hidden}.bannerAdBox iframe{border:0;width:300px;height:250px;max-width:100%}.adPlaceholder{color:#666;font-size:12px;text-align:center;padding:20px}.balanceBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:16px;text-align:center}.balanceBox .amt{font-size:26px;font-weight:700;margin-top:4px}.catGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.catCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer}.catCard .icon{font-size:32px;margin-bottom:8px}.catCard .name{font-size:14px;font-weight:700}.catCard .cnt{font-size:11px;color:#9ca3af;margin-top:4px}.empty,.loading,.error{padding:24px;text-align:center;color:#9ca3af;background:var(--card-color);border:1px solid #262c36;border-radius:14px}.box{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:14px}.box h3{font-size:15px;margin-bottom:8px}.notice{font-size:12px;color:#9ca3af;line-height:1.6}.primary{width:100%;padding:12px;background:var(--primary-color);color:#fff;border:0;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px}.primary:disabled{opacity:.6;cursor:not-allowed}.ghost{width:100%;padding:11px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:10px;font-size:13px;cursor:pointer;margin-top:8px}.ghost:disabled{opacity:.5;cursor:not-allowed}#catBackRow{margin-bottom:12px}#catBackRow .ghost{margin-top:0}#quizTopBar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-size:12px;color:#9ca3af}#timerRow{display:flex;align-items:center;gap:10px;margin-bottom:16px}#timerWrap{flex:1;height:6px;background:#21262d;border-radius:4px;overflow:hidden}#timerBar{height:100%;background:var(--primary-color);width:100%;transition:width 1s linear}#timerSecondsText{font-size:13px;color:#9ca3af;min-width:22px;text-align:right;flex-shrink:0}#questionBox{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:20px 16px;margin-bottom:16px;font-size:16px;font-weight:700;line-height:1.6;min-height:90px;display:flex;align-items:center}.optBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:14px;border-radius:12px;font-size:14px;margin-bottom:10px;cursor:pointer}.optBtn.correct{background:#1f4d2e;border-color:#2ea043}.optBtn.wrong{background:#4d1f24;border-color:#f85149}.optBtn:disabled{cursor:default}#resultPoster{border-radius:16px;padding:40px 20px;text-align:center;margin-bottom:16px;background:#000}#resultPoster .score{font-size:38px;font-weight:800;color:#FFD700}#resultPoster .sub{font-size:14px;opacity:.9;margin-top:20px}nav.bottomNav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid #262c36;z-index:30}nav.bottomNav div{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}nav.bottomNav button{background:none;border:0;color:#9ca3af;padding:9px 4px;font-size:11px;cursor:pointer}nav.bottomNav button b{display:block;font-size:18px;margin-bottom:2px}nav.bottomNav button.active{color:#fff}.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center;padding:24px}.loginModalOverlay.open{display:flex}.loginModalBox{position:relative;width:100%;max-width:340px;background:var(--card-color);border-radius:18px;padding:28px 22px;text-align:center}#loginCloseBtn{position:absolute;right:10px;top:10px;background:none;border:0;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:0;padding:12px 22px;border-radius:24px;font-size:14px;font-weight:700;cursor:pointer}#exitToast{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:12px;z-index:250}.confirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:410;align-items:center;justify-content:center;padding:24px}.confirmOverlay.open{display:flex}.confirmBox{background:var(--card-color);border-radius:16px;padding:22px;max-width:320px;text-align:center}.confirmBox p{font-size:14px;margin-bottom:16px;line-height:1.6}.confirmBtns{display:flex;gap:8px}.confirmBtns button{flex:1;padding:10px;border-radius:10px;border:0;font-size:13px;cursor:pointer}#confirmStayBtn{background:var(--primary-color);color:#fff}#confirmLeaveBtn{background:#21262d;color:#f87171}.leaderRow{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #21262d}.leaderRow:last-child{border-bottom:0}.leaderRow img{width:34px;height:34px;border-radius:50%;background:#333}.leaderRow .rank{width:22px;text-align:center;font-weight:700;color:#9ca3af}.leaderRow .lname{flex:1;font-size:13px}.leaderRow .lscore{font-size:12px;color:#4ade80;font-weight:700}#sideMenuBtn{position:absolute;right:14px;background:none;border:0;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}#topMenuBar{gap:8px;overflow-x:auto;padding:10px 14px;background:var(--bg-color);border-bottom:1px solid #262c36;scrollbar-width:none}#topMenuBar::-webkit-scrollbar{display:none}#topMenuBar button{flex-shrink:0;background:var(--card-color);color:#c9d1d9;border:1px solid #262c36;border-radius:20px;padding:7px 16px;font-size:13px;white-space:nowrap;cursor:pointer}.topMenuGadgetBox{flex-shrink:0;display:flex;align-items:center}.sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:350}.sideMenuOverlay.open{display:block}.sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--bg-color);z-index:351;transform:translateX(-100%);transition:transform .25s ease;display:flex;flex-direction:column}.sideMenuOverlay.open .sideMenuPanel{transform:translateX(0)}.sideMenuPanel .sideMenuHead{padding:16px;font-size:16px;font-weight:700;border-bottom:1px solid #262c36;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}.sideMenuPanel .sideMenuHead button{background:transparent;border:0;color:#9ca3af;font-size:20px;cursor:pointer}.sideMenuPanel .sideMenuList{flex:1;overflow-y:auto;padding:8px 0}.sideMenuPanel .sideMenuList button{width:100%;text-align:left;background:transparent;border:0;color:#fff;padding:13px 18px;font-size:14px;cursor:pointer}.sideMenuPanel .sideMenuGadgetBox{padding:8px 18px}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
 </head>
 <body>
 <div id="app">
@@ -131,14 +25,14 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   </div>
 
   <main>
-    <!-- ---- হোম: ক্যাটাগরি লিস্ট ---- -->
+    
     <section id="panelHome" class="panel active">
       <div class="search">🔎<input id="categorySearchInput" placeholder="ক্যাটাগরি সার্চ করুন" oninput="window.onCategorySearchInput()"></div>
       <div id="catBackRow" style="display:none"><button class="ghost" id="catBackBtn" onclick="history.back()">← সব ক্যাটাগরি</button></div>
       <div id="catGrid" class="catGrid"><div class="loading">লোড হচ্ছে...</div></div>
     </section>
 
-    <!-- ---- সক্রিয় কুইজ ---- -->
+    
     <section id="panelPlay" class="panel">
       <div id="quizTopBar">
         <span id="quizProgress">প্রশ্ন ১/১০</span>
@@ -150,7 +44,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       <div id="playBannerAd" class="bannerAdBox" style="display:none"></div>
     </section>
 
-    <!-- ---- ফলাফল ---- -->
+    
     <section id="panelResult" class="panel">
       <div id="resultPoster">
         <div class="score" id="resultCoinsText">🪙 +০ Coin</div>
@@ -162,7 +56,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       <button class="ghost" id="backHomeBtn">🏠 ক্যাটাগরিতে ফিরে যান</button>
     </section>
 
-    <!-- ---- কয়েন ---- -->
+    
     <section id="panelCoin" class="panel">
       <div class="box" id="coinLoginBox" style="display:none">
         <h3>🔒 লগইন করুন</h3>
@@ -181,7 +75,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       </div>
     </section>
 
-    <!-- ---- লিডারবোর্ড ---- -->
+    
     <section id="panelLeader" class="panel">
       <div class="box">
         <h3>🏆 টপ স্কোরার</h3>
@@ -201,7 +95,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
 <div id="exitToast">আবার ব্যাক চাপুন — অ্যাপ থেকে বের হতে</div>
 
-<!-- ---- লগইন মোডাল ---- -->
 <div class="loginModalOverlay" id="loginModalOverlay">
   <div class="loginModalBox">
     <button id="loginCloseBtn">✕</button>
@@ -212,7 +105,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   </div>
 </div>
 
-<!-- ---- কুইজ ছাড়ার কনফার্মেশন ---- -->
 <div class="confirmOverlay" id="leaveConfirmOverlay">
   <div class="confirmBox">
     <p>আপনি কি কুইজ ছেড়ে যেতে চান?<br>এখন বের হলে চলমান স্কোর সেভ হবে না।</p>
@@ -269,7 +161,6 @@ const TOP_BANNER_AD_SCRIPT = `<script>
 <script src="https://www.highrevenueformat.com/637576a22a8ac384bc75c05afc089bb6/invoke.js"><\/script>`;
 function unit() { return settings.unitName || 'Coin'; }
 
-/* ---- টাইমারের টিক শব্দ (ঘড়ির কাঁটার মতো) ---- */
 let audioCtx = null;
 function playTick(isLast) {
   try {
@@ -292,7 +183,6 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 function dayKey(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 function hourKey(d) { return dayKey(d) + '-' + pad2(d.getHours()); }
 
-/* ================= সেটিংস লোড ================= */
 async function loadSettings() {
   try {
     const s = await getDoc(doc(db, 'settings', 'quiz'));
@@ -311,7 +201,6 @@ async function loadSettings() {
   renderTopMenuBar(settings.topMenuEntries);
   renderSideMenuList(settings.sideMenuEntries);
 }
-/* ================= টপ মেনু / সাইড মেনু (এডমিন প্যানেলের থিম থেকে) ================= */
 function renderGadgetBox(container, className, code) {
   if (!code) return;
   const box = document.createElement('div');
@@ -367,7 +256,6 @@ function renderTopBannerAd() {
   box.appendChild(frame);
 }
 
-/* ================= ব্যবহারকারী / ব্যালেন্স ================= */
 onAuthStateChanged(auth, async (u) => {
   currentUser = u;
   if (u) {
@@ -399,19 +287,13 @@ async function refreshBalance() {
   return bal;
 }
 
-/* ================= কয়েন প্যানেলে লগইন-প্রম্পট দেখানো/লুকানো ================= */
 function updateCoinLoginUI() {
   const loggedIn = !!currentUser;
   $('coinLoginBox').style.display = loggedIn ? 'none' : '';
   $('coinContentBox').style.display = loggedIn ? '' : 'none';
 }
 
-// ---- দিনের সর্বমোট আয়ের হিসাব এখন সরাসরি users/{uid} ডকুমেন্টেই রাখা হয়
-// (quizDayWindowStart/quizDayEarnedAmount/lastQuizRewardAt) — কারণ Firestore
-// Security Rules-এ এই ফিল্ডগুলো একই ডকুমেন্টের ওল্ড/নিউ মান তুলনা করে ক্রমান্বয়ে
-// ক্যাপ মানা হচ্ছে কিনা যাচাই করে (দেখুন quizRewardValid() রুলে)।
 
-/* ================= দৈনিক/ঘন্টাভিত্তিক কুইজ খেলার সীমা ================= */
 async function getQuizCountToday(uid) {
   try {
     const s = await getDoc(doc(db, 'users', uid, 'quizDailyStats', dayKey(new Date())));
@@ -451,7 +333,6 @@ async function checkQuizLimit() {
   return { allowed: true };
 }
 
-/* ================= একই প্রশ্ন আবার খেলার কুলডাউন ================= */
 async function getLastPlayedAt(uid, questionId) {
   try {
     const s = await getDoc(doc(db, 'users', uid, 'questionPlays', questionId));
@@ -501,12 +382,11 @@ $('loginCloseBtn').addEventListener('click', () => { closeLoginModal(); history.
 $('coinLoginBtn').addEventListener('click', () => { openLoginModal(); });
 $('resultLoginBtn').addEventListener('click', () => { openLoginModal(); });
 
-/* ================= ক্যাটাগরি সিলেক্ট ================= */
 let selectedCategory = null;
 let categoryQuestions = [];
-let homeViewMode = 'categories'; // 'categories' | 'questions'
+let homeViewMode = 'categories'; 
 let allQuestionsCoolingDown = false;
-let homeBlockedMessage = null; // null = ব্লক নেই, স্ট্রিং হলে দৈনিক/ঘন্টার সীমা শেষ
+let homeBlockedMessage = null; 
 
 async function refreshHomeLimitState() {
   homeBlockedMessage = null;
@@ -532,7 +412,6 @@ async function loadCategories() {
   }
   window.backToCategories();
 }
-/* ---- হোম: ক্যাটাগরি গ্রিড (সার্চ বার দিয়ে নাম সার্চ করা যায়) ---- */
 window.onCategorySearchInput = function () {
   renderCategoryGrid($('categorySearchInput').value.trim());
 };
@@ -556,7 +435,6 @@ function renderCategoryGrid(term) {
     </div>`;
   }).join('');
 }
-/* ---- ক্যাটাগরিতে ঢুকলে তার প্রশ্নগুলোর তালিকা ---- */
 window.openCategory = async function (id) {
   selectedCategory = categories.find(c => c.id === id);
   if (!selectedCategory) return;
@@ -584,7 +462,6 @@ window.openCategory = async function (id) {
     return;
   }
 
-  // যেসব প্রশ্ন ইউজার সম্প্রতি খেলেছেন (কুলডাউন চলছে) — সেগুলো তালিকা থেকে বাদ, একদম দেখাই যাবে না
   const totalFetched = categoryQuestions.length;
   if (currentUser && Number(settings.questionReplayDays) > 0 && totalFetched) {
     const playsMap = await getUserQuestionPlaysMap(currentUser.uid);
@@ -594,7 +471,6 @@ window.openCategory = async function (id) {
 
   renderCategoryArea();
 };
-/* ---- ক্যাটাগরির প্রশ্ন তালিকা থেকে সব ক্যাটাগরিতে ফিরে যাওয়া ---- */
 window.backToCategories = async function () {
   $('categorySearchInput').value = '';
   await refreshHomeLimitState();
@@ -618,7 +494,6 @@ function renderCategoryArea() {
   }).join('');
 }
 
-/* ================= কুইজ খেলা (একটি করে প্রশ্ন) ================= */
 let activeQuestion = null, activeQuestionIndex = -1;
 let timerInterval = null, timeLeft = 0, questionAnswered = false;
 
@@ -633,7 +508,6 @@ window.startQuestion = async function (index) {
   const cooldownCheck = await checkQuestionCooldown(activeQuestion.id);
   if (!cooldownCheck.allowed) { alert(cooldownCheck.message); return; }
 
-  // এন্ট্রি ফি থাকলে আগে কেটে নেওয়া হচ্ছে (এন্ট্রি ফি কয়েন থেকে কাটা হয় বলে এক্ষেত্রে লগইন আবশ্যক)
   if (settings.entryFee > 0) {
     if (!requireLogin()) return;
     try {
@@ -686,13 +560,10 @@ function updateTimerBar() {
 function buildAdSrcdoc(codeHtml) {
   return `<!DOCTYPE html><html><head><style>html,body{margin:0;padding:0;background:transparent;display:flex;align-items:center;justify-content:center;overflow:hidden}</style></head><body>${codeHtml}</body></html>`;
 }
-/* ---- বিজ্ঞাপন কোড রোটেশন: একাধিক নামসহ বিজ্ঞাপন কোড থাকলে পালাক্রমে দেখানো হবে, ---- */
-/* ---- কোনোটা খালি থাকলে বাকিগুলো থেকেই নেওয়া হবে, একটাও না থাকলে ডিফল্ট কোড ব্যবহার হবে ---- */
 function getAdCodes() {
   if (Array.isArray(settings.adSlots) && settings.adSlots.length) {
     return settings.adSlots.map(s => (s.code || '').trim()).filter(Boolean);
   }
-  // পুরনো (লিগ্যাসি) সেটিংস থেকে — যদি এডমিন আগে থেকে কোনো কোড বসিয়ে থাকেন
   return [(settings.adScriptHtml || '').trim(), (settings.adScriptHtml2 || '').trim()].filter(Boolean);
 }
 function pickAdCode() {
@@ -707,12 +578,10 @@ function renderBannerAd() {
   const box = $('playBannerAd');
   if (!settings.adsEnabled) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
-  // কত নম্বর কুইজ পরপর ব্যানার দেখাবে (admin সেটিংস থেকে)
   const every = Math.max(1, Number(settings.interstitialEvery) || 1);
   const qNum = activeQuestionIndex + 1;
   if (qNum % every !== 0) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
-  // একাধিক নামসহ বিজ্ঞাপন কোড থাকলে পালাক্রমে দেখানো হবে (বট-শনাক্তকরণ এড়াতে)
   const code = pickAdCode();
   if (!code) { box.style.display = 'none'; box.innerHTML = ''; return; }
 
@@ -743,7 +612,7 @@ window.answerQuestion = function (chosenIndex) {
 async function finishQuestion(isCorrect) {
   clearInterval(timerInterval);
   let coinsToAward = isCorrect ? (settings.coinPerCorrect || 0) : (settings.coinPerWrong || 0);
-  const guestPotentialCoins = coinsToAward; // লগইন ছাড়া কয়েন জমা হবে না, শুধু জানানোর জন্য
+  const guestPotentialCoins = coinsToAward; 
 
   if (coinsToAward > 0 && currentUser) {
     try {
@@ -772,7 +641,6 @@ async function finishQuestion(isCorrect) {
       coinsToAward = awarded;
     } catch (e) { coinsToAward = 0; }
   }
-  // কয়েন জমা রাখতে হলে লগইন লাগবে, তাই attempt-রেকর্ড ও কুলডাউন রেকর্ড শুধু লগইন করা থাকলেই সেভ করা হচ্ছে
   if (currentUser) {
     markQuestionPlayed(currentUser.uid, activeQuestion.id);
     try {
@@ -807,7 +675,6 @@ $('nextQuestionBtn').addEventListener('click', () => {
 $('playAgainBtn').addEventListener('click', () => { if (activeQuestionIndex > -1) window.startQuestion(activeQuestionIndex); });
 $('backHomeBtn').addEventListener('click', () => { history.back(); });
 
-/* ================= লিডারবোর্ড ================= */
 async function loadLeaderboard() {
   try {
     const s = await getDocs(query(collection(db, 'quizAttempts'), orderBy('score', 'desc'), limit(20)));
@@ -815,14 +682,13 @@ async function loadLeaderboard() {
     $('leaderList').innerHTML = rows.length ? rows.map((r, i) => `
       <div class="leaderRow">
         <div class="rank">${i + 1}</div>
-        <img src="${esc(r.photoURL || '')}" onerror="this.style.visibility='hidden'">
+        <img src="${esc(r.photoURL || '')}" onerror="this.style.visibility='hidden'" loading="lazy" decoding="async">
         <div class="lname">${esc(r.name || 'User')} — ${esc(r.categoryName || '')}</div>
         <div class="lscore">${r.score}/${r.total}</div>
       </div>`).join('') : '<div class="empty">এখনো কেউ খেলেনি।</div>';
   } catch (e) { $('leaderList').innerHTML = '<div class="error">লোড করা যায়নি।</div>'; }
 }
 
-/* ================= প্যানেল সুইচ + ব্যাক বাটন গার্ড ================= */
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function pushGuard() { history.pushState({ guard: true }, '', location.href); }
 
@@ -843,31 +709,24 @@ $('topBackBtn').addEventListener('click', () => history.back());
 
 let backPressCount = 0, backPressTimer = null;
 function handleBack() {
-  // ১) সাইড মেনু খোলা থাকলে বন্ধ করা
   if ($('sideMenuOverlay').classList.contains('open')) { window.closeSideMenu(); return; }
-  // ২) ছাড়ার কনফার্মেশন খোলা থাকলে বন্ধ করা
   if ($('leaveConfirmOverlay').classList.contains('open')) { $('leaveConfirmOverlay').classList.remove('open'); pushGuard(); return; }
-  // ৩) লগইন মোডাল খোলা থাকলে বন্ধ করা
   if ($('loginModalOverlay').classList.contains('open')) { closeLoginModal(); return; }
-  // ৪) সক্রিয় কুইজ চলাকালীন — সরাসরি বের না করে কনফার্মেশন দেখানো
   const activePanel = document.querySelector('.panel.active').id;
   if (activePanel === 'panelPlay') {
     $('leaveConfirmOverlay').classList.add('open');
     pushGuard();
     return;
   }
-  // ৫) ফলাফল/কয়েন/লিডারবোর্ড থেকে হোমে ফিরে যাওয়া
   if (activePanel !== 'panelHome') {
     clearInterval(timerInterval);
     window.showPanel('panelHome');
     return;
   }
-  // ৫.৫) হোমে ক্যাটাগরির প্রশ্ন-তালিকা দেখানো অবস্থায় — সব ক্যাটাগরিতে ফিরে যাওয়া
   if (homeViewMode === 'questions') {
     window.backToCategories();
     return;
   }
-  // ৬) হোম স্ক্রিনে ডবল-ব্যাকে এক্সিট
   if (backPressCount === 0) {
     backPressCount = 1;
     $('exitToast').style.display = 'block';
@@ -887,7 +746,6 @@ $('confirmLeaveBtn').addEventListener('click', () => {
 pushGuard();
 window.addEventListener('popstate', handleBack);
 
-/* ================= শুরু ================= */
 (async function init() {
   await loadSettings();
   await loadCategories();
@@ -896,7 +754,6 @@ window.addEventListener('popstate', handleBack);
 </script>
 
 <script>
-/* ---- ফেড-ইন/ফেড-আউট: পেজ বদলের সময় সাদা ফ্ল্যাশের বদলে হালকা মসৃণ ট্রানজিশন ---- */
 (function () {
   function ready() { requestAnimationFrame(function () { document.body.classList.add('pageReady'); }); }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ready); } else { ready(); }

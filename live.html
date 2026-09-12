@@ -2,48 +2,14 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>লাইভ স্ট্রিম - Onuvuti</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>
-  :root{
-    --primary-color:#4285F4;
-    --bg-color:#0d1117;
-    --card-color:#161b22;
-    --text-color:#e6edf3;
-  }
-  * { box-sizing: border-box; }
-  html, body { margin:0; padding:0; background:var(--bg-color); color:var(--text-color); font-family:'Segoe UI', Arial, sans-serif; }
-  ::-webkit-scrollbar { width:0; height:0; }
-
-  /* ---- গিফট পাঠালে ইমোজি উপরের দিকে ভেসে উঠে মিলিয়ে যাওয়ার অ্যানিমেশন ---- */
-  @keyframes floatUp {
-    0%   { transform: translateY(0) scale(0.5); opacity:0; }
-    15%  { opacity:1; transform: translateY(-10px) scale(1); }
-    100% { transform: translateY(-280px) scale(1.15); opacity:0; }
-  }
-  .giftFloat { position:absolute; bottom:70px; font-size:34px; animation: floatUp 2.2s ease-out forwards; pointer-events:none; }
-
-  #chatMessages { scroll-behavior: smooth; }
-  #chatMessages > div { animation: fadeIn .25s ease; }
-  @keyframes fadeIn { from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
-
-  /* ---- অডিও লাইভে ভিডিওর বদলে দেখানো ওয়েভবার অ্যানিমেশন ---- */
-  .audioBar { width:5px; height:10px; background:rgba(255,255,255,.8); border-radius:3px; animation: audioBounce 1s ease-in-out infinite; }
-  @keyframes audioBounce { 0%,100% { height:8px; } 50% { height:28px; } }
-
-/* ---- স্ক্রল করলে উপরে/নিচে টানলে রাবার-ব্যান্ডের মতো বাউন্স/লাফানো বন্ধ করা (নেটিভ অ্যাপের মতো অনুভূতির জন্য) ---- */
-html, body { overscroll-behavior: none; }
-/* ---- পেজ লোড হওয়ার সময় হঠাৎ ফ্ল্যাশ না করে হালকা ফেড-ইন করে দেখানো ---- */
-body { opacity: 0; animation: forcePageShow 0s .6s forwards; }
-@keyframes forcePageShow { to { opacity: 1; } }
-body.pageReady { opacity: 1; transition: opacity .18s ease; }
-body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
-</style>
+<style>:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#e6edf3}*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg-color);color:var(--text-color);font-family:'Segoe UI',Arial,sans-serif}::-webkit-scrollbar{width:0;height:0}@keyframes floatUp{0%{transform:translateY(0) scale(0.5);opacity:0}15%{opacity:1;transform:translateY(-10px) scale(1)}100%{transform:translateY(-280px) scale(1.15);opacity:0}}.giftFloat{position:absolute;bottom:70px;font-size:34px;animation:floatUp 2.2s ease-out forwards;pointer-events:none}#chatMessages{scroll-behavior:smooth}#chatMessages > div{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}.audioBar{width:5px;height:10px;background:rgba(255,255,255,.8);border-radius:3px;animation:audioBounce 1s ease-in-out infinite}@keyframes audioBounce{0%,100%{height:8px}50%{height:28px}}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
 </head>
 <body>
 
-  <!-- ---- লগইন গেট: লাইভ দেখতে/করতে লগইন বাধ্যতামূলক ---- -->
+  
   <div id="authGate" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center gap-4 p-6 text-center">
     <div class="text-5xl">🔴</div>
     <h2 class="text-lg font-bold">লাইভ দেখতে বা লাইভ করতে লগইন করুন</h2>
@@ -54,14 +20,14 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     <a href="index.html" class="text-gray-500 text-sm underline">← হোমপেজে ফিরে যান</a>
   </div>
 
-  <!-- ---- হেডার ---- -->
+  
   <header class="flex items-center justify-between px-4 py-3 bg-[var(--card-color)] border-b border-gray-800 sticky top-0 z-30">
     <a href="index.html" id="headerBackBtn" class="text-xl leading-none">←</a>
     <h1 class="text-base font-bold">🔴 লাইভ স্ট্রিমিং</h1>
     <div id="userBadge" class="flex items-center gap-2"></div>
   </header>
 
-  <!-- ---- লবি: সব চলমান লাইভের তালিকা + লাইভ শুরু করার বাটন ---- -->
+  
   <div id="lobbyView" class="p-4 max-w-lg mx-auto">
     <div class="grid grid-cols-2 gap-3 mb-5">
       <button id="goLiveVideoBtn" class="bg-red-600 active:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-red-900/30">
@@ -76,12 +42,12 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     <p id="noLiveMsg" class="text-center text-gray-500 mt-10 hidden">এই মুহূর্তে কেউ লাইভ নেই। আপনি প্রথম হয়ে লাইভ শুরু করতে পারেন!</p>
   </div>
 
-  <!-- ---- স্টেজ: হোস্ট ও ভিউয়ার দুজনেই এই একই লেআউট ব্যবহার করে (ভূমিকা অনুযায়ী বাটন বদলায়) ---- -->
+  
   <div id="stageView" class="hidden max-w-lg mx-auto">
     <div class="relative bg-black" style="aspect-ratio:9/14; max-height:78vh;">
       <video id="mainVideo" autoplay playsinline class="w-full h-full object-cover bg-gray-900"></video>
 
-      <!-- ---- অডিও লাইভে ভিডিওর বদলে এই কভারটা দেখানো হয় (অডিও স্ট্রিম চলতেই থাকে) ---- -->
+      
       <div id="audioCoverArea" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-purple-900 via-gray-900 to-black">
         <img id="audioCoverAvatar" class="w-24 h-24 rounded-full border-4 border-white object-cover bg-gray-700" alt="">
         <div id="audioCoverName" class="text-sm font-bold"></div>
@@ -106,7 +72,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
       <div id="giftFloatArea" class="absolute inset-0 overflow-hidden"></div>
 
-      <!-- ---- লাইক বাটন (হোস্ট ও ভিউয়ার দুজনেই লাইক দিতে/দেখতে পারবে) ---- -->
+      
       <button id="likeBtn" type="button" class="absolute bottom-16 right-3 flex flex-col items-center bg-black/50 rounded-2xl px-2.5 py-1.5">
         <span id="likeIcon" class="text-lg leading-none">🤍</span>
         <span id="likeCount" class="text-[10px] font-bold leading-none mt-0.5">0</span>
@@ -120,21 +86,20 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       <button id="endLiveBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-red-400 text-xs font-bold px-3 py-2 rounded-full">⏹ লাইভ শেষ করুন</button>
       <button id="leaveViewBtn" class="hidden absolute bottom-3 right-3 bg-gray-900/80 text-xs font-bold px-3 py-2 rounded-full">✖ বের হোন</button>
 
-      <!-- ---- মোবাইল ব্রাউজার সাউন্ডসহ অটোপ্লে ব্লক করলে (Chrome/Safari-এর অটোপ্লে-পলিসি) এই
-           ওভারলে দেখানো হয় — ট্যাপ করলেই (ইউজার-জেসচার) ভিডিও+অডিও দুটোই চালু হয়ে যাবে ---- -->
+      
       <button id="tapToPlayBtn" type="button" class="hidden absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-black/75 text-white">
         <span class="text-4xl">🔊</span>
         <span class="text-sm font-bold">সাউন্ড ও ভিডিও চালু করতে ট্যাপ করুন</span>
       </button>
     </div>
 
-    <!-- ---- রিয়েল-টাইম চ্যাট ---- -->
+    
     <div id="chatMessages" class="h-52 overflow-y-auto px-3 py-2 space-y-1.5 bg-[var(--card-color)] text-sm"></div>
 
-    <!-- ---- গিফট বার ---- -->
+    
     <div id="giftBar" class="flex gap-2 overflow-x-auto px-3 py-2 bg-[var(--card-color)] border-t border-gray-800"></div>
 
-    <!-- ---- চ্যাট ইনপুট + কয়েন ব্যালেন্স ---- -->
+    
     <form id="chatForm" class="flex items-center gap-2 p-3 bg-[var(--card-color)] border-t border-gray-800">
       <div class="flex flex-col items-center leading-none">
         <span id="coinBalance" class="text-yellow-400 text-xs font-bold whitespace-nowrap">🪙 0</span>
@@ -156,7 +121,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     collection, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-  // ---- এই একই সাইটের ফায়ারবেস প্রজেক্ট, index.html এর সাথে মিলিয়ে ----
   const firebaseConfig = {
     apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
     authDomain: "onuvuti-5c9e3.firebaseapp.com",
@@ -169,7 +133,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // ---- P2P WebRTC এর জন্য ফ্রি পাবলিক STUN সার্ভার (কোনো পেইড থার্ড-পার্টি সার্ভিস নেই) ----
   const rtcConfig = { iceServers: [
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
   ]};
@@ -181,7 +144,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     { id: 'crown',   emoji: '👑', name: 'রাজমুকুট',    cost: 500 }
   ];
 
-  // ---- এলিমেন্ট রেফারেন্স ----
   const authGate = document.getElementById('authGate');
   const authLoginBtn = document.getElementById('authLoginBtn');
   const userBadge = document.getElementById('userBadge');
@@ -217,34 +179,27 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   const coinBalance = document.getElementById('coinBalance');
   const topUpBtn = document.getElementById('topUpBtn');
 
-  // ---- স্টেট ----
   let currentUser = null;
   let coins = 0;
   let currentStreamId = null;
   let isHost = false;
-  let liveMode = 'video';              // 'video' অথবা 'audio'
+  let liveMode = 'video';              
   let localStream = null;
-  let viewerPC = null;                 // ভিউয়ার সাইডে একটাই peer connection (হোস্টের সাথে)
-  let peerConnections = {};            // হোস্ট সাইডে প্রতিটা ভিউয়ারের জন্য আলাদা peer connection
-  let peerUnsubs = {};                 // প্রতিটা ভিউয়ার-কানেকশনের ফায়ারবেস লিসেনার আনসাব
-  let activeUnsubs = [];               // চলমান সেশনের বাকি সব onSnapshot আনসাব
+  let viewerPC = null;                 
+  let peerConnections = {};            
+  let peerUnsubs = {};                 
+  let activeUnsubs = [];               
 
-  // ---- হার্টবিট: হোস্টের ব্রাউজার ক্র্যাশ করলে/ইন্টারনেট চলে গেলে/ফোর্স-ক্লোজ হলে
-  // beforeunload/popstate কোনোটাই চলার সুযোগ পায় না — ফলে Firestore-এ স্ট্যাটাস 'live'
-  // হয়েই আটকে থাকে আর লবিতে ভুতুড়ে কার্ড দেখা যায়। এটা ঠেকাতেই এই পিরিয়ডিক
-  // হার্টবিট + স্টেল-চেক সিস্টেম (নিচে listenLobby() ফাংশনে বিস্তারিত) ----
   let hostHeartbeatInterval = null;
   let viewerHeartbeatInterval = null;
   let currentViewerDocRef = null;
-  const HEARTBEAT_MS = 20000;    // প্রতি ২০ সেকেন্ডে একবার হার্টবিট
-  const STALE_MS = 45000;        // ৪৫ সেকেন্ড হার্টবিট না এলে স্ট্রিমটা 'ক্র্যাশড/স্টেল' ধরা হবে
+  const HEARTBEAT_MS = 20000;    
+  const STALE_MS = 45000;        
 
   function escapeHtml(str) {
     return (str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
 
-  // ================= ব্যাক বাটন হ্যান্ডলিং: স্টেজে থাকলে ব্যাক চাপলে সরাসরি পেজ থেকে বের
-  // না করে আগে লবিতে ফিরিয়ে আনা (হার্ডওয়্যার/ব্রাউজার ব্যাক বাটন + হেডারের ← বাটন দুটোতেই) =================
   try { history.replaceState({ section: 'lobby' }, '', location.href); } catch (e) {}
 
   function enterStageHistory() {
@@ -262,14 +217,12 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }
     cleanupSession();
     showLobby();
-    // ---- হিস্ট্রি স্ট্যাকের বর্তমান এন্ট্রিকে 'lobby' হিসেবে ঠিক করে দেওয়া হচ্ছে, যাতে
-    // পরের বার ব্যাক চাপলে ঠিকঠাক আচরণ করে (এখানে থেকে বের হওয়া মানেই সাইট থেকে বের হওয়া) ----
     try { history.replaceState({ section: 'lobby' }, '', location.pathname); } catch (e) {}
   }
 
   function exitStageUI() {
     if (history.state && history.state.section === 'stage') {
-      history.back(); // ---- popstate হ্যান্ডলারই আসল ক্লিনআপ (performExitStage) চালাবে ----
+      history.back(); 
     } else {
       performExitStage();
     }
@@ -289,7 +242,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
   });
 
 
-  // ================= অথেন্টিকেশন =================
   authLoginBtn.addEventListener('click', () => {
     signInWithPopup(auth, new GoogleAuthProvider()).catch(e => alert('লগইন ব্যর্থ হয়েছে: ' + e.message));
   });
@@ -310,12 +262,10 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }
   });
 
-  // ================= কয়েন ব্যালেন্স =================
   function listenCoins(uid) {
     const uRef = doc(db, 'users', uid);
     onSnapshot(uRef, async (snap) => {
       if (!snap.exists() || snap.data().coins === undefined) {
-        // ---- নতুন ইউজারের জন্য শুরুতে ১০০ কয়েন ফ্রি (ডেমো ব্যালেন্স) ----
         await setDoc(uRef, { coins: 100 }, { merge: true }).catch(() => {});
         return;
       }
@@ -329,14 +279,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     await setDoc(doc(db, 'users', currentUser.uid), { coins: increment(50) }, { merge: true }).catch(() => {});
   });
 
-  // ================= লবি (চলমান লাইভের তালিকা) =================
-  // ---- বাগ ফিক্স: আগে status=='live' হলেই কার্ড দেখানো হতো — হোস্ট ঠিকভাবে "লাইভ শেষ
-  // করুন"/"বের হোন" চেপে বের না হয়ে ব্রাউজার ক্র্যাশ/ফোর্স-ক্লোজ/নেট চলে গেলে status
-  // চিরকাল 'live' থেকে যেত, আর লবিতে ভুতুড়ে কার্ড আটকে থাকত (স্ক্রিনশটে যেটা দেখা গেছে)।
-  // এখন প্রতিটা লাইভ ডকে একটা lastHeartbeat থাকে (হোস্ট প্রতি ২০ সেকেন্ডে আপডেট করে);
-  // কোনো কার্ডের হার্টবিট ৪৫ সেকেন্ডের বেশি পুরনো হলে ধরে নেওয়া হয় হোস্ট আসলে চলে গেছে,
-  // তখন এই ক্লায়েন্ট নিজেই (Firestore রুলের অনুমতি নিয়ে) সেটাকে 'ended' করে দেয় এবং
-  // কার্ডটা লবি থেকে সরিয়ে দেয় — ফলে সবার লবিতেই ভুতুড়ে কার্ড আর আটকে থাকে না ----
   function listenLobby() {
     const q = query(collection(db, 'liveStreams'), where('status', '==', 'live'));
     onSnapshot(q, (snap) => {
@@ -345,11 +287,11 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       let anyVisible = false;
       snap.forEach(d => {
         const data = d.data();
-        const lastBeat = data.lastHeartbeat || data.startedAt; // পুরনো (মাইগ্রেশনের আগের) ডকের জন্য fallback
+        const lastBeat = data.lastHeartbeat || data.startedAt; 
         const isStale = lastBeat && (now - lastBeat.toMillis()) > STALE_MS;
         if (isStale) {
           updateDoc(doc(db, 'liveStreams', d.id), { status: 'ended', endedAt: serverTimestamp() }).catch(() => {});
-          return; // ---- এই ভুতুড়ে কার্ডটা আর দেখানো হবে না ----
+          return; 
         }
         anyVisible = true;
         liveStreamsList.appendChild(buildStreamCard(d.id, data));
@@ -367,7 +309,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
         <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>${d.mode === 'audio' ? '🎙️' : '🎥'} LIVE
       </div>
       <div class="absolute top-2 right-2 bg-black/60 text-[10px] px-2 py-0.5 rounded">👁 ${d.viewerCount || 0}</div>
-      <img src="${d.hostPhoto || ''}" class="w-10 h-10 rounded-full border-2 border-white mb-1 object-cover bg-gray-700">
+      <img src="${d.hostPhoto || ''}" class="w-10 h-10 rounded-full border-2 border-white mb-1 object-cover bg-gray-700" loading="lazy" decoding="async">
       <div class="text-xs font-semibold truncate">${escapeHtml(d.hostName || 'হোস্ট')}</div>
     `;
     card.addEventListener('click', () => watchStream(id));
@@ -385,7 +327,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     tapToPlayBtn.classList.add('hidden');
   }
 
-  // ================= হোস্ট: লাইভ শুরু করা (ভিডিও অথবা অডিও) =================
   goLiveVideoBtn.addEventListener('click', () => requestGoLive('video'));
   goLiveAudioBtn.addEventListener('click', () => requestGoLive('audio'));
 
@@ -404,26 +345,20 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
   function toggleAudioCover(isAudio, name, photo) {
     audioCoverArea.classList.toggle('hidden', !isAudio);
-    mainVideo.style.opacity = isAudio ? '0' : '1'; // ---- opacity ব্যবহার করা হয়েছে যাতে হাইড করলেও অডিও ট্র্যাক বাজতে থাকে ----
+    mainVideo.style.opacity = isAudio ? '0' : '1'; 
     if (isAudio) {
       audioCoverAvatar.src = photo || '';
       audioCoverName.textContent = name || '';
     }
   }
 
-  // ---- মোবাইল ব্রাউজারে (Chrome/Safari) সাউন্ডসহ অটোপ্লে সাধারণত ব্লক করা থাকে — তাই ভিডিও/অডিও
-  // ট্র্যাক এসে পৌঁছালেও অনেক সময় ফোনে কিছুই বাজত না অথচ ইউজার বুঝতেই পারত না কেন (audio-লাইভে তো
-  // ওয়েভবার এমনিতেই অ্যানিমেট হতে থাকে, তাতে মনে হয় বাজছে)। এই ফাংশন প্রথমে সরাসরি চালানোর চেষ্টা
-  // করে; ব্রাউজার আটকে দিলে সাথে সাথে মিউট করে অন্তত ভিডিও/অডিও চালু রাখে এবং "ট্যাপ করুন" ওভারলে
-  // দেখায় — ইউজার একবার ট্যাপ করলেই (ব্রাউজারের প্রয়োজনীয় ইউজার-জেসচার হিসেবে গণ্য হয়) সাউন্ড চালু
-  // হয়ে যায়। হোস্টের নিজের প্রিভিউয়ের ক্ষেত্রে (আগে থেকেই মিউট) কখনো এই ওভারলে দেখানো হয় না। ----
   function attemptAutoplay() {
     const playPromise = mainVideo.play();
     if (playPromise === undefined) return;
     playPromise.then(() => {
       tapToPlayBtn.classList.add('hidden');
     }).catch(() => {
-      if (mainVideo.muted) return; // হোস্টের প্রিভিউ (আগে থেকেই মিউট) — ওভারলে দরকার নেই
+      if (mainVideo.muted) return; 
       mainVideo.muted = true;
       mainVideo.play().catch(() => {});
       tapToPlayBtn.classList.remove('hidden');
@@ -440,7 +375,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     isHost = true;
     liveMode = mode;
     mainVideo.srcObject = localStream;
-    mainVideo.muted = true; // ---- নিজের ভিডিও/অডিও নিজে শুনলে ইকো হবে, তাই হোস্টের প্রিভিউ মিউট ----
+    mainVideo.muted = true; 
     attemptAutoplay();
     toggleAudioCover(mode === 'audio', currentUser.displayName, currentUser.photoURL);
     showStage();
@@ -465,7 +400,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     currentStreamId = streamRef.id;
     listenStreamMeta(currentStreamId);
 
-    // ---- ভিউয়ার সাবকালেকশন লিসেন করা: নতুন ভিউয়ার জয়েন করলেই তার জন্য আলাদা peer connection তৈরি হবে ----
     const viewersColRef = collection(db, 'liveStreams', currentStreamId, 'viewers');
     const unsubViewers = onSnapshot(viewersColRef, (snap) => {
       updateDoc(doc(db, 'liveStreams', currentStreamId), { viewerCount: snap.size }).catch(() => {});
@@ -478,9 +412,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
     listenChat(currentStreamId);
 
-    // ---- হোস্টের পিরিয়ডিক হার্টবিট: চলমান আছে এটা Firestore-কে জানিয়ে রাখা, যাতে
-    // ব্রাউজার ক্র্যাশ/ফোর্স-ক্লোজ হলে ৪৫ সেকেন্ড পর অন্য যেকোনো ক্লায়েন্ট এটাকে
-    // স্টেল ধরে নিজে থেকে 'ended' করে দিতে পারে (দেখুন listenLobby()) ----
     hostHeartbeatInterval = setInterval(() => {
       if (!currentStreamId || !isHost) return;
       updateDoc(doc(db, 'liveStreams', currentStreamId), { lastHeartbeat: serverTimestamp() }).catch(() => {});
@@ -488,9 +419,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }, HEARTBEAT_MS);
   }
 
-  // ---- ভিউয়ার যদি হার্টবিট না পাঠিয়ে (ব্রাউজার ক্র্যাশ/ট্যাব ফোর্স-ক্লোজ) হারিয়ে যায়,
-  // তার viewers/{uid} এন্ট্রি চিরকাল থেকে যেতে পারত — viewerCount ভুল দেখাত এবং হোস্ট
-  // তার জন্য একটা অকেজো peer connection ধরে রাখত। প্রতি হার্টবিটেই এটা পরিষ্কার করা হয় ----
   async function pruneStaleViewers(streamId) {
     try {
       const viewersSnap = await getDocs(collection(db, 'liveStreams', streamId, 'viewers'));
@@ -501,7 +429,7 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
           deleteDoc(vd.ref).catch(() => {});
         }
       });
-    } catch (e) { /* best-effort, silently skip */ }
+    } catch (e) {  }
   }
 
   async function connectToViewer(viewerUid) {
@@ -544,8 +472,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
   endLiveBtn.addEventListener('click', exitStageUI);
 
-  // ================= লাইক + স্ট্রিমের মেটাডেটা (ভিউয়ার-কাউন্ট, লাইভ শেষ কিনা) লিসেন করা,
-  // হোস্ট ও ভিউয়ার দুজনের জন্যই ব্যবহৃত হয় =================
   function listenStreamMeta(streamId) {
     const streamDocRef = doc(db, 'liveStreams', streamId);
     const unsub = onSnapshot(streamDocRef, (snap) => {
@@ -575,7 +501,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }
   });
 
-  // ================= ভিউয়ার: লাইভ দেখা =================
   async function watchStream(streamId) {
     if (currentStreamId || !currentUser) return;
     currentStreamId = streamId;
@@ -610,8 +535,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
       lastSeen: serverTimestamp()
     });
 
-    // ---- ভিউয়ারের পিরিয়ডিক হার্টবিট (lastSeen) — হোস্ট এটা দিয়েই বোঝে ভিউয়ার আসলেই
-    // এখনো আছে কিনা, ব্রাউজার ক্র্যাশ করলে এন্ট্রিটা পরিষ্কার হওয়ার জন্য (pruneStaleViewers) ----
     viewerHeartbeatInterval = setInterval(() => {
       if (!currentViewerDocRef || isHost) return;
       updateDoc(currentViewerDocRef, { lastSeen: serverTimestamp() }).catch(() => {});
@@ -654,7 +577,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 
   leaveViewBtn.addEventListener('click', exitStageUI);
 
-  // ================= রিয়েল-টাইম চ্যাট =================
   function listenChat(streamId) {
     chatMessages.innerHTML = '';
     const chatQ = query(collection(db, 'liveStreams', streamId, 'chat'), orderBy('createdAt', 'asc'), limit(200));
@@ -703,7 +625,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }).catch(() => {});
   });
 
-  // ================= কয়েন/গিফটিং =================
   function buildGiftBar() {
     giftBar.innerHTML = '';
     GIFTS.forEach(g => {
@@ -744,7 +665,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     }
   }
 
-  // ================= সেশন ক্লিনআপ =================
   function cleanupSession() {
     activeUnsubs.forEach(u => u());
     activeUnsubs = [];
@@ -769,11 +689,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
     leaveViewBtn.classList.add('hidden');
   }
 
-  // ---- ট্যাব বন্ধ/রিলোড করলে হোস্ট হলে লাইভ 'ended' করে দেওয়া, ভিউয়ার হলে ভিউয়ার-এন্ট্রি মুছে ফেলা
-  // (best-effort)। মোবাইল ব্রাউজারে 'beforeunload' একা নির্ভরযোগ্য নয় — ট্যাব সোয়াইপ করে বন্ধ
-  // করলে বা অ্যাপ সুইচ করলে এটা অনেক সময় ফায়ারই হয় না, তাই 'pagehide' ও যোগ করা হলো (এটা মোবাইলে
-  // অনেক বেশি নির্ভরযোগ্যভাবে ফায়ার করে)। তারপরও যদি দুটোই মিস হয়ে যায় (একদম ফোর্স-ক্লোজ/ক্র্যাশ/
-  // নেট চলে যাওয়া), হার্টবিট+স্টেল-চেক সিস্টেম (listenLobby দ্রষ্টব্য) শেষ নিরাপত্তা হিসেবে কাজ করে ----
   function bestEffortExitCleanup() {
     if (!currentStreamId) return;
     if (isHost) {
@@ -787,7 +702,6 @@ body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 </script>
 
 <script>
-/* ---- ফেড-ইন/ফেড-আউট: পেজ বদলের সময় সাদা ফ্ল্যাশের বদলে হালকা মসৃণ ট্রানজিশন ---- */
 (function () {
   function ready() { requestAnimationFrame(function () { document.body.classList.add('pageReady'); }); }
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ready); } else { ready(); }
