@@ -422,6 +422,9 @@
           <button type="button" class="csListBtn" data-cs-open="csDetail-colors">
             <span class="csListBtnIcon">🎨</span><span class="csListBtnText">রং (থিম কালার)</span><span class="csListBtnArrow">›</span>
           </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-blog">
+            <span class="csListBtnIcon">📰</span><span class="csListBtnText">ব্লগ</span><span class="csListBtnArrow">›</span>
+          </button>
         </div>
 
         <!-- ================= ডিটেইল ভিউগুলো: বাটনে ঢুকলে এইগুলো দেখাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে ================= -->
@@ -554,6 +557,35 @@
             <div class="sectionStatus" id="statusColors"></div>
           </div>
         </div>
+
+        <div class="csDetailView" id="csDetail-blog">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">📰 ব্লগ</div>
+          </div>
+          <div class="section">
+            <h2>📐 ব্লগ লেখার বক্সের সাইজ (px)</h2>
+            <input type="number" id="blogComposerHeight" placeholder="৩০০" min="1">
+            <div class="hint">ব্লগ মোডে লেখার বক্স কত উঁচু হবে (স্বাভাবিক পোস্টের বক্সের সাইজ থেকে আলাদাভাবে ঠিক করা যায়)</div>
+
+            <h2 style="margin-top:16px;">🔠 বড় লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogBigOpen" placeholder="("></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogBigClose" placeholder=")"></div>
+
+            <h2 style="margin-top:16px;">🔡 মাঝারি লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogMedOpen" placeholder="{"></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogMedClose" placeholder="}"></div>
+
+            <h2 style="margin-top:16px;">🔡 ছোট লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogSmallOpen" placeholder="["></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogSmallClose" placeholder="]"></div>
+
+            <div class="hint">💡 লিংক বসাতে চাইলে এই একই চিহ্নগুলো উল্টো ক্রমে বসালেই (শেষেরটা আগে, শুরুরটা পরে) হয়ে যাবে — এর জন্য আলাদা সেটিংস লাগবে না, স্বয়ংক্রিয়ভাবে কাজ করবে। প্রতিটা সাইজের জন্য আলাদা আলাদা চিহ্ন ব্যবহার করবেন, নাহলে একটার সাথে আরেকটা গুলিয়ে যেতে পারে।</div>
+
+            <button class="sectionSaveBtn" data-section="blog">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusBlog"></div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -653,6 +685,13 @@
   const postsPerPage = document.getElementById('postsPerPage');
   const readMoreLines = document.getElementById('readMoreLines');
   const postButtonsJustify = document.getElementById('postButtonsJustify');
+  const blogComposerHeight = document.getElementById('blogComposerHeight');
+  const blogBigOpen = document.getElementById('blogBigOpen');
+  const blogBigClose = document.getElementById('blogBigClose');
+  const blogMedOpen = document.getElementById('blogMedOpen');
+  const blogMedClose = document.getElementById('blogMedClose');
+  const blogSmallOpen = document.getElementById('blogSmallOpen');
+  const blogSmallClose = document.getElementById('blogSmallClose');
 
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
   const BUTTON_LABELS = {
@@ -1291,6 +1330,13 @@
     postsPerPage.value = s.postsPerPage || 5;
     readMoreLines.value = s.readMoreLines || 6;
     postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
+    blogComposerHeight.value = s.blogComposerHeight || 300;
+    blogBigOpen.value = s.blogBigOpen || '(';
+    blogBigClose.value = s.blogBigClose || ')';
+    blogMedOpen.value = s.blogMedOpen || '{';
+    blogMedClose.value = s.blogMedClose || '}';
+    blogSmallOpen.value = s.blogSmallOpen || '[';
+    blogSmallClose.value = s.blogSmallClose || ']';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
     commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
@@ -1321,6 +1367,12 @@
       data = { posterColors: colors };
     }
     else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
+    else if (section === 'blog') data = {
+      blogComposerHeight: Number(blogComposerHeight.value) || 300,
+      blogBigOpen: blogBigOpen.value || '(', blogBigClose: blogBigClose.value || ')',
+      blogMedOpen: blogMedOpen.value || '{', blogMedClose: blogMedClose.value || '}',
+      blogSmallOpen: blogSmallOpen.value || '[', blogSmallClose: blogSmallClose.value || ']'
+    };
     else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
     else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };
     else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
