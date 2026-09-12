@@ -280,6 +280,14 @@
   }
   #reportCancelBtn { background: #262c36; color: #9ca3af; }
   #reportSubmitBtn { background: var(--primary-color); color: #fff; }
+
+/* ---- স্ক্রল করলে উপরে/নিচে টানলে রাবার-ব্যান্ডের মতো বাউন্স/লাফানো বন্ধ করা (নেটিভ অ্যাপের মতো অনুভূতির জন্য) ---- */
+html, body { overscroll-behavior: none; }
+/* ---- পেজ লোড হওয়ার সময় হঠাৎ ফ্ল্যাশ না করে হালকা ফেড-ইন করে দেখানো ---- */
+body { opacity: 0; animation: forcePageShow 0s .6s forwards; }
+@keyframes forcePageShow { to { opacity: 1; } }
+body.pageReady { opacity: 1; transition: opacity .18s ease; }
+body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 </style>
 </head>
 <body>
@@ -1668,6 +1676,26 @@
       exitToast.style.display = 'none';
     }
   }
+</script>
+
+<script>
+/* ---- ফেড-ইন/ফেড-আউট: পেজ বদলের সময় সাদা ফ্ল্যাশের বদলে হালকা মসৃণ ট্রানজিশন ---- */
+(function () {
+  function ready() { requestAnimationFrame(function () { document.body.classList.add('pageReady'); }); }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ready); } else { ready(); }
+  window.addEventListener('pageshow', function (e) { if (e.persisted) document.body.classList.add('pageReady'); });
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0 || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0 || a.target === '_blank') return;
+    if (!/\.html?(\?.*)?$/i.test(href)) return;
+    e.preventDefault();
+    document.body.classList.remove('pageReady');
+    document.body.classList.add('pageLeaving');
+    setTimeout(function () { window.location.href = href; }, 120);
+  }, true);
+})();
 </script>
 </body>
 </html>

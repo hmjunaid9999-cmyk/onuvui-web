@@ -47,6 +47,14 @@
 .historyAmount{font-weight:bold;text-align:right}
 .historyAmount.pos{color:#4ade80}
 .historyAmount.neg{color:#f87171}
+
+/* ---- স্ক্রল করলে উপরে/নিচে টানলে রাবার-ব্যান্ডের মতো বাউন্স/লাফানো বন্ধ করা (নেটিভ অ্যাপের মতো অনুভূতির জন্য) ---- */
+html, body { overscroll-behavior: none; }
+/* ---- পেজ লোড হওয়ার সময় হঠাৎ ফ্ল্যাশ না করে হালকা ফেড-ইন করে দেখানো ---- */
+body { opacity: 0; animation: forcePageShow 0s .6s forwards; }
+@keyframes forcePageShow { to { opacity: 1; } }
+body.pageReady { opacity: 1; transition: opacity .18s ease; }
+body.pageLeaving { opacity: 0; transition: opacity .12s ease; }
 </style>
 </head><body><script src="https://www.youtube.com/iframe_api"></script><div id="app"><header><button class="menuBtn" onclick="openDrawer()">☰</button>🎬 ভিডিও</header><div class="noticeBar" id="noticeBar"><span id="noticeText"></span></div><nav id="topMenu" class="topMenu"></nav><main>
 <section id="home" class="panel active"><div class="search">🔎<input id="search" placeholder="ভিডিও খুঁজুন..." oninput="render()"></div><div id="grid" class="grid"><div class="loading">লোড হচ্ছে...</div></div></section>
@@ -482,4 +490,24 @@ function normalizeEmbedUrl(raw){
 window.submitVideo=async()=>{if(!user)return alert("ভিডিও যুক্ত করতে লগইন করুন।");let title=$("newTitle").value.trim(),url=normalizeEmbedUrl($("newUrl").value),cost=settings.videoCost;if(!title||!validUrl(url))return alert("Title এবং সঠিক Embed URL/লিংক দিন।");try{await runTransaction(db,async tx=>{let uref=doc(db,"users",user.uid),us=await tx.get(uref);if(!us.exists())throw Error("User profile পাওয়া যায়নি।");let ud=us.data(),legacy=Number(ud.points??ud.coins??ud.balance??0);let bal=Number(ud.videoBalance??legacy);if(bal<cost)throw Error("পর্যাপ্ত "+unit()+" নেই।");let vref=doc(collection(db,"videos"));tx.set(vref,{title,caption:"",videoUrl:url,ownerUid:user.uid,createdAt:serverTimestamp(),pointsSpent:cost,status:"active"});tx.update(uref,{videoBalance:bal-cost})});$("newTitle").value="";$("newUrl").value="";$("videoStatus").textContent="ভিডিও সফলভাবে যুক্ত হয়েছে ✓";await logHistory("videoSpend",-cost);await balance();await load();await loadMine()}catch(e){$("videoStatus").textContent=e.message}};
 window.submitPaymentRequest=async()=>{if(!user)return alert("Payment Request করতে লগইন করুন।");let coins=Number($("requestCoins").value),note=$("paymentNote").value.trim();if(!coins||coins<1)return alert("কত Coin চান তা লিখুন।");try{await addDoc(collection(db,"paymentRequests"),{uid:user.uid,coins,note,status:"pending",createdAt:serverTimestamp()});$("requestCoins").value="";$("paymentNote").value="";$("paymentStatus").textContent="Payment Request পাঠানো হয়েছে ✓"}catch(e){$("paymentStatus").textContent="Request পাঠানো যায়নি: "+e.message}};
 load();let initial=new URLSearchParams(location.search).get("v");if(initial)setTimeout(()=>openVideo(initial),400);
-</script></body></html>
+</script>
+<script>
+/* ---- ফেড-ইন/ফেড-আউট: পেজ বদলের সময় সাদা ফ্ল্যাশের বদলে হালকা মসৃণ ট্রানজিশন ---- */
+(function () {
+  function ready() { requestAnimationFrame(function () { document.body.classList.add('pageReady'); }); }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', ready); } else { ready(); }
+  window.addEventListener('pageshow', function (e) { if (e.persisted) document.body.classList.add('pageReady'); });
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if (!a) return;
+    var href = a.getAttribute('href') || '';
+    if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0 || href.indexOf('mailto:') === 0 || href.indexOf('tel:') === 0 || a.target === '_blank') return;
+    if (!/\.html?(\?.*)?$/i.test(href)) return;
+    e.preventDefault();
+    document.body.classList.remove('pageReady');
+    document.body.classList.add('pageLeaving');
+    setTimeout(function () { window.location.href = href; }, 120);
+  }, true);
+})();
+</script>
+</body></html>
