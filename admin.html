@@ -147,6 +147,28 @@
   .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
   .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
 
+  /* ---- কন্টেন্ট সেটিংস: লিস্ট ভিউ (প্রতিটা সেটিংস একটা বাটনের আওতায়) ---- */
+  .csListView { display: flex; flex-direction: column; gap: 10px; }
+  .csListBtn {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: #161b22; border: 1px solid #262c36; border-radius: 14px;
+    padding: 14px 16px; color: #fff; font-size: 14px; font-weight: normal; cursor: pointer;
+  }
+  .csListBtnIcon { font-size: 18px; flex-shrink: 0; }
+  .csListBtnText { flex: 1; min-width: 0; }
+  .csListBtnArrow { color: #6b7280; font-size: 18px; flex-shrink: 0; }
+
+  /* ---- কন্টেন্ট সেটিংস: ডিটেইল ভিউ (বাটনে ঢোকার পর এইটা দেখাবে) ---- */
+  .csDetailView { display: none; }
+  .csDetailView.open { display: block; }
+  .csDetailHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .csBackBtn {
+    background: #161b22; border: 1px solid #262c36; color: #fff;
+    width: 38px; height: 38px; border-radius: 50%; font-size: 17px; line-height: 1;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .csDetailTitle { font-size: 16px; font-weight: bold; min-width: 0; }
+
   /* ---- বাটন পিকার (চিপ) ---- */
   .buttonPicker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
   .pickerChip {
@@ -373,86 +395,164 @@
       <div class="swipePanel" id="panel-content-settings">
         <div class="swipePanelInner">
         <div class="folderTitle">⚙️ কন্টেন্ট সেটিংস</div>
-        <div class="section">
-          <h2>✂️ কত লাইন পর "আরও পড়ুন" আসবে</h2>
-          <input type="number" id="readMoreLines" placeholder="৬" min="1">
-          <div class="hint">পোস্টের লেখা এতগুলো লাইনের পর কেটে "আরও পড়ুন" বাটন দেখাবে, চাপলে পুরো লেখা খুলবে</div>
 
-          <h2 style="margin-top:16px;">প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
-          <input type="number" id="postsPerPage" placeholder="৫">
-          <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
-
-          <h2 style="margin-top:16px;">📏 কনটেন্টের প্রস্থ (px)</h2>
-          <input type="number" id="maxWidth" placeholder="640">
-
-          <h2 style="margin-top:16px;">📐 পোস্ট বক্সের সাইজ</h2>
-          <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
-          <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
-
-          <button class="sectionSaveBtn" data-section="contentSettings">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusContentSettings"></div>
+        <!-- ================= লিস্ট ভিউ: প্রতিটা সেটিংস একটা বাটনের আওতায়, ধারাবাহিকভাবে ================= -->
+        <div class="csListView" id="csListView">
+          <button type="button" class="csListBtn" data-cs-open="csDetail-contentSettings">
+            <span class="csListBtnIcon">✂️</span><span class="csListBtnText">লেখা কাটা, পোস্ট সংখ্যা ও বক্স সাইজ</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-postButtonsLayout">
+            <span class="csListBtnIcon">🔘</span><span class="csListBtnText">পোস্ট বাটন লেআউট</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-bottomButtons">
+            <span class="csListBtnIcon">👇</span><span class="csListBtnText">নিচের বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-menuButtons">
+            <span class="csListBtnIcon">⋮</span><span class="csListBtnText">থ্রি-ডট মেনু বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-commentBottomButtons">
+            <span class="csListBtnIcon">💬</span><span class="csListBtnText">কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-commentMenuButtons">
+            <span class="csListBtnIcon">💬⋮</span><span class="csListBtnText">কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-posterColors">
+            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">পোস্টার রং বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-colors">
+            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">রং (থিম কালার)</span><span class="csListBtnArrow">›</span>
+          </button>
         </div>
 
-        <div class="section">
-          <h2>🔘 পোস্ট বাটন লেআউট</h2>
-          <select id="postButtonsJustify" style="width:100%; background:#0d1117; border:1px solid #30363d; color:#fff; padding:8px 10px; border-radius:8px; font-size:13px;">
-            <option value="space-evenly">সমান্তরাল</option>
-            <option value="flex-start">বামদিকে</option>
-            <option value="flex-end">ডান দিকে</option>
-          </select>
-          <div class="hint">প্রতিটা পোস্টের নিচের বাটনগুলো কীভাবে সাজানো থাকবে</div>
-          <button class="sectionSaveBtn" data-section="postButtonsLayout">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusPostButtonsLayout"></div>
+        <!-- ================= ডিটেইল ভিউগুলো: বাটনে ঢুকলে এইগুলো দেখাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে ================= -->
+        <div class="csDetailView" id="csDetail-contentSettings">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">✂️ লেখা কাটা, পোস্ট সংখ্যা ও বক্স সাইজ</div>
+          </div>
+          <div class="section">
+            <h2>✂️ কত লাইন পর "আরও পড়ুন" আসবে</h2>
+            <input type="number" id="readMoreLines" placeholder="৬" min="1">
+            <div class="hint">পোস্টের লেখা এতগুলো লাইনের পর কেটে "আরও পড়ুন" বাটন দেখাবে, চাপলে পুরো লেখা খুলবে</div>
+
+            <h2 style="margin-top:16px;">প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
+            <input type="number" id="postsPerPage" placeholder="৫">
+            <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
+
+            <h2 style="margin-top:16px;">📏 কনটেন্টের প্রস্থ (px)</h2>
+            <input type="number" id="maxWidth" placeholder="640">
+
+            <h2 style="margin-top:16px;">📐 পোস্ট বক্সের সাইজ</h2>
+            <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
+            <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
+
+            <button class="sectionSaveBtn" data-section="contentSettings">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusContentSettings"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>👇 নিচের বাটন বাছাই করুন</h2>
-          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে</div>
-          <div class="buttonPicker" id="bottomButtonPicker"></div>
-          <button class="sectionSaveBtn" data-section="bottomButtons">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusBottomButtons"></div>
+        <div class="csDetailView" id="csDetail-postButtonsLayout">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🔘 পোস্ট বাটন লেআউট</div>
+          </div>
+          <div class="section">
+            <h2>🔘 পোস্ট বাটন লেআউট</h2>
+            <select id="postButtonsJustify" style="width:100%; background:#0d1117; border:1px solid #30363d; color:#fff; padding:8px 10px; border-radius:8px; font-size:13px;">
+              <option value="space-evenly">সমান্তরাল</option>
+              <option value="flex-start">বামদিকে</option>
+              <option value="flex-end">ডান দিকে</option>
+            </select>
+            <div class="hint">প্রতিটা পোস্টের নিচের বাটনগুলো কীভাবে সাজানো থাকবে</div>
+            <button class="sectionSaveBtn" data-section="postButtonsLayout">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusPostButtonsLayout"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
-          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে</div>
-          <div class="buttonPicker" id="menuButtonPicker"></div>
-          <button class="sectionSaveBtn" data-section="menuButtons">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusMenuButtons"></div>
+        <div class="csDetailView" id="csDetail-bottomButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">👇 নিচের বাটন বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>👇 নিচের বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে</div>
+            <div class="buttonPicker" id="bottomButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="bottomButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusBottomButtons"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>💬 কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</h2>
-          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে। প্রতিটা কমেন্ট ও রিপ্লাই এর নিচে এই বাটনগুলো দেখাবে</div>
-          <div class="buttonPicker" id="commentBottomButtonPicker"></div>
-          <button class="sectionSaveBtn" data-section="commentBottomButtons">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusCommentBottomButtons"></div>
+        <div class="csDetailView" id="csDetail-menuButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে</div>
+            <div class="buttonPicker" id="menuButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="menuButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusMenuButtons"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
-          <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে। এডিট ও ডিলিট শুধু যিনি কমেন্ট/রিপ্লাই করেছেন তিনিই দেখতে পাবেন</div>
-          <div class="buttonPicker" id="commentMenuButtonPicker"></div>
-          <button class="sectionSaveBtn" data-section="commentMenuButtons">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusCommentMenuButtons"></div>
+        <div class="csDetailView" id="csDetail-commentBottomButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">💬 কমেন্ট/রিপ্লাই — নিচের বাটন</div>
+          </div>
+          <div class="section">
+            <h2>💬 কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে। প্রতিটা কমেন্ট ও রিপ্লাই এর নিচে এই বাটনগুলো দেখাবে</div>
+            <div class="buttonPicker" id="commentBottomButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="commentBottomButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusCommentBottomButtons"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
-          <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
-          <div class="buttonPicker" id="posterColorPicker"></div>
-          <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusPosterColors"></div>
+        <div class="csDetailView" id="csDetail-commentMenuButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন</div>
+          </div>
+          <div class="section">
+            <h2>💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে। এডিট ও ডিলিট শুধু যিনি কমেন্ট/রিপ্লাই করেছেন তিনিই দেখতে পাবেন</div>
+            <div class="buttonPicker" id="commentMenuButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="commentMenuButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusCommentMenuButtons"></div>
+          </div>
         </div>
 
-        <div class="section">
-          <h2>🎨 রং</h2>
-          <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
-          <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
-          <div class="row"><label>Card রং</label><input type="color" id="cardColor"></div>
-          <div class="row"><label>টেক্সট রং</label><input type="color" id="textColor"></div>
-          <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
-          <div class="sectionStatus" id="statusColors"></div>
+        <div class="csDetailView" id="csDetail-posterColors">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🎨 পোস্টার রং বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
+            <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
+            <div class="buttonPicker" id="posterColorPicker"></div>
+            <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusPosterColors"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-colors">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🎨 রং (থিম কালার)</div>
+          </div>
+          <div class="section">
+            <h2>🎨 রং</h2>
+            <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
+            <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
+            <div class="row"><label>Card রং</label><input type="color" id="cardColor"></div>
+            <div class="row"><label>টেক্সট রং</label><input type="color" id="textColor"></div>
+            <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusColors"></div>
+          </div>
         </div>
         </div>
       </div>
@@ -953,6 +1053,31 @@
     if (node && node.onShow) node.onShow();
   }
 
+  // ---- কন্টেন্ট সেটিংস: বাটন লিস্ট → ডিটেইল ভিউ (একটা একটা করে ঢোকা যাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে) ----
+  let contentDetailOpen = null;
+  const csListView = document.getElementById('csListView');
+
+  function openContentDetail(id) {
+    document.querySelectorAll('.csDetailView').forEach(d => d.classList.remove('open'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+    csListView.style.display = 'none';
+    contentDetailOpen = id;
+  }
+
+  function closeContentDetail() {
+    document.querySelectorAll('.csDetailView').forEach(d => d.classList.remove('open'));
+    csListView.style.display = 'flex';
+    contentDetailOpen = null;
+  }
+
+  document.querySelectorAll('[data-cs-open]').forEach(btn => {
+    btn.addEventListener('click', () => openContentDetail(btn.getAttribute('data-cs-open')));
+  });
+  document.querySelectorAll('[data-cs-back]').forEach(btn => {
+    btn.addEventListener('click', closeContentDetail);
+  });
+
   // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
   let currentReportType = 'post';
   document.querySelectorAll('[data-report-type]').forEach(btn => {
@@ -1211,7 +1336,11 @@
       await setDoc(doc(db, "settings", "site"), data, { merge: true });
       statusEl.style.color = '#4ade80';
       statusEl.textContent = '✅ সেভ হয়েছে!';
-      setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      if (contentDetailOpen) {
+        setTimeout(() => { closeContentDetail(); }, 900);
+      } else {
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      }
     } catch (e) {
       console.error(e);
       statusEl.style.color = '#f87171';
@@ -1262,6 +1391,12 @@
   }
 
   function handleBack() {
+    if (contentDetailOpen) {
+      closeContentDetail();
+      rearmGuard();
+      return;
+    }
+
     if (currentPanelIndex > 0) {
       scrollToPanel(currentPanelIndex - 1);
       rearmGuard();
