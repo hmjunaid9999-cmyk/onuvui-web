@@ -580,7 +580,10 @@
             <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogSmallOpen" placeholder="["></div>
             <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogSmallClose" placeholder="]"></div>
 
-            <div class="hint">💡 লিংক বসাতে চাইলে এই একই চিহ্নগুলো উল্টো ক্রমে বসালেই (শেষেরটা আগে, শুরুরটা পরে) হয়ে যাবে — এর জন্য আলাদা সেটিংস লাগবে না, স্বয়ংক্রিয়ভাবে কাজ করবে। প্রতিটা সাইজের জন্য আলাদা আলাদা চিহ্ন ব্যবহার করবেন, নাহলে একটার সাথে আরেকটা গুলিয়ে যেতে পারে।</div>
+            <h2 style="margin-top:16px;">🔗 লিংকের জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogLinkOpen" placeholder="&lt;"></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogLinkClose" placeholder="&gt;"></div>
+            <div class="hint">এই দুইটা চিহ্নের মাঝে লিংক বসালেই সেটা ক্লিক করার মতো লিংক হয়ে যাবে — যেমন ডিফল্ট চিহ্নে &lt;লিংক&gt; এভাবে লিখলে হবে। প্রতিটা চিহ্ন (বড়/মাঝারি/ছোট/লিংক) একে অপরের থেকে আলাদা রাখবেন, নাহলে গুলিয়ে যেতে পারে।</div>
 
             <button class="sectionSaveBtn" data-section="blog">💾 সেভ করুন</button>
             <div class="sectionStatus" id="statusBlog"></div>
@@ -692,6 +695,8 @@
   const blogMedClose = document.getElementById('blogMedClose');
   const blogSmallOpen = document.getElementById('blogSmallOpen');
   const blogSmallClose = document.getElementById('blogSmallClose');
+  const blogLinkOpen = document.getElementById('blogLinkOpen');
+  const blogLinkClose = document.getElementById('blogLinkClose');
 
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
   const BUTTON_LABELS = {
@@ -1337,6 +1342,8 @@
     blogMedClose.value = s.blogMedClose || '}';
     blogSmallOpen.value = s.blogSmallOpen || '[';
     blogSmallClose.value = s.blogSmallClose || ']';
+    blogLinkOpen.value = s.blogLinkOpen || '<';
+    blogLinkClose.value = s.blogLinkClose || '>';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
     commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
@@ -1371,7 +1378,8 @@
       blogComposerHeight: Number(blogComposerHeight.value) || 300,
       blogBigOpen: blogBigOpen.value || '(', blogBigClose: blogBigClose.value || ')',
       blogMedOpen: blogMedOpen.value || '{', blogMedClose: blogMedClose.value || '}',
-      blogSmallOpen: blogSmallOpen.value || '[', blogSmallClose: blogSmallClose.value || ']'
+      blogSmallOpen: blogSmallOpen.value || '[', blogSmallClose: blogSmallClose.value || ']',
+      blogLinkOpen: blogLinkOpen.value || '<', blogLinkClose: blogLinkClose.value || '>'
     };
     else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
     else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };

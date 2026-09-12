@@ -66,7 +66,7 @@
         </div>
         <div id="blogSyntaxHint">
           বড় লেখার জন্য (এভাবে লিখুন) · মাঝারির জন্য {এভাবে লিখুন} · স্বাভাবিকের জন্য [এভাবে লিখুন]<br>
-          অন্য পোস্টের লিংক যুক্ত করতে সেই লিংক উল্টো ব্র্যাকেটে বসান — )লিংক( অথবা }লিংক{ অথবা ]লিংক[
+          অন্য পোস্টের লিংক যুক্ত করতে &lt;লিংক&gt; এভাবে বসান
         </div>
         <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
 
@@ -146,8 +146,8 @@
   let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
   let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete', 'report'] };
   let commentButtonOrder = { bottom: ['like', 'reply'], menu: ['copy', 'edit', 'delete', 'report'] };
-  // ব্লগ লেখার চিহ্ন (বড়/মাঝারি/স্বাভাবিক) — অ্যাডমিন প্যানেল থেকে পরিবর্তনযোগ্য, ডিফল্ট আগের মতোই বন্ধনী
-  let blogSymbols = { big: ['(', ')'], med: ['{', '}'], small: ['[', ']'] };
+  // ব্লগ লেখার চিহ্ন (বড়/মাঝারি/স্বাভাবিক + লিংক) — অ্যাডমিন প্যানেল থেকে পরিবর্তনযোগ্য, ডিফল্ট আগের মতোই বন্ধনী
+  let blogSymbols = { big: ['(', ')'], med: ['{', '}'], small: ['[', ']'], link: ['<', '>'] };
   const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
   let openCommentSections = [];
   let openReplyBoxes = [];
@@ -320,7 +320,8 @@
     blogSymbols = {
       big: [s.blogBigOpen || '(', s.blogBigClose || ')'],
       med: [s.blogMedOpen || '{', s.blogMedClose || '}'],
-      small: [s.blogSmallOpen || '[', s.blogSmallClose || ']']
+      small: [s.blogSmallOpen || '[', s.blogSmallClose || ']'],
+      link: [s.blogLinkOpen || '<', s.blogLinkClose || '>']
     };
     updateBlogSyntaxHint();
 
@@ -564,32 +565,30 @@
       const sym = blogSymbols[key];
       const open = sym && sym[0], close = sym && sym[1];
       if (!open || !close) return;
-      const re = new RegExp(escapeRegex(open) + '([\\s\\S]+?)' + escapeRegex(close), 'g');
+      const o = escapeRegex(escapeHtml(open)), c = escapeRegex(escapeHtml(close));
+      const re = new RegExp(o + '([\\s\\S]+?)' + c, 'g');
       s = s.replace(re, '<span class="' + cls + '">$1</span>');
     });
-    // ধাপ ২: লিংক — একই চিহ্ন উল্টো ক্রমে বসালে লিংক হয়ে যাবে (বন্ধ চিহ্ন...খোলা চিহ্ন)
-    BLOG_SIZE_DEFS.forEach(({ linkCls, key }) => {
-      const sym = blogSymbols[key];
-      const open = sym && sym[0], close = sym && sym[1];
-      if (!open || !close) return;
-      const re = new RegExp(escapeRegex(close) + '([\\s\\S]+?)' + escapeRegex(open), 'g');
-      s = s.replace(re, '<span class="blogLink ' + linkCls + '" data-blog-link="$1">$1</span>');
-    });
+    // ধাপ ২: লিংক — নিজস্ব আলাদা চিহ্ন (ডিফল্ট < এবং >), এই দুইটার মধ্যে লিংক বসালেই সেটা লিংক হয়ে যাবে
+    const linkSym = blogSymbols.link;
+    const lo = linkSym && linkSym[0], lc = linkSym && linkSym[1];
+    if (lo && lc) {
+      const o = escapeRegex(escapeHtml(lo)), c = escapeRegex(escapeHtml(lc));
+      const re = new RegExp(o + '([\\s\\S]+?)' + c, 'g');
+      s = s.replace(re, '<span class="blogLink" data-blog-link="$1">$1</span>');
+    }
     return s;
   }
 
   // কম্পোজারের উপরে যে সিনট্যাক্স হিন্ট দেখায়, সেটা বর্তমান চিহ্ন অনুযায়ী আপডেট করে
   function updateBlogSyntaxHint() {
     if (!blogSyntaxHint) return;
-    const b = blogSymbols.big, m = blogSymbols.med, sm = blogSymbols.small;
+    const b = blogSymbols.big, m = blogSymbols.med, sm = blogSymbols.small, lk = blogSymbols.link;
     blogSyntaxHint.innerHTML =
       'বড় লেখার জন্য ' + escapeHtml(b[0]) + 'এভাবে লিখুন' + escapeHtml(b[1]) +
       ' · মাঝারির জন্য ' + escapeHtml(m[0]) + 'এভাবে লিখুন' + escapeHtml(m[1]) +
       ' · স্বাভাবিকের জন্য ' + escapeHtml(sm[0]) + 'এভাবে লিখুন' + escapeHtml(sm[1]) + '<br>' +
-      'অন্য পোস্টের লিংক যুক্ত করতে সেই লিংক উল্টো চিহ্নে বসান — ' +
-      escapeHtml(b[1]) + 'লিংক' + escapeHtml(b[0]) + ' অথবা ' +
-      escapeHtml(m[1]) + 'লিংক' + escapeHtml(m[0]) + ' অথবা ' +
-      escapeHtml(sm[1]) + 'লিংক' + escapeHtml(sm[0]);
+      'অন্য পোস্টের লিংক যুক্ত করতে ' + escapeHtml(lk[0]) + 'লিংক' + escapeHtml(lk[1]) + ' এভাবে বসান';
   }
   updateBlogSyntaxHint();
 
