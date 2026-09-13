@@ -79,7 +79,7 @@
       </div>
 
       
-      <div style="display:flex; justify-content:center; padding:8px 0;">
+      <div id="topAdBanner" style="display:flex; justify-content:center; padding:8px 0;">
         <script>
           atOptions = {
             'key' : '637576a22a8ac384bc75c05afc089bb6',
@@ -153,6 +153,9 @@
   let openReplyBoxes = [];
 
   let loadMoreBtnPrevDisplay = '';
+  let composerPrevDisplay = '';
+  let topAdBannerPrevDisplay = '';
+  let searchBarPrevDisplay = '';
   let focusedCard = null;
   function enterCommentFocus(activeCard) {
     focusedCard = activeCard;
@@ -161,10 +164,19 @@
     });
     loadMoreBtnPrevDisplay = loadMoreBtn.style.display;
     loadMoreBtn.style.display = 'none';
+    // পোস্টের কমেন্ট বক্সে ঢুকলে উপরের কম্পোজার, বিজ্ঞাপন ও সার্চ বার লুকিয়ে
+    // দেয়, যেন মেনু বারের পরেই সরাসরি পোস্ট ও কমেন্ট দেখা যায়। হোম পেজে
+    // (কমেন্ট বক্সের বাইরে) এগুলো আগের মতোই দেখাবে।
+    if (composer) { composerPrevDisplay = composer.style.display; composer.style.display = 'none'; }
+    if (topAdBanner) { topAdBannerPrevDisplay = topAdBanner.style.display; topAdBanner.style.display = 'none'; }
+    if (searchBar) { searchBarPrevDisplay = searchBar.style.display; searchBar.style.display = 'none'; }
   }
   function exitCommentFocus() {
     postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
     loadMoreBtn.style.display = loadMoreBtnPrevDisplay;
+    if (composer) composer.style.display = composerPrevDisplay;
+    if (topAdBanner) topAdBanner.style.display = topAdBannerPrevDisplay;
+    if (searchBar) searchBar.style.display = searchBarPrevDisplay;
     if (focusedCard) {
       focusedCard.scrollIntoView({ block: 'start' });
       focusedCard = null;
@@ -201,6 +213,7 @@
   const cancelEditBtn = document.getElementById('cancelEditBtn');
   const composerStatus = document.getElementById('composerStatus');
   const searchBar = document.getElementById('searchBar');
+  const topAdBanner = document.getElementById('topAdBanner');
   const postsList = document.getElementById('postsList');
   const loadMoreBtn = document.getElementById('loadMoreBtn');
 
