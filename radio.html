@@ -165,9 +165,7 @@
       log('⚠️ সতর্কতা: এই পেজ HTTPS দিয়ে চলছে কিন্তু লিংকটা HTTP (নিরাপদ না)। ব্রাউজার এটা ব্লক করে দিতে পারে (Mixed Content)।', 'err');
     }
 
-    currentAudio = new Audio();
-    currentAudio.crossOrigin = 'anonymous'; // রেকর্ডিং কাজ করার জন্য চেষ্টা — সার্ভার অনুমতি না দিলে কাজ নাও করতে পারে
-    currentAudio.src = ch.url;
+    currentAudio = new Audio(ch.url);
     currentIndex = idx;
 
     currentAudio.addEventListener('loadstart', () => log('… লোড শুরু হয়েছে'));
