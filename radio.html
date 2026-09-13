@@ -20,13 +20,25 @@
   }
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   .radioChannelList { display: flex; flex-direction: column; gap: 10px; }
-  .radioChannelBtn {
-    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    background: #161b22; border: 1px solid #262c36; color: #fff;
-    padding: 14px; border-radius: 14px; font-size: 14px; cursor: pointer;
+  .radioChannelRow {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    background: #161b22; border: 1px solid #262c36; border-radius: 14px; padding: 6px;
   }
-  .radioChannelBtn.playing { border-color: #4285F4; color: #4285F4; }
+  .radioChannelRow.playing { border-color: #4285F4; }
+  .radioChannelBtn {
+    display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-align: left;
+    background: transparent; border: none; color: #fff;
+    padding: 8px; font-size: 14px; cursor: pointer;
+  }
+  .radioChannelRow.playing .radioChannelBtn { color: #4285F4; }
   .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
+
+  .recordBtn {
+    flex-shrink: 0; background: #21262d; color: #fff; border: none;
+    padding: 8px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;
+  }
+  .recordBtn.recording { background: #f87171; color: #fff; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .55; } }
 
   /* --- debug panel --- */
   .debugBox {
@@ -76,6 +88,9 @@
   let channels = [];
   let currentAudio = null;
   let currentIndex = -1;
+  let mediaRecorder = null;
+  let recordedChunks = [];
+  let isRecording = false;
 
   // MediaError.code সংখ্যাকে মানুষ-পড়ার-মতো বার্তায় রূপান্তর
   const MEDIA_ERROR_MESSAGES = {
@@ -105,14 +120,25 @@
     }
     channelList.innerHTML =
       '<div class="radioChannelList">' +
-      channels.map((ch, i) =>
-        '<button type="button" class="radioChannelBtn' + (i === currentIndex ? ' playing' : '') + '" data-idx="' + i + '">' +
-        (i === currentIndex ? '⏸️' : '▶️') + ' ' + escapeHtml(ch.name || ('চ্যানেল ' + (i + 1))) +
-        '</button>'
-      ).join('') +
+      channels.map((ch, i) => {
+        const playing = i === currentIndex;
+        const recBtnLabel = (playing && isRecording) ? '⏹ থামান ও ডাউনলোড' : '⏺ রেকর্ড';
+        const recBtnClass = (playing && isRecording) ? 'recordBtn recording' : 'recordBtn';
+        return (
+          '<div class="radioChannelRow' + (playing ? ' playing' : '') + '">' +
+          '<button type="button" class="radioChannelBtn" data-idx="' + i + '">' +
+          (playing ? '⏸️' : '▶️') + ' ' + escapeHtml(ch.name || ('চ্যানেল ' + (i + 1))) +
+          '</button>' +
+          (playing ? '<button type="button" class="' + recBtnClass + '" data-recidx="' + i + '">' + recBtnLabel + '</button>' : '') +
+          '</div>'
+        );
+      }).join('') +
       '</div>';
     channelList.querySelectorAll('.radioChannelBtn').forEach(btn => {
       btn.addEventListener('click', () => toggle(Number(btn.dataset.idx)));
+    });
+    channelList.querySelectorAll('.recordBtn').forEach(btn => {
+      btn.addEventListener('click', () => toggleRecording());
     });
   }
 
@@ -121,6 +147,7 @@
     if (!ch || !ch.url) return;
 
     if (currentIndex === idx) {
+      if (isRecording) stopRecording(true);
       if (currentAudio) currentAudio.pause();
       log('⏸️ থামানো হয়েছে: <b>' + escapeHtml(ch.name) + '</b>');
       currentIndex = -1;
@@ -128,6 +155,7 @@
       return;
     }
 
+    if (isRecording) stopRecording(true);
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
 
     log('▶️ চেষ্টা করা হচ্ছে: <b>' + escapeHtml(ch.name) + '</b><br>লিংক: ' + escapeHtml(ch.url));
@@ -137,7 +165,9 @@
       log('⚠️ সতর্কতা: এই পেজ HTTPS দিয়ে চলছে কিন্তু লিংকটা HTTP (নিরাপদ না)। ব্রাউজার এটা ব্লক করে দিতে পারে (Mixed Content)।', 'err');
     }
 
-    currentAudio = new Audio(ch.url);
+    currentAudio = new Audio();
+    currentAudio.crossOrigin = 'anonymous'; // রেকর্ডিং কাজ করার জন্য চেষ্টা — সার্ভার অনুমতি না দিলে কাজ নাও করতে পারে
+    currentAudio.src = ch.url;
     currentIndex = idx;
 
     currentAudio.addEventListener('loadstart', () => log('… লোড শুরু হয়েছে'));
@@ -164,6 +194,66 @@
       });
 
     render();
+  }
+
+  function toggleRecording() {
+    if (isRecording) {
+      stopRecording(false);
+    } else {
+      startRecording();
+    }
+  }
+
+  function startRecording() {
+    if (!currentAudio || currentIndex === -1) return;
+    if (typeof currentAudio.captureStream !== 'function' && typeof currentAudio.mozCaptureStream !== 'function') {
+      log('❌ এই ব্রাউজার রেকর্ডিং সাপোর্ট করে না (captureStream পাওয়া যায়নি)।', 'err');
+      return;
+    }
+    try {
+      const stream = currentAudio.captureStream ? currentAudio.captureStream() : currentAudio.mozCaptureStream();
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) recordedChunks.push(e.data); };
+      mediaRecorder.onerror = (e) => {
+        log('❌ রেকর্ডিং এরর: ' + (e.error ? e.error.name + ' — ' + e.error.message : 'অজানা') + '। সম্ভবত স্ট্রিম সার্ভার CORS অনুমতি দেয়নি।', 'err');
+      };
+      mediaRecorder.start();
+      isRecording = true;
+      log('⏺️ রেকর্ডিং শুরু হয়েছে: <b>' + escapeHtml(channels[currentIndex].name) + '</b>');
+      render();
+    } catch (e) {
+      log('❌ রেকর্ডিং শুরু করা যায়নি: ' + e.name + ' — ' + e.message + '। সম্ভবত এই স্ট্রিম সার্ভার ক্রস-অরিজিন (CORS) অনুমতি দেয়নি, তাই রেকর্ড করা সম্ভব না।', 'err');
+      isRecording = false;
+      render();
+    }
+  }
+
+  function stopRecording(silent) {
+    if (!mediaRecorder) { isRecording = false; return; }
+    const chName = (currentIndex !== -1 && channels[currentIndex]) ? channels[currentIndex].name : 'radio';
+    mediaRecorder.onstop = () => {
+      isRecording = false;
+      if (!recordedChunks.length) {
+        log('❌ কোনো অডিও ডেটা রেকর্ড হয়নি — সম্ভবত স্ট্রিম সার্ভার CORS অনুমতি দেয়নি (ফাঁকা ফাইল হতো তাই ডাউনলোড করা হলো না)।', 'err');
+        render();
+        return;
+      }
+      const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = url;
+      a.download = (chName || 'radio').replace(/[^\w\u0980-\u09FF-]+/g, '_') + '-' + stamp + '.webm';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      if (!silent) log('✅ রেকর্ডিং থামানো হয়েছে, ফাইল ডাউনলোড শুরু হয়েছে (.webm ফরম্যাট)।', 'ok');
+      else log('ℹ️ চ্যানেল পরিবর্তনের কারণে রেকর্ডিং স্বয়ংক্রিয়ভাবে থামিয়ে ডাউনলোড করা হয়েছে।', 'ok');
+      render();
+    };
+    try { mediaRecorder.stop(); } catch (e) { isRecording = false; }
   }
 
   onSnapshot(doc(db, "settings", "radio"), (snap) => {
