@@ -42,6 +42,10 @@
     font-size: 30px; border: none; display: flex; align-items: center; justify-content: center;
     margin: 0 auto; cursor: pointer;
   }
+  .retryBtn {
+    margin-top: 16px; background: #21262d; color: #fff; padding: 8px 18px;
+    border-radius: 20px; font-size: 13px; font-weight: normal;
+  }
   .visualizer {
     display: flex; align-items: flex-end; justify-content: center; gap: 4px;
     height: 46px; margin-top: 22px;
@@ -76,7 +80,11 @@
   .debugBox b { color: #fff; }
   .debugBox .err { color: #f87171; }
   .debugBox .ok { color: #4ade80; }
-  .debugTitle { font-size: 12px; color: #6b7280; margin: 18px 0 6px; }
+  .debugTitle {
+    font-size: 12px; color: #6b7280; margin: 18px 0 6px; background: none; border: none;
+    padding: 6px 0; text-align: left; width: 100%; font-weight: normal; cursor: pointer;
+    text-decoration: underline;
+  }
 </style>
 </head>
 <body>
@@ -100,6 +108,7 @@
         <div class="visualizer" id="visualizer">
           <span></span><span></span><span></span><span></span><span></span>
         </div>
+        <button type="button" id="retryBtn" class="retryBtn" style="display:none;">🔄 আবার চেষ্টা করুন</button>
       </div>
 
       <div id="adSlot">
@@ -108,8 +117,8 @@
       </div>
     </div>
 
-    <div class="debugTitle">🔧 ডিবাগ লগ (সমস্যা হলে এখানে দেখুন)</div>
-    <div id="debugBox" class="debugBox">এখনো কিছু চালানো হয়নি।</div>
+    <button type="button" id="debugToggle" class="debugTitle">🔧 সমস্যা হচ্ছে? এখানে চাপুন</button>
+    <div id="debugBox" class="debugBox" style="display:none;">এখনো কিছু চালানো হয়নি।</div>
   </main>
 
 <script type="module">
@@ -134,12 +143,14 @@
   const playerView = document.getElementById('playerView');
   const channelList = document.getElementById('channelList');
   const debugBox = document.getElementById('debugBox');
+  const debugToggle = document.getElementById('debugToggle');
   const headerTitle = document.getElementById('headerTitle');
   const backBtn = document.getElementById('backBtn');
   const playerBackBtn = document.getElementById('playerBackBtn');
   const playerChannelName = document.getElementById('playerChannelName');
   const playerStatus = document.getElementById('playerStatus');
   const playPauseBtn = document.getElementById('playPauseBtn');
+  const retryBtn = document.getElementById('retryBtn');
   const visualizer = document.getElementById('visualizer');
   const adSlot = document.getElementById('adSlot');
   const adInner = document.getElementById('adInner');
@@ -150,6 +161,9 @@
   let currentAudio = null;
   let currentIndex = -1;
   let playerHistoryPushed = false; // প্লেয়ার-ভিউর জন্য history-তে একটা এক্সট্রা এন্ট্রি রাখা হয়েছে কিনা
+  let reconnectAttempts = 0;
+  let stallTimer = null;
+  const MAX_RECONNECT = 4;
 
   // MediaError.code সংখ্যাকে মানুষ-পড়ার-মতো বার্তায় রূপান্তর
   const MEDIA_ERROR_MESSAGES = {
@@ -171,6 +185,13 @@
   function escapeHtml(str) {
     return (str || '').replace(/</g, '&lt;');
   }
+
+  // সাধারণ ইউজারকে সবসময় লগ দেখানোর দরকার নেই — চাপলে তবেই খুলবে/বন্ধ হবে
+  debugToggle.addEventListener('click', () => {
+    const opening = debugBox.style.display === 'none';
+    debugBox.style.display = opening ? 'block' : 'none';
+    debugToggle.textContent = opening ? '🔧 লগ বন্ধ করুন' : '🔧 সমস্যা হচ্ছে? এখানে চাপুন';
+  });
 
   // এডমিনের দেওয়া কাঁচা HTML/JS বিজ্ঞাপন কোড ইনজেক্ট করে — <script> ট্যাগগুলোও রি-এক্সিকিউট করে,
   // কারণ innerHTML দিয়ে বসালে স্ক্রিপ্ট নিজে থেকে চলে না।
@@ -239,6 +260,9 @@
 
   function stopPlayback() {
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    clearTimeout(stallTimer);
+    reconnectAttempts = 0;
+    retryBtn.style.display = 'none';
     currentIndex = -1;
     hideAd();
     renderList();
@@ -287,12 +311,9 @@
     const ch = channels[idx];
     if (!ch || !ch.url) return;
 
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-
     currentIndex = idx;
+    reconnectAttempts = 0;
     showPlayerView(ch);
-    playerStatus.textContent = 'লোড হচ্ছে…';
-    setPlayingUi(true);
 
     // চ্যানেল খোলার সাথে সাথে history-তে একটা "player" স্টেট রাখা হয়, যাতে
     // ফোনের ব্যাক বাটন চাপলে প্রথমে তালিকায় ফেরে, সরাসরি সাইট থেকে বের না হয়ে যায়
@@ -303,6 +324,22 @@
       history.replaceState({ radioView: 'player' }, '', location.href);
     }
 
+    showAd(); // চ্যানেল ক্লিক করা মাত্রই নতুন বিজ্ঞাপন
+    renderList();
+    startStream(ch);
+  }
+
+  // আসল স্ট্রিম চালু করার লজিক — এটাকেই আবার রিকানেক্ট/রিট্রাই এর সময় ডাকা হয়,
+  // যাতে সমস্যা হলে শুধু লগে দেখিয়ে থেমে না গিয়ে নিজে থেকেই আবার চেষ্টা করে
+  function startStream(ch) {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    clearTimeout(stallTimer);
+    retryBtn.style.display = 'none';
+    playerStatus.textContent = reconnectAttempts > 0
+      ? 'পুনরায় সংযোগ করা হচ্ছে… (' + reconnectAttempts + '/' + MAX_RECONNECT + ')'
+      : 'লোড হচ্ছে…';
+    setPlayingUi(true);
+
     log('▶️ চেষ্টা করা হচ্ছে: <b>' + escapeHtml(ch.name) + '</b><br>লিংক: ' + escapeHtml(ch.url));
 
     // পেজ https কিনা আর লিংক http কিনা — সেটা আগেই চেক করে জানিয়ে দেওয়া
@@ -312,20 +349,48 @@
 
     currentAudio = new Audio(ch.url);
 
+    // নেটওয়ার্ক/স্ট্রিম আটকে গেলে (stalled/waiting) কিছুক্ষণ অপেক্ষা করে নিজে থেকেই রিকানেক্ট করা
+    function armStallWatchdog() {
+      clearTimeout(stallTimer);
+      stallTimer = setTimeout(() => {
+        log('⏱️ অনেকক্ষণ ডেটা আসছে না, নিজে থেকেই রিকানেক্ট করা হচ্ছে…', 'err');
+        attemptReconnect(ch);
+      }, 8000);
+    }
+
     currentAudio.addEventListener('loadstart', () => log('… লোড শুরু হয়েছে'));
-    currentAudio.addEventListener('canplay', () => { log('✅ স্ট্রিম রেডি, বাজানো যাচ্ছে', 'ok'); playerStatus.textContent = 'লাইভ শোনা যাচ্ছে'; });
-    currentAudio.addEventListener('playing', () => { log('🔊 আসলেই বাজছে এখন', 'ok'); setPlayingUi(true); });
+    currentAudio.addEventListener('canplay', () => {
+      log('✅ স্ট্রিম রেডি, বাজানো যাচ্ছে', 'ok');
+      playerStatus.textContent = 'লাইভ শোনা যাচ্ছে';
+      reconnectAttempts = 0;
+      clearTimeout(stallTimer);
+    });
+    currentAudio.addEventListener('playing', () => {
+      log('🔊 আসলেই বাজছে এখন', 'ok');
+      setPlayingUi(true);
+      reconnectAttempts = 0;
+      clearTimeout(stallTimer);
+    });
     currentAudio.addEventListener('pause', () => setPlayingUi(false));
-    currentAudio.addEventListener('stalled', () => log('⚠️ ডেটা আসা থেমে গেছে (stalled) — নেটওয়ার্ক বা সার্ভারের সমস্যা হতে পারে', 'err'));
-    currentAudio.addEventListener('ended', () => { log('স্ট্রিম শেষ হয়ে গেছে'); goBackToList(); });
+    currentAudio.addEventListener('waiting', armStallWatchdog);
+    currentAudio.addEventListener('stalled', () => {
+      log('⚠️ ডেটা আসা থেমে গেছে (stalled) — নেটওয়ার্ক বা সার্ভারের সমস্যা হতে পারে', 'err');
+      armStallWatchdog();
+    });
+
+    // অনেক লাইভ স্ট্রিম মাঝেমধ্যে সার্ভার-সাইড থেকে সংযোগ কেটে দেয় এবং ব্রাউজার সেটাকে
+    // ভুল করে "শেষ" (ended) হিসেবে দেখায় — তাই সাথে সাথে তালিকায় ফিরিয়ে না নিয়ে আগে রিকানেক্ট চেষ্টা করা
+    currentAudio.addEventListener('ended', () => {
+      log('স্ট্রিম থেমে গেছে, রিকানেক্ট করার চেষ্টা করা হচ্ছে…', 'err');
+      attemptReconnect(ch);
+    });
 
     currentAudio.addEventListener('error', () => {
       const mediaErr = currentAudio.error;
       const code = mediaErr ? mediaErr.code : null;
       const detail = code && MEDIA_ERROR_MESSAGES[code] ? MEDIA_ERROR_MESSAGES[code] : 'অজানা এরর';
       log('❌ এরর কোড ' + code + ': ' + detail, 'err');
-      playerStatus.textContent = 'চালানো যাচ্ছে না';
-      setPlayingUi(false);
+      attemptReconnect(ch);
     });
 
     currentAudio.play()
@@ -335,10 +400,30 @@
         playerStatus.textContent = 'চালানো যাচ্ছে না — নিচের প্লে বাটনে চাপুন';
         setPlayingUi(false);
       });
-
-    showAd(); // চ্যানেল ক্লিক করা মাত্রই নতুন বিজ্ঞাপন
-    renderList();
   }
+
+  // সমস্যা হলে সাথে সাথে ইউজারকে দোষ না দিয়ে নিজে থেকে কয়েকবার রিকানেক্ট করার চেষ্টা,
+  // পুরোপুরি ব্যর্থ হলে তবেই ম্যানুয়াল "আবার চেষ্টা করুন" বাটন দেখানো
+  function attemptReconnect(ch) {
+    if (currentIndex === -1) return; // ততক্ষণে ইউজার তালিকায় ফিরে গেছে
+    clearTimeout(stallTimer);
+    reconnectAttempts++;
+    if (reconnectAttempts > MAX_RECONNECT) {
+      playerStatus.textContent = 'চালানো যাচ্ছে না — লিংকে সমস্যা থাকতে পারে';
+      setPlayingUi(false);
+      retryBtn.style.display = 'inline-block';
+      log('❌ ' + MAX_RECONNECT + ' বার চেষ্টা করেও সংযোগ হয়নি, থামানো হলো।', 'err');
+      return;
+    }
+    setTimeout(() => startStream(ch), 1500);
+  }
+
+  retryBtn.addEventListener('click', () => {
+    const ch = channels[currentIndex];
+    if (!ch) return;
+    reconnectAttempts = 0;
+    startStream(ch);
+  });
 
   // পেজ প্রথম লোড হওয়ার সময় বর্তমান history এন্ট্রিটাকে "list" হিসেবে চিহ্নিত করা
   history.replaceState({ radioView: 'list' }, '', location.href);
