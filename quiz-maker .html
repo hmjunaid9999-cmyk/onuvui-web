@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>প্রশ্ন যোগ করার প্যানেল</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0d1117;color:#fff;min-height:100vh;padding-bottom:40px}
+#app{max-width:520px;margin:0 auto;padding:16px}
+header{position:relative;text-align:center;padding:14px 0 20px;font-size:20px;font-weight:700}
+#headerAuthBtn{position:absolute;left:14px;top:14px;background:#262c36;color:#fff;border:0;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+#headerAuthBtn.loggedIn{color:#f87171}
+.box{background:#161b22;border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:14px}
+.box h3{font-size:15px;margin-bottom:12px}
+label{display:block;font-size:12px;color:#9ca3af;margin:10px 0 4px}
+input,select,textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit}
+textarea{min-height:70px;resize:vertical}
+.optRow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.optRow input[type=radio]{width:auto}
+.primary{width:100%;padding:11px;background:#4285F4;color:#fff;border:0;border-radius:9px;font-weight:700;cursor:pointer;margin-top:12px;font-size:13px}
+.ghost{padding:6px 12px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:7px;cursor:pointer;font-size:12px}
+.danger{padding:6px 12px;background:#35171c;color:#ff9da8;border:1px solid #632b34;border-radius:7px;cursor:pointer;font-size:12px}
+.notice{font-size:12px;color:#9ca3af;margin-top:8px}
+.status{font-size:12px;margin-top:8px;min-height:16px}
+.status.ok{color:#4ade80}.status.err{color:#f87171}
+.loginGate{max-width:340px;margin:80px auto;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button id="headerAuthBtn" style="display:none">লগইন</button>
+    ➕ প্রশ্ন যোগ করার প্যানেল
+  </header>
+
+  <!-- ---- লগইন গেট ---- -->
+  <div id="loginGate" class="loginGate">
+    <p class="notice" style="margin-bottom:16px">এই প্যানেল ব্যবহার করতে Google একাউন্ট দিয়ে লগইন করুন</p>
+    <button class="primary" id="adminLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginGateStatus" class="status"></div>
+  </div>
+
+  <div id="adminBody" style="display:none">
+    <div class="box">
+      <h3>➕ নতুন প্রশ্ন</h3>
+      <label>ক্যাটাগরি</label><select id="qCategory"></select>
+      <label>প্রশ্ন</label><textarea id="qText" placeholder="প্রশ্নটি লিখুন"></textarea>
+      <label>অপশনসমূহ (সঠিক উত্তরের পাশের রেডিও বাটনে ক্লিক করুন) — যত খুশি অপশন রাখা যাবে, কমপক্ষে ২টি</label>
+      <div id="qOptionsContainer"></div>
+      <button type="button" class="ghost" id="addQOptionBtn" style="margin-top:8px">➕ আরও অপশন যোগ করুন</button>
+      <button class="primary" id="addQBtn">প্রশ্ন যোগ করুন</button>
+      <div class="status" id="qStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  getFirestore, collection, query, orderBy, getDocs, addDoc, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+  authDomain: "onuvuti-5c9e3.firebaseapp.com",
+  projectId: "onuvuti-5c9e3",
+  storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+  messagingSenderId: "846713879232",
+  appId: "1:846713879232:web:538c47101eade3e2df8b25",
+  measurementId: "G-2K2L45CMWR"
+};
+const app = getApps().length ? getApps()[0] : initializeApp(cfg);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+/* ---- যাদের এই প্যানেল ব্যবহারের অনুমতি দিতে চান তাদের Gmail এখানে বসান ----
+       (খালি রাখলে যে কেউ Google দিয়ে লগইন করে প্রশ্ন যোগ করতে পারবে,
+        তাই যাকে প্রশ্ন যোগ করার কাজ দিচ্ছেন তার ইমেইল অবশ্যই এখানে যোগ করুন।) ---- */
+const ALLOWED_EMAILS = [
+  "hmjunaid9999@gmail.com"
+  // "otherperson@gmail.com"  <-- এভাবে কমা দিয়ে আরও ইমেইল যোগ করতে পারবেন
+];
+
+onAuthStateChanged(auth, (u) => {
+  const isAllowed = u && (ALLOWED_EMAILS.length === 0 || ALLOWED_EMAILS.includes(u.email));
+  $('loginGate').style.display = isAllowed ? 'none' : 'block';
+  $('adminBody').style.display = isAllowed ? 'block' : 'none';
+  $('loginGateStatus').textContent = (u && !isAllowed) ? 'আপনার একাউন্ট (' + u.email + ') অনুমোদিত তালিকায় নেই।' : '';
+  const authBtn = $('headerAuthBtn');
+  authBtn.style.display = '';
+  authBtn.textContent = u ? 'লগ আউট' : 'লগইন';
+  authBtn.classList.toggle('loggedIn', !!u);
+  if (isAllowed) initPanel();
+});
+$('headerAuthBtn').addEventListener('click', async () => {
+  if (auth.currentUser) {
+    try { await signOut(auth); } catch (e) { alert('লগ আউট এরর: ' + e.message); }
+  } else {
+    try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
+  }
+});
+$('adminLoginBtn').addEventListener('click', async () => {
+  try { await signInWithPopup(auth, provider); } catch (e) { $('loginGateStatus').textContent = 'লগইন এরর: ' + e.message; }
+});
+
+let panelInited = false;
+async function initPanel() {
+  if (panelInited) return;
+  panelInited = true;
+  await loadCategories();
+}
+
+/* ================= ক্যাটাগরি (শুধু ড্রপডাউনের জন্য) ================= */
+async function loadCategories() {
+  try {
+    const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
+    const categories = s.docs.map(x => ({ id: x.id, ...x.data() }));
+    const opts = categories.map(c => `<option value="${c.id}">${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
+    $('qCategory').innerHTML = opts || '<option value="">কোনো ক্যাটাগরি নেই</option>';
+  } catch (e) {
+    $('qCategory').innerHTML = '<option value="">লোড করা যায়নি</option>';
+  }
+}
+
+/* ================= প্রশ্ন — ডাইনামিক অপশন ================= */
+const MIN_QOPTIONS = 2, MAX_QOPTIONS = 8;
+let qOptions = ['', ''];
+let qCorrectIndex = 0;
+function renderQOptions() {
+  $('qOptionsContainer').innerHTML = qOptions.map((val, i) => `
+    <div class="optRow">
+      <input type="radio" name="qCorrect" value="${i}" ${i === qCorrectIndex ? 'checked' : ''} onchange="window.setQCorrect(${i})">
+      <input class="qOptInput" data-i="${i}" placeholder="অপশন ${i + 1}" value="${esc(val)}">
+      ${qOptions.length > MIN_QOPTIONS ? `<button type="button" class="danger" onclick="window.removeQOption(${i})">✕</button>` : ''}
+    </div>`).join('');
+  document.querySelectorAll('.qOptInput').forEach(inp => {
+    inp.addEventListener('input', (e) => { qOptions[Number(e.target.dataset.i)] = e.target.value; });
+  });
+  $('addQOptionBtn').style.display = qOptions.length >= MAX_QOPTIONS ? 'none' : '';
+}
+window.setQCorrect = (i) => { qCorrectIndex = i; };
+window.removeQOption = (i) => {
+  if (qOptions.length <= MIN_QOPTIONS) return;
+  qOptions.splice(i, 1);
+  if (qCorrectIndex === i) qCorrectIndex = 0;
+  else if (qCorrectIndex > i) qCorrectIndex--;
+  renderQOptions();
+};
+$('addQOptionBtn').addEventListener('click', () => {
+  if (qOptions.length >= MAX_QOPTIONS) return;
+  qOptions.push('');
+  renderQOptions();
+});
+renderQOptions();
+
+/* ---- একই প্রশ্ন দ্বিতীয়বার যোগ হওয়া আটকাতে চেক ---- */
+function normalizeQ(s) { return String(s || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+async function questionAlreadyExists(text) {
+  const t = normalizeQ(text);
+  if (!t) return false;
+  try {
+    const s = await getDocs(collection(db, 'quizQuestions'));
+    return s.docs.some(d => normalizeQ(d.data().question) === t);
+  } catch (e) { return false; }
+}
+
+/* ================= প্রশ্ন যোগ করা ================= */
+$('addQBtn').addEventListener('click', async () => {
+  const categoryId = $('qCategory').value;
+  const question = $('qText').value.trim();
+  const options = qOptions.map(o => o.trim());
+  const correctIndex = qCorrectIndex;
+  if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) {
+    $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'; $('qStatus').className = 'status err'; return;
+  }
+  $('qStatus').textContent = 'যাচাই করা হচ্ছে...'; $('qStatus').className = 'status';
+  if (await questionAlreadyExists(question)) {
+    $('qStatus').textContent = '⚠️ এই প্রশ্নটি আগে থেকেই যুক্ত আছে, দ্বিতীয়বার যোগ করা যাবে না।'; $('qStatus').className = 'status err'; return;
+  }
+  try {
+    await addDoc(collection(db, 'quizQuestions'), { categoryId, question, options, correctIndex, createdAt: serverTimestamp() });
+    $('qText').value = '';
+    qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
+    $('qStatus').textContent = '✅ প্রশ্ন যোগ হয়েছে'; $('qStatus').className = 'status ok';
+  } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
+});
+</script>
+</body>
+</html>
