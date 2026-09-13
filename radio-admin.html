@@ -42,6 +42,11 @@
     width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
     padding: 10px; border-radius: 10px; font-size: 14px; margin-bottom: 8px; font-family: inherit;
   }
+  textarea {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 10px; border-radius: 10px; font-size: 13px; margin-bottom: 8px; font-family: monospace;
+    min-height: 120px; resize: vertical;
+  }
   #createBtn { width: 100%; padding: 10px; border-radius: 10px; font-size: 14px; margin-bottom: 18px; }
   .gridRow2 {
     display: flex; align-items: center; gap: 8px; background: #161b22; border: 1px solid #262c36;
@@ -50,13 +55,15 @@
   .gridRow2 input[type=checkbox] { flex-shrink: 0; width: 18px; height: 18px; }
   .gridFields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .gridFields input { margin-bottom: 0; }
+  .gridFields textarea { margin-bottom: 0; min-height: 70px; font-size: 12px; }
   .gridBtnCol { display: flex; gap: 4px; flex-shrink: 0; }
   .gridBtnCol button {
     background: #21262d; border: none; color: #fff; width: 32px; height: 32px;
     border-radius: 8px; font-size: 14px; padding: 0;
   }
+  .gridBtnCol button:disabled { opacity: 0.5; }
   .listEmpty { color: #6b7280; font-size: 13px; text-align: center; padding: 18px; }
-  #saveBtn { width: 100%; padding: 10px; border-radius: 10px; font-size: 14px; margin-top: 8px; }
+  #saveAdCodeBtn { width: 100%; padding: 10px; border-radius: 10px; font-size: 14px; margin-top: 4px; }
   #statusMsg { text-align: center; font-size: 12px; margin-top: 8px; min-height: 16px; color: #4ade80; }
 </style>
 </head>
@@ -92,20 +99,18 @@
       <button type="button" id="createBtn">➕ তৈরি করুন</button>
 
       <div id="channelList"></div>
-      <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই সাইটের রেডিও পেজে দেখানোর ক্রম। ✏️ দিয়ে এডিট করে আবার ✅ চাপুন সেভ হওয়ার আগে, 🗑️ দিয়ে ডিলিট।</div>
+      <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে (সাথে সাথে সেভ হয়)। ✏️ দিয়ে এডিট করে আবার ✏️/✅ বাটনে চাপলে সাথে সাথে সেভ হয়ে যাবে। 🗑️ চাপলে কনফার্ম করার পরপরই সেই চ্যানেল সাথে সাথে সার্ভার থেকে ডিলিট হয়ে যাবে — আলাদা করে সেভ বাটনে চাপার দরকার নেই।</div>
 
-      <h2 style="margin-top:28px;">🖼️ বিজ্ঞাপন যুক্ত করুন</h2>
+      <h2 style="margin-top:28px;">🖼️ ব্যানার বিজ্ঞাপনের কোড</h2>
       <div class="hint">
-        একটা ছবির লিংক দিন (বিজ্ঞাপনের ব্যানার ছবি) আর চাইলে একটা ক্লিক-লিংক (কেউ ছবিতে ক্লিক করলে যে পেজে যাবে)। একের অধিক বিজ্ঞাপন যোগ করলে, চ্যানেল পরিবর্তন হওয়ার সাথে সাথে পরের বিজ্ঞাপনটা পালা করে দেখানো হবে।
+        এখানে বিজ্ঞাপন নেটওয়ার্কের HTML/JS কোড (ব্যানার বা ভিডিও বিজ্ঞাপন) পেস্ট করে ➕ চাপুন। একের অধিক কোড যোগ করলে প্রতিবার চ্যানেল প্লে করার সাথে সাথে পালা করে (রোটেশন করে) একটার পর একটা দেখানো হবে — একটাই বারবার আসবে না। যতগুলো ইচ্ছে কোড যোগ করতে পারবেন, পরে এসে আরো যোগ করলে সেটাও রোটেশনে ঢুকে যাবে।
       </div>
-      <input type="text" id="createAdImg" placeholder="বিজ্ঞাপনের ছবির লিংক (image URL)">
-      <input type="text" id="createAdLink" placeholder="ক্লিক করলে যাবে (ঐচ্ছিক, ফাঁকা রাখতে পারেন)">
-      <button type="button" id="createAdBtn">➕ বিজ্ঞাপন যোগ করুন</button>
+      <textarea id="createAdCode" placeholder="এখানে একটা বিজ্ঞাপনের HTML/JS কোড পেস্ট করুন..."></textarea>
+      <button type="button" id="createAdBtn">➕ বিজ্ঞাপন কোড যোগ করুন</button>
 
-      <div id="adList"></div>
-      <div class="hint">✏️ দিয়ে এডিট, 🗑️ দিয়ে ডিলিট — সেভ করুন বাটনে চাপলে বিজ্ঞাপনও একসাথে সেভ হবে।</div>
+      <div id="adCodeList"></div>
+      <div class="hint">🗑️ চাপলে কনফার্ম করার পরপরই সেই বিজ্ঞাপন কোডটা সাথে সাথে সার্ভার থেকে ডিলিট হয়ে যাবে। ✏️ দিয়ে এডিট করে ✅ চাপলে সাথে সাথে সেভ হবে।</div>
 
-      <button type="button" id="saveBtn">💾 সেভ করুন</button>
       <div id="statusMsg"></div>
     </main>
   </div>
@@ -143,20 +148,40 @@
   const channelList = document.getElementById('channelList');
   const createLabel = document.getElementById('createLabel');
   const createUrl = document.getElementById('createUrl');
-  const adList = document.getElementById('adList');
-  const createAdImg = document.getElementById('createAdImg');
-  const createAdLink = document.getElementById('createAdLink');
+  const adCodeList = document.getElementById('adCodeList');
+  const createAdCode = document.getElementById('createAdCode');
   const statusMsg = document.getElementById('statusMsg');
 
   let seqCounter = 0;
-  let adSeqCounter = 0;
+  let busy = false; // একসাথে দুইটা সেভ চলে যাওয়া ঠেকানোর জন্য
 
-  // ✅ টিক দিলে সবার উপরে চলে যাবে (এডমিন প্যানেলের মেনু/ফুটার লিস্টে যেভাবে কাজ করে, সেভাবেই)
+  function showStatus(msg, isErr) {
+    statusMsg.style.color = isErr ? '#f87171' : '#4ade80';
+    statusMsg.textContent = msg;
+    if (!isErr) setTimeout(() => { if (statusMsg.textContent === msg) statusMsg.textContent = ''; }, 2000);
+  }
+
+  // চ্যানেল লিস্টের বর্তমান অবস্থা DOM থেকে পড়ে Firestore-এ সাথে সাথে সেভ করে
+  async function persistChannels() {
+    if (busy) return;
+    busy = true;
+    try {
+      await setDoc(doc(db, "settings", "radio"), { channels: readChannelList() }, { merge: true });
+      showStatus('✅ সেভ হয়েছে!');
+    } catch (err) {
+      showStatus('এরর: ' + err.message, true);
+    } finally {
+      busy = false;
+    }
+  }
+
+  // ✅ টিক দিলে সবার উপরে চলে যাবে — সাথে সাথে সেভ হবে
   function wireCheckReorder(row) {
     const check = row.querySelector('.gridCheck');
     check.addEventListener('change', () => {
       if (check.checked) row.dataset.seq = String(++seqCounter);
       else delete row.dataset.seq;
+      persistChannels();
     });
   }
 
@@ -175,24 +200,133 @@
       </div>
     `;
     wireCheckReorder(row);
-    row.querySelector('.delBtn').addEventListener('click', () => {
-      if (confirm('চ্যানেলটা ডিলিট করবেন?')) row.remove();
+
+    row.querySelector('.delBtn').addEventListener('click', async (e) => {
+      if (!confirm('চ্যানেলটা ডিলিট করবেন?')) return;
+      const delBtn = e.currentTarget;
+      delBtn.disabled = true;
+      row.remove();
+      clearEmptyOrShow();
+      await persistChannels(); // ডিলিট সাথে সাথে সার্ভারে সেভ হয়
     });
-    row.querySelector('.editBtn').addEventListener('click', () => {
+
+    row.querySelector('.editBtn').addEventListener('click', async () => {
       const fields = row.querySelectorAll('.fName, .fUrl');
       const btn = row.querySelector('.editBtn');
       const editing = btn.dataset.editing === '1';
-      fields.forEach(f => { f.disabled = editing; });
-      btn.dataset.editing = editing ? '0' : '1';
-      btn.textContent = editing ? '✏️' : '✅';
-      if (!editing && fields[0]) fields[0].focus();
+
+      if (editing) {
+        // ✅ চাপা হয়েছে — এডিট শেষ, লক করে সাথে সাথে সেভ করো
+        const name = row.querySelector('.fName').value.trim();
+        const url = row.querySelector('.fUrl').value.trim();
+        if (!name || !url) { alert('নাম আর লিংক দুটোই থাকতে হবে'); return; }
+        fields.forEach(f => { f.disabled = true; });
+        btn.dataset.editing = '0';
+        btn.textContent = '✏️';
+        await persistChannels();
+      } else {
+        // ✏️ চাপা হয়েছে — এডিট মোড চালু করো
+        fields.forEach(f => { f.disabled = false; });
+        btn.dataset.editing = '1';
+        btn.textContent = '✅';
+        if (fields[0]) fields[0].focus();
+      }
     });
+
     return row;
   }
 
-  function clearEmpty() {
+  function clearEmptyOrShow() {
     const e = channelList.querySelector('.listEmpty');
     if (e) e.remove();
+    if (!channelList.children.length) {
+      channelList.innerHTML = '<div class="listEmpty">এখনো কোনো চ্যানেল যুক্ত হয়নি</div>';
+    }
+  }
+
+  // ---------- বিজ্ঞাপন কোড লিস্ট (একাধিক কোড, রোটেশনে দেখানো হবে) ----------
+
+  async function persistAdCodes() {
+    if (busy) return;
+    busy = true;
+    try {
+      await setDoc(doc(db, "settings", "radio"), { adCodes: readAdCodeList() }, { merge: true });
+      showStatus('✅ সেভ হয়েছে!');
+    } catch (err) {
+      showStatus('এরর: ' + err.message, true);
+    } finally {
+      busy = false;
+    }
+  }
+
+  function createAdCodeRow(code) {
+    const row = document.createElement('div');
+    row.className = 'adRow2 gridRow2';
+    row.innerHTML = `
+      <div class="gridFields">
+        <textarea class="fCode" placeholder="বিজ্ঞাপনের HTML/JS কোড" disabled>${(code || '').replace(/</g, '&lt;')}</textarea>
+      </div>
+      <div class="gridBtnCol">
+        <button type="button" class="editBtn">✏️</button>
+        <button type="button" class="delBtn">🗑️</button>
+      </div>
+    `;
+
+    row.querySelector('.delBtn').addEventListener('click', async (e) => {
+      if (!confirm('বিজ্ঞাপন কোডটা ডিলিট করবেন?')) return;
+      const delBtn = e.currentTarget;
+      delBtn.disabled = true;
+      row.remove();
+      clearEmptyOrShowAds();
+      await persistAdCodes(); // ডিলিট সাথে সাথে সার্ভারে সেভ হয়
+    });
+
+    row.querySelector('.editBtn').addEventListener('click', async () => {
+      const field = row.querySelector('.fCode');
+      const btn = row.querySelector('.editBtn');
+      const editing = btn.dataset.editing === '1';
+
+      if (editing) {
+        const val = field.value.trim();
+        if (!val) { alert('কোড খালি রাখা যাবে না'); return; }
+        field.disabled = true;
+        btn.dataset.editing = '0';
+        btn.textContent = '✏️';
+        await persistAdCodes();
+      } else {
+        field.disabled = false;
+        btn.dataset.editing = '1';
+        btn.textContent = '✅';
+        field.focus();
+      }
+    });
+
+    return row;
+  }
+
+  function clearEmptyOrShowAds() {
+    const e = adCodeList.querySelector('.listEmpty');
+    if (e) e.remove();
+    if (!adCodeList.children.length) {
+      adCodeList.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন কোড যুক্ত হয়নি</div>';
+    }
+  }
+
+  function fillAdCodeList(codes) {
+    adCodeList.innerHTML = '';
+    (codes || []).forEach(c => { adCodeList.appendChild(createAdCodeRow(c)); });
+    if (!adCodeList.children.length) {
+      adCodeList.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন কোড যুক্ত হয়নি</div>';
+    }
+  }
+
+  function readAdCodeList() {
+    const codes = [];
+    adCodeList.querySelectorAll('.adRow2').forEach((row) => {
+      const val = row.querySelector('.fCode').value.trim();
+      if (val) codes.push(val);
+    });
+    return codes;
   }
 
   function fillChannelList(channels) {
@@ -217,88 +351,30 @@
     return [...checked, ...unchecked].map(r => ({ name: r.name, url: r.url }));
   }
 
-  function createAdRow(img, link) {
-    const row = document.createElement('div');
-    row.className = 'adRow2 gridRow2';
-    row.innerHTML = `
-      <div class="gridFields">
-        <input type="text" class="fImg" placeholder="ছবির লিংক" value="${(img || '').replace(/"/g, '&quot;')}" disabled>
-        <input type="text" class="fLink" placeholder="ক্লিক লিংক (ঐচ্ছিক)" value="${(link || '').replace(/"/g, '&quot;')}" disabled>
-      </div>
-      <div class="gridBtnCol">
-        <button type="button" class="editBtn">✏️</button>
-        <button type="button" class="delBtn">🗑️</button>
-      </div>
-    `;
-    row.querySelector('.delBtn').addEventListener('click', () => {
-      if (confirm('বিজ্ঞাপনটা ডিলিট করবেন?')) row.remove();
-    });
-    row.querySelector('.editBtn').addEventListener('click', () => {
-      const fields = row.querySelectorAll('.fImg, .fLink');
-      const btn = row.querySelector('.editBtn');
-      const editing = btn.dataset.editing === '1';
-      fields.forEach(f => { f.disabled = editing; });
-      btn.dataset.editing = editing ? '0' : '1';
-      btn.textContent = editing ? '✏️' : '✅';
-      if (!editing && fields[0]) fields[0].focus();
-    });
-    return row;
-  }
-
-  function fillAdList(ads) {
-    adList.innerHTML = '';
-    (ads || []).forEach(ad => { adList.appendChild(createAdRow(ad.img, ad.link)); });
-    if (!adList.children.length) {
-      adList.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন যুক্ত হয়নি</div>';
-    }
-  }
-
-  function readAdList() {
-    const rows = [];
-    adList.querySelectorAll('.adRow2').forEach((row) => {
-      const img = row.querySelector('.fImg').value.trim();
-      const link = row.querySelector('.fLink').value.trim();
-      if (!img) return;
-      rows.push({ img, link });
-    });
-    return rows;
-  }
-
   fillChannelList([]);
-  fillAdList([]);
+  fillAdCodeList([]);
 
-  document.getElementById('createBtn').addEventListener('click', () => {
+  document.getElementById('createBtn').addEventListener('click', async () => {
     const name = createLabel.value.trim();
     const url = createUrl.value.trim();
     if (!name) { alert('চ্যানেলের নাম লিখুন'); return; }
     if (!url) { alert('লিংক দিন'); return; }
-    clearEmpty();
+    const e = channelList.querySelector('.listEmpty');
+    if (e) e.remove();
     channelList.appendChild(createChannelRow(name, url));
     createLabel.value = '';
     createUrl.value = '';
+    await persistChannels();
   });
 
-  document.getElementById('createAdBtn').addEventListener('click', () => {
-    const img = createAdImg.value.trim();
-    const link = createAdLink.value.trim();
-    if (!img) { alert('ছবির লিংক দিন'); return; }
-    const empty = adList.querySelector('.listEmpty');
-    if (empty) empty.remove();
-    adList.appendChild(createAdRow(img, link));
-    createAdImg.value = '';
-    createAdLink.value = '';
-  });
-
-  document.getElementById('saveBtn').addEventListener('click', async () => {
-    try {
-      await setDoc(doc(db, "settings", "radio"), { channels: readChannelList(), ads: readAdList() }, { merge: true });
-      statusMsg.style.color = '#4ade80';
-      statusMsg.textContent = '✅ সেভ হয়েছে!';
-      setTimeout(() => { statusMsg.textContent = ''; }, 2000);
-    } catch (err) {
-      statusMsg.style.color = '#f87171';
-      statusMsg.textContent = 'এরর: ' + err.message;
-    }
+  document.getElementById('createAdBtn').addEventListener('click', async () => {
+    const code = createAdCode.value.trim();
+    if (!code) { alert('বিজ্ঞাপনের কোড পেস্ট করুন'); return; }
+    const e = adCodeList.querySelector('.listEmpty');
+    if (e) e.remove();
+    adCodeList.appendChild(createAdCodeRow(code));
+    createAdCode.value = '';
+    await persistAdCodes();
   });
 
   document.getElementById('googleLoginBtn').addEventListener('click', async () => {
@@ -312,7 +388,7 @@
     const snap = await getDoc(doc(db, "settings", "radio"));
     const data = snap.exists() ? snap.data() : {};
     fillChannelList(data.channels || []);
-    fillAdList(data.ads || []);
+    fillAdCodeList(data.adCodes || []);
   }
 
   onAuthStateChanged(auth, (user) => {

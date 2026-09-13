@@ -13,10 +13,11 @@
     padding: 16px; background: #161b22; border-bottom: 1px solid #262c36;
   }
   header h1 { font-size: 18px; font-weight: bold; }
-  #backBtn {
+  #backBtn, #playerBackBtn {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
     background: #21262d; color: #fff; width: 36px; height: 36px; border-radius: 50%;
     text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center;
+    border: none; cursor: pointer;
   }
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   .radioChannelList { display: flex; flex-direction: column; gap: 10px; }
@@ -28,13 +29,43 @@
   .radioChannelBtn.playing { border-color: #4285F4; color: #4285F4; }
   .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
 
-  /* --- ad banner --- */
-  #adBanner { margin-top: 18px; display: none; }
-  #adBanner a, #adBanner .adImgWrap { display: block; }
-  #adBanner img {
-    width: 100%; border-radius: 12px; display: block; border: 1px solid #262c36;
+  /* --- player (new page) view --- */
+  #playerView { display: none; }
+  .playerCard {
+    background: #161b22; border: 1px solid #262c36; border-radius: 16px;
+    padding: 28px 20px; text-align: center;
   }
-  .adLabel { font-size: 11px; color: #6b7280; margin-bottom: 6px; }
+  .playerChannelName { font-size: 17px; font-weight: bold; margin-bottom: 4px; }
+  .playerStatus { font-size: 12px; color: #6b7280; margin-bottom: 20px; min-height: 16px; }
+  .playPauseBig {
+    width: 76px; height: 76px; border-radius: 50%; background: #4285F4; color: #fff;
+    font-size: 30px; border: none; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto; cursor: pointer;
+  }
+  .visualizer {
+    display: flex; align-items: flex-end; justify-content: center; gap: 4px;
+    height: 46px; margin-top: 22px;
+  }
+  .visualizer span {
+    width: 5px; border-radius: 3px; background: #4285F4; opacity: 0.85;
+    animation: bar 1s ease-in-out infinite;
+  }
+  .visualizer span:nth-child(1) { height: 14px; animation-delay: 0s; }
+  .visualizer span:nth-child(2) { height: 30px; animation-delay: 0.15s; }
+  .visualizer span:nth-child(3) { height: 44px; animation-delay: 0.3s; }
+  .visualizer span:nth-child(4) { height: 22px; animation-delay: 0.45s; }
+  .visualizer span:nth-child(5) { height: 36px; animation-delay: 0.6s; }
+  .visualizer.paused span { animation-play-state: paused; opacity: 0.35; }
+  @keyframes bar {
+    0%, 100% { transform: scaleY(0.4); }
+    50% { transform: scaleY(1); }
+  }
+
+  /* --- ad slot (renders admin-provided ad code) --- */
+  #adSlot { margin-top: 18px; display: none; }
+  .adLabel { font-size: 11px; color: #6b7280; margin-bottom: 6px; text-align: center; }
+  #adInner { border-radius: 12px; overflow: hidden; }
+  #adInner img, #adInner video, #adInner iframe { width: 100%; display: block; border: 0; border-radius: 12px; }
 
   /* --- debug panel --- */
   .debugBox {
@@ -52,15 +83,29 @@
 
   <header>
     <a href="index.html" id="backBtn" title="ফিরে যান">←</a>
-    <h1>📻 রেডিও</h1>
+    <button id="playerBackBtn" title="তালিকায় ফিরে যান" style="display:none;">←</button>
+    <h1 id="headerTitle">📻 রেডিও</h1>
   </header>
 
   <main>
-    <div id="channelList"></div>
+    <div id="listView">
+      <div id="channelList"></div>
+    </div>
 
-    <div id="adBanner">
-      <div class="adLabel">বিজ্ঞাপন</div>
-      <div id="adInner"></div>
+    <div id="playerView">
+      <div class="playerCard">
+        <div class="playerChannelName" id="playerChannelName"></div>
+        <div class="playerStatus" id="playerStatus">লোড হচ্ছে…</div>
+        <button type="button" id="playPauseBtn" class="playPauseBig">⏸️</button>
+        <div class="visualizer" id="visualizer">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div id="adSlot">
+        <div class="adLabel">বিজ্ঞাপন</div>
+        <div id="adInner"></div>
+      </div>
     </div>
 
     <div class="debugTitle">🔧 ডিবাগ লগ (সমস্যা হলে এখানে দেখুন)</div>
@@ -85,16 +130,26 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  const listView = document.getElementById('listView');
+  const playerView = document.getElementById('playerView');
   const channelList = document.getElementById('channelList');
   const debugBox = document.getElementById('debugBox');
-  const adBanner = document.getElementById('adBanner');
+  const headerTitle = document.getElementById('headerTitle');
+  const backBtn = document.getElementById('backBtn');
+  const playerBackBtn = document.getElementById('playerBackBtn');
+  const playerChannelName = document.getElementById('playerChannelName');
+  const playerStatus = document.getElementById('playerStatus');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const visualizer = document.getElementById('visualizer');
+  const adSlot = document.getElementById('adSlot');
   const adInner = document.getElementById('adInner');
 
   let channels = [];
-  let ads = [];
-  let adIndex = -1; // পরের বার কোন বিজ্ঞাপন দেখানো হবে তার হিসাব
+  let adCodes = [];
+  let adIndex = -1; // পরের বার কোন বিজ্ঞাপন দেখানো হবে তার হিসাব (পালা করে)
   let currentAudio = null;
   let currentIndex = -1;
+  let playerHistoryPushed = false; // প্লেয়ার-ভিউর জন্য history-তে একটা এক্সট্রা এন্ট্রি রাখা হয়েছে কিনা
 
   // MediaError.code সংখ্যাকে মানুষ-পড়ার-মতো বার্তায় রূপান্তর
   const MEDIA_ERROR_MESSAGES = {
@@ -117,23 +172,36 @@
     return (str || '').replace(/</g, '&lt;');
   }
 
-  // প্রতিবার চ্যানেল চালু হলে/পাল্টালে পরের বিজ্ঞাপনটা পালা করে দেখানো
-  function showNextAd() {
-    if (!ads.length) { adBanner.style.display = 'none'; return; }
-    adIndex = (adIndex + 1) % ads.length;
-    const ad = ads[adIndex];
-    const imgHtml = '<img src="' + escapeHtml(ad.img) + '" alt="বিজ্ঞাপন">';
-    adInner.innerHTML = ad.link
-      ? '<a href="' + escapeHtml(ad.link) + '" target="_blank" rel="noopener">' + imgHtml + '</a>'
-      : '<div class="adImgWrap">' + imgHtml + '</div>';
-    adBanner.style.display = 'block';
+  // এডমিনের দেওয়া কাঁচা HTML/JS বিজ্ঞাপন কোড ইনজেক্ট করে — <script> ট্যাগগুলোও রি-এক্সিকিউট করে,
+  // কারণ innerHTML দিয়ে বসালে স্ক্রিপ্ট নিজে থেকে চলে না।
+  function injectAd(container, code) {
+    container.innerHTML = '';
+    if (!code || !code.trim()) { adSlot.style.display = 'none'; return; }
+    adSlot.style.display = 'block';
+    const temp = document.createElement('div');
+    temp.innerHTML = code;
+    temp.querySelectorAll('script').forEach(oldScript => {
+      const newScript = document.createElement('script');
+      [...oldScript.attributes].forEach(attr => newScript.setAttribute(attr.name, attr.value));
+      newScript.textContent = oldScript.textContent;
+      oldScript.replaceWith(newScript);
+    });
+    Array.from(temp.childNodes).forEach(node => container.appendChild(node));
+  }
+
+  // চ্যানেল চালু/পরিবর্তনের প্রতিবার পালা করে (রোটেশনে) পরের বিজ্ঞাপন কোডটা দেখানো
+  function showAd() {
+    if (!adCodes.length) { hideAd(); return; }
+    adIndex = (adIndex + 1) % adCodes.length;
+    injectAd(adInner, adCodes[adIndex]);
   }
 
   function hideAd() {
-    adBanner.style.display = 'none';
+    adInner.innerHTML = '';
+    adSlot.style.display = 'none';
   }
 
-  function render() {
+  function renderList() {
     if (!channels.length) {
       channelList.innerHTML = '<div class="emptyMsg">এখনো কোনো রেডিও চ্যানেল যুক্ত করা হয়নি</div>';
       return;
@@ -142,29 +210,98 @@
       '<div class="radioChannelList">' +
       channels.map((ch, i) =>
         '<button type="button" class="radioChannelBtn' + (i === currentIndex ? ' playing' : '') + '" data-idx="' + i + '">' +
-        (i === currentIndex ? '⏸️' : '▶️') + ' ' + escapeHtml(ch.name || ('চ্যানেল ' + (i + 1))) +
+        '▶️ ' + escapeHtml(ch.name || ('চ্যানেল ' + (i + 1))) +
         '</button>'
       ).join('') +
       '</div>';
     channelList.querySelectorAll('.radioChannelBtn').forEach(btn => {
-      btn.addEventListener('click', () => toggle(Number(btn.dataset.idx)));
+      btn.addEventListener('click', () => openChannel(Number(btn.dataset.idx)));
     });
   }
 
-  function toggle(idx) {
+  // চ্যানেল লিস্ট থেকে "নতুন পেজ" এর মতো প্লেয়ার-ভিউ তে চলে যাওয়া
+  function showPlayerView(ch) {
+    listView.style.display = 'none';
+    playerView.style.display = 'block';
+    backBtn.style.display = 'none';
+    playerBackBtn.style.display = 'flex';
+    headerTitle.textContent = '📻 ' + (ch.name || 'রেডিও');
+    playerChannelName.textContent = ch.name || '';
+  }
+
+  function showListView() {
+    playerView.style.display = 'none';
+    listView.style.display = 'block';
+    playerBackBtn.style.display = 'none';
+    backBtn.style.display = 'flex';
+    headerTitle.textContent = '📻 রেডিও';
+  }
+
+  function stopPlayback() {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    currentIndex = -1;
+    hideAd();
+    renderList();
+  }
+
+  // তালিকায় ফিরে যাওয়ার একমাত্র জায়গা — ব্যাক বাটন চাপা হোক বা ফোনের/ব্রাউজারের
+  // ব্যাক বাটন/জেসচার চাপা হোক, দুটোই একই পথে যায় যাতে সাইট থেকে বের হয়ে না যায়
+  function goBackToList() {
+    if (playerHistoryPushed) {
+      history.back(); // এতে popstate ইভেন্ট চলবে, যেটা আসলে তালিকায় ফিরিয়ে নেবে
+    } else {
+      stopPlayback();
+      showListView();
+    }
+  }
+
+  playerBackBtn.addEventListener('click', goBackToList);
+
+  // ফোনের/ব্রাউজারের ব্যাক বাটন বা ব্যাক-জেসচার চাপলে — প্লেয়ার-ভিউতে থাকলে
+  // সরাসরি সাইট থেকে বের না করে আগে তালিকায় ফিরিয়ে আনা
+  window.addEventListener('popstate', (e) => {
+    const view = e.state && e.state.radioView;
+    if (view !== 'player') {
+      playerHistoryPushed = false;
+      stopPlayback();
+      showListView();
+    }
+  });
+
+  playPauseBtn.addEventListener('click', () => {
+    if (!currentAudio) return;
+    if (currentAudio.paused) {
+      currentAudio.play().catch(() => {});
+    } else {
+      currentAudio.pause();
+    }
+  });
+
+  function setPlayingUi(isPlaying) {
+    playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+    visualizer.classList.toggle('paused', !isPlaying);
+  }
+
+  // চ্যানেলে ক্লিক করলেই "নতুন পেজ" (প্লেয়ার-ভিউ) খোলে, নিচে ভিজ্যুয়ালাইজার/অডিও আর প্রতিবার বিজ্ঞাপন দেখানো হয়
+  function openChannel(idx) {
     const ch = channels[idx];
     if (!ch || !ch.url) return;
 
-    if (currentIndex === idx) {
-      if (currentAudio) currentAudio.pause();
-      log('⏸️ থামানো হয়েছে: <b>' + escapeHtml(ch.name) + '</b>');
-      currentIndex = -1;
-      hideAd();
-      render();
-      return;
-    }
-
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+    currentIndex = idx;
+    showPlayerView(ch);
+    playerStatus.textContent = 'লোড হচ্ছে…';
+    setPlayingUi(true);
+
+    // চ্যানেল খোলার সাথে সাথে history-তে একটা "player" স্টেট রাখা হয়, যাতে
+    // ফোনের ব্যাক বাটন চাপলে প্রথমে তালিকায় ফেরে, সরাসরি সাইট থেকে বের না হয়ে যায়
+    if (!playerHistoryPushed) {
+      history.pushState({ radioView: 'player' }, '', location.href);
+      playerHistoryPushed = true;
+    } else {
+      history.replaceState({ radioView: 'player' }, '', location.href);
+    }
 
     log('▶️ চেষ্টা করা হচ্ছে: <b>' + escapeHtml(ch.name) + '</b><br>লিংক: ' + escapeHtml(ch.url));
 
@@ -174,42 +311,43 @@
     }
 
     currentAudio = new Audio(ch.url);
-    currentIndex = idx;
 
     currentAudio.addEventListener('loadstart', () => log('… লোড শুরু হয়েছে'));
-    currentAudio.addEventListener('canplay', () => log('✅ স্ট্রিম রেডি, বাজানো যাচ্ছে', 'ok'));
-    currentAudio.addEventListener('playing', () => log('🔊 আসলেই বাজছে এখন', 'ok'));
+    currentAudio.addEventListener('canplay', () => { log('✅ স্ট্রিম রেডি, বাজানো যাচ্ছে', 'ok'); playerStatus.textContent = 'লাইভ শোনা যাচ্ছে'; });
+    currentAudio.addEventListener('playing', () => { log('🔊 আসলেই বাজছে এখন', 'ok'); setPlayingUi(true); });
+    currentAudio.addEventListener('pause', () => setPlayingUi(false));
     currentAudio.addEventListener('stalled', () => log('⚠️ ডেটা আসা থেমে গেছে (stalled) — নেটওয়ার্ক বা সার্ভারের সমস্যা হতে পারে', 'err'));
-    currentAudio.addEventListener('ended', () => { log('স্ট্রিম শেষ হয়ে গেছে'); currentIndex = -1; hideAd(); render(); });
+    currentAudio.addEventListener('ended', () => { log('স্ট্রিম শেষ হয়ে গেছে'); goBackToList(); });
 
     currentAudio.addEventListener('error', () => {
       const mediaErr = currentAudio.error;
       const code = mediaErr ? mediaErr.code : null;
       const detail = code && MEDIA_ERROR_MESSAGES[code] ? MEDIA_ERROR_MESSAGES[code] : 'অজানা এরর';
       log('❌ এরর কোড ' + code + ': ' + detail, 'err');
-      currentIndex = -1;
-      hideAd();
-      render();
+      playerStatus.textContent = 'চালানো যাচ্ছে না';
+      setPlayingUi(false);
     });
 
     currentAudio.play()
       .then(() => log('play() সফল হয়েছে (ব্রাউজার আটকায়নি)', 'ok'))
       .catch((e) => {
         log('❌ play() রিজেক্ট হয়েছে: ' + e.name + ' — ' + e.message, 'err');
-        currentIndex = -1;
-        hideAd();
-        render();
+        playerStatus.textContent = 'চালানো যাচ্ছে না — নিচের প্লে বাটনে চাপুন';
+        setPlayingUi(false);
       });
 
-    showNextAd(); // চ্যানেল চালু/পরিবর্তনের সাথে সাথে নতুন বিজ্ঞাপন
-    render();
+    showAd(); // চ্যানেল ক্লিক করা মাত্রই নতুন বিজ্ঞাপন
+    renderList();
   }
+
+  // পেজ প্রথম লোড হওয়ার সময় বর্তমান history এন্ট্রিটাকে "list" হিসেবে চিহ্নিত করা
+  history.replaceState({ radioView: 'list' }, '', location.href);
 
   onSnapshot(doc(db, "settings", "radio"), (snap) => {
     const data = snap.exists() ? snap.data() : {};
     channels = data.channels || [];
-    ads = data.ads || [];
-    render();
+    adCodes = data.adCodes || [];
+    renderList();
   }, (err) => {
     log('❌ Firestore থেকে চ্যানেল লিস্ট আনতে সমস্যা: ' + err.message, 'err');
   });
