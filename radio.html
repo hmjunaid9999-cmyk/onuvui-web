@@ -27,6 +27,17 @@
   }
   .radioChannelBtn.playing { border-color: #4285F4; color: #4285F4; }
   .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
+
+  /* --- debug panel --- */
+  .debugBox {
+    margin-top: 18px; background: #161b22; border: 1px solid #30363d; border-radius: 12px;
+    padding: 12px; font-size: 12px; line-height: 1.7; color: #9ca3af;
+    white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;
+  }
+  .debugBox b { color: #fff; }
+  .debugBox .err { color: #f87171; }
+  .debugBox .ok { color: #4ade80; }
+  .debugTitle { font-size: 12px; color: #6b7280; margin: 18px 0 6px; }
 </style>
 </head>
 <body>
@@ -38,6 +49,8 @@
 
   <main>
     <div id="channelList"></div>
+    <div class="debugTitle">🔧 ডিবাগ লগ (সমস্যা হলে এখানে দেখুন)</div>
+    <div id="debugBox" class="debugBox">এখনো কিছু চালানো হয়নি।</div>
   </main>
 
 <script type="module">
@@ -59,9 +72,27 @@
   const db = getFirestore(app);
 
   const channelList = document.getElementById('channelList');
+  const debugBox = document.getElementById('debugBox');
   let channels = [];
   let currentAudio = null;
   let currentIndex = -1;
+
+  // MediaError.code সংখ্যাকে মানুষ-পড়ার-মতো বার্তায় রূপান্তর
+  const MEDIA_ERROR_MESSAGES = {
+    1: 'MEDIA_ERR_ABORTED — লোড হওয়ার মাঝপথে থামানো হয়েছে',
+    2: 'MEDIA_ERR_NETWORK — নেটওয়ার্ক এরর (লিংকে পৌঁছানো যায়নি, সার্ভার বন্ধ, অথবা HTTPS সাইট থেকে HTTP লিংক ব্লক হয়েছে — Mixed Content)',
+    3: 'MEDIA_ERR_DECODE — ফাইল/স্ট্রিম ডিকোড করা যাচ্ছে না (ফরম্যাট সাপোর্টেড না বা করাপ্টেড)',
+    4: 'MEDIA_ERR_SRC_NOT_SUPPORTED — এই সোর্স/ফরম্যাট ব্রাউজার সাপোর্ট করে না, অথবা লিংকটা ভুল/৪০৪'
+  };
+
+  function log(msg, cls) {
+    const time = new Date().toLocaleTimeString('bn-BD');
+    const line = document.createElement('div');
+    line.innerHTML = '[' + time + '] ' + (cls ? '<span class="' + cls + '">' + msg + '</span>' : msg);
+    if (debugBox.textContent.trim() === 'এখনো কিছু চালানো হয়নি।') debugBox.innerHTML = '';
+    debugBox.appendChild(line);
+    debugBox.scrollTop = debugBox.scrollHeight;
+  }
 
   function escapeHtml(str) {
     return (str || '').replace(/</g, '&lt;');
@@ -91,27 +122,55 @@
 
     if (currentIndex === idx) {
       if (currentAudio) currentAudio.pause();
+      log('⏸️ থামানো হয়েছে: <b>' + escapeHtml(ch.name) + '</b>');
       currentIndex = -1;
       render();
       return;
     }
 
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+    log('▶️ চেষ্টা করা হচ্ছে: <b>' + escapeHtml(ch.name) + '</b><br>লিংক: ' + escapeHtml(ch.url));
+
+    // পেজ https কিনা আর লিংক http কিনা — সেটা আগেই চেক করে জানিয়ে দেওয়া
+    if (location.protocol === 'https:' && ch.url.trim().toLowerCase().startsWith('http://')) {
+      log('⚠️ সতর্কতা: এই পেজ HTTPS দিয়ে চলছে কিন্তু লিংকটা HTTP (নিরাপদ না)। ব্রাউজার এটা ব্লক করে দিতে পারে (Mixed Content)।', 'err');
+    }
+
     currentAudio = new Audio(ch.url);
     currentIndex = idx;
-    currentAudio.addEventListener('ended', () => { currentIndex = -1; render(); });
+
+    currentAudio.addEventListener('loadstart', () => log('… লোড শুরু হয়েছে'));
+    currentAudio.addEventListener('canplay', () => log('✅ স্ট্রিম রেডি, বাজানো যাচ্ছে', 'ok'));
+    currentAudio.addEventListener('playing', () => log('🔊 আসলেই বাজছে এখন', 'ok'));
+    currentAudio.addEventListener('stalled', () => log('⚠️ ডেটা আসা থেমে গেছে (stalled) — নেটওয়ার্ক বা সার্ভারের সমস্যা হতে পারে', 'err'));
+    currentAudio.addEventListener('ended', () => { log('স্ট্রিম শেষ হয়ে গেছে'); currentIndex = -1; render(); });
+
     currentAudio.addEventListener('error', () => {
-      alert('এই চ্যানেলটা এখন চালানো যাচ্ছে না — লিংকটা সঠিক ও সচল কিনা এডমিন প্যানেল থেকে চেক করুন');
+      const mediaErr = currentAudio.error;
+      const code = mediaErr ? mediaErr.code : null;
+      const detail = code && MEDIA_ERROR_MESSAGES[code] ? MEDIA_ERROR_MESSAGES[code] : 'অজানা এরর';
+      log('❌ এরর কোড ' + code + ': ' + detail, 'err');
       currentIndex = -1;
       render();
     });
-    currentAudio.play().catch(() => {});
+
+    currentAudio.play()
+      .then(() => log('play() সফল হয়েছে (ব্রাউজার আটকায়নি)', 'ok'))
+      .catch((e) => {
+        log('❌ play() রিজেক্ট হয়েছে: ' + e.name + ' — ' + e.message, 'err');
+        currentIndex = -1;
+        render();
+      });
+
     render();
   }
 
   onSnapshot(doc(db, "settings", "radio"), (snap) => {
     channels = snap.exists() ? (snap.data().channels || []) : [];
     render();
+  }, (err) => {
+    log('❌ Firestore থেকে চ্যানেল লিস্ট আনতে সমস্যা: ' + err.message, 'err');
   });
 </script>
 </body>
