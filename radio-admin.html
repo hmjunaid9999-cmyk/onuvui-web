@@ -105,6 +105,7 @@
       <div class="hint">
         এখানে বিজ্ঞাপন নেটওয়ার্কের HTML/JS কোড (ব্যানার বা ভিডিও বিজ্ঞাপন) পেস্ট করে ➕ চাপুন। একের অধিক কোড যোগ করলে প্রতিবার চ্যানেল প্লে করার সাথে সাথে পালা করে (রোটেশন করে) একটার পর একটা দেখানো হবে — একটাই বারবার আসবে না। যতগুলো ইচ্ছে কোড যোগ করতে পারবেন, পরে এসে আরো যোগ করলে সেটাও রোটেশনে ঢুকে যাবে।
       </div>
+      <input type="text" id="createAdName" placeholder="বিজ্ঞাপনের নাম">
       <textarea id="createAdCode" placeholder="এখানে একটা বিজ্ঞাপনের HTML/JS কোড পেস্ট করুন..."></textarea>
       <button type="button" id="createAdBtn">➕ বিজ্ঞাপন কোড যোগ করুন</button>
 
@@ -149,11 +150,33 @@
   const createLabel = document.getElementById('createLabel');
   const createUrl = document.getElementById('createUrl');
   const adCodeList = document.getElementById('adCodeList');
+  const createAdName = document.getElementById('createAdName');
   const createAdCode = document.getElementById('createAdCode');
   const statusMsg = document.getElementById('statusMsg');
 
   let seqCounter = 0;
   let busy = false; // একসাথে দুইটা সেভ চলে যাওয়া ঠেকানোর জন্য
+
+  // ---- ক্লিপবোর্ডে কপি করার সহায়ক ফাংশন (নতুন/পুরনো ব্রাউজার দুটোতেই কাজ করবে) ----
+  function fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* কিছু না */ }
+    document.body.removeChild(ta);
+  }
+  function copyText(text) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    } else {
+      fallbackCopyText(text);
+    }
+  }
 
   function showStatus(msg, isErr) {
     statusMsg.style.color = isErr ? '#f87171' : '#4ade80';
@@ -195,11 +218,20 @@
         <input type="text" class="fUrl" placeholder="লিংক" value="${(url || '').replace(/"/g, '&quot;')}" disabled>
       </div>
       <div class="gridBtnCol">
+        <button type="button" class="copyBtn" title="লিংক কপি করুন">📋</button>
         <button type="button" class="editBtn">✏️</button>
         <button type="button" class="delBtn">🗑️</button>
       </div>
     `;
     wireCheckReorder(row);
+
+    row.querySelector('.copyBtn').addEventListener('click', () => {
+      const copyBtn = row.querySelector('.copyBtn');
+      copyText(row.querySelector('.fUrl').value);
+      const original = copyBtn.textContent;
+      copyBtn.textContent = '✅';
+      setTimeout(() => { copyBtn.textContent = original; }, 1200);
+    });
 
     row.querySelector('.delBtn').addEventListener('click', async (e) => {
       if (!confirm('চ্যানেলটা ডিলিট করবেন?')) return;
@@ -259,11 +291,12 @@
     }
   }
 
-  function createAdCodeRow(code) {
+  function createAdCodeRow(name, code) {
     const row = document.createElement('div');
     row.className = 'adRow2 gridRow2';
     row.innerHTML = `
       <div class="gridFields">
+        <input type="text" class="fAdName" placeholder="বিজ্ঞাপনের নাম" value="${(name || '').replace(/"/g, '&quot;')}" disabled>
         <textarea class="fCode" placeholder="বিজ্ঞাপনের HTML/JS কোড" disabled>${(code || '').replace(/</g, '&lt;')}</textarea>
       </div>
       <div class="gridBtnCol">
@@ -282,22 +315,27 @@
     });
 
     row.querySelector('.editBtn').addEventListener('click', async () => {
-      const field = row.querySelector('.fCode');
+      const nameField = row.querySelector('.fAdName');
+      const codeField = row.querySelector('.fCode');
       const btn = row.querySelector('.editBtn');
       const editing = btn.dataset.editing === '1';
 
       if (editing) {
-        const val = field.value.trim();
-        if (!val) { alert('কোড খালি রাখা যাবে না'); return; }
-        field.disabled = true;
+        const nameVal = nameField.value.trim();
+        const codeVal = codeField.value.trim();
+        if (!nameVal) { alert('বিজ্ঞাপনের নাম দিন'); return; }
+        if (!codeVal) { alert('কোড খালি রাখা যাবে না'); return; }
+        nameField.disabled = true;
+        codeField.disabled = true;
         btn.dataset.editing = '0';
         btn.textContent = '✏️';
         await persistAdCodes();
       } else {
-        field.disabled = false;
+        nameField.disabled = false;
+        codeField.disabled = false;
         btn.dataset.editing = '1';
         btn.textContent = '✅';
-        field.focus();
+        nameField.focus();
       }
     });
 
@@ -314,7 +352,10 @@
 
   function fillAdCodeList(codes) {
     adCodeList.innerHTML = '';
-    (codes || []).forEach(c => { adCodeList.appendChild(createAdCodeRow(c)); });
+    (codes || []).forEach(c => {
+      if (typeof c === 'string') { adCodeList.appendChild(createAdCodeRow('', c)); }
+      else { adCodeList.appendChild(createAdCodeRow(c.name, c.code)); }
+    });
     if (!adCodeList.children.length) {
       adCodeList.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন কোড যুক্ত হয়নি</div>';
     }
@@ -323,8 +364,9 @@
   function readAdCodeList() {
     const codes = [];
     adCodeList.querySelectorAll('.adRow2').forEach((row) => {
-      const val = row.querySelector('.fCode').value.trim();
-      if (val) codes.push(val);
+      const name = row.querySelector('.fAdName').value.trim();
+      const code = row.querySelector('.fCode').value.trim();
+      if (code) codes.push({ name, code });
     });
     return codes;
   }
@@ -368,11 +410,14 @@
   });
 
   document.getElementById('createAdBtn').addEventListener('click', async () => {
+    const name = createAdName.value.trim();
     const code = createAdCode.value.trim();
+    if (!name) { alert('বিজ্ঞাপনের নাম দিন'); return; }
     if (!code) { alert('বিজ্ঞাপনের কোড পেস্ট করুন'); return; }
     const e = adCodeList.querySelector('.listEmpty');
     if (e) e.remove();
-    adCodeList.appendChild(createAdCodeRow(code));
+    adCodeList.appendChild(createAdCodeRow(name, code));
+    createAdName.value = '';
     createAdCode.value = '';
     await persistAdCodes();
   });
