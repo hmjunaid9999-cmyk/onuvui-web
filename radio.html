@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>রেডিও — Onuvuti</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #fff; min-height: 100vh; }
+  header {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    padding: 16px; background: #161b22; border-bottom: 1px solid #262c36;
+  }
+  header h1 { font-size: 18px; font-weight: bold; }
+  #backBtn {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: #21262d; color: #fff; width: 36px; height: 36px; border-radius: 50%;
+    text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center;
+  }
+  main { padding: 16px; max-width: 640px; margin: 0 auto; }
+  .radioChannelList { display: flex; flex-direction: column; gap: 10px; }
+  .radioChannelBtn {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: #161b22; border: 1px solid #262c36; color: #fff;
+    padding: 14px; border-radius: 14px; font-size: 14px; cursor: pointer;
+  }
+  .radioChannelBtn.playing { border-color: #4285F4; color: #4285F4; }
+  .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
+</style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html" id="backBtn" title="ফিরে যান">←</a>
+    <h1>📻 রেডিও</h1>
+  </header>
+
+  <main>
+    <div id="channelList"></div>
+  </main>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  // মূল সাইটের (index.html) মতোই ফায়ারবেজ কনফিগ — একই প্রজেক্ট, একই ডাটা
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const channelList = document.getElementById('channelList');
+  let channels = [];
+  let currentAudio = null;
+  let currentIndex = -1;
+
+  function escapeHtml(str) {
+    return (str || '').replace(/</g, '&lt;');
+  }
+
+  function render() {
+    if (!channels.length) {
+      channelList.innerHTML = '<div class="emptyMsg">এখনো কোনো রেডিও চ্যানেল যুক্ত করা হয়নি</div>';
+      return;
+    }
+    channelList.innerHTML =
+      '<div class="radioChannelList">' +
+      channels.map((ch, i) =>
+        '<button type="button" class="radioChannelBtn' + (i === currentIndex ? ' playing' : '') + '" data-idx="' + i + '">' +
+        (i === currentIndex ? '⏸️' : '▶️') + ' ' + escapeHtml(ch.name || ('চ্যানেল ' + (i + 1))) +
+        '</button>'
+      ).join('') +
+      '</div>';
+    channelList.querySelectorAll('.radioChannelBtn').forEach(btn => {
+      btn.addEventListener('click', () => toggle(Number(btn.dataset.idx)));
+    });
+  }
+
+  function toggle(idx) {
+    const ch = channels[idx];
+    if (!ch || !ch.url) return;
+
+    if (currentIndex === idx) {
+      if (currentAudio) currentAudio.pause();
+      currentIndex = -1;
+      render();
+      return;
+    }
+
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    currentAudio = new Audio(ch.url);
+    currentIndex = idx;
+    currentAudio.addEventListener('ended', () => { currentIndex = -1; render(); });
+    currentAudio.addEventListener('error', () => {
+      alert('এই চ্যানেলটা এখন চালানো যাচ্ছে না — লিংকটা সঠিক ও সচল কিনা এডমিন প্যানেল থেকে চেক করুন');
+      currentIndex = -1;
+      render();
+    });
+    currentAudio.play().catch(() => {});
+    render();
+  }
+
+  onSnapshot(doc(db, "settings", "radio"), (snap) => {
+    channels = snap.exists() ? (snap.data().channels || []) : [];
+    render();
+  });
+</script>
+</body>
+</html>
