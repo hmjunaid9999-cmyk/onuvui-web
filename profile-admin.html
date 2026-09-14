@@ -138,6 +138,60 @@
   .listCard { background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
   .listCard .metaRow { display: flex; justify-content: space-between; color: #6b7280; font-size: 11px; margin-bottom: 6px; }
   .listCard .bodyText { color: #ddd; white-space: pre-wrap; }
+
+  /* ---- একাউন্ট প্যানেল ---- */
+  .acctRow {
+    background: #161b22; border: 1px solid #262c36; border-radius: 12px;
+    padding: 12px; margin-bottom: 10px;
+  }
+  .acctTop { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .acctAvatar { width: 40px; height: 40px; border-radius: 50%; background: #30363d; flex-shrink: 0; object-fit: cover; }
+  .acctInfo { flex: 1; min-width: 0; }
+  .acctName { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acctEmail { font-size: 12px; color: #9ca3af; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .acctUid { font-size: 10.5px; color: #6b7280; word-break: break-all; margin-top: 2px; }
+  .acctBadge {
+    display: inline-block; font-size: 11px; font-weight: bold; padding: 3px 9px;
+    border-radius: 10px; margin-top: 6px;
+  }
+  .acctBadge.suspended { background: rgba(248,113,113,0.15); color: #f87171; }
+  .acctBtnRow { display: flex; gap: 8px; }
+  .acctBtnRow button {
+    flex: 1; padding: 9px; border-radius: 10px; font-size: 12.5px; font-weight: bold;
+  }
+  .delBtn2 { background: #3a1414; color: #f87171; }
+  .suspendBtn2 { background: #3a2f14; color: #fbbf24; }
+  .unsuspendBtn2 { background: #16321f; color: #4ade80; }
+
+  /* ---- সাসপেন্ড ওভারলে (নতুন 'পেজ' হিসেবে উপরে স্লাইড হয়ে আসে) ---- */
+  #suspendOverlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 300;
+    align-items: flex-end; justify-content: center;
+  }
+  #suspendOverlay.open { display: flex; }
+  #suspendModal {
+    background: #161b22; width: 100%; max-width: 640px; border-radius: 18px 18px 0 0;
+    padding: 16px 16px 22px; max-height: 88vh; overflow-y: auto;
+  }
+  .suspendBackRow { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .suspendBackRow button {
+    background: #21262d; width: 34px; height: 34px; border-radius: 50%; padding: 0;
+    font-size: 15px; flex-shrink: 0; border: none; color: #fff; cursor: pointer;
+  }
+  .suspendBackRow span { font-size: 15px; font-weight: bold; }
+  #suspendTargetLabel { font-size: 13px; color: #9ca3af; margin-bottom: 16px; line-height: 1.6; }
+  #suspendTargetLabel b { color: #fff; }
+  select#suspendUnit {
+    width: 100%; background: #0d1117; border: 1px solid #30363d; color: #fff;
+    padding: 10px; border-radius: 10px; font-size: 14px; font-family: inherit; margin-bottom: 14px;
+  }
+  #suspendAmount { margin-bottom: 14px; }
+  #suspendMessage { min-height: 90px; margin-bottom: 14px; }
+  #suspendApplyBtn { width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; }
+  #suspendCancelBtn {
+    width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; margin-top: 8px;
+    background: #21262d; color: #ddd;
+  }
 </style>
 </head>
 <body>
@@ -269,6 +323,48 @@
         </div>
       </div>
 
+      <!-- ================= একাউন্ট ================= -->
+      <div class="swipePanel" id="panel-account">
+        <div class="swipePanelInner">
+          <div class="folderTitle">👤 একাউন্ট</div>
+          <div class="hint" style="margin-bottom:14px;">যারা Google দিয়ে লগইন করেছে তাদের নাম, ইমেইল আর ইউনিক আইডি এখানে স্বয়ংক্রিয়ভাবে জমা হয়। 🗑️ ডিলিট চাপলে কনফার্ম করার পর একাউন্টটা স্থায়ীভাবে মুছে যাবে এবং সেই আইডি দিয়ে আর কখনো লগইন করা যাবে না। ⏸️ সাসপেন্ড চাপলে নির্দিষ্ট সময়ের জন্য একাউন্টটা সাময়িকভাবে ব্লক করা যাবে।</div>
+
+          <div class="section">
+            <h2>👤 সকল একাউন্টের তালিকা</h2>
+            <div id="acctList"></div>
+            <div class="sectionStatus" id="acctStatus"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== সাসপেন্ড ওভারলে (আলাদা 'পেজ' হিসেবে উপরে স্লাইড হয়ে আসে; ব্যাক বাটনে শুধু একাউন্ট লিস্টে ফিরে যায়, সাইট থেকে বের করে দেয় না) ===== -->
+  <div id="suspendOverlay">
+    <div id="suspendModal">
+      <div class="suspendBackRow">
+        <button type="button" id="suspendBackBtn" title="একাউন্ট লিস্টে ফিরে যান">←</button>
+        <span>⏸️ একাউন্ট সাসপেন্ড করুন</span>
+      </div>
+      <div id="suspendTargetLabel"></div>
+
+      <label class="hint" style="margin:0 0 6px;display:block;">সময়ের একক</label>
+      <select id="suspendUnit">
+        <option value="day">দিন</option>
+        <option value="month">মাস</option>
+        <option value="year">বছর</option>
+      </select>
+
+      <label class="hint" style="margin:0 0 6px;display:block;">কতদিন / কতমাস / কতবছর</label>
+      <input type="text" inputmode="numeric" id="suspendAmount" placeholder="যেমন: ১">
+
+      <label class="hint" style="margin:0 0 6px;display:block;">ব্যবহারকারী যে বার্তাটি দেখবে</label>
+      <textarea id="suspendMessage" placeholder="যেমন: এক মাসের জন্য আপনার আইডি ব্লক করা হয়েছে।"></textarea>
+
+      <button type="button" id="suspendApplyBtn">✅ সাসপেন্ড করুন</button>
+      <button type="button" id="suspendCancelBtn">বাতিল করুন</button>
+      <div class="sectionStatus" id="suspendStatusMsg"></div>
     </div>
   </div>
 
@@ -278,7 +374,7 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc
+    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -321,7 +417,8 @@
 
   // ---- নেভিগেশন: সোয়াইপ করে থিম (admin.html এর ট্যাব সিস্টেমের মতো) ----
   const SWIPE_PANELS = [
-    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' }
+    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
+    { key: 'account', icon: '👤', label: 'একাউন্ট', panel: 'panel-account', onShow: loadAccounts }
   ];
 
   // ---- রিপোর্ট এখন admin.html-এর "কনটেন্ট সেটিংস"-এর পাশে দেখা ও ম্যানেজ করা হয় ----
@@ -385,6 +482,163 @@
     try { document.execCommand('copy'); done(); } catch (e) { /* কপি ব্যর্থ হলে চুপচাপ থেমে যাবে */ }
     document.body.removeChild(ta);
   }
+
+  // ================= একাউন্ট প্যানেল =================
+  const acctList = document.getElementById('acctList');
+  const acctStatus = document.getElementById('acctStatus');
+
+  const suspendOverlay = document.getElementById('suspendOverlay');
+  const suspendTargetLabel = document.getElementById('suspendTargetLabel');
+  const suspendUnit = document.getElementById('suspendUnit');
+  const suspendAmount = document.getElementById('suspendAmount');
+  const suspendMessage = document.getElementById('suspendMessage');
+  const suspendApplyBtn = document.getElementById('suspendApplyBtn');
+  const suspendCancelBtn = document.getElementById('suspendCancelBtn');
+  const suspendBackBtn = document.getElementById('suspendBackBtn');
+  const suspendStatusMsg = document.getElementById('suspendStatusMsg');
+  let currentSuspendUid = null;
+
+  function showAcctStatus(msg, isErr) {
+    acctStatus.style.color = isErr ? '#f87171' : '#4ade80';
+    acctStatus.textContent = msg;
+    if (!isErr) setTimeout(() => { if (acctStatus.textContent === msg) acctStatus.textContent = ''; }, 2500);
+  }
+
+  function formatUntil(ts) {
+    if (!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  async function loadAccounts() {
+    acctList.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      const snap = await getDocs(collection(db, "users"));
+      if (snap.empty) {
+        acctList.innerHTML = '<div class="listEmpty">এখনো কোনো একাউন্ট নেই</div>';
+        return;
+      }
+      acctList.innerHTML = '';
+      snap.forEach((docSnap) => {
+        acctList.appendChild(createAccountRow(docSnap.id, docSnap.data()));
+      });
+    } catch (err) {
+      acctList.innerHTML = '<div class="listEmpty">লোড করতে সমস্যা হয়েছে: ' + escHtml(err.message) + '</div>';
+    }
+  }
+
+  function createAccountRow(uid, data) {
+    const row = document.createElement('div');
+    row.className = 'acctRow';
+    const name = data.name || 'নাম নেই';
+    const email = data.email || 'ইমেইল নেই';
+    const photo = data.photoURL || '';
+    const susp = data.suspended;
+    const isSuspendedNow = susp && susp.active && susp.until &&
+      (susp.until.toDate ? susp.until.toDate().getTime() : new Date(susp.until).getTime()) > Date.now();
+
+    row.innerHTML = `
+      <div class="acctTop">
+        <img class="acctAvatar" src="${photo}" onerror="this.style.background='#30363d'">
+        <div class="acctInfo">
+          <div class="acctName">${escHtml(name)}</div>
+          <div class="acctEmail">${escHtml(email)}</div>
+          <div class="acctUid">ইউনিক আইডি: ${escHtml(uid)}</div>
+          ${isSuspendedNow ? `<div class="acctBadge suspended">⏸️ সাসপেন্ড — ${formatUntil(susp.until)} পর্যন্ত</div>` : ''}
+        </div>
+      </div>
+      <div class="acctBtnRow">
+        <button type="button" class="delBtn2">🗑️ ডিলিট</button>
+        <button type="button" class="suspendBtn2">⏸️ সাসপেন্ড</button>
+        ${isSuspendedNow ? '<button type="button" class="unsuspendBtn2">▶️ আনসাসপেন্ড</button>' : ''}
+      </div>
+    `;
+
+    row.querySelector('.delBtn2').addEventListener('click', async () => {
+      if (!confirm(`"${name}" (${email}) একাউন্টটা কি পুরোপুরি ডিলিট করে দিতে চান? এই কাজটি ফেরানো যাবে না — এই আইডি দিয়ে আর কখনো লগইন করা যাবে না।`)) return;
+      try {
+        await deleteDoc(doc(db, "users", uid));
+        await setDoc(doc(db, "bannedUsers", uid), { name, email, bannedAt: serverTimestamp() });
+        row.remove();
+        if (!acctList.children.length) acctList.innerHTML = '<div class="listEmpty">এখনো কোনো একাউন্ট নেই</div>';
+        showAcctStatus('✅ একাউন্ট ডিলিট করা হয়েছে');
+      } catch (err) {
+        showAcctStatus('এরর: ' + err.message, true);
+      }
+    });
+
+    row.querySelector('.suspendBtn2').addEventListener('click', () => {
+      openSuspendView(uid, name, email);
+    });
+
+    const unsuspendBtn = row.querySelector('.unsuspendBtn2');
+    if (unsuspendBtn) {
+      unsuspendBtn.addEventListener('click', async () => {
+        if (!confirm(`"${name}" এর সাসপেনশন কি এখনই তুলে দিতে চান?`)) return;
+        try {
+          await setDoc(doc(db, "users", uid), { suspended: { active: false } }, { merge: true });
+          showAcctStatus('✅ সাসপেনশন তুলে নেওয়া হয়েছে');
+          loadAccounts();
+        } catch (err) {
+          showAcctStatus('এরর: ' + err.message, true);
+        }
+      });
+    }
+
+    return row;
+  }
+
+  // ---- সাসপেন্ড ওভারলে — এটাই "নতুন পেজ"; এর নিজস্ব ব্যাক বাটন শুধু একাউন্ট লিস্টে ফিরিয়ে নেয়, সাইট থেকে বের করে দেয় না ----
+  function openSuspendView(uid, name, email) {
+    currentSuspendUid = uid;
+    suspendTargetLabel.innerHTML = `একাউন্ট: <b>${escHtml(name)}</b><br>${escHtml(email)}`;
+    suspendUnit.value = 'day';
+    suspendAmount.value = '';
+    suspendMessage.value = '';
+    suspendStatusMsg.textContent = '';
+    suspendOverlay.classList.add('open');
+  }
+
+  function closeSuspendView() {
+    currentSuspendUid = null;
+    suspendOverlay.classList.remove('open');
+  }
+
+  suspendBackBtn.addEventListener('click', closeSuspendView);
+  suspendCancelBtn.addEventListener('click', closeSuspendView);
+
+  suspendApplyBtn.addEventListener('click', async () => {
+    const unit = suspendUnit.value;
+    const amount = parseInt(suspendAmount.value, 10);
+    const message = suspendMessage.value.trim();
+
+    if (!amount || amount < 1) { alert('সঠিক একটা সংখ্যা লিখুন'); return; }
+    if (!message) { alert('ব্যবহারকারীকে দেখানোর জন্য একটা বার্তা লিখুন'); return; }
+    if (!currentSuspendUid) return;
+
+    const until = new Date();
+    if (unit === 'day') until.setDate(until.getDate() + amount);
+    else if (unit === 'month') until.setMonth(until.getMonth() + amount);
+    else if (unit === 'year') until.setFullYear(until.getFullYear() + amount);
+
+    suspendApplyBtn.disabled = true;
+    try {
+      await setDoc(doc(db, "users", currentSuspendUid), {
+        suspended: { active: true, unit, amount, until, message, suspendedAt: serverTimestamp() }
+      }, { merge: true });
+      suspendStatusMsg.style.color = '#4ade80';
+      suspendStatusMsg.textContent = '✅ সাসপেন্ড করা হয়েছে';
+      setTimeout(() => { closeSuspendView(); loadAccounts(); }, 700);
+    } catch (err) {
+      suspendStatusMsg.style.color = '#f87171';
+      suspendStatusMsg.textContent = 'এরর: ' + err.message;
+    } finally {
+      suspendApplyBtn.disabled = false;
+    }
+  });
+  // ================= /একাউন্ট প্যানেল =================
+
 
   // ---- এড পেজ/এড গেজেট মেনু-বার সিস্টেম — profile.html নিজের settings/profilePage ডকুমেন্ট থেকে এটা পড়ে হেডারের নিচে দেখায় ----
   function makeSeqCounter() {
