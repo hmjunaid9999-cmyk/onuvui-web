@@ -264,40 +264,47 @@
   // ডিলিট/সাসপেন্ড থাকলে সাথে সাথে সাইন-আউট করে দেয় এবং সংশ্লিষ্ট বার্তা দেখায়।
   // ফিরতি মান: true মানে ব্লক করা হয়েছে (কলার-কে থামতে হবে), false মানে স্বাভাবিকভাবে এগোতে পারবে।
   async function checkAccountBlocked(user) {
-    // ১) স্থায়ীভাবে ডিলিট করা একাউন্ট কিনা
-    const banSnap = await getDoc(doc(db, "bannedUsers", user.uid));
-    if (banSnap.exists()) {
-      await signOut(auth);
-      blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
-      blockedMsg.textContent = 'আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না।';
-      loginScreen.style.display = 'none';
-      appScreen.style.display = 'none';
-      blockedScreen.style.display = 'flex';
-      return true;
-    }
-
-    // ২) সাময়িকভাবে সাসপেন্ড করা একাউন্ট কিনা
-    const userSnap = await getDoc(doc(db, "users", user.uid));
-    const data = userSnap.exists() ? userSnap.data() : null;
-    const susp = data && data.suspended;
-    if (susp && susp.active && susp.until) {
-      const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
-      if (untilDate.getTime() > Date.now()) {
+    try {
+      // ১) স্থায়ীভাবে ডিলিট করা একাউন্ট কিনা
+      const banSnap = await getDoc(doc(db, "bannedUsers", user.uid));
+      if (banSnap.exists()) {
         await signOut(auth);
-        const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-        const untilStr = untilDate.getDate() + ' ' + months[untilDate.getMonth()] + ' ' + untilDate.getFullYear();
-        blockedTitle.textContent = '⛔ একাউন্ট সাসপেন্ড করা হয়েছে';
-        blockedMsg.textContent = (susp.message || 'আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে।') + '\n\nমেয়াদ শেষ হবে: ' + untilStr;
+        blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
+        blockedMsg.textContent = 'আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না।';
         loginScreen.style.display = 'none';
         appScreen.style.display = 'none';
         blockedScreen.style.display = 'flex';
         return true;
-      } else {
-        // মেয়াদ শেষ — সাসপেনশন নিষ্ক্রিয় করে দাও
-        await setDoc(doc(db, "users", user.uid), { suspended: { active: false } }, { merge: true });
       }
+
+      // ২) সাময়িকভাবে সাসপেন্ড করা একাউন্ট কিনা
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const data = userSnap.exists() ? userSnap.data() : null;
+      const susp = data && data.suspended;
+      if (susp && susp.active && susp.until) {
+        const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
+        if (untilDate.getTime() > Date.now()) {
+          await signOut(auth);
+          const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+          const untilStr = untilDate.getDate() + ' ' + months[untilDate.getMonth()] + ' ' + untilDate.getFullYear();
+          blockedTitle.textContent = '⛔ একাউন্ট সাসপেন্ড করা হয়েছে';
+          blockedMsg.textContent = (susp.message || 'আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে।') + '\n\nমেয়াদ শেষ হবে: ' + untilStr;
+          loginScreen.style.display = 'none';
+          appScreen.style.display = 'none';
+          blockedScreen.style.display = 'flex';
+          return true;
+        } else {
+          // মেয়াদ শেষ — সাসপেনশন নিষ্ক্রিয় করে দাও
+          await setDoc(doc(db, "users", user.uid), { suspended: { active: false } }, { merge: true });
+        }
+      }
+      return false;
+    } catch (err) {
+      // এই চেক ব্যর্থ হলে (যেমন Firestore Rules-এ পারমিশন সমস্যা) যেন পুরো লগইন প্রসেস
+      // আটকে না যায় — লগইন স্বাভাবিকভাবে চলতে দেওয়া হচ্ছে (fail-open)
+      console.error('checkAccountBlocked এরর:', err);
+      return false;
     }
-    return false;
   }
 
   backBtn.addEventListener('click', () => {
@@ -906,46 +913,56 @@
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     if (user) {
-      const blocked = await checkAccountBlocked(user);
-      if (blocked) { currentUser = null; return; }
+      try {
+        const blocked = await checkAccountBlocked(user);
+        if (blocked) { currentUser = null; return; }
 
-      loginScreen.style.display = 'none';
-      blockedScreen.style.display = 'none';
-      appScreen.style.display = 'block';
-      loadProfilePageSettings(); 
-      await ensureUserProfile(user); 
+        loginScreen.style.display = 'none';
+        blockedScreen.style.display = 'none';
+        appScreen.style.display = 'block';
+        loadProfilePageSettings(); 
+        await ensureUserProfile(user); 
 
-      const targetUid = viewUid || user.uid;
-      const isOwn = targetUid === user.uid;
-      currentTargetUid = targetUid;
-      currentIsOwnProfile = isOwn;
+        const targetUid = viewUid || user.uid;
+        const isOwn = targetUid === user.uid;
+        currentTargetUid = targetUid;
+        currentIsOwnProfile = isOwn;
 
-      let profileData = null;
-      if (isOwn) {
-        profileData = myProfile;
-      } else {
-        const snap = await getDoc(doc(db, "users", targetUid));
-        profileData = snap.exists() ? snap.data() : null;
+        let profileData = null;
+        if (isOwn) {
+          profileData = myProfile;
+        } else {
+          const snap = await getDoc(doc(db, "users", targetUid));
+          profileData = snap.exists() ? snap.data() : null;
+        }
+
+        if (!profileData) {
+          try {
+            const fq = query(collection(db, "posts"), where("authorUid", "==", targetUid), limit(1));
+            const fsnap = await getDocs(fq);
+            if (!fsnap.empty) {
+              const first = fsnap.docs[0].data();
+              profileData = { name: first.authorName, photoURL: first.authorPhoto, coverColor: '#4285F4', bio: '' };
+            }
+          } catch (e) {}
+          if (!profileData) profileData = { name: 'ব্যবহারকারী', photoURL: '', coverColor: '#4285F4', bio: '' };
+        }
+        profileData.subscribers = profileData.subscribers || [];
+        currentProfileData = profileData;
+        currentIsSubscribed = isOwn ? true : profileData.subscribers.includes(user.uid);
+
+        renderProfile(profileData, isOwn);
+
+        await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
+      } catch (err) {
+        // অপ্রত্যাশিত কোনো এরর হলেও যেন "লগইন হচ্ছে..." তে আটকে না থেকে
+        // ব্যবহারকারী অন্তত এররটা দেখতে পায় এবং লগইন স্ক্রিনে ফিরে যেতে পারে
+        console.error('লগইনের পর প্রোফাইল লোড করতে এরর:', err);
+        loginScreen.style.display = 'flex';
+        appScreen.style.display = 'none';
+        loginStatus.textContent = 'এরর: ' + (err && err.message ? err.message : String(err));
+        loginBtn.disabled = false;
       }
-
-      if (!profileData) {
-        try {
-          const fq = query(collection(db, "posts"), where("authorUid", "==", targetUid), limit(1));
-          const fsnap = await getDocs(fq);
-          if (!fsnap.empty) {
-            const first = fsnap.docs[0].data();
-            profileData = { name: first.authorName, photoURL: first.authorPhoto, coverColor: '#4285F4', bio: '' };
-          }
-        } catch (e) {}
-        if (!profileData) profileData = { name: 'ব্যবহারকারী', photoURL: '', coverColor: '#4285F4', bio: '' };
-      }
-      profileData.subscribers = profileData.subscribers || [];
-      currentProfileData = profileData;
-      currentIsSubscribed = isOwn ? true : profileData.subscribers.includes(user.uid);
-
-      renderProfile(profileData, isOwn);
-
-      await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
     } else {
       appScreen.style.display = 'none';
       if (blockedScreen.style.display !== 'flex') {
