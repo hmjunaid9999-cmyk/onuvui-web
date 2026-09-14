@@ -374,7 +374,8 @@
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp
+    getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, serverTimestamp,
+    query, where, orderBy, limit
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -516,24 +517,36 @@
     try {
       const snap = await getDocs(collection(db, "users"));
       const rows = [];
-      snap.forEach((docSnap) => {
-        const data = docSnap.data();
-        // ইমেইল না থাকলে এটা আসল লগইন করা একাউন্ট না — যেমন কাউকে সাবস্ক্রাইব করার সময়
-        // তার প্রোফাইল ডকুমেন্ট আগে থেকে না থাকলে খালি "subscribers" ফিল্ড দিয়ে একটা
-        // ভুতুড়ে ডকুমেন্ট তৈরি হয়ে যায়। সেগুলো একাউন্ট লিস্টে দেখানো হবে না।
-        if (!data.email) return;
-        rows.push({ uid: docSnap.id, data });
-      });
+      snap.forEach((docSnap) => rows.push({ uid: docSnap.id, data: docSnap.data() }));
       if (!rows.length) {
         acctList.innerHTML = '<div class="listEmpty">এখনো কোনো একাউন্ট নেই</div>';
         return;
       }
-      // যে সবার আগে একাউন্ট তৈরি করেছে (প্রথমবার লগইন করেছে) তার নাম সবার উপরে থাকবে
+
+      // যাদের নাম/সময় নেই (যেমন প্রোফাইল পেজে না ঢুকে সরাসরি হোমপেজ থেকে লগইন করে পোস্ট
+      // করেছে) — তাদের জন্য নিজের প্রথম পোস্ট থেকে নাম/ছবি/সময় বের করার চেষ্টা করা হচ্ছে।
+      // ইমেইল এভাবে পাওয়া যাবে না, কারণ প্রাইভেসির জন্য পোস্টে ইমেইল রাখা হয় না।
+      await Promise.all(rows.map(async (r) => {
+        if (r.data.name && r.data.createdAt) return;
+        try {
+          const fq = query(collection(db, "posts"), where("authorUid", "==", r.uid), orderBy("createdAt", "asc"), limit(1));
+          const fsnap = await getDocs(fq);
+          if (!fsnap.empty) {
+            const first = fsnap.docs[0].data();
+            if (!r.data.name) r.data.name = first.authorName || '';
+            if (!r.data.photoURL) r.data.photoURL = first.authorPhoto || '';
+            if (!r.data.createdAt) r.data.createdAt = first.createdAt;
+          }
+        } catch (e) { /* পোস্ট থেকে খোঁজা ব্যর্থ হলে চুপচাপ বাদ — নিচে ডিফল্ট মান দেখানো হবে */ }
+      }));
+
+      // যে সবার আগে একাউন্ট তৈরি করেছে/পোস্ট করেছে (প্রথম কার্যক্রম) তার নাম সবার উপরে থাকবে
       rows.sort((a, b) => {
         const ta = a.data.createdAt && a.data.createdAt.toMillis ? a.data.createdAt.toMillis() : 0;
         const tb = b.data.createdAt && b.data.createdAt.toMillis ? b.data.createdAt.toMillis() : 0;
         return ta - tb;
       });
+
       acctList.innerHTML = '';
       rows.forEach(r => acctList.appendChild(createAccountRow(r.uid, r.data)));
     } catch (err) {
@@ -544,8 +557,9 @@
   function createAccountRow(uid, data) {
     const row = document.createElement('div');
     row.className = 'acctRow';
-    const name = data.name || 'নাম নেই';
-    const email = data.email || 'ইমেইল নেই';
+    const name = data.name || 'নাম পাওয়া যায়নি';
+    const emailDisplay = data.email || 'ইমেইল পাওয়া যায়নি (প্রোফাইল পেজে না ঢুকে হোমপেজ থেকে লগইন করা হয়েছে)';
+    const email = data.email || '';
     const photo = data.photoURL || '';
     const susp = data.suspended;
     const isSuspendedNow = susp && susp.active && susp.until &&
@@ -556,7 +570,7 @@
         <img class="acctAvatar" src="${photo}" onerror="this.style.background='#30363d'">
         <div class="acctInfo">
           <div class="acctName">${escHtml(name)}</div>
-          <div class="acctEmail">${escHtml(email)}</div>
+          <div class="acctEmail">${escHtml(emailDisplay)}</div>
           <div class="acctUid">ইউনিক আইডি: ${escHtml(uid)}</div>
           ${isSuspendedNow ? `<div class="acctBadge suspended">⏸️ সাসপেন্ড — ${formatUntil(susp.until)} পর্যন্ত</div>` : ''}
         </div>
@@ -569,7 +583,7 @@
     `;
 
     row.querySelector('.delBtn2').addEventListener('click', async () => {
-      if (!confirm(`"${name}" (${email}) একাউন্টটা কি পুরোপুরি ডিলিট করে দিতে চান? এই কাজটি ফেরানো যাবে না — এই আইডি দিয়ে আর কখনো লগইন করা যাবে না।`)) return;
+      if (!confirm(`"${name}" (${emailDisplay}) একাউন্টটা কি পুরোপুরি ডিলিট করে দিতে চান? এই কাজটি ফেরানো যাবে না — এই আইডি দিয়ে আর কখনো লগইন করা যাবে না।`)) return;
       try {
         await deleteDoc(doc(db, "users", uid));
         await setDoc(doc(db, "bannedUsers", uid), { name, email, bannedAt: serverTimestamp() });
@@ -582,7 +596,7 @@
     });
 
     row.querySelector('.suspendBtn2').addEventListener('click', () => {
-      openSuspendView(uid, name, email);
+      openSuspendView(uid, name, emailDisplay);
     });
 
     const unsuspendBtn = row.querySelector('.unsuspendBtn2');
