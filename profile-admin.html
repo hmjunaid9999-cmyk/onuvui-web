@@ -515,14 +515,27 @@
     acctList.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
     try {
       const snap = await getDocs(collection(db, "users"));
-      if (snap.empty) {
+      const rows = [];
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        // ইমেইল না থাকলে এটা আসল লগইন করা একাউন্ট না — যেমন কাউকে সাবস্ক্রাইব করার সময়
+        // তার প্রোফাইল ডকুমেন্ট আগে থেকে না থাকলে খালি "subscribers" ফিল্ড দিয়ে একটা
+        // ভুতুড়ে ডকুমেন্ট তৈরি হয়ে যায়। সেগুলো একাউন্ট লিস্টে দেখানো হবে না।
+        if (!data.email) return;
+        rows.push({ uid: docSnap.id, data });
+      });
+      if (!rows.length) {
         acctList.innerHTML = '<div class="listEmpty">এখনো কোনো একাউন্ট নেই</div>';
         return;
       }
-      acctList.innerHTML = '';
-      snap.forEach((docSnap) => {
-        acctList.appendChild(createAccountRow(docSnap.id, docSnap.data()));
+      // যে সবার আগে একাউন্ট তৈরি করেছে (প্রথমবার লগইন করেছে) তার নাম সবার উপরে থাকবে
+      rows.sort((a, b) => {
+        const ta = a.data.createdAt && a.data.createdAt.toMillis ? a.data.createdAt.toMillis() : 0;
+        const tb = b.data.createdAt && b.data.createdAt.toMillis ? b.data.createdAt.toMillis() : 0;
+        return ta - tb;
       });
+      acctList.innerHTML = '';
+      rows.forEach(r => acctList.appendChild(createAccountRow(r.uid, r.data)));
     } catch (err) {
       acctList.innerHTML = '<div class="listEmpty">লোড করতে সমস্যা হয়েছে: ' + escHtml(err.message) + '</div>';
     }
