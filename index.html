@@ -687,6 +687,26 @@
     goToPost(decodeURIComponent(m[1]));
   }
 
+  // প্রোফাইল পেজ থেকে "✏️ এডিট" চাপলে এখানে চলে আসে (index.html?editPost=<id>) —
+  // তখন হোম পেজের পোস্ট-বক্স (কম্পোজার) সরাসরি এডিট মোডে চালু হয়ে যায়
+  async function openEditPostIfAny() {
+    const params = new URLSearchParams(location.search);
+    const editId = params.get('editPost');
+    if (!editId) return;
+    try {
+      const snap = await getDoc(doc(db, "posts", editId));
+      if (snap.exists() && currentUser && snap.data().authorUid === currentUser.uid) {
+        enterPostEditMode(editId, snap.data());
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    // ইউআরএল থেকে editPost প্যারামিটারটা সরিয়ে ফেলা হচ্ছে, যেন রিফ্রেশ করলে বারবার এডিট মোড চালু না হয়
+    params.delete('editPost');
+    const newUrl = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+    history.replaceState(null, '', newUrl);
+  }
+
   loadMoreBtn.addEventListener('click', () => loadPosts(false));
 
   searchBar.addEventListener('input', renderPosts);
@@ -1301,6 +1321,7 @@
       appScreen.style.display = 'block';
       listenSettings();
       openSharedPostIfAny();
+      openEditPostIfAny();
       initBackGuard();
     } else if (allLoadedPosts.length) {
       renderPosts();
