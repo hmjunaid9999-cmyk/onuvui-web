@@ -452,6 +452,19 @@
     return out;
   }
 
+  // প্রোফাইলের নিজস্ব এন্ট্রি আর ইনডেক্সের এন্ট্রি জোড়া লাগানোর সময় একই লেবেল/লিংক বা
+  // একই গেজেট কোড দুইবার থাকলে (যেমন দুই প্যানেলেই "Home" যোগ করা থাকলে) সেটা একবারই দেখাবে
+  function dedupeEntries(list) {
+    const seen = new Set();
+    return (list || []).filter(e => {
+      if (!e) return false;
+      const sig = e.type === 'gadget' ? ('g:' + (e.code || '')) : ('p:' + (e.label || '') + '|' + (e.url || ''));
+      if (seen.has(sig)) return false;
+      seen.add(sig);
+      return true;
+    });
+  }
+
   // প্রোফাইল পেজ এবং ইনডেক্স পেজ — দুটো আলাদা সেটিংস ডকুমেন্ট থেকে ডেটা লোড করে
   // (settings/profilePage আর settings/site), কিন্তু মেনু/সাইডমেনুতে দুটোরই এন্ট্রি
   // (গেজেট সহ) একসাথে জোড়া লেগে দেখানো হয়। ফলে ইনডেক্সের মেনুতে (যেমন ভাষা
@@ -482,15 +495,15 @@
         noticeBar.style.display = 'none';
       }
 
-      // টপ মেনু — প্রোফাইলের নিজস্ব এন্ট্রি + ইনডেক্সের মেনু-গ্রিড এন্ট্রি, একসাথে
+      // টপ মেনু — প্রোফাইলের নিজস্ব এন্ট্রি + ইনডেক্সের মেনু-গ্রিড এন্ট্রি, একসাথে (ডুপ্লিকেট বাদ দিয়ে)
       const siteMenuEntries = s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets);
-      const topEntries = [...(d.topMenuEntries || []), ...siteMenuEntries];
+      const topEntries = dedupeEntries([...(d.topMenuEntries || []), ...siteMenuEntries]);
       renderMenuEntries(topMenuBar, topEntries, true);
       topMenuBar.style.display = topEntries.length ? 'flex' : 'none';
 
-      // সাইড মেনু — প্রোফাইলের নিজস্ব এন্ট্রি + ইনডেক্সের সাইডবার এন্ট্রি (গেজেটসহ), একসাথে
+      // সাইড মেনু — প্রোফাইলের নিজস্ব এন্ট্রি + ইনডেক্সের সাইডবার এন্ট্রি (গেজেটসহ), একসাথে (ডুপ্লিকেট বাদ দিয়ে)
       const siteSidebarEntries = s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets);
-      const sideEntries = [...(d.sideMenuEntries || []), ...siteSidebarEntries];
+      const sideEntries = dedupeEntries([...(d.sideMenuEntries || []), ...siteSidebarEntries]);
       renderMenuEntries(sideMenuList, sideEntries, false);
       hamburgerBtn.style.display = sideEntries.length ? 'block' : 'none';
 
