@@ -4,9 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>প্রোফাইল - Onuvuti</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--poster-height:180px;--own-action-scale:1;--other-action-scale:1}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}#loginScreen h1{font-size:22px;margin-bottom:6px}#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}#appScreen{display:none}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader h1{font-size:17px;font-weight:bold}#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;text-decoration:none}#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#hamburgerBtn{position:absolute;left:44px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:4px 8px;display:none}#noticeBar{display:none;background:#1f2937;color:#93c5fd;font-size:12.5px;padding:9px 0;border-bottom:1px solid #262c36;line-height:1.5;overflow:hidden;white-space:nowrap;position:relative}#noticeBarText{display:inline-block;padding-left:100%;will-change:transform;animation:noticeScroll linear infinite}@keyframes noticeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#topMenuBar{display:none;gap:8px;padding:10px 14px;overflow-x:auto;background:var(--card-color);border-bottom:1px solid #262c36}#topMenuBar::-webkit-scrollbar{display:none}.topMenuItem{flex-shrink:0;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:7px 16px;border-radius:16px;font-size:12.5px;font-weight:bold;text-decoration:none;white-space:nowrap}.topMenuGadget{flex-shrink:0}#sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:250}#sideMenuOverlay.open{display:block}#sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card-color);z-index:251;padding:18px 14px;overflow-y:auto;transform:translateX(-100%);transition:transform 0.25s ease}#sideMenuOverlay.open #sideMenuPanel{transform:translateX(0)}#sideMenuPanel h2{font-size:15px;margin-bottom:14px}#sideMenuCloseBtn{position:absolute;right:12px;top:14px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.sideMenuItem,.sideMenuGadget{display:block;padding:12px 10px;border-radius:10px;color:#c9d1d9;text-decoration:none;font-size:14px;margin-bottom:8px;background:#0d1117;border:1px solid #262c36}main{padding:16px;max-width:var(--max-width);margin:0 auto}#profileCover{height:90px;border-radius:14px 14px 0 0;background:var(--primary-color)}#profileCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;margin-bottom:18px;overflow:hidden}#profileBody{padding:0 16px 16px;text-align:center}#profileAvatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#333;border:4px solid var(--card-color);margin-top:-42px;margin-bottom:10px}#profileName{font-size:18px;font-weight:bold;margin-bottom:2px}#profileEmail{font-size:12px;color:#6b7280;margin-bottom:10px}#profileBio{font-size:13px;color:#ddd;white-space:pre-wrap;margin-bottom:6px;line-height:1.5}#profileBioEmpty{font-size:13px;color:#6b7280;font-style:italic;margin-bottom:6px}#profileExtra{font-size:12px;color:#9ca3af;margin-bottom:6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#profileJoined{font-size:11px;color:#6b7280;margin-bottom:14px}#profileActions,#ownActionRow{display:none;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}.actionCol{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}.subCountLabel{text-align:center;font-size:12px;color:#9ca3af}.subCountLabel span{color:#fff;font-weight:bold}#profileActions button,#profileActions a,#ownActionRow button{width:max-content;max-width:100%;text-align:center;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:0.9em 1.15em;border-radius:1.6em;font-weight:bold;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#ownActionRow button{font-size:calc(11.5px * var(--own-action-scale,1))}#profileActions button,#profileActions a{font-size:calc(11.5px * var(--other-action-scale,1))}#subscribeBtn{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#subscribeBtn.subscribed{background:#21262d;color:#f87171;border-color:#f87171}.staticBadge{opacity:0.85;cursor:default !important}#lockedPosts{text-align:center;color:#9ca3af;font-size:13px;padding:40px 16px;line-height:1.7}#tabsOther,#tabsOwn{display:none;gap:8px;padding:0 16px 14px;justify-content:center}.tabBtn{flex:1;max-width:200px;text-align:center;background:#161b22;color:#9ca3af;border:1px solid #262c36;padding:0.7em 1.1em;border-radius:1.4em;font-weight:bold;cursor:pointer;box-sizing:border-box}.tabBtn.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}#aboutSection{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:18px;text-align:center}#editOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center}#editOverlay.open{display:flex}#editModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:18px 18px 0 0;padding:18px 16px 24px;max-height:85vh;overflow-y:auto}#editModal h2{font-size:16px;margin-bottom:14px}.formRow{margin-bottom:12px}.formRow label{display:block;font-size:12px;color:#9ca3af;margin-bottom:5px}.formRow input,.formRow textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.formRow textarea{resize:vertical;min-height:70px}.formRow select{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.readonlyNote{font-size:11px;color:#6b7280;margin-bottom:14px}#coverColors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.coverSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}.coverSwatch.selected{border-color:#fff}#editModalBtns{display:flex;gap:8px;margin-top:6px}#editSaveBtn,#editCancelBtn{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;border:none}#editSaveBtn{background:var(--primary-color);color:#fff}#editCancelBtn{background:#21262d;color:#ddd}#editSaveBtn:disabled{opacity:0.6}#editStatus{font-size:12px;text-align:center;margin-top:8px;min-height:15px;color:#4ade80}#postsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#emptyPosts{text-align:center;color:#6b7280;font-size:13px;padding:40px 0}#postsLoading{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:space-evenly;gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:36px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{display:flex;gap:8px;margin-bottom:10px}.commentRow img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap}.commentMeta{font-size:10px;color:#6b7280;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}.commentMeta button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.repliesList{margin-left:36px}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--poster-height:180px;--own-action-scale:1;--other-action-scale:1;--post-buttons-justify:space-evenly;--clamp-lines:6}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}#loginScreen h1{font-size:22px;margin-bottom:6px}#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}#appScreen{display:none}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader h1{font-size:17px;font-weight:bold}#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;text-decoration:none}#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#hamburgerBtn{position:absolute;left:44px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:19px;cursor:pointer;padding:4px 8px;display:none}#noticeBar{display:none;background:#1f2937;color:#93c5fd;font-size:12.5px;padding:9px 0;border-bottom:1px solid #262c36;line-height:1.5;overflow:hidden;white-space:nowrap;position:relative}#noticeBarText{display:inline-block;padding-left:100%;will-change:transform;animation:noticeScroll linear infinite}@keyframes noticeScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#topMenuBar{display:none;gap:8px;padding:10px 14px;overflow-x:auto;background:var(--card-color);border-bottom:1px solid #262c36}#topMenuBar::-webkit-scrollbar{display:none}.topMenuItem{flex-shrink:0;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:7px 16px;border-radius:16px;font-size:12.5px;font-weight:bold;text-decoration:none;white-space:nowrap}.topMenuGadget{flex-shrink:0}#sideMenuOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:250}#sideMenuOverlay.open{display:block}#sideMenuPanel{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:300px;background:var(--card-color);z-index:251;padding:18px 14px;overflow-y:auto;transform:translateX(-100%);transition:transform 0.25s ease}#sideMenuOverlay.open #sideMenuPanel{transform:translateX(0)}#sideMenuPanel h2{font-size:15px;margin-bottom:14px}#sideMenuCloseBtn{position:absolute;right:12px;top:14px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.sideMenuItem,.sideMenuGadget{display:block;padding:12px 10px;border-radius:10px;color:#c9d1d9;text-decoration:none;font-size:14px;margin-bottom:8px;background:#0d1117;border:1px solid #262c36}main{padding:16px;max-width:var(--max-width);margin:0 auto}#profileCover{height:90px;border-radius:14px 14px 0 0;background:var(--primary-color)}#profileCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;margin-bottom:18px;overflow:hidden}#profileBody{padding:0 16px 16px;text-align:center}#profileAvatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#333;border:4px solid var(--card-color);margin-top:-42px;margin-bottom:10px}#profileName{font-size:18px;font-weight:bold;margin-bottom:2px}#profileEmail{font-size:12px;color:#6b7280;margin-bottom:10px}#profileBio{font-size:13px;color:#ddd;white-space:pre-wrap;margin-bottom:6px;line-height:1.5}#profileBioEmpty{font-size:13px;color:#6b7280;font-style:italic;margin-bottom:6px}#profileExtra{font-size:12px;color:#9ca3af;margin-bottom:6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#profileJoined{font-size:11px;color:#6b7280;margin-bottom:14px}#profileActions,#ownActionRow{display:none;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}.actionCol{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}.subCountLabel{text-align:center;font-size:12px;color:#9ca3af}.subCountLabel span{color:#fff;font-weight:bold}#profileActions button,#profileActions a,#ownActionRow button{width:100%;text-align:center;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:11px 10px;border-radius:22px;font-weight:bold;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px}#ownActionRow button{font-size:calc(11.5px * var(--own-action-scale,1))}#profileActions button,#profileActions a{font-size:calc(11.5px * var(--other-action-scale,1))}#subscribeBtn{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#subscribeBtn.subscribed{background:#21262d;color:#f87171;border-color:#f87171}.staticBadge{opacity:0.85;cursor:default !important}#lockedPosts{text-align:center;color:#9ca3af;font-size:13px;padding:40px 16px;line-height:1.7}#tabsOther,#tabsOwn{display:none;gap:8px;padding:0 16px 14px;justify-content:center}.tabBtn{flex:1;max-width:200px;text-align:center;background:#161b22;color:#9ca3af;border:1px solid #262c36;padding:0.7em 1.1em;border-radius:1.4em;font-weight:bold;cursor:pointer;box-sizing:border-box}.tabBtn.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}#aboutSection{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:18px;text-align:center}#editOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center}#editOverlay.open{display:flex}#editModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:18px 18px 0 0;padding:18px 16px 24px;max-height:85vh;overflow-y:auto}#editModal h2{font-size:16px;margin-bottom:14px}.formRow{margin-bottom:12px}.formRow label{display:block;font-size:12px;color:#9ca3af;margin-bottom:5px}.formRow input,.formRow textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.formRow textarea{resize:vertical;min-height:70px}.formRow select{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.readonlyNote{font-size:11px;color:#6b7280;margin-bottom:14px}#coverColors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.coverSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}.coverSwatch.selected{border-color:#fff}#editModalBtns{display:flex;gap:8px;margin-top:6px}#editSaveBtn,#editCancelBtn{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;border:none}#editSaveBtn{background:var(--primary-color);color:#fff}#editCancelBtn{background:#21262d;color:#ddd}#editSaveBtn:disabled{opacity:0.6}#editStatus{font-size:12px;text-align:center;margin-top:8px;min-height:15px;color:#4ade80}#postsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#emptyPosts{text-align:center;color:#6b7280;font-size:13px;padding:40px 0}#postsLoading{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333;object-fit:cover}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify,space-evenly);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:44px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0;object-fit:cover}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:none;position:absolute;right:0;top:20px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:110px;z-index:10;overflow:hidden}.commentMenuDropdown.open{display:block}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:8px 10px;font-size:11px;cursor:pointer}.commentMenuDropdown button:hover{background:#30363d}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:40px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
 </head>
 <body>
+
+  <div id="reportModalOverlay" class="reportModalOverlay" style="display:none;">
+    <div class="reportModalBox">
+      <div class="reportModalTitle">কেন রিপোর্ট করছেন?</div>
+      <div class="reportReasonList" id="reportReasonList">
+        <button type="button" class="reportReasonBtn" data-reason="কপিরাইট পোস্ট">©️ কপিরাইট পোস্ট</button>
+        <button type="button" class="reportReasonBtn" data-reason="অশ্লীল কন্টেন্ট">🔞 অশ্লীল কন্টেন্ট</button>
+        <button type="button" class="reportReasonBtn" data-reason="হিংসাত্মক পোস্ট">⚠️ হিংসাত্মক পোস্ট</button>
+        <button type="button" class="reportReasonBtn" data-reason="নির্মম কন্টেন্ট">🚫 নির্মম কন্টেন্ট</button>
+      </div>
+      <div class="reportModalActions">
+        <button type="button" id="reportCancelBtn">বাতিল</button>
+        <button type="button" id="reportSubmitBtn">রিপোর্ট পাঠান</button>
+      </div>
+    </div>
+  </div>
 
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
@@ -169,6 +185,10 @@
   let currentTargetUid = null;
   let currentIsOwnProfile = false;
   let currentIsSubscribed = false;
+  let blogSymbols = { big: ['(', ')'], med: ['{', '}'], small: ['[', ']'], link: ['<', '>'] };
+  let readMoreLines = 6;
+  let buttonOrder = { bottom: ['like', 'comment', 'copyText'], menu: ['copyLink', 'share', 'edit', 'delete', 'report'] };
+  let commentButtonOrder = { bottom: ['like', 'reply'], menu: ['copy', 'edit', 'delete', 'report'] };
   const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
@@ -317,6 +337,80 @@
 
   function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
 
+  // চিহ্নগুলো (যেমন ( অথবা ** ইত্যাদি) রেজেক্সের মধ্যে নিরাপদে বসানোর জন্য
+  function escapeRegex(str) {
+    return String(str || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  const BLOG_SIZE_DEFS = [
+    { key: 'big', cls: 'blogBig' },
+    { key: 'med', cls: 'blogMed' },
+    { key: 'small', cls: 'blogSmall' }
+  ];
+
+  function renderBlogText(raw) {
+    let s = escapeHtml(raw || '');
+    BLOG_SIZE_DEFS.forEach(({ cls, key }) => {
+      const sym = blogSymbols[key];
+      const open = sym && sym[0], close = sym && sym[1];
+      if (!open || !close) return;
+      const o = escapeRegex(escapeHtml(open)), c = escapeRegex(escapeHtml(close));
+      const re = new RegExp(o + '([\\s\\S]+?)' + c, 'g');
+      s = s.replace(re, '<span class="' + cls + '">$1</span>');
+    });
+    const linkSym = blogSymbols.link;
+    const lo = linkSym && linkSym[0], lc = linkSym && linkSym[1];
+    if (lo && lc) {
+      const o = escapeRegex(escapeHtml(lo)), c = escapeRegex(escapeHtml(lc));
+      const re = new RegExp(o + '([\\s\\S]+?)' + c, 'g');
+      s = s.replace(re, '<span class="blogLink" data-blog-link="$1">$1</span>');
+    }
+    return s;
+  }
+
+  function wireBlogLinks(container) {
+    container.querySelectorAll('.blogLink').forEach(el => {
+      el.addEventListener('click', () => {
+        const raw = (el.getAttribute('data-blog-link') || '').trim();
+        const m = raw.match(/#post-(.+)$/);
+        if (m) { window.location.href = 'index.html#post-' + encodeURIComponent(decodeURIComponent(m[1])); return; }
+        if (/^https?:\/\//i.test(raw)) { window.open(raw, '_blank', 'noopener'); return; }
+        window.location.href = 'index.html#post-' + encodeURIComponent(raw);
+      });
+    });
+  }
+
+  // পোস্ট/কমেন্ট রিপোর্ট মডাল — ইনডেক্স পেজের রিপোর্ট সিস্টেমের সাথে একই
+  const reportModalOverlay = document.getElementById('reportModalOverlay');
+  let reportModalResolver = null;
+  let selectedReportReason = null;
+
+  document.querySelectorAll('.reportReasonBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.reportReasonBtn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedReportReason = btn.dataset.reason;
+    });
+  });
+
+  document.getElementById('reportCancelBtn').addEventListener('click', () => closeReportModal(null));
+  document.getElementById('reportSubmitBtn').addEventListener('click', () => {
+    if (!selectedReportReason) { alert('একটা কারণ বাছাই করুন'); return; }
+    closeReportModal(selectedReportReason);
+  });
+
+  function closeReportModal(result) {
+    reportModalOverlay.style.display = 'none';
+    if (reportModalResolver) { reportModalResolver(result); reportModalResolver = null; }
+  }
+
+  function askReportReason() {
+    selectedReportReason = null;
+    document.querySelectorAll('.reportReasonBtn').forEach(b => b.classList.remove('selected'));
+    reportModalOverlay.style.display = 'flex';
+    return new Promise(resolve => { reportModalResolver = resolve; });
+  }
+
   function renderRawGadget(container, code) {
     container.innerHTML = code || '';
     container.querySelectorAll('script').forEach(oldScript => {
@@ -379,6 +473,32 @@
       document.documentElement.style.setProperty('--text-color', d.themeTextColor || '#ffffff');
     } catch (e) {
       console.error('প্রোফাইল পেজ সেটিংস লোড এরর:', e);
+    }
+  }
+
+  // পোস্ট/কমেন্ট বাটন অর্ডার, ব্লগ চিহ্ন ইত্যাদি — ইনডেক্স পেজের মতো একই
+  // "settings/site" থেকে লোড করে, যেন পোস্ট-কমেন্ট-রিপ্লাই সিস্টেম দুই পেজেই অভিন্ন থাকে
+  async function loadSiteSettings() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "site"));
+      if (!snap.exists()) return;
+      const s = snap.data();
+
+      blogSymbols = {
+        big: [s.blogBigOpen || '(', s.blogBigClose || ')'],
+        med: [s.blogMedOpen || '{', s.blogMedClose || '}'],
+        small: [s.blogSmallOpen || '[', s.blogSmallClose || ']'],
+        link: [s.blogLinkOpen || '<', s.blogLinkClose || '>']
+      };
+
+      if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
+      if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
+      if (s.commentBottomButtons && s.commentBottomButtons.length) commentButtonOrder.bottom = s.commentBottomButtons;
+      if (s.commentMenuButtons && s.commentMenuButtons.length) commentButtonOrder.menu = s.commentMenuButtons;
+      readMoreLines = s.readMoreLines || 6;
+      if (s.postButtonsJustify) document.documentElement.style.setProperty('--post-buttons-justify', s.postButtonsJustify);
+    } catch (e) {
+      console.error('সাইট সেটিংস লোড এরর:', e);
     }
   }
 
@@ -615,10 +735,9 @@
   }
 
   function buildPostCard(postId, d) {
+    const isOwner = currentUser && d.authorUid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
-    const isPostOwner = currentUser && d.authorUid === currentUser.uid;
     const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
-    const interactive = currentIsOwnProfile; 
 
     const card = document.createElement('div');
     card.className = 'postCard';
@@ -628,30 +747,25 @@
     if (d.type === 'poster') {
       mediaHtml = `<div class="postPoster" style="background:${d.posterColor || '#4285F4'}">${escapeHtml(d.text)}</div>`;
     }
+    const postTextHtml = d.type === 'blog' ? renderBlogText(d.text) : escapeHtml(d.text);
 
     card.innerHTML = `
       <div class="postHeader">
+        <a class="postAuthorLink" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">
+          <img class="avatar" src="${d.authorPhoto || ''}" loading="lazy" decoding="async">
+        </a>
         <div>
+          <a class="postAuthorLink pName" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">${escapeHtml(d.authorName)}</a>
           <div class="pTime">${timeAgo(d.createdAt)}</div>
         </div>
         <div class="postMenuWrap">
           <button class="postMenuBtn">⋮</button>
-          <div class="postMenuDropdown">
-            <button class="copyLinkBtn">🔗 লিংক কপি</button>
-            <button class="shareBtn">📤 শেয়ার</button>
-            ${isPostOwner ? '<button class="editBtn">✏️ এডিট</button>' : ''}
-            ${isPostOwner ? '<button class="deleteBtn">🗑️ ডিলিট</button>' : ''}
-          </div>
+          <div class="postMenuDropdown"></div>
         </div>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText">${escapeHtml(d.text)}</div>` : ''}
+      ${d.type !== 'poster' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${postTextHtml}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
-      ${interactive ? `
-      <div class="postButtons">
-        <button class="likeBtn ${liked ? 'liked' : ''}">❤️ লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)</button>
-        <button class="commentToggleBtn">💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)</button>
-        <button class="copyTextBtn">📋 টেক্সট কপি</button>
-      </div>
+      <div class="postButtons"></div>
       <div class="postStatus"></div>
       <div class="commentsWrap">
         <div class="commentForm">
@@ -659,133 +773,228 @@
           <button class="commentSubmitBtn">পোস্ট</button>
         </div>
         <div class="commentsListEl"></div>
-      </div>` : `<div class="postStatus"></div>`}
+      </div>
     `;
 
     const statusEl = card.querySelector('.postStatus');
     function showStatus(msg) { statusEl.textContent = msg; setTimeout(() => statusEl.textContent = '', 2000); }
 
-    const menuBtn = card.querySelector('.postMenuBtn');
-    const menuDropdown = card.querySelector('.postMenuDropdown');
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuDropdown) el.classList.remove('open'); });
-      menuDropdown.classList.toggle('open');
-    });
-    document.addEventListener('click', () => menuDropdown.classList.remove('open'));
-    menuDropdown.addEventListener('click', (e) => e.stopPropagation());
-
-    const likeBtnEl = card.querySelector('.likeBtn');
-    if (likeBtnEl) {
-      likeBtnEl.addEventListener('click', async () => {
-        if (!currentUser) return;
-        const postRef = doc(db, "posts", postId);
-        const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-        await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-        if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
-        else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-        const idx = myPosts.findIndex(p => p.id === postId);
-        if (idx > -1) myPosts[idx].data = d;
-        card.replaceWith(buildPostCard(postId, d));
+    const postTextEl = card.querySelector('.postText');
+    const readMoreBtn = card.querySelector('.readMoreBtn');
+    if (postTextEl && readMoreBtn) {
+      requestAnimationFrame(() => {
+        if (postTextEl.scrollHeight > postTextEl.clientHeight + 1) {
+          readMoreBtn.style.display = 'block';
+        }
+      });
+      let expanded = false;
+      readMoreBtn.addEventListener('click', () => {
+        expanded = !expanded;
+        postTextEl.classList.toggle('clamped', !expanded);
+        readMoreBtn.textContent = expanded ? 'সংক্ষেপ করুন' : 'আরও পড়ুন';
       });
     }
 
-    const commentsWrap = card.querySelector('.commentsWrap');
-    const commentToggleBtnEl = card.querySelector('.commentToggleBtn');
-    let commentsLoaded = false;
-    if (commentToggleBtnEl) {
-      commentToggleBtnEl.addEventListener('click', () => {
-        const show = commentsWrap.style.display !== 'block';
-        commentsWrap.style.display = show ? 'block' : 'none';
-        if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
-      });
-    }
+    if (d.type === 'blog') wireBlogLinks(card);
 
-    const copyTextBtnEl = card.querySelector('.copyTextBtn');
-    if (copyTextBtnEl) {
-      copyTextBtnEl.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
-        catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
-      });
-    }
+    const bottomContainer = card.querySelector('.postButtons');
+    const menuContainer = card.querySelector('.postMenuDropdown');
+    const menuBtn0 = card.querySelector('.postMenuBtn');
 
-    card.querySelector('.copyLinkBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
-      catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
-    });
-
-    card.querySelector('.shareBtn').addEventListener('click', async () => {
-      menuDropdown.classList.remove('open');
-      if (navigator.share) {
-        try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {}
-      } else {
-        try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {}
-      }
-    });
-
-    const editBtnEl = card.querySelector('.editBtn');
-    if (editBtnEl) {
-      editBtnEl.addEventListener('click', () => {
-        menuDropdown.classList.remove('open');
-        const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
-          d.text = newText;
+    const buttonDefs = {
+      like: () => {
+        const b = document.createElement('button');
+        b.className = 'likeBtn' + (liked ? ' liked' : '');
+        b.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
+        b.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const postRef = doc(db, "posts", postId);
+          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+          await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+          if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
+          else d.likedBy = [...(d.likedBy || []), currentUser.uid];
           const idx = myPosts.findIndex(p => p.id === postId);
           if (idx > -1) myPosts[idx].data = d;
-          card.replaceWith(buildPostCard(postId, d));
-        }).catch(e => alert('এরর: ' + e.message));
+          const nowLikedState = (d.likedBy || []).includes(currentUser.uid);
+          b.className = 'likeBtn' + (nowLikedState ? ' liked' : '');
+          b.innerHTML = `${nowLikedState ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
+        });
+        return b;
+      },
+      comment: () => {
+        const b = document.createElement('button');
+        b.className = 'commentToggleBtn';
+        b.innerHTML = `💬 কমেন্ট (<span class="commentCountEl">${d.commentCount || 0}</span>)`;
+        let commentsLoaded = false;
+        b.addEventListener('click', () => {
+          const show = commentsWrap.style.display !== 'block';
+          commentsWrap.style.display = show ? 'block' : 'none';
+          if (show && !commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
+        });
+        return b;
+      },
+      copyText: () => {
+        const b = document.createElement('button');
+        b.className = 'copyTextBtn';
+        b.textContent = '📋 টেক্সট কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(d.text || ''); showStatus('কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      copyLink: () => {
+        const b = document.createElement('button');
+        b.className = 'copyLinkBtn';
+        b.textContent = '🔗 লিংক কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); }
+          catch (e) { showStatus('কপি ব্যর্থ হয়েছে'); }
+        });
+        return b;
+      },
+      share: () => {
+        const b = document.createElement('button');
+        b.className = 'shareBtn';
+        b.textContent = '📤 শেয়ার';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (navigator.share) { try { await navigator.share({ text: d.text || '', url: postUrl }); } catch (e) {} }
+          else { try { await navigator.clipboard.writeText(postUrl); showStatus('লিংক কপি হয়েছে ✓'); } catch (e) {} }
+        });
+        return b;
+      },
+      edit: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'editBtn';
+        b.textContent = '✏️ এডিট';
+        b.addEventListener('click', () => {
+          menuContainer.classList.remove('open');
+          const newText = prompt('পোস্ট এডিট করুন:', d.text || '');
+          if (newText === null) return;
+          updateDoc(doc(db, "posts", postId), { text: newText }).then(() => {
+            d.text = newText;
+            const idx = myPosts.findIndex(p => p.id === postId);
+            if (idx > -1) myPosts[idx].data = d;
+            card.replaceWith(buildPostCard(postId, d));
+          }).catch(e => alert('এরর: ' + e.message));
+        });
+        return b;
+      },
+      delete: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'deleteBtn';
+        b.textContent = '🗑️ ডিলিট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "posts", postId));
+            myPosts = myPosts.filter(p => p.id !== postId);
+            card.remove();
+            if (myPosts.length === 0) emptyPosts.style.display = 'block';
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      },
+      report: () => {
+        const b = document.createElement('button');
+        b.className = 'reportBtn';
+        b.textContent = '🚩 রিপোর্ট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!currentUser) return;
+          const reason = await askReportReason();
+          if (reason === null) return;
+          try {
+            await addDoc(collection(db, "reports"), {
+              type: 'post',
+              postId: postId,
+              targetId: postId,
+              text: d.text || '',
+              authorName: d.authorName || '',
+              authorUid: d.authorUid || '',
+              authorEmail: d.authorEmail || '',
+              reason: reason,
+              reporterUid: currentUser.uid,
+              reporterEmail: currentUser.email || '',
+              createdAt: serverTimestamp()
+            });
+            showStatus('রিপোর্ট পাঠানো হয়েছে ✓');
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      }
+    };
+
+    function placeButtons(order, container) {
+      (order || []).forEach(key => {
+        const factory = buttonDefs[key];
+        if (!factory) return;
+        const el = factory();
+        if (el) container.appendChild(el);
       });
     }
 
-    const deleteBtnEl = card.querySelector('.deleteBtn');
-    if (deleteBtnEl) {
-      deleteBtnEl.addEventListener('click', async () => {
-        menuDropdown.classList.remove('open');
-        if (!confirm('এই পোস্টটি ডিলিট করতে চান?')) return;
-        try {
-          await deleteDoc(doc(db, "posts", postId));
-          myPosts = myPosts.filter(p => p.id !== postId);
-          card.remove();
-          if (myPosts.length === 0) emptyPosts.style.display = 'block';
-        } catch (e) { alert('এরর: ' + e.message); }
-      });
-    }
+    placeButtons(buttonOrder.bottom, bottomContainer);
+    placeButtons(buttonOrder.menu, menuContainer);
 
-    const commentSubmitBtnEl = card.querySelector('.commentSubmitBtn');
-    if (commentSubmitBtnEl) {
-      commentSubmitBtnEl.addEventListener('click', () => {
-        const input = card.querySelector('.commentInput');
-        postComment(postId, input.value, null, card);
-        input.value = '';
-      });
-    }
+    menuBtn0.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.postMenuDropdown.open').forEach(el => { if (el !== menuContainer) el.classList.remove('open'); });
+      menuContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuContainer.classList.remove('open'));
+    menuContainer.addEventListener('click', (e) => e.stopPropagation());
+
+    const commentsWrap = card.querySelector('.commentsWrap');
+
+    card.querySelector('.commentSubmitBtn').addEventListener('click', () => {
+      if (!currentUser) return;
+      const input = card.querySelector('.commentInput');
+      postComment(postId, input.value, null, card);
+      input.value = '';
+    });
 
     return card;
   }
 
   function loadComments(postId, card) {
     const listEl = card.querySelector('.commentsListEl');
-    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "posts", postId, "comments"), orderBy("createdAt", "asc"));
     onSnapshot(q, (snap) => {
       const all = [];
-      snap.forEach(c => all.push({ id: c.id, data: c.data() }));
-      const topLevel = all.filter(c => !c.data.replyToId);
-      const repliesByParent = {};
+      const byId = {};
+      snap.forEach(c => { const obj = { id: c.id, data: c.data() }; all.push(obj); byId[c.id] = obj; });
+
+      function findTopLevelId(obj) {
+        let cur = obj;
+        const seen = new Set();
+        while (cur && cur.data.replyToId && !seen.has(cur.id)) {
+          seen.add(cur.id);
+          const parent = byId[cur.data.replyToId];
+          if (!parent) break;
+          cur = parent;
+        }
+        return cur ? cur.id : obj.id;
+      }
+
+      const topLevel = all.filter(c => !c.data.replyToId).slice().reverse();
+      const repliesByTop = {};
       all.filter(c => c.data.replyToId).forEach(c => {
-        if (!repliesByParent[c.data.replyToId]) repliesByParent[c.data.replyToId] = [];
-        repliesByParent[c.data.replyToId].push(c);
+        const topId = findTopLevelId(c);
+        const directParent = byId[c.data.replyToId];
+        c.replyToName = directParent ? directParent.data.name : '';
+        (repliesByTop[topId] = repliesByTop[topId] || []).push(c);
       });
 
       listEl.innerHTML = '';
       topLevel.forEach(c => {
-        const row = buildCommentRow(postId, c.id, c.data, false);
-        listEl.appendChild(row);
-        const repliesListEl = row.querySelector('.repliesList');
-        (repliesByParent[c.id] || []).forEach(r => {
-          repliesListEl.appendChild(buildCommentRow(postId, r.id, r.data, true));
-        });
+        listEl.appendChild(buildCommentRow(postId, c.id, c.data, true, card, repliesByTop[c.id] || []));
       });
 
       const cCountEl = card.querySelector('.commentCountEl');
@@ -812,81 +1021,221 @@
     catch (e) { alert('কমেন্ট এরর: ' + e.message); }
   }
 
-  function buildCommentRow(postId, commentId, d, isReply) {
+  function buildCommentRow(postId, commentId, d, isTopLevel, card, replies, ctx, replyToName) {
     const isOwner = currentUser && d.uid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
+    const replyList = replies || [];
     const row = document.createElement('div');
     row.className = 'commentRow';
 
     row.innerHTML = `
-      <img src="${d.photoURL || ''}" loading="lazy" decoding="async">
-      <div style="flex:1;">
-        <div class="commentBody">
-          <div class="cName">${escapeHtml(d.name)}</div>
-          <div class="cText">${escapeHtml(d.text)}</div>
+      <div class="commentMain">
+        <img src="${d.photoURL || ''}" loading="lazy" decoding="async">
+        <div style="flex:1; min-width:0;">
+          <div class="commentBody">
+            <div class="commentBodyTop">
+              <div class="cName">${escapeHtml(d.name)}</div>
+              <div class="commentMenuWrap">
+                <button class="commentMenuBtn">⋮</button>
+                <div class="commentMenuDropdown"></div>
+              </div>
+            </div>
+            ${replyToName ? `<div class="cReplyToLine">↪ <b>${escapeHtml(replyToName)}</b> এর মন্তব্যে</div>` : ''}
+            <div class="cText">${escapeHtml(d.text)}</div>
+          </div>
+          <div class="commentBottomRow">
+            <span class="cTime">${timeAgo(d.createdAt)}</span>
+            <div class="commentBottomButtons"></div>
+          </div>
+          ${isTopLevel ? `
+            <div class="replyBox" style="display:none;">
+              <div class="replyBoxList"></div>
+              <div class="replyTargetLabel"></div>
+              <div class="replyForm">
+                <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..."></textarea>
+                <button class="replySubmitBtn">পাঠান</button>
+              </div>
+            </div>
+          ` : ''}
         </div>
-        <div class="commentMeta">
-          <span>${timeAgo(d.createdAt)}</span>
-          <button class="cLikeBtn">${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span></button>
-          <button class="cCopyBtn">কপি</button>
-          ${!isReply && (currentIsOwnProfile || currentIsSubscribed) ? '<button class="cReplyBtn">উত্তর দিন</button>' : ''}
-          ${isOwner ? '<button class="cEditBtn">এডিট</button>' : ''}
-          ${isOwner ? '<button class="cDeleteBtn">ডিলিট</button>' : ''}
-        </div>
-        ${!isReply ? `
-        <div class="replyForm" style="display:none; gap:6px; margin-top:6px;">
-          <textarea class="replyInput" rows="1" placeholder="উত্তর লিখুন..." style="flex:1; background:#0d1117; border:1px solid #30363d; color:#fff; border-radius:8px; padding:6px 8px; font-size:12px;"></textarea>
-          <button class="replySubmitBtn" style="background:#4285F4; color:#fff; border:none; border-radius:8px; padding:0 10px; font-size:11px;">পাঠান</button>
-        </div>
-        <div class="repliesList"></div>` : ''}
       </div>
     `;
 
-    row.querySelector('.cLikeBtn').addEventListener('click', async () => {
-      if (!currentUser) return;
-      const ref2 = doc(db, "posts", postId, "comments", commentId);
-      const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-      await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-    });
+    const bottomContainer = row.querySelector('.commentBottomButtons');
+    const menuContainer = row.querySelector('.commentMenuDropdown');
+    const menuBtn = row.querySelector('.commentMenuBtn');
 
-    row.querySelector('.cCopyBtn').addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
-    });
+    const topCtx = isTopLevel ? (() => {
+      const replyBox = row.querySelector('.replyBox');
+      const replyBoxList = row.querySelector('.replyBoxList');
+      const replyInput = row.querySelector('.replyInput');
+      const targetLabel = row.querySelector('.replyTargetLabel');
+      const newCtx = {
+        replyBox, replyBoxList, replyInput, targetLabel,
+        currentTargetId: commentId,
+        currentTargetName: d.name
+      };
+      newCtx.updateLabel = () => {
+        if (newCtx.currentTargetId === commentId) {
+          targetLabel.classList.remove('show');
+          targetLabel.innerHTML = '';
+        } else {
+          targetLabel.classList.add('show');
+          targetLabel.innerHTML = `↩ <b>${escapeHtml(newCtx.currentTargetName)}</b> কে উত্তর দিচ্ছেন <span class="cancelReplyTarget">✕</span>`;
+          const cancelEl = targetLabel.querySelector('.cancelReplyTarget');
+          if (cancelEl) cancelEl.addEventListener('click', () => {
+            newCtx.currentTargetId = commentId;
+            newCtx.currentTargetName = d.name;
+            newCtx.updateLabel();
+          });
+        }
+      };
+      newCtx.openFor = (id, name, isMainToggle) => {
+        const isOpen = replyBox.style.display === 'block';
+        if (isMainToggle && isOpen) {
+          replyBox.style.display = 'none';
+          return;
+        }
+        replyBox.style.display = 'block';
+        newCtx.currentTargetId = isMainToggle ? commentId : id;
+        newCtx.currentTargetName = isMainToggle ? d.name : name;
+        newCtx.updateLabel();
+        replyInput.focus();
+      };
+      return newCtx;
+    })() : ctx;
 
-    const editBtn = row.querySelector('.cEditBtn');
-    if (editBtn) {
-      editBtn.addEventListener('click', () => {
-        const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
-        if (newText === null) return;
-        updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
+    const buttonDefs = {
+      like: () => {
+        const b = document.createElement('button');
+        b.className = 'cLikeBtn' + (liked ? ' cLiked' : '');
+        b.innerHTML = `${liked ? '❤️' : '🤍'} <span class="cLikeCount">${(d.likedBy || []).length}</span>`;
+        b.addEventListener('click', async () => {
+          if (!currentUser) return;
+          const ref2 = doc(db, "posts", postId, "comments", commentId);
+          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
+          await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+        });
+        return b;
+      },
+      reply: () => {
+        const b = document.createElement('button');
+        b.className = 'cReplyBtn';
+        b.textContent = 'উত্তর দিন' + (isTopLevel && replyList.length ? ' (' + replyList.length + ')' : '');
+        b.addEventListener('click', () => {
+          if (!currentUser) return;
+          topCtx.openFor(commentId, d.name, isTopLevel);
+        });
+        return b;
+      },
+      copy: () => {
+        const b = document.createElement('button');
+        b.className = 'cCopyBtn';
+        b.textContent = 'কপি';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          try { await navigator.clipboard.writeText(d.text || ''); } catch (e) {}
+        });
+        return b;
+      },
+      edit: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'cEditBtn';
+        b.textContent = 'এডিট';
+        b.addEventListener('click', () => {
+          menuContainer.classList.remove('open');
+          const newText = prompt('কমেন্ট এডিট করুন:', d.text || '');
+          if (newText === null) return;
+          updateDoc(doc(db, "posts", postId, "comments", commentId), { text: newText }).catch(e => alert('এরর: ' + e.message));
+        });
+        return b;
+      },
+      delete: () => {
+        if (!isOwner) return null;
+        const b = document.createElement('button');
+        b.className = 'cDeleteBtn';
+        b.textContent = 'ডিলিট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
+          try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
+          catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      },
+      report: () => {
+        const b = document.createElement('button');
+        b.className = 'cReportBtn';
+        b.textContent = '🚩 রিপোর্ট';
+        b.addEventListener('click', async () => {
+          menuContainer.classList.remove('open');
+          if (!currentUser) return;
+          const isReply = !!d.replyToId;
+          const reason = await askReportReason();
+          if (reason === null) return;
+          try {
+            await addDoc(collection(db, "reports"), {
+              type: isReply ? 'reply' : 'comment',
+              postId: postId,
+              targetId: commentId,
+              parentCommentId: d.replyToId || null,
+              text: d.text || '',
+              authorName: d.name || '',
+              authorUid: d.uid || '',
+              authorEmail: d.email || '',
+              reason: reason,
+              reporterUid: currentUser.uid,
+              reporterEmail: currentUser.email || '',
+              createdAt: serverTimestamp()
+            });
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        return b;
+      }
+    };
+
+    function placeCommentButtons(order, container) {
+      (order || []).forEach(key => {
+        const factory = buttonDefs[key];
+        if (!factory) return;
+        const el = factory();
+        if (el) container.appendChild(el);
       });
     }
 
-    const deleteBtn = row.querySelector('.cDeleteBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', async () => {
-        if (!confirm('কমেন্টটি ডিলিট করতে চান?')) return;
-        try { await deleteDoc(doc(db, "posts", postId, "comments", commentId)); }
-        catch (e) { alert('এরর: ' + e.message); }
-      });
-    }
+    placeCommentButtons(commentButtonOrder.bottom, bottomContainer);
+    placeCommentButtons(commentButtonOrder.menu, menuContainer);
 
-    const replyBtn = row.querySelector('.cReplyBtn');
-    if (replyBtn) {
-      const replyForm = row.querySelector('.replyForm');
-      replyBtn.addEventListener('click', () => {
-        replyForm.style.display = replyForm.style.display === 'none' ? 'flex' : 'none';
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.commentMenuDropdown.open, .postMenuDropdown.open').forEach(el => { if (el !== menuContainer) el.classList.remove('open'); });
+      menuContainer.classList.toggle('open');
+    });
+    document.addEventListener('click', () => menuContainer.classList.remove('open'));
+    menuContainer.addEventListener('click', (e) => e.stopPropagation());
+
+    if (isTopLevel) {
+      replyList.forEach(r => {
+        topCtx.replyBoxList.appendChild(buildCommentRow(postId, r.id, r.data, false, card, [], topCtx, r.replyToName));
       });
+
       row.querySelector('.replySubmitBtn').addEventListener('click', () => {
-        const input = row.querySelector('.replyInput');
-        postComment(postId, input.value, commentId, row.closest('.postCard'));
+        if (!currentUser) return;
+        const input = topCtx.replyInput;
+        const targetId = topCtx.currentTargetId;
+        if (!input.value.trim()) return;
+        postComment(postId, input.value, targetId, card);
         input.value = '';
-        replyForm.style.display = 'none';
+        topCtx.currentTargetId = commentId;
+        topCtx.currentTargetName = d.name;
+        topCtx.updateLabel();
       });
     }
 
     return row;
   }
+
 
   subscribeBtn.addEventListener('click', async () => {
     if (!currentUser || currentIsOwnProfile || !currentTargetUid) return;
@@ -920,7 +1269,8 @@
         loginScreen.style.display = 'none';
         blockedScreen.style.display = 'none';
         appScreen.style.display = 'block';
-        loadProfilePageSettings(); 
+        loadProfilePageSettings();
+        await loadSiteSettings();
         await ensureUserProfile(user); 
 
         const targetUid = viewUid || user.uid;
