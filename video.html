@@ -43,15 +43,6 @@ onSnapshot(doc(db,"settings","site"),(snap)=>{
   const gadgetBox=document.getElementById('globalGadgetBox');
   if(gadgetBox){
     gadgetBox.innerHTML='';
-    const entries=s.sidebarEntries||(s.sidebarGadgets||[]).map(g=>({type:'gadget',code:g&&g.code}));
-    (entries||[]).forEach(entry=>{
-      if(!entry||entry.type!=='gadget'||!entry.code)return;
-      const box=document.createElement('div');
-      const scripts=[];
-      box.innerHTML=entry.code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi,(m,attrs,js)=>{scripts.push(js);return '';});
-      gadgetBox.appendChild(box);
-      scripts.forEach(js=>{try{const sc=document.createElement('script');sc.textContent=js;box.appendChild(sc);}catch(e){console.warn('গেজেট স্ক্রিপ্ট চালাতে সমস্যা:',e);}});
-    });
   }
 });let user=null,vid=null,data=null,liked=false,arr=[],statsUnsub=null,commentsUnsub=null,myVideos=[],homeScrollY=0,openReqId=0;let settings={unitName:"Coin",videoCost:10,rewardIntervalSeconds:5,rewardCoins:0.10,maxCoinsPerHour:10,maxCoinsPerDay:100,maxCoinsPerVideo:5};const $=id=>document.getElementById(id),esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));function unit(){return settings.unitName||"Coin"}function money(n){return Number(n||0)+" "+unit()}
 function restoreHomeScroll(){requestAnimationFrame(()=>requestAnimationFrame(()=>window.scrollTo(0,homeScrollY)))}

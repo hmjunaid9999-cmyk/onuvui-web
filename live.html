@@ -152,15 +152,6 @@
     const gadgetBox = document.getElementById('globalGadgetBox');
     if (gadgetBox) {
       gadgetBox.innerHTML = '';
-      const entries = s.sidebarEntries || (s.sidebarGadgets || []).map(g => ({ type: 'gadget', code: g && g.code }));
-      (entries || []).forEach(entry => {
-        if (!entry || entry.type !== 'gadget' || !entry.code) return;
-        const box = document.createElement('div');
-        const scripts = [];
-        box.innerHTML = entry.code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, js) => { scripts.push(js); return ''; });
-        gadgetBox.appendChild(box);
-        scripts.forEach(js => { try { const sc = document.createElement('script'); sc.textContent = js; box.appendChild(sc); } catch (e) { console.warn('গেজেট স্ক্রিপ্ট চালাতে সমস্যা:', e); } });
-      });
     }
   });
 
