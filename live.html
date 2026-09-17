@@ -24,7 +24,10 @@
   <header class="flex items-center justify-between px-4 py-3 bg-[var(--card-color)] border-b border-gray-800 sticky top-0 z-30">
     <a href="index.html" id="headerBackBtn" class="text-xl leading-none">←</a>
     <h1 class="text-base font-bold">🔴 লাইভ স্ট্রিমিং</h1>
-    <div id="userBadge" class="flex items-center gap-2"></div>
+    <div class="flex items-center gap-2">
+      <div id="globalGadgetBox"></div>
+      <div id="userBadge" class="flex items-center gap-2"></div>
+    </div>
   </header>
 
   
@@ -113,6 +116,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -127,11 +131,38 @@
     projectId: "onuvuti-5c9e3",
     storageBucket: "onuvuti-5c9e3.firebasestorage.app",
     messagingSenderId: "846713879232",
-    appId: "1:846713879232:web:538c47101eade3e2df8b25"
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
   };
   const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
   const auth = getAuth(app);
   const db = getFirestore(app);
+
+  // রং ও সাইট-ওয়াইড গ্যাজেট (যেমন ভাষা পরিবর্তন উইজেট) — ইনডেক্স পেজে (settings/site)
+  // যা সেট করা থাকে, এই পেজও লাইভে সরাসরি সেটাই অনুসরণ করবে।
+  onSnapshot(doc(db, "settings", "site"), (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+    const root = document.documentElement.style;
+    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
+    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
+    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
+    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    const gadgetBox = document.getElementById('globalGadgetBox');
+    if (gadgetBox) {
+      gadgetBox.innerHTML = '';
+      const entries = s.sidebarEntries || (s.sidebarGadgets || []).map(g => ({ type: 'gadget', code: g && g.code }));
+      (entries || []).forEach(entry => {
+        if (!entry || entry.type !== 'gadget' || !entry.code) return;
+        const box = document.createElement('div');
+        const scripts = [];
+        box.innerHTML = entry.code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, js) => { scripts.push(js); return ''; });
+        gadgetBox.appendChild(box);
+        scripts.forEach(js => { try { const sc = document.createElement('script'); sc.textContent = js; box.appendChild(sc); } catch (e) { console.warn('গেজেট স্ক্রিপ্ট চালাতে সমস্যা:', e); } });
+      });
+    }
+  });
 
   const rtcConfig = { iceServers: [
     { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }

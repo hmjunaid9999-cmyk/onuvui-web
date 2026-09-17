@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>রেডিও — Onuvuti</title>
 <style>
+  :root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff}
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
-  body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #fff; min-height: 100vh; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
   header {
     position: relative; display: flex; align-items: center; justify-content: center;
-    padding: 16px; background: #161b22; border-bottom: 1px solid #262c36;
+    padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
   }
   header h1 { font-size: 18px; font-weight: bold; }
   #backBtn, #playerBackBtn {
@@ -19,26 +20,27 @@
     text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center;
     border: none; cursor: pointer;
   }
+  #globalGadgetBox { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   .radioChannelList { display: flex; flex-direction: column; gap: 10px; }
   .radioChannelBtn {
     display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    background: #161b22; border: 1px solid #262c36; color: #fff;
+    background: var(--card-color); border: 1px solid #262c36; color: var(--text-color);
     padding: 14px; border-radius: 14px; font-size: 14px; cursor: pointer;
   }
-  .radioChannelBtn.playing { border-color: #4285F4; color: #4285F4; }
+  .radioChannelBtn.playing { border-color: var(--primary-color); color: var(--primary-color); }
   .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
 
   /* --- player (new page) view --- */
   #playerView { display: none; }
   .playerCard {
-    background: #161b22; border: 1px solid #262c36; border-radius: 16px;
+    background: var(--card-color); border: 1px solid #262c36; border-radius: 16px;
     padding: 28px 20px; text-align: center;
   }
   .playerChannelName { font-size: 17px; font-weight: bold; margin-bottom: 4px; }
   .playerStatus { font-size: 12px; color: #6b7280; margin-bottom: 20px; min-height: 16px; }
   .playPauseBig {
-    width: 76px; height: 76px; border-radius: 50%; background: #4285F4; color: #fff;
+    width: 76px; height: 76px; border-radius: 50%; background: var(--primary-color); color: #fff;
     font-size: 30px; border: none; display: flex; align-items: center; justify-content: center;
     margin: 0 auto; cursor: pointer;
   }
@@ -51,7 +53,7 @@
     height: 46px; margin-top: 22px;
   }
   .visualizer span {
-    width: 5px; border-radius: 3px; background: #4285F4; opacity: 0.85;
+    width: 5px; border-radius: 3px; background: var(--primary-color); opacity: 0.85;
     animation: bar 1s ease-in-out infinite;
   }
   .visualizer span:nth-child(1) { height: 14px; animation-delay: 0s; }
@@ -93,6 +95,7 @@
     <a href="index.html" id="backBtn" title="ফিরে যান">←</a>
     <button id="playerBackBtn" title="তালিকায় ফিরে যান" style="display:none;">←</button>
     <h1 id="headerTitle">📻 রেডিও</h1>
+    <div id="globalGadgetBox"></div>
   </header>
 
   <main>
@@ -123,6 +126,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
   import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   // মূল সাইটের (index.html) মতোই ফায়ারবেজ কনফিগ — একই প্রজেক্ট, একই ডাটা
@@ -137,7 +141,34 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
   const db = getFirestore(app);
+
+  // রং ও সাইট-ওয়াইড গ্যাজেট (যেমন ভাষা পরিবর্তন উইজেট) — ইনডেক্স পেজে (settings/site)
+  // যা সেট করা থাকে, রেডিও পেজও সরাসরি সেটাই অনুসরণ করবে। রেডিওর নিজস্ব settings/radio
+  // আলাদাভাবে চলতেই থাকবে, শুধু রং আর গ্যাজেট এখান থেকে যোগ হচ্ছে।
+  onSnapshot(doc(db, "settings", "site"), (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+    const root = document.documentElement.style;
+    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
+    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
+    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
+    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    const gadgetBox = document.getElementById('globalGadgetBox');
+    if (gadgetBox) {
+      gadgetBox.innerHTML = '';
+      const entries = s.sidebarEntries || (s.sidebarGadgets || []).map(g => ({ type: 'gadget', code: g && g.code }));
+      (entries || []).forEach(entry => {
+        if (!entry || entry.type !== 'gadget' || !entry.code) return;
+        const box = document.createElement('div');
+        const scripts = [];
+        box.innerHTML = entry.code.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (m, attrs, js) => { scripts.push(js); return ''; });
+        gadgetBox.appendChild(box);
+        scripts.forEach(js => { try { const sc = document.createElement('script'); sc.textContent = js; box.appendChild(sc); } catch (e) { console.warn('গেজেট স্ক্রিপ্ট চালাতে সমস্যা:', e); } });
+      });
+    }
+  });
 
   const listView = document.getElementById('listView');
   const playerView = document.getElementById('playerView');
