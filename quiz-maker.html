@@ -50,7 +50,13 @@ textarea{min-height:70px;resize:vertical}
       <div id="qOptionsContainer"></div>
       <button type="button" class="ghost" id="addQOptionBtn" style="margin-top:8px">➕ আরও অপশন যোগ করুন</button>
       <button class="primary" id="addQBtn">প্রশ্ন যোগ করুন</button>
+      <button type="button" class="ghost" id="cancelEditBtn" style="display:none;margin-top:8px;width:100%">✕ এডিট বাতিল করুন</button>
       <div class="status" id="qStatus"></div>
+    </div>
+
+    <div class="box">
+      <h3>🕘 সর্বশেষ যুক্ত করা ১০টি প্রশ্ন</h3>
+      <div id="recentQList"><div class="notice">লোড হচ্ছে...</div></div>
     </div>
   </div>
 </div>
@@ -59,7 +65,7 @@ textarea{min-height:70px;resize:vertical}
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import {
-  getFirestore, collection, query, orderBy, getDocs, addDoc, serverTimestamp
+  getFirestore, collection, query, orderBy, limit, getDocs, addDoc, updateDoc, doc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
 const cfg = {
@@ -113,13 +119,17 @@ async function initPanel() {
   if (panelInited) return;
   panelInited = true;
   await loadCategories();
+  await loadRecentQuestions();
 }
 
-/* ================= ক্যাটাগরি (শুধু ড্রপডাউনের জন্য) ================= */
+/* ================= ক্যাটাগরি (ড্রপডাউন + নাম দেখানোর জন্য) ================= */
+let categoriesMap = {};
 async function loadCategories() {
   try {
     const s = await getDocs(query(collection(db, 'quizCategories'), orderBy('order', 'asc')));
     const categories = s.docs.map(x => ({ id: x.id, ...x.data() }));
+    categoriesMap = {};
+    categories.forEach(c => { categoriesMap[c.id] = c; });
     const opts = categories.map(c => `<option value="${c.id}">${esc(c.icon || '')} ${esc(c.name || '')}</option>`).join('');
     $('qCategory').innerHTML = opts || '<option value="">কোনো ক্যাটাগরি নেই</option>';
   } catch (e) {
@@ -169,7 +179,32 @@ async function questionAlreadyExists(text) {
   } catch (e) { return false; }
 }
 
-/* ================= প্রশ্ন যোগ করা ================= */
+/* ================= প্রশ্ন যোগ / এডিট করা ================= */
+let editingQId = null; // null মানে নতুন প্রশ্ন যোগ মোড, নাহলে ওই আইডির প্রশ্ন এডিট মোড
+
+function enterEditMode(qItem) {
+  editingQId = qItem.id;
+  $('qCategory').value = qItem.categoryId || '';
+  $('qText').value = qItem.question || '';
+  qOptions = (qItem.options && qItem.options.length >= MIN_QOPTIONS) ? qItem.options.slice() : ['', ''];
+  qCorrectIndex = qItem.correctIndex || 0;
+  renderQOptions();
+  $('addQBtn').textContent = 'প্রশ্ন আপডেট করুন';
+  $('cancelEditBtn').style.display = '';
+  $('qStatus').textContent = '✏️ এডিট মোড — প্রশ্নটি পরিবর্তন করে আপডেট করুন';
+  $('qStatus').className = 'status';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function exitEditMode() {
+  editingQId = null;
+  $('qText').value = '';
+  qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
+  $('addQBtn').textContent = 'প্রশ্ন যোগ করুন';
+  $('cancelEditBtn').style.display = 'none';
+  $('qStatus').textContent = ''; $('qStatus').className = 'status';
+}
+$('cancelEditBtn').addEventListener('click', exitEditMode);
+
 $('addQBtn').addEventListener('click', async () => {
   const categoryId = $('qCategory').value;
   const question = $('qText').value.trim();
@@ -178,6 +213,20 @@ $('addQBtn').addEventListener('click', async () => {
   if (!categoryId || !question || options.length < MIN_QOPTIONS || options.some(o => !o)) {
     $('qStatus').textContent = 'সব ফিল্ড পূরণ করুন (কমপক্ষে ২টি অপশন)'; $('qStatus').className = 'status err'; return;
   }
+
+  if (editingQId) {
+    /* ---- আপডেট মোড ---- */
+    $('qStatus').textContent = 'আপডেট করা হচ্ছে...'; $('qStatus').className = 'status';
+    try {
+      await updateDoc(doc(db, 'quizQuestions', editingQId), { categoryId, question, options, correctIndex });
+      $('qStatus').textContent = '✅ প্রশ্ন আপডেট হয়েছে'; $('qStatus').className = 'status ok';
+      exitEditMode();
+      await loadRecentQuestions();
+    } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
+    return;
+  }
+
+  /* ---- নতুন প্রশ্ন যোগ মোড ---- */
   $('qStatus').textContent = 'যাচাই করা হচ্ছে...'; $('qStatus').className = 'status';
   if (await questionAlreadyExists(question)) {
     $('qStatus').textContent = '⚠️ এই প্রশ্নটি আগে থেকেই যুক্ত আছে, দ্বিতীয়বার যোগ করা যাবে না।'; $('qStatus').className = 'status err'; return;
@@ -187,8 +236,42 @@ $('addQBtn').addEventListener('click', async () => {
     $('qText').value = '';
     qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
     $('qStatus').textContent = '✅ প্রশ্ন যোগ হয়েছে'; $('qStatus').className = 'status ok';
+    await loadRecentQuestions();
   } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
 });
+
+/* ================= সর্বশেষ ১০টি প্রশ্নের তালিকা (শুধু এডিট, ডিলিট নাই) ================= */
+let recentQCache = [];
+async function loadRecentQuestions() {
+  const box = $('recentQList');
+  box.innerHTML = '<div class="notice">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(query(collection(db, 'quizQuestions'), orderBy('createdAt', 'desc'), limit(10)));
+    recentQCache = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!recentQCache.length) {
+      box.innerHTML = '<div class="notice">এখনো কোনো প্রশ্ন যোগ করা হয়নি</div>';
+      return;
+    }
+    box.innerHTML = recentQCache.map((q, i) => {
+      const cat = categoriesMap[q.categoryId];
+      const catLabel = cat ? `${esc(cat.icon || '')} ${esc(cat.name || '')}` : (q.categoryId || '—');
+      return `
+        <div class="optRow" style="align-items:flex-start;border-bottom:1px solid #262c36;padding-bottom:10px;margin-bottom:10px">
+          <div style="flex:1">
+            <div style="font-size:12px;color:#9ca3af;margin-bottom:3px">${esc(catLabel)}</div>
+            <div style="font-size:13px">${esc(q.question)}</div>
+          </div>
+          <button type="button" class="ghost" onclick="window.editRecentQ(${i})">✏️ এডিট</button>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    box.innerHTML = '<div class="notice">লোড করা যায়নি: ' + esc(e.message) + '</div>';
+  }
+}
+window.editRecentQ = (i) => {
+  const q = recentQCache[i];
+  if (q) enterEditMode(q);
+};
 </script>
 </body>
 </html>
