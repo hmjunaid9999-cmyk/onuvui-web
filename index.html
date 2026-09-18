@@ -467,6 +467,22 @@
 
   cancelEditBtn.addEventListener('click', exitPostEditMode);
 
+  /* নতুন পোস্ট সফলভাবে হওয়ার পর কম্পোজারকে সম্পূর্ণভাবে খালি/রিসেট করার জন্য —
+     যাতে পোস্টারের প্রিভিউ, রং, বা আগের লেখা কম্পোজারে থেকে না যায় এবং মনে
+     না হয় যে একই পোস্ট আবার পোস্ট করা যাবে (ফেসবুকের মতো একবার পোস্ট করলেই শেষ) */
+  function resetComposerAfterPost() {
+    composerMode = 'text';
+    document.querySelectorAll('#composerTabs button').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'text');
+    });
+    posterColorsEl.style.display = 'none';
+    posterPreview.style.display = 'none';
+    posterPreview.textContent = '';
+    blogSyntaxHint.style.display = 'none';
+    applyComposerHeightForMode();
+    composerText.value = '';
+  }
+
   submitPostBtn.addEventListener('click', async () => {
     if (!requireLogin()) return;
 
@@ -534,7 +550,7 @@
 
       await addDoc(collection(db, "posts"), postData);
 
-      composerText.value = '';
+      resetComposerAfterPost();
       composerStatus.textContent = '✅ পোস্ট হয়েছে!';
       setTimeout(() => { composerStatus.textContent = ''; }, 2000);
       resetFeed();
