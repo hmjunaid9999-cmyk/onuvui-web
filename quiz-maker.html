@@ -25,6 +25,14 @@ textarea{min-height:70px;resize:vertical}
 .status{font-size:12px;margin-top:8px;min-height:16px}
 .status.ok{color:#4ade80}.status.err{color:#f87171}
 .loginGate{max-width:340px;margin:80px auto;text-align:center}
+.qItem{border-bottom:1px solid #262c36;padding:12px 0}
+.qItem:last-child{border-bottom:0}
+.qItemTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.qCat{font-size:12px;color:#9ca3af;display:flex;align-items:center;gap:5px}
+.qTitle{font-weight:700;font-size:14px;line-height:1.45}
+.qAnswer{font-size:12px;color:#4ade80;margin-top:5px}
+.qEditBtn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.backBtn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:8px 12px;border-radius:8px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -42,19 +50,19 @@ textarea{min-height:70px;resize:vertical}
   </div>
 
   <div id="adminBody" style="display:none">
-    <div class="box">
-      <h3>➕ নতুন প্রশ্ন</h3>
+    <div class="box" id="editBox">
+      <button type="button" class="backBtn" id="topBackBtn" style="display:none">⬅ ব্যাক (তালিকায় ফিরে যান)</button>
+      <h3 id="editBoxTitle">➕ নতুন প্রশ্ন</h3>
       <label>ক্যাটাগরি</label><select id="qCategory"></select>
       <label>প্রশ্ন</label><textarea id="qText" placeholder="প্রশ্নটি লিখুন"></textarea>
       <label>অপশনসমূহ (সঠিক উত্তরের পাশের রেডিও বাটনে ক্লিক করুন) — যত খুশি অপশন রাখা যাবে, কমপক্ষে ২টি</label>
       <div id="qOptionsContainer"></div>
       <button type="button" class="ghost" id="addQOptionBtn" style="margin-top:8px">➕ আরও অপশন যোগ করুন</button>
       <button class="primary" id="addQBtn">প্রশ্ন যোগ করুন</button>
-      <button type="button" class="ghost" id="cancelEditBtn" style="display:none;margin-top:8px;width:100%">✕ এডিট বাতিল করুন</button>
       <div class="status" id="qStatus"></div>
     </div>
 
-    <div class="box">
+    <div class="box" id="recentBox">
       <h3>🕘 সর্বশেষ যুক্ত করা ১০টি প্রশ্ন</h3>
       <div id="recentQList"><div class="notice">লোড হচ্ছে...</div></div>
     </div>
@@ -182,6 +190,16 @@ async function questionAlreadyExists(text) {
 /* ================= প্রশ্ন যোগ / এডিট করা ================= */
 let editingQId = null; // null মানে নতুন প্রশ্ন যোগ মোড, নাহলে ওই আইডির প্রশ্ন এডিট মোড
 
+function applyAddMode() {
+  editingQId = null;
+  $('qText').value = '';
+  qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
+  $('addQBtn').textContent = 'প্রশ্ন যোগ করুন';
+  $('editBoxTitle').textContent = '➕ নতুন প্রশ্ন';
+  $('topBackBtn').style.display = 'none';
+  $('qStatus').textContent = ''; $('qStatus').className = 'status';
+}
+
 function enterEditMode(qItem) {
   editingQId = qItem.id;
   $('qCategory').value = qItem.categoryId || '';
@@ -190,20 +208,27 @@ function enterEditMode(qItem) {
   qCorrectIndex = qItem.correctIndex || 0;
   renderQOptions();
   $('addQBtn').textContent = 'প্রশ্ন আপডেট করুন';
-  $('cancelEditBtn').style.display = '';
+  $('editBoxTitle').textContent = '✏️ প্রশ্ন এডিট করুন';
+  $('topBackBtn').style.display = '';
   $('qStatus').textContent = '✏️ এডিট মোড — প্রশ্নটি পরিবর্তন করে আপডেট করুন';
   $('qStatus').className = 'status';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  history.pushState({ qEdit: true }, '', '#edit');
+  $('editBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
-function exitEditMode() {
-  editingQId = null;
-  $('qText').value = '';
-  qOptions = ['', '']; qCorrectIndex = 0; renderQOptions();
-  $('addQBtn').textContent = 'প্রশ্ন যোগ করুন';
-  $('cancelEditBtn').style.display = 'none';
-  $('qStatus').textContent = ''; $('qStatus').className = 'status';
+
+/* এডিট মোডে থাকা অবস্থায় ফোনের/ব্রাউজারের ব্যাক বাটন চাপলে যেন পুরো পেজ থেকে বের না হয়ে
+   আগের (তালিকার) অবস্থায় ফিরে আসে, তার জন্য history state ব্যবহার করা হচ্ছে */
+window.addEventListener('popstate', () => {
+  if (editingQId) {
+    applyAddMode();
+    $('recentBox').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+});
+function goBackFromEdit() {
+  if (history.state && history.state.qEdit) history.back();
+  else { applyAddMode(); $('recentBox').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 }
-$('cancelEditBtn').addEventListener('click', exitEditMode);
+$('topBackBtn').addEventListener('click', goBackFromEdit);
 
 $('addQBtn').addEventListener('click', async () => {
   const categoryId = $('qCategory').value;
@@ -220,7 +245,7 @@ $('addQBtn').addEventListener('click', async () => {
     try {
       await updateDoc(doc(db, 'quizQuestions', editingQId), { categoryId, question, options, correctIndex });
       $('qStatus').textContent = '✅ প্রশ্ন আপডেট হয়েছে'; $('qStatus').className = 'status ok';
-      exitEditMode();
+      goBackFromEdit();
       await loadRecentQuestions();
     } catch (e) { $('qStatus').textContent = 'এরর: ' + e.message; $('qStatus').className = 'status err'; }
     return;
@@ -254,14 +279,18 @@ async function loadRecentQuestions() {
     }
     box.innerHTML = recentQCache.map((q, i) => {
       const cat = categoriesMap[q.categoryId];
-      const catLabel = cat ? `${esc(cat.icon || '')} ${esc(cat.name || '')}` : (q.categoryId || '—');
+      const catLabel = cat ? `${esc(cat.name || '')}` : (q.categoryId || '—');
+      const catIcon = cat && cat.icon ? esc(cat.icon) : '🌐';
+      const hasAns = q.options && q.correctIndex != null && q.options[q.correctIndex] != null;
+      const correctAns = hasAns ? q.options[q.correctIndex] : null;
       return `
-        <div class="optRow" style="align-items:flex-start;border-bottom:1px solid #262c36;padding-bottom:10px;margin-bottom:10px">
-          <div style="flex:1">
-            <div style="font-size:12px;color:#9ca3af;margin-bottom:3px">${esc(catLabel)}</div>
-            <div style="font-size:13px">${esc(q.question)}</div>
+        <div class="qItem">
+          <div class="qItemTop">
+            <span class="qCat">${catIcon} ${esc(catLabel)}</span>
+            <button type="button" class="qEditBtn" onclick="window.editRecentQ(${i})">✏️ এডিট</button>
           </div>
-          <button type="button" class="ghost" onclick="window.editRecentQ(${i})">✏️ এডিট</button>
+          <div class="qTitle">${esc(q.question)}</div>
+          <div class="qAnswer">✅ সঠিক উত্তর: ${correctAns != null ? esc(correctAns) : 'পাওয়া যায়নি'}</div>
         </div>`;
     }).join('');
   } catch (e) {
