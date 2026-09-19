@@ -408,14 +408,16 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
       console.error('কনভারসেশন লোড এরর:', e);
     }
 
-    // নিজের দিক থেকে "পড়া হয়েছে" মার্ক করা + নিজের নাম/ছবি সবসময় সবশেষ রাখা
-    unsubConv = onSnapshot(convRef, snap => {
-      if (!snap.exists()) return;
+    // নিজের দিক থেকে "পড়া হয়েছে" মার্ক করা — এটা চ্যাট খোলার সময় শুধু একবারই হবে,
+    // বারবার onSnapshot দিয়ে না (আগে এটা প্রতিটা পরিবর্তনে আবার লিখতো, যেটা নিজের লেখাকেই
+    // আবার "পরিবর্তন" হিসেবে ধরে চক্রাকারে (infinite loop) চলতে থাকতো এবং আসল মেসেজ
+    // পাঠানোর কাজে বাধা দিতো)
+    if (convExists) {
       updateDoc(convRef, {
         [`lastRead.${currentUser.uid}`]: serverTimestamp(),
         [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
       }).catch(() => {});
-    });
+    }
 
     const mq = query(collection(convRef, "messages"), orderBy("createdAt", "asc"), limit(500));
     unsubMessages = onSnapshot(mq, snap => {
