@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
+<title>মেসেজ - Onuvuti</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px}
+html,body{height:100%}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;overscroll-behavior:none}
+
+/* ---------- লগইন / ব্লকড স্ক্রিন — প্রোফাইল পেইজের সাথে হুবহু একই স্টাইল ---------- */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}
+#loginScreen h1{font-size:22px;margin-bottom:6px}
+#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}
+#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}
+#googleLoginBtn:disabled{opacity:0.6}
+#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}
+#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}
+#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}
+#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}
+
+/* ---------- মূল অ্যাপ স্ক্রিন — পুরো ভিউপোর্ট জুড়ে ফ্লেক্স কলাম (হেডার + কন্টেন্ট) ---------- */
+#appScreen{display:none;flex-direction:column;height:100vh}
+#siteHeader{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}
+#siteHeader h1{font-size:16px;font-weight:bold;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
+#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+#headerAvatar{position:absolute;right:56px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;object-fit:cover;background:#333;display:none}
+
+main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--max-width);width:100%;margin:0 auto}
+
+/* ---------- মেসেজিং বন্ধ থাকলে দেখানো নোটিশ (settings/messages থেকে নিয়ন্ত্রিত) ---------- */
+#disabledNotice{display:none;background:#3b2a15;color:#fbbf24;font-size:12.5px;padding:9px 14px;text-align:center;line-height:1.5;flex-shrink:0}
+
+/* ---------- ইনবক্স (কনভারসেশন লিস্ট) ---------- */
+#inboxView{flex:1;overflow-y:auto;padding:12px}
+#inboxEmpty{text-align:center;color:#6b7280;font-size:13px;padding:60px 20px;line-height:1.7}
+#inboxLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
+.convRow{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #1c222b;cursor:pointer}
+.convRow img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0}
+.convBody{flex:1;min-width:0}
+.convTop{display:flex;justify-content:space-between;gap:8px}
+.convName{font-size:14px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convTime{font-size:11px;color:#6b7280;flex-shrink:0}
+.convLast{font-size:12.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.convRow.unread .convName{color:#fff}
+.convRow.unread .convLast{color:#e5e7eb;font-weight:600}
+.convRow.unread .convTime{color:var(--primary-color);font-weight:bold}
+.unreadDot{width:9px;height:9px;border-radius:50%;background:var(--primary-color);flex-shrink:0}
+
+/* ---------- চ্যাট ভিউ ---------- */
+#chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
+#messagesScroll{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+#messagesEmpty{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
+.msgRow{display:flex;max-width:80%}
+.msgRow.mine{align-self:flex-end;justify-content:flex-end}
+.msgRow.theirs{align-self:flex-start}
+.msgBubble{padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
+.msgRow.mine .msgBubble{background:var(--primary-color);color:#fff;border-bottom-right-radius:4px}
+.msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid #262c36;color:#eee;border-bottom-left-radius:4px}
+.msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:#6b7280}
+.msgRow.mine .msgMeta{justify-content:flex-end}
+.msgDeleteBtn{background:none;border:none;color:#6b7280;font-size:10px;cursor:pointer;padding:0}
+.msgDeleteBtn:hover{color:#f87171}
+#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid #262c36;background:var(--card-color)}
+#messageInput{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
+#sendBtn{background:var(--primary-color);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+#sendBtn:disabled{opacity:0.5;cursor:default}
+#chatLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
+
+html,body{overscroll-behavior:none}
+body{opacity:0;animation:forcePageShow 0s .6s forwards}
+@keyframes forcePageShow{to{opacity:1}}
+body.pageReady{opacity:1;transition:opacity .18s ease}
+body.pageLeaving{opacity:0;transition:opacity .12s ease}
+</style>
+</head>
+<body>
+
+  <div id="loginScreen">
+    <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
+    <h1>Onuvuti App</h1>
+    <p>মেসেজ দেখতে Google দিয়ে লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginStatus"></div>
+  </div>
+
+  <div id="blockedScreen">
+    <h1 id="blockedTitle">⛔ প্রবেশাধিকার নেই</h1>
+    <p id="blockedMsg">আপনার একাউন্টে প্রবেশাধিকার নেই।</p>
+    <button id="blockedBackBtn">ঠিক আছে</button>
+  </div>
+
+  <div id="appScreen">
+    <div id="siteHeader">
+      <button id="backBtn">←</button>
+      <img id="headerAvatar" src="">
+      <h1 id="headerTitle">মেসেজ</h1>
+      <button id="logoutBtn">লগ আউট</button>
+    </div>
+
+    <div id="disabledNotice">⚠️ মেসেজিং ফিচারটি এই মুহূর্তে এডমিন কর্তৃক বন্ধ রাখা হয়েছে।</div>
+
+    <main>
+      <!-- ---------- ইনবক্স: সব কনভারসেশনের তালিকা ---------- -->
+      <div id="inboxView">
+        <div id="inboxLoading">লোড হচ্ছে...</div>
+        <div id="inboxEmpty" style="display:none;">এখনো কোনো মেসেজ নেই।<br>কারো প্রোফাইলে গিয়ে "মেসেজ করুন" চাপুন।</div>
+        <div id="convList"></div>
+      </div>
+
+      <!-- ---------- চ্যাট: একজন নির্দিষ্ট ব্যক্তির সাথে কথোপকথন ---------- -->
+      <div id="chatView">
+        <div id="messagesScroll">
+          <div id="chatLoading">লোড হচ্ছে...</div>
+          <div id="messagesEmpty" style="display:none;">এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান 👋</div>
+          <div id="messagesList"></div>
+        </div>
+        <div id="messageBar">
+          <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000"></textarea>
+          <button id="sendBtn">➤</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy,
+    onSnapshot, addDoc, deleteDoc, serverTimestamp, limit
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  // একই Firebase প্রজেক্ট — বাকি সব পেইজের (profile.html ইত্যাদি) সাথে অভিন্ন
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+  let myProfile = {};
+  let messagingEnabled = true;
+
+  // ---------- URL প্যারামিটার — প্রোফাইল পেইজের "✉️ মেসেজ করুন" বাটন থেকে uid/name/avatar আসে ----------
+  const params = new URLSearchParams(location.search);
+  const otherUid = params.get('uid') || null;
+  const otherNameParam = params.get('name') ? decodeURIComponent(params.get('name')) : '';
+  const otherAvatarParam = params.get('avatar') ? decodeURIComponent(params.get('avatar')) : '';
+  let otherName = otherNameParam || 'ব্যবহারকারী';
+  let otherPhoto = otherAvatarParam || '';
+
+  let convId = null;
+  let unsubConv = null;
+  let unsubMessages = null;
+  let unsubInbox = null;
+
+  const loginScreen = document.getElementById('loginScreen');
+  const appScreen = document.getElementById('appScreen');
+  const blockedScreen = document.getElementById('blockedScreen');
+  const blockedTitle = document.getElementById('blockedTitle');
+  const blockedMsg = document.getElementById('blockedMsg');
+  const blockedBackBtn = document.getElementById('blockedBackBtn');
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const loginStatus = document.getElementById('loginStatus');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const backBtn = document.getElementById('backBtn');
+  const headerTitle = document.getElementById('headerTitle');
+  const headerAvatar = document.getElementById('headerAvatar');
+  const disabledNotice = document.getElementById('disabledNotice');
+
+  const inboxView = document.getElementById('inboxView');
+  const inboxLoading = document.getElementById('inboxLoading');
+  const inboxEmpty = document.getElementById('inboxEmpty');
+  const convList = document.getElementById('convList');
+
+  const chatView = document.getElementById('chatView');
+  const chatLoading = document.getElementById('chatLoading');
+  const messagesScroll = document.getElementById('messagesScroll');
+  const messagesEmpty = document.getElementById('messagesEmpty');
+  const messagesList = document.getElementById('messagesList');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  loginBtn.addEventListener('click', async () => {
+    loginBtn.disabled = true;
+    loginStatus.textContent = 'লগইন হচ্ছে...';
+    try { await signInWithPopup(auth, provider); }
+    catch (e) {
+      loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
+      loginBtn.disabled = false;
+    }
+  });
+  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  blockedBackBtn.addEventListener('click', () => {
+    blockedScreen.style.display = 'none';
+    loginScreen.style.display = 'flex';
+  });
+
+  backBtn.addEventListener('click', () => {
+    // চ্যাট ভিউতে থাকলে প্রথমে ইনবক্সে ফিরে যাবে, ইনবক্সে থাকলে আগের পেইজে
+    if (convId) {
+      window.location.href = 'messages.html';
+    } else if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = 'index.html';
+    }
+  });
+
+  // ---------- একাউন্ট ডিলিট/সাসপেন্ড চেক — profile.html এর মতোই একই লজিক ----------
+  async function checkAccountBlocked(user) {
+    try {
+      const banSnap = await getDoc(doc(db, "bannedUsers", user.uid));
+      if (banSnap.exists()) {
+        await signOut(auth);
+        blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
+        blockedMsg.textContent = 'আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না।';
+        loginScreen.style.display = 'none';
+        appScreen.style.display = 'none';
+        blockedScreen.style.display = 'flex';
+        return true;
+      }
+      const userSnap = await getDoc(doc(db, "users", user.uid));
+      const data = userSnap.exists() ? userSnap.data() : null;
+      const susp = data && data.suspended;
+      if (susp && susp.active && susp.until) {
+        const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
+        if (untilDate.getTime() > Date.now()) {
+          await signOut(auth);
+          const months = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+          const untilStr = untilDate.getDate() + ' ' + months[untilDate.getMonth()] + ' ' + untilDate.getFullYear();
+          blockedTitle.textContent = '⛔ একাউন্ট সাসপেন্ড করা হয়েছে';
+          blockedMsg.textContent = (susp.message || 'আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে।') + '\n\nমেয়াদ শেষ হবে: ' + untilStr;
+          loginScreen.style.display = 'none';
+          appScreen.style.display = 'none';
+          blockedScreen.style.display = 'flex';
+          return true;
+        } else {
+          await setDoc(doc(db, "users", user.uid), { suspended: { active: false } }, { merge: true });
+        }
+      }
+      return false;
+    } catch (err) {
+      console.error('checkAccountBlocked এরর:', err);
+      return false;
+    }
+  }
+
+  async function ensureUserProfile(user) {
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    const syncedFields = {
+      name: user.displayName || 'User',
+      photoURL: user.photoURL || '',
+      email: user.email || ''
+    };
+    if (snap.exists()) {
+      myProfile = { ...snap.data(), ...syncedFields };
+      await setDoc(ref, syncedFields, { merge: true });
+    } else {
+      myProfile = { ...syncedFields, createdAt: serverTimestamp() };
+      await setDoc(ref, myProfile);
+    }
+  }
+
+  function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ---------- দুইজনের uid থেকে সবসময় একই ও নির্দিষ্ট conversationId বানানো হয় ----------
+  // (ছোট uid + '_' + বড় uid) — এতে একই দুইজনের মধ্যে ডুপ্লিকেট কনভারসেশন তৈরি হবে না,
+  // আর Firestore Rules-এও সহজে যাচাই করা যায় (নিচের firestore-rules ফাইল দ্রষ্টব্য)
+  function makeConvId(a, b) { return [a, b].sort().join('_'); }
+
+  async function loadMessagingSettings() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "messages"));
+      const d = snap.exists() ? snap.data() : {};
+      messagingEnabled = d.enabled !== false; // ডকুমেন্ট না থাকলে বা enabled না লেখা থাকলে ডিফল্ট চালু
+      disabledNotice.style.display = messagingEnabled ? 'none' : 'block';
+      sendBtn.disabled = !messagingEnabled;
+      messageInput.disabled = !messagingEnabled;
+    } catch (e) {
+      console.error('মেসেজিং সেটিংস লোড এরর:', e);
+    }
+  }
+
+  // ================= ইনবক্স মোড =================
+  function startInbox() {
+    headerTitle.textContent = 'মেসেজ';
+    headerAvatar.style.display = 'none';
+    inboxView.style.display = 'block';
+    chatView.style.display = 'none';
+
+    const q = query(
+      collection(db, "conversations"),
+      where("participants", "array-contains", currentUser.uid),
+      orderBy("lastMessageAt", "desc")
+    );
+
+    unsubInbox = onSnapshot(q, snap => {
+      inboxLoading.style.display = 'none';
+      if (snap.empty) {
+        inboxEmpty.style.display = 'block';
+        convList.innerHTML = '';
+        return;
+      }
+      inboxEmpty.style.display = 'none';
+      convList.innerHTML = '';
+      snap.forEach(d => {
+        const c = d.data();
+        const otherU = (c.participants || []).find(u => u !== currentUser.uid);
+        if (!otherU) return;
+        const info = (c.participantInfo && c.participantInfo[otherU]) || {};
+        const name = info.name || 'ব্যবহারকারী';
+        const photo = info.photoURL || '';
+        const lastRead = c.lastRead && c.lastRead[currentUser.uid];
+        const isUnread = c.lastMessageAt && c.lastSenderUid && c.lastSenderUid !== currentUser.uid &&
+          (!lastRead || lastRead.toMillis() < c.lastMessageAt.toMillis());
+
+        const row = document.createElement('div');
+        row.className = 'convRow' + (isUnread ? ' unread' : '');
+        row.innerHTML = `
+          <img src="${escapeHtml(photo)}" onerror="this.style.visibility='hidden'">
+          <div class="convBody">
+            <div class="convTop">
+              <div class="convName">${escapeHtml(name)}</div>
+              <div class="convTime">${timeAgo(c.lastMessageAt)}</div>
+            </div>
+            <div class="convLast">${escapeHtml(c.lastMessage || '')}</div>
+          </div>
+          ${isUnread ? '<div class="unreadDot"></div>' : ''}
+        `;
+        row.addEventListener('click', () => {
+          window.location.href = 'messages.html?uid=' + encodeURIComponent(otherU) +
+            '&name=' + encodeURIComponent(name) + '&avatar=' + encodeURIComponent(photo);
+        });
+        convList.appendChild(row);
+      });
+    }, err => {
+      console.error('ইনবক্স লোড এরর:', err);
+      inboxLoading.textContent = 'কনভারসেশন লোড করা যায়নি। (প্রথমবার হলে Firebase Console-এ ইনডেক্স তৈরি করার একটা লিংক ব্রাউজার কনসোলে (F12) দেখাতে পারে — সেখানে ক্লিক করে ইনডেক্স বানিয়ে নিন)';
+    });
+  }
+
+  // ================= চ্যাট মোড =================
+  async function startChat() {
+    convId = makeConvId(currentUser.uid, otherUid);
+    const convRef = doc(db, "conversations", convId);
+
+    headerTitle.textContent = otherName;
+    if (otherPhoto) { headerAvatar.src = otherPhoto; headerAvatar.style.display = 'block'; }
+    inboxView.style.display = 'none';
+    chatView.style.display = 'flex';
+
+    // কনভারসেশন ডকুমেন্ট এখনো তৈরি না হলে (এই দুইজনের এটাই প্রথম চ্যাট) তৈরি করে দাও
+    try {
+      const snap = await getDoc(convRef);
+      if (!snap.exists()) {
+        await setDoc(convRef, {
+          participants: [currentUser.uid, otherUid].sort(),
+          participantInfo: {
+            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
+            [otherUid]: { name: otherName, photoURL: otherPhoto }
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: '',
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: ''
+        });
+      } else {
+        const d = snap.data();
+        const info = d.participantInfo && d.participantInfo[otherUid];
+        // URL-এ নাম/ছবি না থাকলে (যেমন সরাসরি লিংক দিয়ে ঢুকলে) কনভারসেশনে সেভ করা তথ্য থেকে নাও
+        if (!otherNameParam && info && info.name) { otherName = info.name; headerTitle.textContent = otherName; }
+        if (!otherAvatarParam && info && info.photoURL) { otherPhoto = info.photoURL; headerAvatar.src = otherPhoto; headerAvatar.style.display = 'block'; }
+      }
+    } catch (e) {
+      console.error('কনভারসেশন তৈরি/লোড এরর:', e);
+    }
+
+    // নিজের দিক থেকে "পড়া হয়েছে" মার্ক করা + নিজের নাম/ছবি সবসময় সবশেষ রাখা
+    unsubConv = onSnapshot(convRef, snap => {
+      if (!snap.exists()) return;
+      updateDoc(convRef, {
+        [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+        [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+      }).catch(() => {});
+    });
+
+    const mq = query(collection(convRef, "messages"), orderBy("createdAt", "asc"), limit(500));
+    unsubMessages = onSnapshot(mq, snap => {
+      chatLoading.style.display = 'none';
+      if (snap.empty) {
+        messagesEmpty.style.display = 'block';
+        messagesList.innerHTML = '';
+        return;
+      }
+      messagesEmpty.style.display = 'none';
+      messagesList.innerHTML = '';
+      snap.forEach(d => {
+        const m = d.data();
+        const mine = m.senderUid === currentUser.uid;
+        const row = document.createElement('div');
+        row.className = 'msgRow ' + (mine ? 'mine' : 'theirs');
+        row.innerHTML = `
+          <div>
+            <div class="msgBubble">${escapeHtml(m.text)}</div>
+            <div class="msgMeta">
+              <span>${timeAgo(m.createdAt)}</span>
+              ${mine ? `<button class="msgDeleteBtn" data-id="${d.id}">মুছুন</button>` : ''}
+            </div>
+          </div>
+        `;
+        if (mine) {
+          row.querySelector('.msgDeleteBtn').addEventListener('click', async () => {
+            if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
+            try { await deleteDoc(doc(convRef, "messages", d.id)); }
+            catch (e) { alert('এরর: ' + e.message); }
+          });
+        }
+        messagesList.appendChild(row);
+      });
+      messagesScroll.scrollTop = messagesScroll.scrollHeight;
+    }, err => {
+      console.error('মেসেজ লোড এরর:', err);
+      chatLoading.textContent = 'মেসেজ লোড করা যায়নি।';
+    });
+  }
+
+  async function sendCurrentMessage() {
+    const text = messageInput.value.trim();
+    if (!text || !messagingEnabled || !convId) return;
+    sendBtn.disabled = true;
+    try {
+      const convRef = doc(db, "conversations", convId);
+      await addDoc(collection(convRef, "messages"), {
+        senderUid: currentUser.uid,
+        text: text.slice(0, 2000),
+        createdAt: serverTimestamp()
+      });
+      await updateDoc(convRef, {
+        lastMessage: text.slice(0, 120),
+        lastMessageAt: serverTimestamp(),
+        lastSenderUid: currentUser.uid,
+        [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+        [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+      });
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    } catch (e) {
+      alert('মেসেজ পাঠানো যায়নি — এরর: ' + e.message);
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+    }
+  }
+
+  sendBtn.addEventListener('click', sendCurrentMessage);
+  messageInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCurrentMessage(); }
+  });
+  messageInput.addEventListener('input', () => {
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+  });
+
+  function cleanupSubscriptions() {
+    if (unsubConv) { unsubConv(); unsubConv = null; }
+    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    if (unsubInbox) { unsubInbox(); unsubInbox = null; }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    cleanupSubscriptions();
+    if (!user) {
+      currentUser = null;
+      loginScreen.style.display = 'flex';
+      appScreen.style.display = 'none';
+      blockedScreen.style.display = 'none';
+      document.body.classList.add('pageReady');
+      return;
+    }
+    try {
+      const blocked = await checkAccountBlocked(user);
+      if (blocked) { document.body.classList.add('pageReady'); return; }
+
+      currentUser = user;
+      await ensureUserProfile(user);
+      await loadMessagingSettings();
+
+      loginScreen.style.display = 'none';
+      blockedScreen.style.display = 'none';
+      appScreen.style.display = 'flex';
+
+      if (otherUid && otherUid !== currentUser.uid) {
+        await startChat();
+      } else {
+        startInbox();
+      }
+    } catch (err) {
+      console.error('চালু করতে সমস্যা:', err);
+      loginStatus.textContent = 'এরর: ' + (err && err.message ? err.message : String(err));
+      loginScreen.style.display = 'flex';
+      appScreen.style.display = 'none';
+    }
+    document.body.classList.add('pageReady');
+  });
+</script>
+</body>
+</html>

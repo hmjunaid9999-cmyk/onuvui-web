@@ -655,7 +655,9 @@
       tabsOther.style.display = 'flex';
       tabsOwn.style.display = 'none';
       updateSubscribeBtnUI();
-      messageBtn.href = 'messages.html?uid=' + currentTargetUid;
+      messageBtn.href = 'messages.html?uid=' + encodeURIComponent(currentTargetUid) +
+        '&name=' + encodeURIComponent(displayName) +
+        '&avatar=' + encodeURIComponent(displayPhoto);
       setOtherTab('posts');
     }
   }

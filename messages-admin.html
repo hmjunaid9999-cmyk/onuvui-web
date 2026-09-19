@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>মেসেজ এডমিন - Onuvuti</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:760px}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#loginScreen h1{font-size:22px;margin-bottom:6px}
+#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}
+#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}
+#googleLoginBtn:disabled{opacity:0.6}
+#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}
+#noAdminScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#noAdminScreen h1{color:#f87171;margin-bottom:10px}
+#noAdminScreen p{color:#9ca3af;font-size:14px}
+#appScreen{display:none}
+#header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--card-color);border-bottom:1px solid #262c36}
+#header h1{font-size:16px}
+#logoutBtn{background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+main{max-width:var(--max-width);margin:0 auto;padding:16px}
+.card{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:16px}
+.card h2{font-size:14px;margin-bottom:12px;color:#ddd}
+.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.settingsRow label{font-size:13px;color:#c9d1d9}
+.switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#30363d;border-radius:24px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked + .slider{background:var(--primary-color)}
+input:checked + .slider:before{transform:translateX(20px)}
+.numInput{width:90px;background:#0d1117;border:1px solid #30363d;color:#fff;padding:7px 9px;border-radius:8px;font-size:13px}
+#saveSettingsBtn{background:var(--primary-color);color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer}
+#settingsStatus{font-size:12px;color:#4ade80;margin-top:8px;min-height:14px}
+.searchRow{display:flex;gap:8px;margin-bottom:12px}
+.searchRow input{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px}
+.searchRow button{background:#21262d;color:#fff;border:1px solid #30363d;padding:9px 16px;border-radius:10px;font-size:13px;cursor:pointer}
+.convRow{display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid #1c222b;cursor:pointer}
+.convRow img{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0}
+.convRow .cInfo{flex:1;min-width:0}
+.convRow .cNames{font-size:13px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convRow .cLast{font-size:12px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.convRow .cTime{font-size:11px;color:#6b7280;flex-shrink:0}
+#loadMoreBtn{width:100%;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:10px;border-radius:10px;font-size:13px;cursor:pointer;margin-top:10px}
+#emptyList{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}
+#threadOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:flex-end;justify-content:center}
+#threadOverlay.open{display:flex}
+#threadModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:16px 16px 0 0;max-height:88vh;display:flex;flex-direction:column}
+#threadHeader{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #262c36}
+#threadHeader h3{font-size:14px}
+#threadHeaderBtns{display:flex;gap:8px}
+#threadHeaderBtns button{background:#262c36;border:1px solid #30363d;color:#fff;padding:6px 10px;border-radius:8px;font-size:11px;cursor:pointer}
+#deleteConvBtn{color:#f87171 !important;border-color:#f87171 !important}
+#threadMessages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.tMsg{max-width:78%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
+.tMsg.left{align-self:flex-start;background:#0d1117;border:1px solid #262c36}
+.tMsg.right{align-self:flex-end;background:var(--primary-color);color:#fff}
+.tMsgMeta{font-size:10px;color:#9ca3af;margin-top:4px;display:flex;gap:8px}
+.tMsg.right .tMsgMeta{color:#dbeafe}
+.tMsgMeta button{background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;padding:0}
+.tSender{font-size:10px;font-weight:bold;margin-bottom:3px;opacity:0.8}
+</style>
+</head>
+<body>
+
+  <div id="loginScreen">
+    <h1>মেসেজ এডমিন প্যানেল</h1>
+    <p>প্রবেশ করতে এডমিন Google একাউন্ট দিয়ে লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
+    <div id="loginStatus"></div>
+  </div>
+
+  <div id="noAdminScreen">
+    <h1>⛔ এডমিন এক্সেস নেই</h1>
+    <p>এই একাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
+  </div>
+
+  <div id="appScreen">
+    <div id="header">
+      <h1>💬 মেসেজিং এডমিন প্যানেল</h1>
+      <button id="logoutBtn">লগ আউট</button>
+    </div>
+
+    <main>
+      <div class="card">
+        <h2>⚙️ ফিচার কন্ট্রোল</h2>
+        <div class="settingsRow">
+          <label>মেসেজিং ফিচার চালু রাখুন</label>
+          <label class="switch">
+            <input type="checkbox" id="enabledToggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="settingsRow">
+          <label>একটা মেসেজে সর্বোচ্চ অক্ষর</label>
+          <input type="number" id="maxLenInput" class="numInput" min="50" max="2000" value="2000">
+        </div>
+        <button id="saveSettingsBtn">💾 সেভ করুন</button>
+        <div id="settingsStatus"></div>
+      </div>
+
+      <div class="card">
+        <h2>🔎 নির্দিষ্ট ইউজারের কনভারসেশন খুঁজুন</h2>
+        <div class="searchRow">
+          <input id="searchUidInput" placeholder="ইউজারের UID লিখুন...">
+          <button id="searchBtn">খুঁজুন</button>
+          <button id="clearSearchBtn" style="display:none;">✕</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="listHeading">🗂️ সাম্প্রতিক কনভারসেশনসমূহ</h2>
+        <div id="convList"></div>
+        <div id="emptyList" style="display:none;">কোনো কনভারসেশন পাওয়া যায়নি</div>
+        <button id="loadMoreBtn" style="display:none;">আরও লোড করুন</button>
+      </div>
+    </main>
+  </div>
+
+  <div id="threadOverlay">
+    <div id="threadModal">
+      <div id="threadHeader">
+        <h3 id="threadTitle">কথোপকথন</h3>
+        <div id="threadHeaderBtns">
+          <button id="deleteConvBtn">🗑 পুরো কনভারসেশন ডিলিট</button>
+          <button id="closeThreadBtn">✕ বন্ধ</button>
+        </div>
+      </div>
+      <div id="threadMessages"></div>
+    </div>
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, collection, query, where, orderBy, limit,
+    getDocs, deleteDoc, startAfter
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:538c47101eade3e2df8b25",
+    measurementId: "G-2K2L45CMWR"
+  };
+
+  // ---------- শুধুমাত্র এই ইমেইলটাই এডমিন — firestore-rules.html এর isAdmin() ফাংশনের সাথে অভিন্ন ----------
+  const ADMIN_EMAIL = "hmjunaid9999@gmail.com";
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  const loginScreen = document.getElementById('loginScreen');
+  const noAdminScreen = document.getElementById('noAdminScreen');
+  const appScreen = document.getElementById('appScreen');
+  const loginBtn = document.getElementById('googleLoginBtn');
+  const loginStatus = document.getElementById('loginStatus');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  const enabledToggle = document.getElementById('enabledToggle');
+  const maxLenInput = document.getElementById('maxLenInput');
+  const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+  const settingsStatus = document.getElementById('settingsStatus');
+
+  const searchUidInput = document.getElementById('searchUidInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const clearSearchBtn = document.getElementById('clearSearchBtn');
+  const listHeading = document.getElementById('listHeading');
+  const convList = document.getElementById('convList');
+  const emptyList = document.getElementById('emptyList');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+  const threadOverlay = document.getElementById('threadOverlay');
+  const threadTitle = document.getElementById('threadTitle');
+  const threadMessages = document.getElementById('threadMessages');
+  const closeThreadBtn = document.getElementById('closeThreadBtn');
+  const deleteConvBtn = document.getElementById('deleteConvBtn');
+
+  let lastDocSnap = null;
+  let searchingUid = null;
+  let openConvId = null;
+  const PAGE_SIZE = 30;
+
+  loginBtn.addEventListener('click', async () => {
+    loginBtn.disabled = true;
+    loginStatus.textContent = 'লগইন হচ্ছে...';
+    try { await signInWithPopup(auth, provider); }
+    catch (e) {
+      loginStatus.textContent = 'এরর: ' + (e && e.message ? e.message : String(e));
+      loginBtn.disabled = false;
+    }
+  });
+  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+
+  function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  // ================= ফিচার সেটিংস (settings/messages) =================
+  async function loadSettings() {
+    try {
+      const snap = await getDoc(doc(db, "settings", "messages"));
+      const d = snap.exists() ? snap.data() : {};
+      enabledToggle.checked = d.enabled !== false;
+      maxLenInput.value = d.maxLength || 2000;
+    } catch (e) { console.error(e); }
+  }
+
+  saveSettingsBtn.addEventListener('click', async () => {
+    saveSettingsBtn.disabled = true;
+    settingsStatus.textContent = 'সেভ হচ্ছে...';
+    try {
+      await setDoc(doc(db, "settings", "messages"), {
+        enabled: enabledToggle.checked,
+        maxLength: Number(maxLenInput.value) || 2000
+      }, { merge: true });
+      settingsStatus.textContent = '✅ সেভ হয়েছে';
+      setTimeout(() => { settingsStatus.textContent = ''; }, 2500);
+    } catch (e) {
+      settingsStatus.textContent = 'এরর: ' + e.message;
+    } finally {
+      saveSettingsBtn.disabled = false;
+    }
+  });
+
+  // ================= কনভারসেশন লিস্ট =================
+  async function loadConversations(reset) {
+    if (reset) { lastDocSnap = null; convList.innerHTML = ''; }
+    let q;
+    if (searchingUid) {
+      listHeading.textContent = '🔎 "' + searchingUid + '" জড়িত কনভারসেশনসমূহ';
+      q = query(
+        collection(db, "conversations"),
+        where("participants", "array-contains", searchingUid),
+        orderBy("lastMessageAt", "desc"),
+        ...(lastDocSnap ? [startAfter(lastDocSnap)] : []),
+        limit(PAGE_SIZE)
+      );
+    } else {
+      listHeading.textContent = '🗂️ সাম্প্রতিক কনভারসেশনসমূহ';
+      q = query(
+        collection(db, "conversations"),
+        orderBy("lastMessageAt", "desc"),
+        ...(lastDocSnap ? [startAfter(lastDocSnap)] : []),
+        limit(PAGE_SIZE)
+      );
+    }
+    try {
+      const snap = await getDocs(q);
+      if (snap.empty && reset) { emptyList.style.display = 'block'; loadMoreBtn.style.display = 'none'; return; }
+      emptyList.style.display = 'none';
+      snap.forEach(d => {
+        lastDocSnap = d;
+        const c = d.data();
+        const names = (c.participants || []).map(u => (c.participantInfo && c.participantInfo[u] && c.participantInfo[u].name) || u.slice(0, 6));
+        const row = document.createElement('div');
+        row.className = 'convRow';
+        row.innerHTML = `
+          <img src="${escapeHtml((c.participantInfo && c.participants && c.participantInfo[c.participants[0]] && c.participantInfo[c.participants[0]].photoURL) || '')}" onerror="this.style.visibility='hidden'">
+          <div class="cInfo">
+            <div class="cNames">${escapeHtml(names.join(' ↔ '))}</div>
+            <div class="cLast">${escapeHtml(c.lastMessage || '')}</div>
+          </div>
+          <div class="cTime">${timeAgo(c.lastMessageAt)}</div>
+        `;
+        row.addEventListener('click', () => openThread(d.id, c));
+        convList.appendChild(row);
+      });
+      loadMoreBtn.style.display = snap.size === PAGE_SIZE ? 'block' : 'none';
+    } catch (e) {
+      console.error('কনভারসেশন লিস্ট এরর:', e);
+      emptyList.style.display = 'block';
+      emptyList.textContent = 'লোড করা যায়নি। (প্রথমবার array-contains + orderBy কম্বিনেশনের জন্য Firebase Console-এ একটা কম্পোজিট ইনডেক্স তৈরি করতে হতে পারে — ব্রাউজার কনসোলে (F12) এরর মেসেজে থাকা লিংকে ক্লিক করুন)';
+    }
+  }
+
+  searchBtn.addEventListener('click', () => {
+    const v = searchUidInput.value.trim();
+    if (!v) return;
+    searchingUid = v;
+    clearSearchBtn.style.display = 'inline-block';
+    loadConversations(true);
+  });
+  clearSearchBtn.addEventListener('click', () => {
+    searchingUid = null;
+    searchUidInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    loadConversations(true);
+  });
+  loadMoreBtn.addEventListener('click', () => loadConversations(false));
+
+  // ================= থ্রেড (একটা কনভারসেশনের সব মেসেজ) দেখা ও মডারেশন =================
+  async function openThread(convId, convData) {
+    openConvId = convId;
+    const names = (convData.participants || []).map(u => (convData.participantInfo && convData.participantInfo[u] && convData.participantInfo[u].name) || u.slice(0, 6));
+    threadTitle.textContent = names.join(' ↔ ');
+    threadMessages.innerHTML = 'লোড হচ্ছে...';
+    threadOverlay.classList.add('open');
+
+    try {
+      const mq = query(collection(db, "conversations", convId, "messages"), orderBy("createdAt", "asc"), limit(500));
+      const snap = await getDocs(mq);
+      threadMessages.innerHTML = '';
+      if (snap.empty) { threadMessages.innerHTML = '<div style="text-align:center;color:#6b7280;font-size:13px;">কোনো মেসেজ নেই</div>'; return; }
+      const firstUid = (convData.participants || [])[0];
+      snap.forEach(d => {
+        const m = d.data();
+        const side = m.senderUid === firstUid ? 'left' : 'right';
+        const senderName = (convData.participantInfo && convData.participantInfo[m.senderUid] && convData.participantInfo[m.senderUid].name) || m.senderUid.slice(0, 6);
+        const row = document.createElement('div');
+        row.className = 'tMsg ' + side;
+        row.innerHTML = `
+          <div class="tSender">${escapeHtml(senderName)}</div>
+          ${escapeHtml(m.text)}
+          <div class="tMsgMeta"><span>${timeAgo(m.createdAt)}</span><button data-id="${d.id}">ডিলিট</button></div>
+        `;
+        row.querySelector('button').addEventListener('click', async () => {
+          if (!confirm('এই মেসেজটি মুছে ফেলতে চান?')) return;
+          try {
+            await deleteDoc(doc(db, "conversations", convId, "messages", d.id));
+            row.remove();
+          } catch (e) { alert('এরর: ' + e.message); }
+        });
+        threadMessages.appendChild(row);
+      });
+    } catch (e) {
+      threadMessages.innerHTML = 'এরর: ' + escapeHtml(e.message);
+    }
+  }
+
+  closeThreadBtn.addEventListener('click', () => {
+    threadOverlay.classList.remove('open');
+    openConvId = null;
+  });
+
+  deleteConvBtn.addEventListener('click', async () => {
+    if (!openConvId) return;
+    if (!confirm('পুরো কনভারসেশনটা (সব মেসেজসহ) স্থায়ীভাবে মুছে ফেলতে চান? এটা ফেরানো যাবে না।')) return;
+    deleteConvBtn.disabled = true;
+    try {
+      const mSnap = await getDocs(collection(db, "conversations", openConvId, "messages"));
+      for (const m of mSnap.docs) { await deleteDoc(m.ref); }
+      await deleteDoc(doc(db, "conversations", openConvId));
+      threadOverlay.classList.remove('open');
+      openConvId = null;
+      loadConversations(true);
+    } catch (e) {
+      alert('এরর: ' + e.message);
+    } finally {
+      deleteConvBtn.disabled = false;
+    }
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      loginScreen.style.display = 'flex';
+      noAdminScreen.style.display = 'none';
+      appScreen.style.display = 'none';
+      return;
+    }
+    if (user.email !== ADMIN_EMAIL) {
+      loginScreen.style.display = 'none';
+      appScreen.style.display = 'none';
+      noAdminScreen.style.display = 'flex';
+      return;
+    }
+    loginScreen.style.display = 'none';
+    noAdminScreen.style.display = 'none';
+    appScreen.style.display = 'block';
+    await loadSettings();
+    await loadConversations(true);
+  });
+</script>
+</body>
+</html>
