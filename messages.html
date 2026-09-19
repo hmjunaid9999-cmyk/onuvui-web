@@ -66,7 +66,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgRow.mine .msgMeta{justify-content:flex-end}
 .msgDeleteBtn{background:none;border:none;color:#6b7280;font-size:10px;cursor:pointer;padding:0}
 .msgDeleteBtn:hover{color:#f87171}
-#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid #262c36;background:var(--card-color)}
+#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid #3a4453;background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
 #messageInput{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
 #sendBtn{background:var(--primary-color);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
 #sendBtn:disabled{opacity:0.5;cursor:default}
@@ -153,6 +153,17 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   const auth = getAuth(app);
   const db = getFirestore(app);
   const provider = new GoogleAuthProvider();
+
+  // ---------- মোবাইলে ঠিকানার বক্স/টুলবারের কারণে 100vh আসল স্ক্রিনের চেয়ে বড় হয়ে যাওয়ার
+  // সমস্যা এড়াতে — window.innerHeight দিয়ে সরাসরি আসল দৃশ্যমান উচ্চতা মেপে বসানো হচ্ছে।
+  // এটা 100dvh সাপোর্ট না করা পুরনো ব্রাউজারেও কাজ করে (CSS ইউনিটের বদলে সরাসরি পিক্সেল ব্যবহার করে)
+  const appScreenEl = document.getElementById('appScreen');
+  function fixAppHeight() {
+    appScreenEl.style.height = window.innerHeight + 'px';
+  }
+  fixAppHeight();
+  window.addEventListener('resize', fixAppHeight);
+  window.addEventListener('orientationchange', () => setTimeout(fixAppHeight, 200));
 
   let currentUser = null;
   let myProfile = {};
