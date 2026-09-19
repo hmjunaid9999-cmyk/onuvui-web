@@ -655,9 +655,17 @@
       tabsOther.style.display = 'flex';
       tabsOwn.style.display = 'none';
       updateSubscribeBtnUI();
-      messageBtn.href = 'messages.html?uid=' + encodeURIComponent(currentTargetUid) +
+      var messageBtnUrl = 'messages.html?uid=' + encodeURIComponent(currentTargetUid) +
         '&name=' + encodeURIComponent(displayName) +
         '&avatar=' + encodeURIComponent(displayPhoto);
+      messageBtn.href = messageBtnUrl;
+      // href-এর পাশাপাশি একটা সরাসরি ক্লিক হ্যান্ডলারও রাখা হলো — যাতে অন্য কোনো
+      // global স্ক্রিপ্ট href/query-স্ট্রিং নিয়ে গণ্ডগোল করলেও মেসেজ বাটন সবসময়
+      // সঠিক uid/name/avatar প্যারামিটার নিয়েই messages.html-এ নিয়ে যায়
+      messageBtn.onclick = function (e) {
+        e.preventDefault();
+        window.location.href = messageBtnUrl;
+      };
       setOtherTab('posts');
     }
   }

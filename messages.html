@@ -167,6 +167,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   let otherPhoto = otherAvatarParam || '';
 
   let convId = null;
+  let convExists = false;
   let unsubConv = null;
   let unsubMessages = null;
   let unsubInbox = null;
@@ -379,22 +380,13 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     inboxView.style.display = 'none';
     chatView.style.display = 'flex';
 
-    // কনভারসেশন ডকুমেন্ট এখনো তৈরি না হলে (এই দুইজনের এটাই প্রথম চ্যাট) তৈরি করে দাও
+    // কনভারসেশন ডকুমেন্ট এখনো তৈরি করা হয় না শুধু চ্যাট পেইজ খোলার সময় — এটা তৈরি হবে
+    // একদম প্রথম মেসেজ পাঠানোর মুহূর্তে (নিচের sendCurrentMessage ফাংশনে)। এতে না লিখেই
+    // কারো প্রোফাইলে ঢুকলে সেই ব্যক্তির ইনবক্সে খামোখা একটা খালি এন্ট্রি দেখাবে না।
     try {
       const snap = await getDoc(convRef);
-      if (!snap.exists()) {
-        await setDoc(convRef, {
-          participants: [currentUser.uid, otherUid].sort(),
-          participantInfo: {
-            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
-            [otherUid]: { name: otherName, photoURL: otherPhoto }
-          },
-          createdAt: serverTimestamp(),
-          lastMessage: '',
-          lastMessageAt: serverTimestamp(),
-          lastSenderUid: ''
-        });
-      } else {
+      convExists = snap.exists();
+      if (convExists) {
         const d = snap.data();
         const info = d.participantInfo && d.participantInfo[otherUid];
         // URL-এ নাম/ছবি না থাকলে (যেমন সরাসরি লিংক দিয়ে ঢুকলে) কনভারসেশনে সেভ করা তথ্য থেকে নাও
@@ -402,7 +394,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
         if (!otherAvatarParam && info && info.photoURL) { otherPhoto = info.photoURL; headerAvatar.src = otherPhoto; headerAvatar.style.display = 'block'; }
       }
     } catch (e) {
-      console.error('কনভারসেশন তৈরি/লোড এরর:', e);
+      console.error('কনভারসেশন লোড এরর:', e);
     }
 
     // নিজের দিক থেকে "পড়া হয়েছে" মার্ক করা + নিজের নাম/ছবি সবসময় সবশেষ রাখা
@@ -460,18 +452,40 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     sendBtn.disabled = true;
     try {
       const convRef = doc(db, "conversations", convId);
+
+      // ---------- আগে কনভারসেশন ডকুমেন্ট (থাকলে আপডেট, না থাকলে তৈরি), তারপর মেসেজ ----------
+      // Firestore rules-এ messages/{id} লেখার শর্তে convRef-এর participants পড়া হয়, তাই
+      // convRef আগে থেকে থাকতেই হবে — নাহলে প্রথম মেসেজ লেখার সময় rules রিজেক্ট করবে
+      if (!convExists) {
+        await setDoc(convRef, {
+          participants: [currentUser.uid, otherUid].sort(),
+          participantInfo: {
+            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
+            [otherUid]: { name: otherName, photoURL: otherPhoto }
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: text.slice(0, 120),
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp()
+        });
+        convExists = true;
+      } else {
+        await updateDoc(convRef, {
+          lastMessage: text.slice(0, 120),
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+        });
+      }
+
       await addDoc(collection(convRef, "messages"), {
         senderUid: currentUser.uid,
         text: text.slice(0, 2000),
         createdAt: serverTimestamp()
       });
-      await updateDoc(convRef, {
-        lastMessage: text.slice(0, 120),
-        lastMessageAt: serverTimestamp(),
-        lastSenderUid: currentUser.uid,
-        [`lastRead.${currentUser.uid}`]: serverTimestamp(),
-        [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
-      });
+
       messageInput.value = '';
       messageInput.style.height = 'auto';
     } catch (e) {
