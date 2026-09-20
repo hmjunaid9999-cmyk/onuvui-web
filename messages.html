@@ -812,7 +812,7 @@ html,body{overscroll-behavior:none}
   let call = null;          // চলমান কল
   let incoming = null;      // যে কল বাজছে (ধরা হয়নি)
   let unsubIncoming = null;
-  let ringCtx = null, ringInt = null, wakeLock = null;
+  let ringInt = null, wakeLock = null;
 
   function newCall(role, type) {
     return { role, type, ref: null, pc: null, localStream: null, unsubs: [], pending: [], queued: [],
@@ -863,26 +863,60 @@ html,body{overscroll-behavior:none}
   }
 
   // ---------- ringtone (কোনো অডিও ফাইল লাগে না) ----------
-  function startRing() {
+  // ব্রাউজার ইউজারের ট্যাপ ছাড়া শব্দ বাজাতে দেয় না — তাই পেইজে প্রথম যেকোনো ট্যাপেই অডিও "আনলক" করে রাখা হয়
+  let audioCtx = null;
+  function getAudioCtx() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    } catch (e) { return null; }
+  }
+  function unlockAudio() {
+    const c = getAudioCtx();
+    if (!c) return;
+    if (c.state === 'suspended') c.resume().catch(() => {});
+    try {  // iOS/Safari আনলক করার জন্য নিঃশব্দ একটা বাফার
+      const src = c.createBufferSource();
+      src.buffer = c.createBuffer(1, 1, 22050);
+      src.connect(c.destination);
+      src.start(0);
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(ev =>
+    document.addEventListener(ev, unlockAudio, { passive: true }));
+
+  function tone(freq, startAt, dur, vol) {
+    const c = getAudioCtx();
+    if (!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, startAt);
+    g.gain.exponentialRampToValueAtTime(vol, startAt + 0.03);
+    g.gain.setValueAtTime(vol, startAt + dur - 0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, startAt + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(startAt); o.stop(startAt + dur + 0.02);
+  }
+  // kind = 'ring' → যে কল পাচ্ছে তার রিংটোন (জোরে + ভাইব্রেশন); 'back' → যে কল করছে তার "রিং হচ্ছে" টোন (আস্তে)
+  function startRing(kind) {
     stopRing();
-    const beep = () => {
-      try {
-        if (!ringCtx) ringCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (ringCtx.state === 'suspended') ringCtx.resume();
-        const o = ringCtx.createOscillator(), g = ringCtx.createGain();
-        o.frequency.value = 480; g.gain.value = 0.12;
-        o.connect(g); g.connect(ringCtx.destination);
-        o.start(); o.stop(ringCtx.currentTime + 0.5);
-      } catch (e) {}
-      try { if (navigator.vibrate) navigator.vibrate([400, 200, 400]); } catch (e) {}
+    const play = () => {
+      const c = getAudioCtx();
+      if (c) {
+        if (c.state === 'suspended') c.resume().catch(() => {});
+        const t = c.currentTime + 0.05;
+        if (kind === 'back') { tone(425, t, 1.0, 0.12); }
+        else { tone(440, t, 0.4, 0.35); tone(480, t, 0.4, 0.35); tone(440, t + 0.6, 0.4, 0.35); tone(480, t + 0.6, 0.4, 0.35); }
+      }
+      if (kind !== 'back') { try { if (navigator.vibrate) navigator.vibrate([400, 200, 400]); } catch (e) {} }
     };
-    beep();
-    ringInt = setInterval(beep, 2000);
+    play();
+    ringInt = setInterval(play, kind === 'back' ? 3000 : 2500);
   }
   function stopRing() {
     if (ringInt) { clearInterval(ringInt); ringInt = null; }
     try { if (navigator.vibrate) navigator.vibrate(0); } catch (e) {}
-    try { if (ringCtx) { ringCtx.close(); ringCtx = null; } } catch (e) {}
   }
 
   // ---------- পিয়ার কানেকশন ----------
@@ -959,6 +993,7 @@ html,body{overscroll-behavior:none}
       const d = s.data();
       if (c.role === 'caller' && d.answer && !c.answerSet) {
         c.answerSet = true;
+        stopRing();
         try {
           await c.pc.setRemoteDescription(d.answer);
           flushPending(c);
@@ -987,6 +1022,7 @@ html,body{overscroll-behavior:none}
     try { if (c.pc) c.pc.close(); } catch (e) {}
     remoteVideo.srcObject = null; localVideo.srcObject = null;
     releaseWakeLock();
+    stopRing();
     callStatus.textContent = msg || 'কল শেষ হয়েছে';
     setTimeout(() => { if (!call) hideCallScreen(); }, 1200);
   }
@@ -1034,6 +1070,7 @@ html,body{overscroll-behavior:none}
       watchCall(c);
       takeWakeLock();
       setCallStatus('রিং হচ্ছে...');
+      startRing('back');
       c.ringT = setTimeout(() => {
         if (call === c && !c.answerSet) {
           updateDoc(c.ref, { status: 'missed' }).catch(() => {});
@@ -1070,7 +1107,7 @@ html,body{overscroll-behavior:none}
     incName.textContent = d.callerName || 'ব্যবহারকারী';
     incType.textContent = d.type === 'video' ? '📹 ভিডিও কল আসছে...' : '📞 অডিও কল আসছে...';
     incomingCall.style.display = 'flex';
-    startRing();
+    startRing('ring');
     incoming.timer = setTimeout(dismissIncoming, 50000);
   }
   function dismissIncoming() {
