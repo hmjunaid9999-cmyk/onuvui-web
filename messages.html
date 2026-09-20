@@ -11,7 +11,7 @@ html,body{height:100%}
 body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;overscroll-behavior:none}
 
 /* ---------- লগইন / ব্লকড স্ক্রিন — প্রোফাইল পেইজের সাথে হুবহু একই স্টাইল ---------- */
-#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
+#loginScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
 #loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}
 #loginScreen h1{font-size:22px;margin-bottom:6px}
 #loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}
@@ -26,10 +26,26 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 /* ---------- মূল অ্যাপ স্ক্রিন — পুরো ভিউপোর্ট জুড়ে ফ্লেক্স কলাম (হেডার + কন্টেন্ট) ---------- */
 #appScreen{display:none;flex-direction:column;height:100vh;height:100dvh}
 #siteHeader{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}
-#siteHeader h1{font-size:16px;font-weight:bold;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#siteHeader h1{font-size:16px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
 #logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
-#headerAvatar{position:absolute;right:56px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;object-fit:cover;background:#333;display:none}
+#bootScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+#bootScreen .spin{width:34px;height:34px;border:3px solid #262c36;border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
+#headerText{min-width:0;text-align:left}
+#headerAvatar{display:none}
+#headerStatus{font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
+#headerStatus.active{color:#34d399}
+#headerCenter.inbox #headerText{text-align:center}
+/* অ্যাভাটার (ছবি না থাকলে/লোড না হলে নামের প্রথম অক্ষর) */
+.av{position:relative;border-radius:50%;overflow:hidden;background:#2d3748;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.avFallback{font-weight:bold;color:#cbd5e1}
+.av.sm{width:34px;height:34px}.av.sm .avFallback{font-size:14px}
+.av.hd{width:38px;height:38px}.av.hd .avFallback{font-size:15px}
+.av.md{width:48px;height:48px}.av.md .avFallback{font-size:18px}
+.avSpacer{width:34px;flex-shrink:0}
 
 main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--max-width);width:100%;margin:0 auto}
 
@@ -41,7 +57,6 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 #inboxEmpty{text-align:center;color:#6b7280;font-size:13px;padding:60px 20px;line-height:1.7}
 #inboxLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
 .convRow{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #1c222b;cursor:pointer}
-.convRow img{width:48px;height:48px;border-radius:50%;object-fit:cover;background:#333;flex-shrink:0}
 .convBody{flex:1;min-width:0}
 .convTop{display:flex;justify-content:space-between;gap:8px}
 .convName{font-size:14px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -55,10 +70,13 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 /* ---------- চ্যাট ভিউ ---------- */
 #chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
 #messagesScroll{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+#messagesList{display:flex;flex-direction:column;gap:2px}
 #messagesEmpty{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
-.msgRow{display:flex;max-width:80%}
+.msgRow{display:flex;align-items:flex-start;gap:8px;max-width:88%}
+.msgRow.first{margin-top:8px}
 .msgRow.mine{align-self:flex-end;justify-content:flex-end}
 .msgRow.theirs{align-self:flex-start}
+.msgCol{min-width:0}
 .msgBubble{padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
 .msgRow.mine .msgBubble{background:var(--primary-color);color:#fff;border-bottom-right-radius:4px}
 .msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid #262c36;color:#eee;border-bottom-left-radius:4px}
@@ -73,13 +91,11 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 #chatLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
 
 html,body{overscroll-behavior:none}
-body{opacity:0;animation:forcePageShow 0s .6s forwards}
-@keyframes forcePageShow{to{opacity:1}}
-body.pageReady{opacity:1;transition:opacity .18s ease}
-body.pageLeaving{opacity:0;transition:opacity .12s ease}
 </style>
 </head>
 <body>
+
+  <div id="bootScreen"><div class="spin"></div></div>
 
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
@@ -98,8 +114,13 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   <div id="appScreen">
     <div id="siteHeader">
       <button id="backBtn">←</button>
-      <img id="headerAvatar" src="">
-      <h1 id="headerTitle">মেসেজ</h1>
+      <div id="headerCenter" class="inbox">
+        <div id="headerAvatar" class="av hd"></div>
+        <div id="headerText">
+          <h1 id="headerTitle">মেসেজ</h1>
+          <div id="headerStatus"></div>
+        </div>
+      </div>
       <button id="logoutBtn">লগ আউট</button>
     </div>
 
@@ -169,20 +190,22 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   let myProfile = {};
   let messagingEnabled = true;
 
-  // ---------- URL প্যারামিটার — প্রোফাইল পেইজের "✉️ মেসেজ করুন" বাটন থেকে uid/name/avatar আসে ----------
-  const params = new URLSearchParams(location.search);
-  const otherUid = params.get('uid') || null;
-  const otherNameParam = params.get('name') ? decodeURIComponent(params.get('name')) : '';
-  const otherAvatarParam = params.get('avatar') ? decodeURIComponent(params.get('avatar')) : '';
-  let otherName = otherNameParam || 'ব্যবহারকারী';
-  let otherPhoto = otherAvatarParam || '';
-
+  // চ্যাটের অবস্থা (পেইজ রিলোড ছাড়াই ইনবক্স ↔ চ্যাট বদলায়, তাই আবার লগইন স্ক্রিন আসে না)
+  let otherUid = null;
+  let otherName = 'ব্যবহারকারী';
+  let otherPhoto = '';
+  let otherLastActive = null;
+  let otherOnline = false;
   let convId = null;
   let convExists = false;
-  let unsubConv = null;
+  let lastMsgSnap = null;
   let unsubMessages = null;
+  let unsubOther = null;
   let unsubInbox = null;
+  let statusTimer = null;
+  let routeToken = 0;
 
+  const bootScreen = document.getElementById('bootScreen');
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
   const blockedScreen = document.getElementById('blockedScreen');
@@ -193,8 +216,10 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   const loginStatus = document.getElementById('loginStatus');
   const logoutBtn = document.getElementById('logoutBtn');
   const backBtn = document.getElementById('backBtn');
+  const headerCenter = document.getElementById('headerCenter');
   const headerTitle = document.getElementById('headerTitle');
   const headerAvatar = document.getElementById('headerAvatar');
+  const headerStatus = document.getElementById('headerStatus');
   const disabledNotice = document.getElementById('disabledNotice');
 
   const inboxView = document.getElementById('inboxView');
@@ -210,6 +235,13 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendBtn');
 
+  function showOnly(which) {
+    bootScreen.style.display = which === 'boot' ? 'flex' : 'none';
+    loginScreen.style.display = which === 'login' ? 'flex' : 'none';
+    blockedScreen.style.display = which === 'blocked' ? 'flex' : 'none';
+    appScreen.style.display = which === 'app' ? 'flex' : 'none';
+  }
+
   loginBtn.addEventListener('click', async () => {
     loginBtn.disabled = true;
     loginStatus.textContent = 'লগইন হচ্ছে...';
@@ -219,22 +251,24 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
       loginBtn.disabled = false;
     }
   });
-  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
-  blockedBackBtn.addEventListener('click', () => {
-    blockedScreen.style.display = 'none';
-    loginScreen.style.display = 'flex';
+  logoutBtn.addEventListener('click', async () => {
+    try { await writePresence(false); } catch (e) {}
+    await signOut(auth);
   });
+  blockedBackBtn.addEventListener('click', () => { showOnly('login'); });
 
   backBtn.addEventListener('click', () => {
-    // চ্যাট ভিউতে থাকলে প্রথমে ইনবক্সে ফিরে যাবে, ইনবক্সে থাকলে আগের পেইজে
     if (convId) {
-      window.location.href = 'messages.html';
+      // চ্যাট থেকে ইনবক্সে — পেইজ রিলোড ছাড়াই
+      if (history.state && history.state.inApp) history.back();
+      else { history.replaceState({}, '', location.pathname); route(); }
     } else if (window.history.length > 1) {
       window.history.back();
     } else {
       window.location.href = 'index.html';
     }
   });
+  window.addEventListener('popstate', () => { route(); });
 
   // ---------- একাউন্ট ডিলিট/সাসপেন্ড চেক — profile.html এর মতোই একই লজিক ----------
   async function checkAccountBlocked(user) {
@@ -244,9 +278,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
         await signOut(auth);
         blockedTitle.textContent = '⛔ একাউন্ট মুছে ফেলা হয়েছে';
         blockedMsg.textContent = 'আপনার এই একাউন্টটি এডমিন কর্তৃক স্থায়ীভাবে মুছে ফেলা হয়েছে। এই একাউন্ট দিয়ে আর প্রবেশ করা যাবে না।';
-        loginScreen.style.display = 'none';
-        appScreen.style.display = 'none';
-        blockedScreen.style.display = 'flex';
+        showOnly('blocked');
         return true;
       }
       const userSnap = await getDoc(doc(db, "users", user.uid));
@@ -260,9 +292,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
           const untilStr = untilDate.getDate() + ' ' + months[untilDate.getMonth()] + ' ' + untilDate.getFullYear();
           blockedTitle.textContent = '⛔ একাউন্ট সাসপেন্ড করা হয়েছে';
           blockedMsg.textContent = (susp.message || 'আপনার একাউন্টটি সাময়িকভাবে সাসপেন্ড করা হয়েছে।') + '\n\nমেয়াদ শেষ হবে: ' + untilStr;
-          loginScreen.style.display = 'none';
-          appScreen.style.display = 'none';
-          blockedScreen.style.display = 'flex';
+          showOnly('blocked');
           return true;
         } else {
           await setDoc(doc(db, "users", user.uid), { suspended: { active: false } }, { merge: true });
@@ -292,7 +322,19 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     }
   }
 
-  function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
+  function escapeHtml(str) {
+    return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ছবি থাকলে ছবি, না থাকলে/লোড না হলে নামের প্রথম অক্ষর
+  function avatarHtml(photo, name, size) {
+    const initial = (String(name || '?').trim().charAt(0) || '?').toUpperCase();
+    const fb = '<span class="avFallback">' + escapeHtml(initial) + '</span>';
+    const img = photo
+      ? '<img src="' + escapeHtml(photo) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">'
+      : '';
+    return '<div class="av ' + size + '">' + fb + img + '</div>';
+  }
 
   function timeAgo(ts) {
     if (!ts || !ts.toDate) return '';
@@ -305,16 +347,65 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     return Math.floor(hrs / 24) + ' দিন আগে';
   }
 
+  // ---------- বাংলা তারিখ/সময় (লাস্ট একটিভের জন্য) ----------
+  const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
+  const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  function bn(n) { return String(n).replace(/\d/g, d => BN_DIGITS[d]); }
+  function fmtClock(d) {
+    const h = d.getHours(), m = d.getMinutes();
+    const per = h < 4 ? 'রাত' : h < 6 ? 'ভোর' : h < 12 ? 'সকাল' : h < 15 ? 'দুপুর' : h < 17 ? 'বিকাল' : h < 19 ? 'সন্ধ্যা' : 'রাত';
+    return per + ' ' + bn(h % 12 || 12) + ':' + bn(String(m).padStart(2, '0'));
+  }
+  function fmtLastActive(d) {
+    const now = new Date();
+    const startOf = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const dayDiff = Math.round((startOf(now) - startOf(d)) / 86400000);
+    if (dayDiff <= 0) return 'আজ ' + fmtClock(d);
+    if (dayDiff === 1) return 'গতকাল ' + fmtClock(d);
+    let s = bn(d.getDate()) + ' ' + BN_MONTHS[d.getMonth()];
+    if (d.getFullYear() !== now.getFullYear()) s += ' ' + bn(d.getFullYear());
+    return s + ', ' + fmtClock(d);
+  }
+
+  // ---------- অনলাইন / লাস্ট একটিভ (presence) ----------
+  // নিজের users/{uid} ডকুমেন্টে lastActive + online লেখা হয়; অন্যজনের ডকুমেন্ট শুনে হেডারে দেখানো হয়
+  const ACTIVE_WINDOW_MS = 100000;
+  let presenceTimer = null;
+  function writePresence(online) {
+    if (!currentUser) return Promise.resolve();
+    return setDoc(doc(db, "users", currentUser.uid), { lastActive: serverTimestamp(), online: !!online }, { merge: true }).catch(() => {});
+  }
+  function startPresence() {
+    stopPresence();
+    writePresence(!document.hidden);
+    presenceTimer = setInterval(() => { if (!document.hidden) writePresence(true); }, 45000);
+  }
+  function stopPresence() { if (presenceTimer) { clearInterval(presenceTimer); presenceTimer = null; } }
+  document.addEventListener('visibilitychange', () => { if (currentUser) writePresence(!document.hidden); });
+  window.addEventListener('pagehide', () => { if (currentUser) writePresence(false); });
+
+  function renderStatus() {
+    if (!convId) { headerStatus.style.display = 'none'; return; }
+    const d = otherLastActive && otherLastActive.toDate ? otherLastActive.toDate() : null;
+    if (!d) { headerStatus.style.display = 'none'; return; }
+    headerStatus.style.display = 'block';
+    if (otherOnline && Date.now() - d.getTime() < ACTIVE_WINDOW_MS) {
+      headerStatus.textContent = '● একটিভ';
+      headerStatus.className = 'active';
+    } else {
+      headerStatus.textContent = 'লাস্ট একটিভ: ' + fmtLastActive(d);
+      headerStatus.className = '';
+    }
+  }
+
   // ---------- দুইজনের uid থেকে সবসময় একই ও নির্দিষ্ট conversationId বানানো হয় ----------
-  // (ছোট uid + '_' + বড় uid) — এতে একই দুইজনের মধ্যে ডুপ্লিকেট কনভারসেশন তৈরি হবে না,
-  // আর Firestore Rules-এও সহজে যাচাই করা যায় (নিচের firestore-rules ফাইল দ্রষ্টব্য)
   function makeConvId(a, b) { return [a, b].sort().join('_'); }
 
   async function loadMessagingSettings() {
     try {
       const snap = await getDoc(doc(db, "settings", "messages"));
       const d = snap.exists() ? snap.data() : {};
-      messagingEnabled = d.enabled !== false; // ডকুমেন্ট না থাকলে বা enabled না লেখা থাকলে ডিফল্ট চালু
+      messagingEnabled = d.enabled !== false;
       disabledNotice.style.display = messagingEnabled ? 'none' : 'block';
       sendBtn.disabled = !messagingEnabled;
       messageInput.disabled = !messagingEnabled;
@@ -323,12 +414,26 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     }
   }
 
+  function stopInbox() { if (unsubInbox) { unsubInbox(); unsubInbox = null; } }
+  function stopChat() {
+    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    if (unsubOther) { unsubOther(); unsubOther = null; }
+    if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
+    convId = null; otherUid = null; lastMsgSnap = null; otherLastActive = null; otherOnline = false;
+  }
+
   // ================= ইনবক্স মোড =================
   function startInbox() {
+    headerCenter.classList.add('inbox');
     headerTitle.textContent = 'মেসেজ';
     headerAvatar.style.display = 'none';
+    headerStatus.style.display = 'none';
     inboxView.style.display = 'block';
     chatView.style.display = 'none';
+    inboxLoading.style.display = 'block';
+    inboxLoading.textContent = 'লোড হচ্ছে...';
+    inboxEmpty.style.display = 'none';
+    convList.innerHTML = '';
 
     const q = query(
       collection(db, "conversations"),
@@ -359,7 +464,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
         const row = document.createElement('div');
         row.className = 'convRow' + (isUnread ? ' unread' : '');
         row.innerHTML = `
-          <img src="${escapeHtml(photo)}" onerror="this.style.visibility='hidden'">
+          ${avatarHtml(photo, name, 'md')}
           <div class="convBody">
             <div class="convTop">
               <div class="convName">${escapeHtml(name)}</div>
@@ -370,48 +475,116 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
           ${isUnread ? '<div class="unreadDot"></div>' : ''}
         `;
         row.addEventListener('click', () => {
-          window.location.href = 'messages.html?uid=' + encodeURIComponent(otherU) +
+          // পেইজ রিলোড ছাড়াই চ্যাট খোলা — তাই আর লগইন স্ক্রিন আসে না
+          const url = location.pathname + '?uid=' + encodeURIComponent(otherU) +
             '&name=' + encodeURIComponent(name) + '&avatar=' + encodeURIComponent(photo);
+          history.pushState({ inApp: true }, '', url);
+          route();
         });
         convList.appendChild(row);
       });
     }, err => {
       console.error('ইনবক্স লোড এরর:', err);
+      inboxLoading.style.display = 'block';
       inboxLoading.textContent = 'কনভারসেশন লোড করা যায়নি। (প্রথমবার হলে Firebase Console-এ ইনডেক্স তৈরি করার একটা লিংক ব্রাউজার কনসোলে (F12) দেখাতে পারে — সেখানে ক্লিক করে ইনডেক্স বানিয়ে নিন)';
     });
   }
 
   // ================= চ্যাট মোড =================
-  async function startChat() {
-    convId = makeConvId(currentUser.uid, otherUid);
+  function renderHeader() {
+    headerCenter.classList.remove('inbox');
+    headerTitle.textContent = otherName;
+    headerAvatar.innerHTML = avatarHtml(otherPhoto, otherName, 'hd');
+    headerAvatar.style.display = 'flex';
+    renderStatus();
+  }
+
+  function renderMessages() {
+    const snap = lastMsgSnap;
+    if (!snap) return;
+    chatLoading.style.display = 'none';
+    if (snap.empty) {
+      messagesEmpty.style.display = 'block';
+      messagesList.innerHTML = '';
+      return;
+    }
+    messagesEmpty.style.display = 'none';
+    messagesList.innerHTML = '';
+    const convRef = doc(db, "conversations", convId);
+    const myPhoto = myProfile.photoURL || (currentUser && currentUser.photoURL) || '';
+    const myName = myProfile.name || (currentUser && currentUser.displayName) || '';
+    let prevSender = null;
+    snap.forEach(d => {
+      const m = d.data();
+      const mine = m.senderUid === currentUser.uid;
+      // একই ব্যক্তির টানা মেসেজের মধ্যে শুধু প্রথমটার সাথে প্রোফাইল পিক
+      const first = m.senderUid !== prevSender;
+      prevSender = m.senderUid;
+
+      const row = document.createElement('div');
+      row.className = 'msgRow ' + (mine ? 'mine' : 'theirs') + (first ? ' first' : '');
+      const av = first
+        ? avatarHtml(mine ? myPhoto : otherPhoto, mine ? myName : otherName, 'sm')
+        : '<div class="avSpacer"></div>';
+      const content = `
+        <div class="msgCol">
+          <div class="msgBubble">${escapeHtml(m.text)}</div>
+          <div class="msgMeta">
+            <span>${timeAgo(m.createdAt)}</span>
+            ${mine ? `<button class="msgDeleteBtn" data-id="${d.id}">মুছুন</button>` : ''}
+          </div>
+        </div>
+      `;
+      row.innerHTML = mine ? content + av : av + content;
+      if (mine) {
+        row.querySelector('.msgDeleteBtn').addEventListener('click', async () => {
+          if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
+          try { await deleteDoc(doc(convRef, "messages", d.id)); }
+          catch (e) { alert('এরর: ' + e.message); }
+        });
+      }
+      messagesList.appendChild(row);
+    });
+    messagesScroll.scrollTop = messagesScroll.scrollHeight;
+  }
+
+  async function startChat(uid, nameParam, avatarParam, token) {
+    otherUid = uid;
+    otherName = nameParam || 'ব্যবহারকারী';
+    otherPhoto = avatarParam || '';
+    convId = makeConvId(currentUser.uid, uid);
+    convExists = false;
+    lastMsgSnap = null;
+    otherLastActive = null;
+    otherOnline = false;
     const convRef = doc(db, "conversations", convId);
 
-    headerTitle.textContent = otherName;
-    if (otherPhoto) { headerAvatar.src = otherPhoto; headerAvatar.style.display = 'block'; }
+    messagesList.innerHTML = '';
+    messagesEmpty.style.display = 'none';
+    chatLoading.style.display = 'block';
+    messageInput.value = '';
     inboxView.style.display = 'none';
     chatView.style.display = 'flex';
+    renderHeader();
 
-    // কনভারসেশন ডকুমেন্ট এখনো তৈরি করা হয় না শুধু চ্যাট পেইজ খোলার সময় — এটা তৈরি হবে
-    // একদম প্রথম মেসেজ পাঠানোর মুহূর্তে (নিচের sendCurrentMessage ফাংশনে)। এতে না লিখেই
-    // কারো প্রোফাইলে ঢুকলে সেই ব্যক্তির ইনবক্সে খামোখা একটা খালি এন্ট্রি দেখাবে না।
+    // কনভারসেশন ডকুমেন্ট তৈরি হয় প্রথম মেসেজ পাঠানোর সময় (sendCurrentMessage-এ)
     try {
       const snap = await getDoc(convRef);
+      if (token !== routeToken) return;
       convExists = snap.exists();
       if (convExists) {
         const d = snap.data();
-        const info = d.participantInfo && d.participantInfo[otherUid];
-        // URL-এ নাম/ছবি না থাকলে (যেমন সরাসরি লিংক দিয়ে ঢুকলে) কনভারসেশনে সেভ করা তথ্য থেকে নাও
-        if (!otherNameParam && info && info.name) { otherName = info.name; headerTitle.textContent = otherName; }
-        if (!otherAvatarParam && info && info.photoURL) { otherPhoto = info.photoURL; headerAvatar.src = otherPhoto; headerAvatar.style.display = 'block'; }
+        const info = d.participantInfo && d.participantInfo[uid];
+        if (!nameParam && info && info.name) otherName = info.name;
+        if (!avatarParam && info && info.photoURL) otherPhoto = info.photoURL;
+        renderHeader();
       }
     } catch (e) {
       console.error('কনভারসেশন লোড এরর:', e);
     }
+    if (token !== routeToken) return;
 
-    // নিজের দিক থেকে "পড়া হয়েছে" মার্ক করা — এটা চ্যাট খোলার সময় শুধু একবারই হবে,
-    // বারবার onSnapshot দিয়ে না (আগে এটা প্রতিটা পরিবর্তনে আবার লিখতো, যেটা নিজের লেখাকেই
-    // আবার "পরিবর্তন" হিসেবে ধরে চক্রাকারে (infinite loop) চলতে থাকতো এবং আসল মেসেজ
-    // পাঠানোর কাজে বাধা দিতো)
+    // "পড়া হয়েছে" মার্ক — চ্যাট খোলার সময় শুধু একবার
     if (convExists) {
       updateDoc(convRef, {
         [`lastRead.${currentUser.uid}`]: serverTimestamp(),
@@ -421,42 +594,42 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
 
     const mq = query(collection(convRef, "messages"), orderBy("createdAt", "asc"), limit(500));
     unsubMessages = onSnapshot(mq, snap => {
-      chatLoading.style.display = 'none';
-      if (snap.empty) {
-        messagesEmpty.style.display = 'block';
-        messagesList.innerHTML = '';
-        return;
-      }
-      messagesEmpty.style.display = 'none';
-      messagesList.innerHTML = '';
-      snap.forEach(d => {
-        const m = d.data();
-        const mine = m.senderUid === currentUser.uid;
-        const row = document.createElement('div');
-        row.className = 'msgRow ' + (mine ? 'mine' : 'theirs');
-        row.innerHTML = `
-          <div>
-            <div class="msgBubble">${escapeHtml(m.text)}</div>
-            <div class="msgMeta">
-              <span>${timeAgo(m.createdAt)}</span>
-              ${mine ? `<button class="msgDeleteBtn" data-id="${d.id}">মুছুন</button>` : ''}
-            </div>
-          </div>
-        `;
-        if (mine) {
-          row.querySelector('.msgDeleteBtn').addEventListener('click', async () => {
-            if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
-            try { await deleteDoc(doc(convRef, "messages", d.id)); }
-            catch (e) { alert('এরর: ' + e.message); }
-          });
-        }
-        messagesList.appendChild(row);
-      });
-      messagesScroll.scrollTop = messagesScroll.scrollHeight;
+      lastMsgSnap = snap;
+      renderMessages();
     }, err => {
       console.error('মেসেজ লোড এরর:', err);
+      chatLoading.style.display = 'block';
       chatLoading.textContent = 'মেসেজ লোড করা যায়নি।';
     });
+
+    // অন্যজনের অনলাইন/লাস্ট একটিভ + সর্বশেষ নাম/ছবি
+    unsubOther = onSnapshot(doc(db, "users", uid), s => {
+      const d = s.exists() ? s.data() : {};
+      otherLastActive = d.lastActive || null;
+      otherOnline = d.online === true;
+      let changed = false;
+      if (d.name && d.name !== otherName) { otherName = d.name; changed = true; }
+      if (d.photoURL && d.photoURL !== otherPhoto) { otherPhoto = d.photoURL; changed = true; }
+      if (changed) { renderHeader(); renderMessages(); } else { renderStatus(); }
+    }, err => { console.error('স্ট্যাটাস লোড এরর:', err); });
+
+    // "একটিভ" → "লাস্ট একটিভ" নিজে নিজে বদলানোর জন্য
+    statusTimer = setInterval(renderStatus, 30000);
+  }
+
+  // ---------- URL দেখে ইনবক্স নাকি চ্যাট দেখাবে ঠিক করে ----------
+  async function route() {
+    if (!currentUser) return;
+    const token = ++routeToken;
+    stopInbox();
+    stopChat();
+    const p = new URLSearchParams(location.search);
+    const uid = p.get('uid');
+    if (uid && uid !== currentUser.uid) {
+      await startChat(uid, p.get('name') || '', p.get('avatar') || '', token);
+    } else {
+      startInbox();
+    }
   }
 
   async function sendCurrentMessage() {
@@ -466,9 +639,7 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     try {
       const convRef = doc(db, "conversations", convId);
 
-      // ---------- আগে কনভারসেশন ডকুমেন্ট (থাকলে আপডেট, না থাকলে তৈরি), তারপর মেসেজ ----------
-      // Firestore rules-এ messages/{id} লেখার শর্তে convRef-এর participants পড়া হয়, তাই
-      // convRef আগে থেকে থাকতেই হবে — নাহলে প্রথম মেসেজ লেখার সময় rules রিজেক্ট করবে
+      // আগে কনভারসেশন ডকুমেন্ট (থাকলে আপডেট, না থাকলে তৈরি), তারপর মেসেজ
       if (!convExists) {
         await setDoc(convRef, {
           participants: [currentUser.uid, otherUid].sort(),
@@ -517,46 +688,34 @@ body.pageLeaving{opacity:0;transition:opacity .12s ease}
     messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
   });
 
-  function cleanupSubscriptions() {
-    if (unsubConv) { unsubConv(); unsubConv = null; }
-    if (unsubMessages) { unsubMessages(); unsubMessages = null; }
-    if (unsubInbox) { unsubInbox(); unsubInbox = null; }
-  }
-
+  // শুরুতে লগইন স্ক্রিন না দেখিয়ে লোডিং দেখানো হয় — Firebase সেশন ফিরিয়ে আনলে সরাসরি চ্যাট খোলে
   onAuthStateChanged(auth, async (user) => {
-    cleanupSubscriptions();
+    stopInbox();
+    stopChat();
+    stopPresence();
+    routeToken++;
     if (!user) {
       currentUser = null;
-      loginScreen.style.display = 'flex';
-      appScreen.style.display = 'none';
-      blockedScreen.style.display = 'none';
-      document.body.classList.add('pageReady');
+      loginBtn.disabled = false;
+      loginStatus.textContent = '';
+      showOnly('login');
       return;
     }
     try {
       const blocked = await checkAccountBlocked(user);
-      if (blocked) { document.body.classList.add('pageReady'); return; }
+      if (blocked) return;
 
       currentUser = user;
-      await ensureUserProfile(user);
-      await loadMessagingSettings();
+      await Promise.all([ensureUserProfile(user), loadMessagingSettings()]);
 
-      loginScreen.style.display = 'none';
-      blockedScreen.style.display = 'none';
-      appScreen.style.display = 'flex';
-
-      if (otherUid && otherUid !== currentUser.uid) {
-        await startChat();
-      } else {
-        startInbox();
-      }
+      showOnly('app');
+      startPresence();
+      await route();
     } catch (err) {
       console.error('চালু করতে সমস্যা:', err);
       loginStatus.textContent = 'এরর: ' + (err && err.message ? err.message : String(err));
-      loginScreen.style.display = 'flex';
-      appScreen.style.display = 'none';
+      showOnly('login');
     }
-    document.body.classList.add('pageReady');
   });
 </script>
 </body>
