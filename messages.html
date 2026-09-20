@@ -127,6 +127,17 @@ html,body{overscroll-behavior:none}
 #incBtns{display:flex;gap:70px;margin-top:50px}
 @keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(66,133,244,.5)}100%{box-shadow:0 0 0 26px rgba(66,133,244,0)}}
 #incAvatar .av{animation:ringPulse 1.4s infinite}
+
+/* ---------- পারমিশন শিট ---------- */
+#permOpenBtn{display:none;width:100%;background:#1a2230;border:none;border-bottom:1px solid #262c36;color:#93c5fd;font-size:13px;padding:10px 14px;text-align:left;cursor:pointer}
+#permSheet{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
+#permCard{width:100%;max-width:520px;background:#161b22;border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px}
+#permCard h2{font-size:18px}
+#permCard p{font-size:13px;color:#9ca3af;line-height:1.5}
+.permRow{display:flex;justify-content:space-between;align-items:center;background:#0f141b;border-radius:10px;padding:11px 14px;font-size:14px}
+#permHelp{display:none;background:#2a1a1a;border:1px solid #7f1d1d;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:#fecaca}
+.permBtnMain{background:#4285f4;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer}
+.permBtnSub{background:none;color:#9ca3af;border:none;padding:8px;font-size:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -169,6 +180,7 @@ html,body{overscroll-behavior:none}
     <main>
       <!-- ---------- ইনবক্স: সব কনভারসেশনের তালিকা ---------- -->
       <div id="inboxView">
+        <button id="permOpenBtn">🔐 কলের অনুমতি ঠিক করুন (মাইক্রোফোন / ক্যামেরা)</button>
         <div id="inboxLoading">লোড হচ্ছে...</div>
         <div id="inboxEmpty" style="display:none;">এখনো কোনো মেসেজ নেই।<br>কারো প্রোফাইলে গিয়ে "মেসেজ করুন" চাপুন।</div>
         <div id="convList"></div>
@@ -187,6 +199,26 @@ html,body{overscroll-behavior:none}
         </div>
       </div>
     </main>
+  </div>
+
+  <!-- ---------- পারমিশন শিট ---------- -->
+  <div id="permSheet">
+    <div id="permCard">
+      <h2>🔐 কলের জন্য অনুমতি দিন</h2>
+      <p>অডিও/ভিডিও কল করতে ও ধরতে মাইক্রোফোন আর ক্যামেরা লাগবে। নিচের বাটনে একবার চাপলে ব্রাউজার অনুমতি চাইবে — শুধু <b>Allow</b> চাপুন। একবার দিলে আর বারবার চাইবে না।</p>
+      <div class="permRow"><span>🎙️ মাইক্রোফোন</span><span id="permMicState">…</span></div>
+      <div class="permRow"><span>📷 ক্যামেরা</span><span id="permCamState">…</span></div>
+      <div id="permHelp">
+        ⛔ অনুমতি ব্লক করা আছে — ব্রাউজার আর নিজে থেকে চাইতে পারবে না। হাতে ঠিক করুন:<br>
+        ১) ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন<br>
+        ২) <b>Permissions</b> / <b>Site settings</b> খুলুন<br>
+        ৩) মাইক্রোফোন ও ক্যামেরা <b>Allow</b> করুন<br>
+        ৪) নিচের "রিলোড" চাপুন<br>
+        <button class="permBtnSub" id="permReloadBtn" style="color:#fff;text-decoration:underline;padding:6px 0">🔄 রিলোড করুন</button>
+      </div>
+      <button class="permBtnMain" id="permGrantBtn">✅ সব অনুমতি দিন</button>
+      <button class="permBtnSub" id="permLaterBtn">পরে</button>
+    </div>
   </div>
 
   <!-- ---------- ইনকামিং কল ---------- -->
@@ -847,7 +879,7 @@ html,body{overscroll-behavior:none}
 
   function mediaError(e) {
     const n = e && e.name;
-    if (n === 'NotAllowedError' || n === 'SecurityError') alert('মাইক্রোফোন/ক্যামেরার অনুমতি দিন (ব্রাউজারের সাইট সেটিংস থেকে)।');
+    if (n === 'NotAllowedError' || n === 'SecurityError') openPermSheet();
     else if (n === 'NotFoundError') alert('মাইক্রোফোন বা ক্যামেরা পাওয়া যায়নি।');
     else alert('মাইক্রোফোন/ক্যামেরা চালু করা যায়নি: ' + ((e && e.message) || e));
   }
@@ -1205,6 +1237,94 @@ html,body{overscroll-behavior:none}
   incAccept.addEventListener('click', acceptIncoming);
   incDecline.addEventListener('click', declineIncoming);
 
+  // ---------- পারমিশন: এক ট্যাপে মাইক + ক্যামেরা ----------
+  // ব্রাউজার নিয়ম: ওয়েবসাইট নিজে অনুমতি "দিয়ে দিতে" পারে না — ইউজারকে Allow চাপতেই হয়।
+  // তাই এখানে দুটো অনুমতি একসাথে (একটা প্রম্পটে) চাওয়া হয়, একবার Allow করলে ব্রাউজার মনে রাখে।
+  const permOpenBtn = document.getElementById('permOpenBtn');
+  const permSheet = document.getElementById('permSheet');
+  const permMicState = document.getElementById('permMicState');
+  const permCamState = document.getElementById('permCamState');
+  const permHelp = document.getElementById('permHelp');
+  const permGrantBtn = document.getElementById('permGrantBtn');
+  const permLaterBtn = document.getElementById('permLaterBtn');
+  const permReloadBtn = document.getElementById('permReloadBtn');
+  const PERM_LABEL = { granted: '✅ দেওয়া আছে', denied: '⛔ ব্লক করা', prompt: '⏳ দেওয়া হয়নি', unknown: '— (চাপলে জানা যাবে)' };
+
+  async function permState(name) {
+    try { return (await navigator.permissions.query({ name })).state; }
+    catch (e) { return 'unknown'; }
+  }
+  async function refreshPermUI() {
+    const mic = await permState('microphone');
+    const cam = await permState('camera');
+    permMicState.textContent = PERM_LABEL[mic] || '—';
+    permCamState.textContent = PERM_LABEL[cam] || '—';
+    const denied = mic === 'denied' || cam === 'denied';
+    permHelp.style.display = denied ? 'block' : 'none';
+    const allOk = mic === 'granted' && cam === 'granted';
+    permOpenBtn.style.display = allOk ? 'none' : 'block';
+    return { mic, cam, allOk, denied };
+  }
+  async function openPermSheet() {
+    permSheet.style.display = 'flex';
+    await refreshPermUI();
+  }
+  function closePermSheet() {
+    permSheet.style.display = 'none';
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+  }
+  // ব্রাউজারের নিজস্ব Allow/Block প্রম্পট দেখায় (একবার দিলে ব্রাউজার মনে রাখে)
+  async function requestMediaPermissions() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });   // এক প্রম্পটে দুটোই
+    } catch (e) {
+      if (e && (e.name === 'NotFoundError' || e.name === 'OverconstrainedError')) {
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e2) {}   // ক্যামেরা না থাকলে শুধু মাইক
+      }
+    }
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    return !!stream;
+  }
+  async function grantAllPermissions() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('এই ব্রাউজারে কল সাপোর্ট করে না (HTTPS লাগবে)।');
+      return;
+    }
+    permGrantBtn.disabled = true;
+    await requestMediaPermissions();
+    permGrantBtn.disabled = false;
+    const st = await refreshPermUI();
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+    if (st.allOk) setTimeout(closePermSheet, 700);
+  }
+  // পেইজে ঢোকার সাথে সাথে নিজে থেকেই ব্রাউজারের Allow প্রম্পট আসবে — মাঝখানে কোনো কার্ড/বাটন নেই।
+  // আগে থেকে Allow দেওয়া থাকলে কিছুই আসে না। Block করা থাকলে (ব্রাউজার আর প্রম্পট দেখাতে পারে না) তখনই শুধু সাহায্যের কার্ড আসে।
+  async function maybeAskPermissions() {
+    const st = await refreshPermUI();
+    if (st.allOk) return;
+    const showHelpOnce = () => {
+      let shown = false;
+      try { shown = sessionStorage.getItem('permHelpShown') === '1'; } catch (e) {}
+      if (!shown) { try { sessionStorage.setItem('permHelpShown', '1'); } catch (e) {} openPermSheet(); }
+    };
+    if (st.denied) { showHelpOnce(); return; }
+    if (st.mic === 'unknown' || st.cam === 'unknown') {     // পুরনো ব্রাউজার (অবস্থা জানা যায় না) — বারবার বিরক্ত না করতে একবারই
+      let asked = false;
+      try { asked = localStorage.getItem('permAsked') === '1'; } catch (e) {}
+      if (asked) return;
+    }
+    await requestMediaPermissions();
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+    const st2 = await refreshPermUI();
+    if (st2.denied) showHelpOnce();
+  }
+  permGrantBtn.addEventListener('click', grantAllPermissions);
+  permLaterBtn.addEventListener('click', closePermSheet);
+  permReloadBtn.addEventListener('click', () => location.reload());
+  permOpenBtn.addEventListener('click', openPermSheet);
+
   // শুরুতে লগইন স্ক্রিন না দেখিয়ে লোডিং দেখানো হয় — Firebase সেশন ফিরিয়ে আনলে সরাসরি চ্যাট খোলে
   onAuthStateChanged(auth, async (user) => {
     stopInbox();
@@ -1232,6 +1352,7 @@ html,body{overscroll-behavior:none}
       startPresence();
       startIncomingListener();
       await route();
+      maybeAskPermissions();
     } catch (err) {
       console.error('চালু করতে সমস্যা:', err);
       loginStatus.textContent = 'এরর: ' + (err && err.message ? err.message : String(err));
