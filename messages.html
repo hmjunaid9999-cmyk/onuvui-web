@@ -34,7 +34,8 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 @keyframes spin{to{transform:rotate(360deg)}}
 #headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
 #headerText{min-width:0;text-align:left}
-#headerAvatar{display:none}
+#headerAvatar{display:none;overflow:visible;position:relative;background:none}
+#headerAvatar.online::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #161b22;z-index:2}
 #headerStatus{font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
 #headerStatus.active{color:#34d399}
 #headerCenter.inbox #headerText{text-align:center}
@@ -454,6 +455,7 @@ html,body{overscroll-behavior:none}
   });
 
   function renderStatus() {
+    headerAvatar.classList.remove('online');
     if (!convId) { headerStatus.style.display = 'none'; return; }
     headerStatus.style.display = 'block';
     const d = otherLastActive && otherLastActive.toDate ? otherLastActive.toDate() : null;
@@ -466,6 +468,7 @@ html,body{overscroll-behavior:none}
     if (otherOnline && Date.now() - d.getTime() < ACTIVE_WINDOW_MS) {
       headerStatus.textContent = '● একটিভ';
       headerStatus.className = 'active';
+      headerAvatar.classList.add('online');
     } else {
       headerStatus.textContent = 'লাস্ট একটিভ: ' + fmtLastActive(d);
       headerStatus.className = '';
