@@ -218,6 +218,77 @@
   const HEARTBEAT_MS = 20000;    
   const STALE_MS = 45000;        
 
+  // ---------- পারমিশন: লাইভ পেইজে ঢুকলেই ব্রাউজারের Allow প্রম্পট ----------
+  // ব্রাউজার নিয়ম: অনুমতি ইউজারকেই Allow চাপতে হয় (ওয়েবসাইট নিজে দিয়ে দিতে পারে না)।
+  // তাই ঢোকার সাথে সাথে মাইক + ক্যামেরা একটা প্রম্পটেই চাওয়া হয় — একবার Allow দিলে ব্রাউজার মনে রাখে।
+  // আগে থেকে Allow থাকলে কিছুই আসে না; Block করা থাকলে (ব্রাউজার আর প্রম্পট দেখাতে পারে না) সাহায্যের কার্ড আসে।
+  let permAskStarted = false;
+
+  async function permState(name) {
+    try { return (await navigator.permissions.query({ name })).state; }
+    catch (e) { return 'unknown'; }
+  }
+  async function requestMediaPermissions() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return false;
+    let stream = null;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    } catch (e) {
+      if (e && (e.name === 'NotFoundError' || e.name === 'OverconstrainedError')) {
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } catch (e2) {}   // ক্যামেরা না থাকলে শুধু মাইক
+      }
+    }
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    return !!stream;
+  }
+  function showPermHelp() {
+    if (document.getElementById('permHelpOverlay')) return;
+    const ov = document.createElement('div');
+    ov.id = 'permHelpOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center';
+    ov.innerHTML = `
+      <div style="width:100%;max-width:520px;background:#161b22;color:#fff;border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px;font-family:inherit">
+        <div style="font-size:18px;font-weight:bold">🔐 ক্যামেরা / মাইক্রোফোনের অনুমতি দিন</div>
+        <div style="font-size:13px;color:#cbd5e1;line-height:1.7">
+          লাইভে আসতে ক্যামেরা ও মাইক্রোফোন লাগবে, কিন্তু ব্রাউজারে এগুলো ব্লক করা আছে — তাই ব্রাউজার আর নিজে থেকে চাইতে পারছে না। হাতে ঠিক করুন:<br>
+          ১) ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন<br>
+          ২) <b>Permissions</b> / <b>Site settings</b> খুলুন<br>
+          ৩) ক্যামেরা ও মাইক্রোফোন <b>Allow</b> করুন<br>
+          ৪) নিচের "রিলোড" চাপুন
+        </div>
+        <button id="permReloadBtn" style="background:#4285f4;color:#fff;border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:bold">🔄 রিলোড করুন</button>
+        <button id="permCloseBtn" style="background:none;color:#9ca3af;border:none;padding:8px;font-size:14px">পরে (শুধু দেখতে চাই)</button>
+      </div>`;
+    document.body.appendChild(ov);
+    document.getElementById('permReloadBtn').addEventListener('click', () => location.reload());
+    document.getElementById('permCloseBtn').addEventListener('click', () => ov.remove());
+  }
+  function showPermHelpOncePerSession() {
+    let shown = false;
+    try { shown = sessionStorage.getItem('permHelpShown') === '1'; } catch (e) {}
+    if (shown) return;
+    try { sessionStorage.setItem('permHelpShown', '1'); } catch (e) {}
+    showPermHelp();
+  }
+  async function askMediaPermissionsOnEnter() {
+    if (permAskStarted) return;
+    permAskStarted = true;
+    const mic = await permState('microphone');
+    const cam = await permState('camera');
+    if (mic === 'granted' && cam === 'granted') return;
+    if (mic === 'denied' || cam === 'denied') { showPermHelpOncePerSession(); return; }
+    if (mic === 'unknown' || cam === 'unknown') {          // পুরনো ব্রাউজার — বারবার বিরক্ত না করতে একবারই
+      let asked = false;
+      try { asked = localStorage.getItem('permAsked') === '1'; } catch (e) {}
+      if (asked) return;
+    }
+    await requestMediaPermissions();
+    try { localStorage.setItem('permAsked', '1'); } catch (e) {}
+    const mic2 = await permState('microphone');
+    const cam2 = await permState('camera');
+    if (mic2 === 'denied' || cam2 === 'denied') showPermHelpOncePerSession();
+  }
+
   function escapeHtml(str) {
     return (str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
@@ -277,6 +348,7 @@
       listenCoins(user.uid);
       showLobby();
       listenLobby();
+      askMediaPermissionsOnEnter();
     } else {
       currentUser = null;
       authGate.classList.remove('hidden');
@@ -358,6 +430,7 @@
       const constraints = mode === 'audio' ? { audio: true } : { video: true, audio: true };
       localStream = await navigator.mediaDevices.getUserMedia(constraints);
     } catch (e) {
+      if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) { showPermHelp(); return; }
       const need = mode === 'audio' ? 'মাইক্রোফোনের' : 'ক্যামেরা ও মাইক্রোফোনের';
       alert('লাইভ শুরু করতে ' + need + ' অনুমতি দরকার: ' + e.message);
       return;
