@@ -425,6 +425,9 @@
           <button type="button" class="csListBtn" data-cs-open="csDetail-blog">
             <span class="csListBtnIcon">📰</span><span class="csListBtnText">ব্লগ</span><span class="csListBtnArrow">›</span>
           </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-aboutUs">
+            <span class="csListBtnIcon">ℹ️</span><span class="csListBtnText">আমাদের সম্পর্কে (About Us)</span><span class="csListBtnArrow">›</span>
+          </button>
         </div>
 
         <!-- ================= ডিটেইল ভিউগুলো: বাটনে ঢুকলে এইগুলো দেখাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে ================= -->
@@ -589,6 +592,21 @@
             <div class="sectionStatus" id="statusBlog"></div>
           </div>
         </div>
+
+        <div class="csDetailView" id="csDetail-aboutUs">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">ℹ️ আমাদের সম্পর্কে</div>
+          </div>
+          <div class="section">
+            <h2>📝 আমাদের সম্পর্কে লেখা</h2>
+            <textarea id="aboutUsText" rows="10" placeholder="এখানে আপনার ওয়েবসাইট সম্পর্কে বিস্তারিত লিখুন..."></textarea>
+            <div class="hint">ওয়েবসাইটের পোস্ট বক্সের উপরে "আমাদের সম্পর্কে" বাটনে ঢুকলে এই লেখাটি সম্পূর্ণভাবে দেখানো হবে। Google বা AI থেকে কেউ আপনার ওয়েবসাইট সম্পর্কে জানতে চাইলে এই লেখা থেকেই উত্তর পাবে, তাই স্পষ্ট ও বিস্তারিতভাবে লিখুন।</div>
+
+            <button class="sectionSaveBtn" data-section="aboutUs">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusAboutUs"></div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -697,6 +715,7 @@
   const blogSmallClose = document.getElementById('blogSmallClose');
   const blogLinkOpen = document.getElementById('blogLinkOpen');
   const blogLinkClose = document.getElementById('blogLinkClose');
+  const aboutUsText = document.getElementById('aboutUsText');
 
   // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
   const BUTTON_LABELS = {
@@ -1344,6 +1363,7 @@
     blogSmallClose.value = s.blogSmallClose || ']';
     blogLinkOpen.value = s.blogLinkOpen || '<';
     blogLinkClose.value = s.blogLinkClose || '>';
+    aboutUsText.value = s.aboutUsText || '';
     bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
     menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
     commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
@@ -1381,6 +1401,7 @@
       blogSmallOpen: blogSmallOpen.value || '[', blogSmallClose: blogSmallClose.value || ']',
       blogLinkOpen: blogLinkOpen.value || '<', blogLinkClose: blogLinkClose.value || '>'
     };
+    else if (section === 'aboutUs') data = { aboutUsText: aboutUsText.value.trim() };
     else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
     else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };
     else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
