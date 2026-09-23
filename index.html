@@ -167,6 +167,12 @@
   let composerPrevDisplay = '';
   let topAdBannerPrevDisplay = '';
   let searchBarPrevDisplay = '';
+  let aboutUsComposerPrevDisplay = '';
+  let aboutUsTopAdBannerPrevDisplay = '';
+  let aboutUsSearchBarPrevDisplay = '';
+  let aboutUsPostsListPrevDisplay = '';
+  let aboutUsLoadMoreBtnPrevDisplay = '';
+  let aboutUsFooterSectionPrevDisplay = '';
   let focusedCard = null;
   function enterCommentFocus(activeCard) {
     focusedCard = activeCard;
@@ -232,6 +238,7 @@
   const aboutUsView = document.getElementById('aboutUsView');
   const aboutUsContent = document.getElementById('aboutUsContent');
   const siteMetaDescription = document.getElementById('siteMetaDescription');
+  const footerSection = document.getElementById('footerSection');
 
   function openLoginModal() {
     loginStatus.textContent = '';
@@ -299,11 +306,32 @@
      (স্ক্রিনের বাটন বা ফোনের ব্যাক বাটন) চাপলে সরাসরি অ্যাপ থেকে বের না হয়ে
      আগের ফিডে ফিরে আসবে */
   function openAboutUs() {
+    aboutUsComposerPrevDisplay = composer.style.display;
+    aboutUsTopAdBannerPrevDisplay = topAdBanner ? topAdBanner.style.display : '';
+    aboutUsSearchBarPrevDisplay = searchBar.style.display;
+    aboutUsPostsListPrevDisplay = postsList.style.display;
+    aboutUsLoadMoreBtnPrevDisplay = loadMoreBtn.style.display;
+    aboutUsFooterSectionPrevDisplay = footerSection ? footerSection.style.display : '';
+
+    composer.style.display = 'none';
+    if (topAdBanner) topAdBanner.style.display = 'none';
+    searchBar.style.display = 'none';
+    postsList.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
+    if (footerSection) footerSection.style.display = 'none';
+
     document.body.classList.add('aboutUsOpen');
     aboutUsView.scrollIntoView({ behavior: 'smooth', block: 'start' });
     rearmGuard();
   }
   function closeAboutUs() {
+    composer.style.display = aboutUsComposerPrevDisplay;
+    if (topAdBanner) topAdBanner.style.display = aboutUsTopAdBannerPrevDisplay;
+    searchBar.style.display = aboutUsSearchBarPrevDisplay;
+    postsList.style.display = aboutUsPostsListPrevDisplay;
+    loadMoreBtn.style.display = aboutUsLoadMoreBtnPrevDisplay;
+    if (footerSection) footerSection.style.display = aboutUsFooterSectionPrevDisplay;
+
     document.body.classList.remove('aboutUsOpen');
   }
   aboutUsTabBtn.addEventListener('click', openAboutUs);
