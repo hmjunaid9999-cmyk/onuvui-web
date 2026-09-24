@@ -194,7 +194,7 @@ html,body{overscroll-behavior:none}
           <div id="messagesList"></div>
         </div>
         <div id="messageBar">
-          <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000"></textarea>
+          <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000" enterkeyhint="enter"></textarea>
           <button id="sendBtn">➤</button>
         </div>
       </div>
@@ -457,12 +457,33 @@ html,body{overscroll-behavior:none}
     const per = h < 4 ? 'রাত' : h < 6 ? 'ভোর' : h < 12 ? 'সকাল' : h < 15 ? 'দুপুর' : h < 17 ? 'বিকাল' : h < 19 ? 'সন্ধ্যা' : 'রাত';
     return per + ' ' + bn(h % 12 || 12) + ':' + bn(String(m).padStart(2, '0'));
   }
-  function fmtLastActive(d) {
-    // সবসময় তারিখ + সময়: "২০ সেপ্টেম্বর, সন্ধ্যা ৬:৩০"
+  function fmtDateBn(d) {
+    // "২০ সেপ্টেম্বর" (আলাদা বছর হলে বছরসহ)
     const now = new Date();
     let s = bn(d.getDate()) + ' ' + BN_MONTHS[d.getMonth()];
     if (d.getFullYear() !== now.getFullYear()) s += ' ' + bn(d.getFullYear());
-    return s + ', ' + fmtClock(d);
+    return s;
+  }
+  function fmtLastActive(d) {
+    // ১-৫৯ মিনিট আগে → ১-২৩ ঘণ্টা আগে → ১-৭ দিন আগে → তারিখ (৮-৩০ দিন) → ১-১২ মাস আগে (কোন মাসে) → তারিখ+বছর
+    const now = new Date();
+    const diff = Math.max(0, now.getTime() - d.getTime());
+    const mins = Math.max(1, Math.floor(diff / 60000));
+    if (mins < 60) return bn(mins) + ' মিনিট আগে';
+    const hrs = Math.floor(diff / 3600000);
+    if (hrs < 24) return bn(hrs) + ' ঘণ্টা আগে';
+    const days = Math.floor(diff / 86400000);
+    if (days <= 7) return bn(days) + ' দিন আগে';
+    if (days <= 30) return fmtDateBn(d);
+    let months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+    if (now.getDate() < d.getDate()) months--;
+    if (months < 1) months = 1;
+    if (months <= 12) {
+      let s = bn(months) + ' মাস আগে (' + BN_MONTHS[d.getMonth()];
+      if (d.getFullYear() !== now.getFullYear()) s += ' ' + bn(d.getFullYear());
+      return s + ' মাসে)';
+    }
+    return fmtDateBn(d);
   }
 
   // ---------- অনলাইন / লাস্ট একটিভ (presence) ----------
@@ -791,8 +812,10 @@ html,body{overscroll-behavior:none}
   }
 
   sendBtn.addEventListener('click', sendCurrentMessage);
+  // মোবাইলে কিবোর্ডের Enter = নতুন লাইন (পাঠাতে হবে ➤ বাটনে); ডেস্কটপে Enter = পাঠানো, Shift+Enter = নতুন লাইন
+  const isTouchOnly = () => window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   messageInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendCurrentMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isTouchOnly()) { e.preventDefault(); sendCurrentMessage(); }
   });
   messageInput.addEventListener('input', () => {
     messageInput.style.height = 'auto';
