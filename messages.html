@@ -67,6 +67,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .convRow.unread .convLast{color:#e5e7eb;font-weight:600}
 .convRow.unread .convTime{color:var(--primary-color);font-weight:bold}
 .unreadDot{width:9px;height:9px;border-radius:50%;background:var(--primary-color);flex-shrink:0}
+.unreadSlot{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.unreadBadge{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:var(--primary-color);color:#fff;font-size:12.5px;font-weight:bold;display:flex;align-items:center;justify-content:center}
 
 /* ---------- চ্যাট ভিউ ---------- */
 #chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
@@ -112,11 +114,12 @@ html,body{overscroll-behavior:none}
 #callScreen.video.hasRemote #callInfo{flex:none;justify-content:flex-start;padding:22px 120px 30px 16px;background:linear-gradient(#000000aa,#00000000);text-shadow:0 1px 4px #000}
 #callScreen.video.hasRemote #callAvatar{display:none}
 #callScreen.video.hasRemote #callName{font-size:17px}
-#callControls{position:relative;z-index:2;margin-top:auto;display:flex;justify-content:center;gap:18px;padding:20px 12px 34px;background:linear-gradient(#00000000,#000000aa)}
+#callControls{position:relative;z-index:2;margin-top:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:20px 12px 34px;background:linear-gradient(#00000000,#000000aa)}
 .ctlWrap{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#cbd5e1}
 .ctlBtn{width:56px;height:56px;border-radius:50%;border:none;background:#2a3140;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ctlBtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ctlBtn.off{background:#fff;color:#111}
+.ctlBtn.off,.ctlBtn.on{background:#fff;color:#111}
+@media (max-width:380px){.ctlBtn{width:50px;height:50px}#callControls{gap:10px}}
 .ctlBtn.end{background:#ef4444}
 .ctlBtn.accept{background:#22c55e}
 
@@ -138,6 +141,23 @@ html,body{overscroll-behavior:none}
 #permHelp{display:none;background:#2a1a1a;border:1px solid #7f1d1d;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:#fecaca}
 .permBtnMain{background:#4285f4;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer}
 .permBtnSub{background:none;color:#9ca3af;border:none;padding:8px;font-size:14px;cursor:pointer}
+
+/* ---------- চ্যাটের ভেতরে কল লগ (মিস কল / কল দেওয়া হয়েছিল) ---------- */
+.callLogRow{align-self:center;width:min(300px,90%);margin:8px 0}
+.callLog{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.clTop{display:flex;align-items:center;gap:10px}
+.clIcon{width:34px;height:34px;border-radius:50%;background:#262c36;color:#9ca3af;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clIcon svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.callLog.missed .clIcon{background:#3b1d1d;color:#f87171}
+.clText{min-width:0}
+.clTitle{font-size:13.5px;font-weight:bold;color:#e5e7eb}
+.callLog.missed .clTitle{color:#f87171}
+.clSub{font-size:11px;color:#6b7280;margin-top:1px}
+.clBtns{display:flex;gap:8px}
+.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#0f141b;border:1px solid #30363d;color:#93c5fd;border-radius:10px;padding:8px 6px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.clBtn:active{background:#1a2230}
+.clBtn:disabled{opacity:.4;cursor:default}
+.clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 </head>
 <body>
@@ -242,7 +262,8 @@ html,body{overscroll-behavior:none}
       <div id="callStatus"></div>
     </div>
     <div id="callControls">
-      <div class="ctlWrap"><button class="ctlBtn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>মাইক</div>
+      <div class="ctlWrap"><button class="ctlBtn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button><span id="micLabel">মিউট</span></div>
+      <div class="ctlWrap"><button class="ctlBtn" id="speakerBtn"><svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button><span id="speakerLabel">স্পিকার</span></div>
       <div class="ctlWrap" id="camWrap"><button class="ctlBtn" id="camBtn"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></button>ক্যামেরা</div>
       <div class="ctlWrap" id="flipWrap"><button class="ctlBtn" id="flipBtn"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>ঘোরান</div>
       <div class="ctlWrap"><button class="ctlBtn end" id="endBtn"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>কেটে দিন</div>
@@ -302,6 +323,7 @@ html,body{overscroll-behavior:none}
   let unsubMessages = null;
   let unsubOther = null;
   let unsubInbox = null;
+  let unreadUnsubs = [];     // ইনবক্সে প্রতিটা কনভারসেশনের "নতুন মেসেজ গণনা" লিসেনার
   let statusTimer = null;
   let routeToken = 0;
 
@@ -465,7 +487,7 @@ html,body{overscroll-behavior:none}
     return s;
   }
   function fmtLastActive(d) {
-    // ১-৫৯ মিনিট আগে → ১-২৩ ঘণ্টা আগে → ১-৭ দিন আগে → তারিখ (৮-৩০ দিন) → ১-১২ মাস আগে (কোন মাসে) → তারিখ+বছর
+    // ১-৫৯ মিনিট আগে → ১-২৩ ঘণ্টা আগে → ১-৭ দিন আগে → তারপর শুধু তারিখ (যেমন "১৬ সেপ্টেম্বর")
     const now = new Date();
     const diff = Math.max(0, now.getTime() - d.getTime());
     const mins = Math.max(1, Math.floor(diff / 60000));
@@ -474,15 +496,6 @@ html,body{overscroll-behavior:none}
     if (hrs < 24) return bn(hrs) + ' ঘণ্টা আগে';
     const days = Math.floor(diff / 86400000);
     if (days <= 7) return bn(days) + ' দিন আগে';
-    if (days <= 30) return fmtDateBn(d);
-    let months = (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
-    if (now.getDate() < d.getDate()) months--;
-    if (months < 1) months = 1;
-    if (months <= 12) {
-      let s = bn(months) + ' মাস আগে (' + BN_MONTHS[d.getMonth()];
-      if (d.getFullYear() !== now.getFullYear()) s += ' ' + bn(d.getFullYear());
-      return s + ' মাসে)';
-    }
     return fmtDateBn(d);
   }
 
@@ -513,17 +526,18 @@ html,body{overscroll-behavior:none}
     headerStatus.style.display = 'block';
     const d = otherLastActive && otherLastActive.toDate ? otherLastActive.toDate() : null;
     if (!d) {
-      // অন্যজন নতুন ভার্সনে একবারও ঢোকেনি (বা পড়ার পারমিশন নেই) — তাই তথ্য নেই
-      headerStatus.textContent = 'লাস্ট একটিভ: তথ্য নেই';
+      // অন্যজন নতুন ভার্সনে একবারও ঢোকেনি (বা পড়ার পারমিশন নেই) — তথ্য নেই, তাই কিছুই দেখানো হবে না
+      headerStatus.textContent = '';
       headerStatus.className = '';
+      headerStatus.style.display = 'none';
       return;
     }
     if (otherOnline && Date.now() - d.getTime() < ACTIVE_WINDOW_MS) {
-      headerStatus.textContent = '● একটিভ';
+      headerStatus.textContent = 'এখন একটিভ আছে';
       headerStatus.className = 'active';
       headerAvatar.classList.add('online');
     } else {
-      headerStatus.textContent = 'লাস্ট একটিভ: ' + fmtLastActive(d);
+      headerStatus.textContent = fmtLastActive(d);
       headerStatus.className = '';
     }
   }
@@ -545,7 +559,8 @@ html,body{overscroll-behavior:none}
     }
   }
 
-  function stopInbox() { if (unsubInbox) { unsubInbox(); unsubInbox = null; } }
+  function clearUnreadListeners() { unreadUnsubs.forEach(u => { try { u(); } catch (e) {} }); unreadUnsubs = []; }
+  function stopInbox() { if (unsubInbox) { unsubInbox(); unsubInbox = null; } clearUnreadListeners(); }
   function stopChat() {
     if (unsubMessages) { unsubMessages(); unsubMessages = null; }
     if (unsubOther) { unsubOther(); unsubOther = null; }
@@ -575,6 +590,7 @@ html,body{overscroll-behavior:none}
     );
 
     unsubInbox = onSnapshot(q, snap => {
+      clearUnreadListeners();
       inboxLoading.style.display = 'none';
       if (snap.empty) {
         inboxEmpty.style.display = 'block';
@@ -605,8 +621,19 @@ html,body{overscroll-behavior:none}
             </div>
             <div class="convLast">${escapeHtml(c.lastMessage || '')}</div>
           </div>
-          ${isUnread ? '<div class="unreadDot"></div>' : ''}
+          ${isUnread ? '<div class="unreadSlot"><div class="unreadDot"></div></div>' : ''}
         `;
+        // কয়টা নতুন মেসেজ (অন্যজনের পাঠানো, আমার শেষ পড়ার পরের) — গুনে সংখ্যা দেখানো হয়
+        if (isUnread) {
+          const slot = row.querySelector('.unreadSlot');
+          const mcol = collection(db, "conversations", d.id, "messages");
+          const cq = lastRead ? query(mcol, where("createdAt", ">", lastRead), limit(100)) : query(mcol, limit(100));
+          unreadUnsubs.push(onSnapshot(cq, ms => {
+            let n = 0;
+            ms.forEach(x => { if (x.data().senderUid !== currentUser.uid) n++; });
+            if (n > 0 && slot) slot.innerHTML = '<div class="unreadBadge">' + (n > 99 ? bn(99) + '+' : bn(n)) + '</div>';
+          }, err => console.error('নতুন মেসেজ গণনা এরর:', err)));
+        }
         row.addEventListener('click', () => {
           // পেইজ রিলোড ছাড়াই চ্যাট খোলা — তাই আর লগইন স্ক্রিন আসে না
           const url = location.pathname + '?uid=' + encodeURIComponent(otherU) +
@@ -651,6 +678,11 @@ html,body{overscroll-behavior:none}
     let prevSender = null;
     snap.forEach(d => {
       const m = d.data();
+      if (m.type === 'call') {          // কল লগ (মিস কল ইত্যাদি) — আলাদা কার্ড
+        prevSender = null;
+        messagesList.appendChild(buildCallLogRow(m, m.senderUid === currentUser.uid));
+        return;
+      }
       const mine = m.senderUid === currentUser.uid;
       // একই ব্যক্তির টানা মেসেজের মধ্যে শুধু প্রথমটার সাথে প্রোফাইল পিক
       const first = m.senderUid !== prevSender;
@@ -728,9 +760,16 @@ html,body{overscroll-behavior:none}
     }
 
     const mq = query(collection(convRef, "messages"), orderBy("createdAt", "asc"), limit(500));
+    let firstMsgSnap = true;
     unsubMessages = onSnapshot(mq, snap => {
       lastMsgSnap = snap;
       renderMessages();
+      // চ্যাট খোলা থাকা অবস্থায় অন্যজনের নতুন মেসেজ এলে সেটাও "পড়া হয়েছে" — নইলে ইনবক্সে ফিরলে ভুল করে নতুন দেখাত
+      const isFirst = firstMsgSnap; firstMsgSnap = false;
+      if (!isFirst && !document.hidden && currentUser &&
+          snap.docChanges().some(ch => ch.type === 'added' && !ch.doc.metadata.hasPendingWrites && ch.doc.data().senderUid !== currentUser.uid)) {
+        updateDoc(convRef, { [`lastRead.${currentUser.uid}`]: serverTimestamp() }).catch(() => {});
+      }
     }, err => {
       console.error('মেসেজ লোড এরর:', err);
       chatLoading.style.display = 'block';
@@ -860,6 +899,13 @@ html,body{overscroll-behavior:none}
   const flipBtn = document.getElementById('flipBtn');
   const flipWrap = document.getElementById('flipWrap');
   const endBtn = document.getElementById('endBtn');
+  const micLabel = document.getElementById('micLabel');
+  const speakerBtn = document.getElementById('speakerBtn');
+  const speakerLabel = document.getElementById('speakerLabel');
+  const MIC_ON_SVG = micBtn.innerHTML;
+  const MIC_OFF_SVG = '<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+  const PHONE_SVG = '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  const VIDEO_SVG = '<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
   const incomingCall = document.getElementById('incomingCall');
   const incAvatar = document.getElementById('incAvatar');
   const incName = document.getElementById('incName');
@@ -875,7 +921,8 @@ html,body{overscroll-behavior:none}
   function newCall(role, type) {
     return { role, type, ref: null, pc: null, localStream: null, unsubs: [], pending: [], queued: [],
       sigReady: false, answerSet: false, docCreated: false, ended: false, connectedOnce: false,
-      facing: 'user', ringT: null, discT: null, durInt: null, startedAt: 0 };
+      facing: 'user', ringT: null, discT: null, durInt: null, startedAt: 0,
+      peerUid: '', peerName: '', peerPhoto: '', logged: false, loud: false };
   }
 
   function bnDuration(sec) {
@@ -893,6 +940,7 @@ html,body{overscroll-behavior:none}
     localVideo.style.display = type === 'video' ? 'block' : 'none';
     localVideo.style.transform = 'scaleX(-1)';
     micBtn.classList.remove('off'); camBtn.classList.remove('off');
+    setMicUI(false); setSpeakerUI(false); stopLoudBoost();
     callScreen.style.display = 'flex';
   }
   function hideCallScreen() { callScreen.style.display = 'none'; callScreen.className = ''; }
@@ -1026,6 +1074,7 @@ html,body{overscroll-behavior:none}
     pc.ontrack = e => {
       if (e.streams && e.streams[0]) remoteVideo.srcObject = e.streams[0];
       remoteVideo.play().catch(() => {});
+      if (c.loud) applyLoud(c);
       if (e.track.kind === 'video') {
         const show = () => callScreen.classList.add('hasRemote');
         if (!e.track.muted) show(); else e.track.addEventListener('unmute', show, { once: true });
@@ -1059,6 +1108,10 @@ html,body{overscroll-behavior:none}
           armConnectTimeout(c);
         } catch (e) { console.error('answer সেট এরর:', e); }
       }
+      if (c.role === 'caller' && !c.answerSet && !c.connectedOnce && !c.ended) {
+        if (d.status === 'declined') logCallMessage(c, 'declined');
+        else if (d.status === 'busy') logCallMessage(c, 'busy');
+      }
       const msg = END_MSG[d.status];
       if (msg && !c.ended) finishCall(msg);
     }, err => console.error('কল স্ট্যাটাস এরর:', err)));
@@ -1081,6 +1134,7 @@ html,body{overscroll-behavior:none}
     remoteVideo.srcObject = null; localVideo.srcObject = null;
     releaseWakeLock();
     stopRing();
+    stopLoudBoost(); resetOutput();
     callStatus.textContent = msg || 'কল শেষ হয়েছে';
     setTimeout(() => { if (!call) hideCallScreen(); }, 1200);
   }
@@ -1090,8 +1144,156 @@ html,body{overscroll-behavior:none}
     if (c.docCreated) {
       const status = (c.role === 'caller' && !c.answerSet) ? 'canceled' : 'ended';
       updateDoc(c.ref, { status, endedAt: serverTimestamp() }).catch(() => {});
+      if (status === 'canceled') logCallMessage(c, 'canceled');
     }
     finishCall(typeof msg === 'string' ? msg : 'কল শেষ হয়েছে');
+  }
+
+  // ---------- কল লগ: চ্যাটে "মিস কল" / "কল দেওয়া হয়েছিল" মেসেজ (কলার লিখে রাখে, দুইজনেই দেখে) ----------
+  async function logCallMessage(c, status) {
+    if (!c || c.logged || c.role !== 'caller' || !currentUser || !c.peerUid) return;
+    c.logged = true;
+    const kind = c.type === 'video' ? 'ভিডিও' : 'অডিও';
+    const icon = c.type === 'video' ? '📹' : '📞';
+    const preview = status === 'declined' ? icon + ' ' + kind + ' কল (রিজেক্ট)' : icon + ' ' + kind + ' মিস কল';
+    const me = currentUser.uid;
+    const myInfo = { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' };
+    try {
+      const cid = makeConvId(me, c.peerUid);
+      const cRef = doc(db, "conversations", cid);
+      const snap = await getDoc(cRef);
+      if (!snap.exists()) {
+        await setDoc(cRef, {
+          participants: [me, c.peerUid].sort(),
+          participantInfo: { [me]: myInfo, [c.peerUid]: { name: c.peerName || 'ব্যবহারকারী', photoURL: c.peerPhoto || '' } },
+          createdAt: serverTimestamp(),
+          lastMessage: preview,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: me,
+          [`lastRead.${me}`]: serverTimestamp()
+        });
+      } else {
+        await updateDoc(cRef, {
+          lastMessage: preview,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: me,
+          [`lastRead.${me}`]: serverTimestamp(),
+          [`participantInfo.${me}`]: myInfo
+        });
+      }
+      if (convId === cid) convExists = true;
+      await addDoc(collection(cRef, "messages"), {
+        senderUid: me,
+        text: preview,
+        type: 'call',
+        callType: c.type === 'video' ? 'video' : 'audio',
+        callStatus: status,
+        callId: c.ref ? c.ref.id : '',
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error('কল লগ লেখা যায়নি:', e);
+    }
+  }
+  function callLogInfo(m, mine) {
+    const kind = m.callType === 'video' ? 'ভিডিও' : 'অডিও';
+    const st = m.callStatus;
+    if (mine) {
+      const why = st === 'declined' ? 'রিজেক্ট করা হয়েছে' : st === 'busy' ? 'ব্যস্ত ছিলেন' : st === 'canceled' ? 'আপনি কেটে দিয়েছেন' : 'কেউ ধরেননি';
+      return { title: 'আপনি ' + kind + ' কল দিয়েছিলেন', sub: why, missed: false };
+    }
+    if (st === 'declined') return { title: kind + ' কল', sub: 'আপনি রিজেক্ট করেছেন', missed: false };
+    return { title: kind + ' মিস কল', sub: (otherName || 'ব্যবহারকারী') + ' কল দিয়েছিলেন', missed: true };
+  }
+  function buildCallLogRow(m, mine) {
+    const info = callLogInfo(m, mine);
+    const t = timeAgo(m.createdAt);
+    const sub = [info.sub, t].filter(Boolean).join(' · ');
+    const row = document.createElement('div');
+    row.className = 'callLogRow';
+    row.innerHTML = `
+      <div class="callLog${info.missed ? ' missed' : ''}">
+        <div class="clTop">
+          <div class="clIcon">${m.callType === 'video' ? VIDEO_SVG : PHONE_SVG}</div>
+          <div class="clText">
+            <div class="clTitle">${escapeHtml(info.title)}</div>
+            <div class="clSub">${escapeHtml(sub)}</div>
+          </div>
+        </div>
+        <div class="clBtns">
+          <button class="clBtn" data-t="audio">${PHONE_SVG} অডিও কল</button>
+          <button class="clBtn" data-t="video">${VIDEO_SVG} ভিডিও কল</button>
+        </div>
+      </div>`;
+    row.querySelectorAll('.clBtn').forEach(b => {
+      b.disabled = !messagingEnabled;
+      b.addEventListener('click', () => startOutgoingCall(b.dataset.t));
+    });
+    return row;
+  }
+
+  // ---------- লাউডস্পিকার (জোরে শোনা) ও মিউট UI ----------
+  // স্পিকার অন = (১) সম্ভব হলে ফোনের স্পিকার ডিভাইসে আউটপুট (২) ওপাশের আওয়াজ ২.২ গুণ জোরে (Web Audio)
+  let loudNodes = null;
+  let outputChanged = false;
+  function setMicUI(muted) {
+    micBtn.innerHTML = muted ? MIC_OFF_SVG : MIC_ON_SVG;
+    micLabel.textContent = muted ? 'আনমিউট' : 'মিউট';
+  }
+  function setSpeakerUI(on) {
+    speakerBtn.classList.toggle('on', !!on);
+    speakerLabel.textContent = on ? 'স্পিকার চালু' : 'স্পিকার';
+  }
+  function stopLoudBoost() {
+    if (loudNodes) {
+      try { loudNodes.src.disconnect(); loudNodes.gain.disconnect(); loudNodes.comp.disconnect(); } catch (e) {}
+      loudNodes = null;
+    }
+    remoteVideo.muted = false;
+  }
+  function startLoudBoost() {
+    const stream = remoteVideo.srcObject;
+    const ctx = getAudioCtx();
+    if (!stream || !ctx) return false;
+    const track = stream.getAudioTracks()[0];
+    if (!track) return false;
+    if (loudNodes && loudNodes.stream === stream && loudNodes.track === track) return true;
+    stopLoudBoost();
+    try {
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      if (ctx.state !== 'running') return false;      // অডিও সিস্টেম চালু না থাকলে ভিডিও এলিমেন্ট মিউট করা হবে না (যাতে আওয়াজ কখনো বন্ধ না হয়)
+      const src = ctx.createMediaStreamSource(stream);
+      const gain = ctx.createGain(); gain.gain.value = 2.2;
+      const comp = ctx.createDynamicsCompressor();      // বেশি জোরে হলে ফাটা আওয়াজ ঠেকায়
+      src.connect(gain); gain.connect(comp); comp.connect(ctx.destination);
+      remoteVideo.muted = true;
+      loudNodes = { src, gain, comp, stream, track };
+      return true;
+    } catch (e) { stopLoudBoost(); return false; }
+  }
+  async function routeOutput(on) {
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'audiooutput');
+      const target = on
+        ? devs.find(d => /speaker/i.test(d.label) && !/head|ear|bluetooth/i.test(d.label))
+        : devs.find(d => /earpiece|receiver/i.test(d.label));
+      if (!target) return;                              // আলাদা ডিভাইস না পেলে রাউটিং বদলানো হয় না
+      if (remoteVideo.setSinkId) await remoteVideo.setSinkId(target.deviceId);
+      if (audioCtx && audioCtx.setSinkId) await audioCtx.setSinkId(target.deviceId);
+      outputChanged = true;
+    } catch (e) {}
+  }
+  function resetOutput() {
+    if (!outputChanged) return;
+    outputChanged = false;
+    try { if (remoteVideo.setSinkId) remoteVideo.setSinkId('').catch(() => {}); } catch (e) {}
+    try { if (audioCtx && audioCtx.setSinkId) audioCtx.setSinkId('').catch(() => {}); } catch (e) {}
+  }
+  async function applyLoud(c) {
+    if (!c || call !== c) return;
+    if (c.loud) { startLoudBoost(); await routeOutput(true); }
+    else { stopLoudBoost(); await routeOutput(false); }
   }
 
   // ---------- আউটগোয়িং কল ----------
@@ -1100,6 +1302,7 @@ html,body{overscroll-behavior:none}
     if (!currentUser || !otherUid || !messagingEnabled) return;
     if (!callSupported()) return;
     const c = newCall('caller', type);
+    c.peerUid = otherUid; c.peerName = otherName; c.peerPhoto = otherPhoto;
     call = c;
     showCallScreen(otherName, otherPhoto, type, 'কল করা হচ্ছে...');
     try {
@@ -1122,7 +1325,7 @@ html,body{overscroll-behavior:none}
         createdAt: serverTimestamp()
       });
       c.docCreated = true;
-      if (c.ended) { updateDoc(c.ref, { status: 'canceled', endedAt: serverTimestamp() }).catch(() => {}); return; }
+      if (c.ended) { updateDoc(c.ref, { status: 'canceled', endedAt: serverTimestamp() }).catch(() => {}); logCallMessage(c, 'canceled'); return; }
       c.sigReady = true;
       flushQueued(c);
       watchCall(c);
@@ -1132,6 +1335,7 @@ html,body{overscroll-behavior:none}
       c.ringT = setTimeout(() => {
         if (call === c && !c.answerSet) {
           updateDoc(c.ref, { status: 'missed' }).catch(() => {});
+          logCallMessage(c, 'missed');
           finishCall('কেউ ধরেননি');
         }
       }, RING_TIMEOUT_MS);
@@ -1229,6 +1433,14 @@ html,body{overscroll-behavior:none}
     if (!t) return;
     t.enabled = !t.enabled;
     micBtn.classList.toggle('off', !t.enabled);
+    setMicUI(!t.enabled);
+  });
+  speakerBtn.addEventListener('click', () => {
+    const c = call;
+    if (!c) return;
+    c.loud = !c.loud;
+    setSpeakerUI(c.loud);
+    applyLoud(c);
   });
   camBtn.addEventListener('click', () => {
     if (!call || !call.localStream) return;
