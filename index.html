@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>Onuvuti App</title>
 <meta name="description" id="siteMetaDescription" content="">
-<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--composer-height:100px;--poster-height:180px;--post-buttons-justify:space-evenly;--blog-composer-height:300px}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;padding:24px}.loginModalOverlay.open{display:flex}.loginModalBox{position:relative;width:100%;max-width:360px;background:var(--card-color);border-radius:18px;padding:32px 24px 28px;text-align:center}#loginModalCloseBtn{position:absolute;right:12px;top:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.loginModalBox img{width:72px;height:72px;border-radius:18px;margin-bottom:16px}.loginModalBox h1{font-size:20px;margin-bottom:6px}.loginModalBox p{color:#9ca3af;font-size:13px;margin-bottom:24px}#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader img{width:38px;height:38px;border-radius:10px;object-fit:cover}#siteHeader h1{font-size:19px;font-weight:bold}#sidebarToggleBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px}#logoutBtn,#headerLoginBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#headerLoginBtn{color:var(--primary-color)}#noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}#noticeBar span{display:inline-block;padding-left:100%;animation:scrollNotice 18s linear infinite;font-size:13px;color:#facc15}@keyframes scrollNotice{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#menuGrid{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--card-color);border-bottom:1px solid #262c36}#menuGrid a{background:var(--primary-color);color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}main{padding:16px;max-width:var(--max-width);margin:0 auto}#composer{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:16px}#composerTabs{display:flex;gap:6px;margin-bottom:10px}#composerTabs button{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerTabs button.active{background:var(--primary-color);color:#fff}#composerText{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px;border-radius:10px;font-size:14px;min-height:var(--composer-height);resize:vertical;font-family:inherit;transition:min-height 0.2s ease}#composerText.blogSizeActive{min-height:var(--blog-composer-height)}#cancelEditBtn{display:none;margin-top:8px;width:100%;background:#21262d;color:#f87171;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#posterColors{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}.posterSwatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent}.posterSwatch.selected{border-color:#fff}#posterPreview{display:none;margin-top:10px;border-radius:12px;padding:50px 16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;min-height:var(--poster-height);align-items:center;justify-content:center}#submitPostBtn{margin-top:10px;width:100%;background:var(--primary-color);color:#fff;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#submitPostBtn:disabled{opacity:0.6}#blogSyntaxHint{display:none;font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.6}#searchBar{width:100%;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:10px 14px;border-radius:20px;font-size:14px;margin-bottom:16px}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:none;position:absolute;right:0;top:20px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:110px;z-index:10;overflow:hidden}.commentMenuDropdown.open{display:block}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:8px 10px;font-size:11px;cursor:pointer}.commentMenuDropdown button:hover{background:#30363d}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}#loadMoreBtn{display:block;width:100%;background:var(--card-color);color:#fff;border:1px solid #262c36;padding:10px;border-radius:12px;font-size:13px;margin-top:10px;cursor:pointer}#loadMoreBtn:disabled{opacity:0.5}#footerSection{padding:12px 16px;margin-top:8px;border-top:1px solid #262c36;text-align:center}#footerSiteName{font-size:16px;font-weight:bold;margin-bottom:12px;opacity:0.9}#footerGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#footerGrid a{background:#262c36;color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100}#sidebarOverlay.open{display:block}#sidebarDrawer{position:fixed;top:0;left:-260px;width:260px;height:100%;background:var(--card-color);z-index:101;transition:left 0.25s ease;padding:18px 14px;overflow-y:auto}#sidebarDrawer.open{left:0}#sidebarDrawer .drawerHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}#sidebarCloseBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}#sidebarGrid{display:flex;flex-direction:column;gap:8px}#sidebarGrid a{display:block;background:#0d1117;color:#fff;text-decoration:none;font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid #262c36}.sidebarGadgetBox{margin-bottom:8px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}html,body{overscroll-behavior:none;overscroll-behavior-y:none;overscroll-behavior-x:none;height:100%}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#aboutUsView{display:none}.aboutUsHeader{display:flex;align-items:center;gap:10px;margin-bottom:16px}.aboutUsBackBtn{background:#21262d;color:#fff;border:none;padding:8px 16px;border-radius:12px;font-size:14px;cursor:pointer;flex-shrink:0}.aboutUsTitle{font-size:17px;font-weight:bold}#aboutUsContent{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}#aboutUsContent:empty::before{content:"এই মুহূর্তে কোনো তথ্য যুক্ত করা হয়নি।";color:#6b7280}body.aboutUsOpen #composer,body.aboutUsOpen #topAdBanner,body.aboutUsOpen #searchBar,body.aboutUsOpen #postsList,body.aboutUsOpen #loadMoreBtn,body.aboutUsOpen #footerSection{display:none}body.aboutUsOpen #aboutUsView{display:block}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--composer-height:100px;--poster-height:180px;--post-buttons-justify:space-evenly;--blog-composer-height:300px}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;padding:24px}.loginModalOverlay.open{display:flex}.loginModalBox{position:relative;width:100%;max-width:360px;background:var(--card-color);border-radius:18px;padding:32px 24px 28px;text-align:center}#loginModalCloseBtn{position:absolute;right:12px;top:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.loginModalBox img{width:72px;height:72px;border-radius:18px;margin-bottom:16px}.loginModalBox h1{font-size:20px;margin-bottom:6px}.loginModalBox p{color:#9ca3af;font-size:13px;margin-bottom:24px}#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader img{width:38px;height:38px;border-radius:10px;object-fit:cover}#siteHeader h1{font-size:19px;font-weight:bold}#sidebarToggleBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px}#logoutBtn,#headerLoginBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#headerLoginBtn{color:var(--primary-color)}#noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}#noticeBar span{display:inline-block;padding-left:100%;animation:scrollNotice 18s linear infinite;font-size:13px;color:#facc15}@keyframes scrollNotice{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#menuGrid{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--card-color);border-bottom:1px solid #262c36}#menuGrid a{background:var(--primary-color);color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}main{padding:16px;max-width:var(--max-width);margin:0 auto}#composer{background:transparent;border:none;border-radius:0;padding:0;margin:0}#composerEntry{margin-bottom:16px}#composerAboutRow{display:flex;justify-content:flex-end;margin-bottom:8px}#aboutUsTabBtn{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerOpenBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#9ca3af;padding:13px 18px;border-radius:26px;font-size:14px;cursor:pointer;font-family:inherit}#composerOpenBtn:active{background:#21262d}#composerModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;overscroll-behavior:contain}#composerModalOverlay.open{display:flex}#composerModalBox{width:100%;max-width:var(--max-width);background:var(--card-color);border:1px solid #262c36;border-radius:16px;padding:14px;margin-top:8px}#composerModalHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}#composerModalTitle{font-size:15px;font-weight:bold}#composerModalCloseBtn{background:#21262d;border:none;color:#9ca3af;font-size:15px;cursor:pointer;width:30px;height:30px;border-radius:50%}body.composerOpen{overflow:hidden}#postToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#composerTabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}#composerTabs button{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerTabs button.active{background:var(--primary-color);color:#fff}#composerText{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px;border-radius:10px;font-size:14px;min-height:var(--composer-height);resize:vertical;font-family:inherit;transition:min-height 0.2s ease}#composerText.blogSizeActive{min-height:var(--blog-composer-height)}#cancelEditBtn{display:none;margin-top:8px;width:100%;background:#21262d;color:#f87171;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#posterColors{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}.posterSwatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent}.posterSwatch.selected{border-color:#fff}#posterPreview{display:none;margin-top:10px;border-radius:12px;padding:50px 16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;min-height:var(--poster-height);align-items:center;justify-content:center}#submitPostBtn{margin-top:10px;width:100%;background:var(--primary-color);color:#fff;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#submitPostBtn:disabled{opacity:0.6}#blogSyntaxHint{display:none;font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.6}#searchBar{width:100%;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:10px 14px;border-radius:20px;font-size:14px;margin-bottom:16px}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:none;position:absolute;right:0;top:20px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:110px;z-index:10;overflow:hidden}.commentMenuDropdown.open{display:block}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:8px 10px;font-size:11px;cursor:pointer}.commentMenuDropdown button:hover{background:#30363d}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}#loadMoreBtn{display:block;width:100%;background:var(--card-color);color:#fff;border:1px solid #262c36;padding:10px;border-radius:12px;font-size:13px;margin-top:10px;cursor:pointer}#loadMoreBtn:disabled{opacity:0.5}#footerSection{padding:12px 16px;margin-top:8px;border-top:1px solid #262c36;text-align:center}#footerSiteName{font-size:16px;font-weight:bold;margin-bottom:12px;opacity:0.9}#footerGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#footerGrid a{background:#262c36;color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100}#sidebarOverlay.open{display:block}#sidebarDrawer{position:fixed;top:0;left:-260px;width:260px;height:100%;background:var(--card-color);z-index:101;transition:left 0.25s ease;padding:18px 14px;overflow-y:auto}#sidebarDrawer.open{left:0}#sidebarDrawer .drawerHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}#sidebarCloseBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}#sidebarGrid{display:flex;flex-direction:column;gap:8px}#sidebarGrid a{display:block;background:#0d1117;color:#fff;text-decoration:none;font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid #262c36}.sidebarGadgetBox{margin-bottom:8px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}html,body{overscroll-behavior:none;overscroll-behavior-y:none;overscroll-behavior-x:none;height:100%}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#aboutUsView{display:none}.aboutUsHeader{display:flex;align-items:center;gap:10px;margin-bottom:16px}.aboutUsBackBtn{background:#21262d;color:#fff;border:none;padding:8px 16px;border-radius:12px;font-size:14px;cursor:pointer;flex-shrink:0}.aboutUsTitle{font-size:17px;font-weight:bold}#aboutUsContent{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}#aboutUsContent:empty::before{content:"এই মুহূর্তে কোনো তথ্য যুক্ত করা হয়নি।";color:#6b7280}body.aboutUsOpen #composerEntry,body.aboutUsOpen #topAdBanner,body.aboutUsOpen #searchBar,body.aboutUsOpen #postsList,body.aboutUsOpen #loadMoreBtn,body.aboutUsOpen #footerSection{display:none}body.aboutUsOpen #aboutUsView{display:block}</style>
 </head>
 <body>
 
@@ -59,12 +59,24 @@
 
     <main>
       
+      <div id="composerEntry">
+        <div id="composerAboutRow">
+          <button type="button" id="aboutUsTabBtn">ℹ️ আমাদের সম্পর্কে</button>
+        </div>
+        <button type="button" id="composerOpenBtn">✍️ আপনার অনুভূতি ব্যক্ত করুন / পোস্ট করুন</button>
+      </div>
+
+      <div id="composerModalOverlay">
+       <div id="composerModalBox">
+        <div id="composerModalHeader">
+          <span id="composerModalTitle">নতুন পোস্ট</span>
+          <button type="button" id="composerModalCloseBtn">✕</button>
+        </div>
       <div id="composer">
         <div id="composerTabs">
           <button class="active" data-mode="text">📝 টেক্সট</button>
           <button data-mode="poster">🎨 পোস্টার</button>
           <button data-mode="blog">📰 ব্লগ</button>
-          <button type="button" id="aboutUsTabBtn">ℹ️ আমাদের সম্পর্কে</button>
         </div>
         <div id="blogSyntaxHint">
           বড় লেখার জন্য (এভাবে লিখুন) · মাঝারির জন্য {এভাবে লিখুন} · স্বাভাবিকের জন্য [এভাবে লিখুন]<br>
@@ -78,6 +90,8 @@
         <button id="submitPostBtn">পোস্ট করুন</button>
         <button id="cancelEditBtn">❌ বাতিল</button>
         <div class="postStatus" id="composerStatus"></div>
+      </div>
+       </div>
       </div>
 
       
@@ -118,6 +132,7 @@
   </div>
 
   <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+  <div id="postToast"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -184,14 +199,14 @@
     // পোস্টের কমেন্ট বক্সে ঢুকলে উপরের কম্পোজার, বিজ্ঞাপন ও সার্চ বার লুকিয়ে
     // দেয়, যেন মেনু বারের পরেই সরাসরি পোস্ট ও কমেন্ট দেখা যায়। হোম পেজে
     // (কমেন্ট বক্সের বাইরে) এগুলো আগের মতোই দেখাবে।
-    if (composer) { composerPrevDisplay = composer.style.display; composer.style.display = 'none'; }
+    if (composerEntry) { composerPrevDisplay = composerEntry.style.display; composerEntry.style.display = 'none'; }
     if (topAdBanner) { topAdBannerPrevDisplay = topAdBanner.style.display; topAdBanner.style.display = 'none'; }
     if (searchBar) { searchBarPrevDisplay = searchBar.style.display; searchBar.style.display = 'none'; }
   }
   function exitCommentFocus() {
     postsList.querySelectorAll('.postCard').forEach(c => { c.style.display = ''; });
     loadMoreBtn.style.display = loadMoreBtnPrevDisplay;
-    if (composer) composer.style.display = composerPrevDisplay;
+    if (composerEntry) composerEntry.style.display = composerPrevDisplay;
     if (topAdBanner) topAdBanner.style.display = topAdBannerPrevDisplay;
     if (searchBar) searchBar.style.display = searchBarPrevDisplay;
     if (focusedCard) {
@@ -222,6 +237,14 @@
   const sidebarOverlay = document.getElementById('sidebarOverlay');
 
   const composer = document.getElementById('composer');
+  const composerEntry = document.getElementById('composerEntry');
+  const composerOpenBtn = document.getElementById('composerOpenBtn');
+  const composerModalOverlay = document.getElementById('composerModalOverlay');
+  const composerModalCloseBtn = document.getElementById('composerModalCloseBtn');
+  const composerModalTitle = document.getElementById('composerModalTitle');
+  const postToast = document.getElementById('postToast');
+  let pendingOpenComposer = false;
+  let postToastTimer = null;
   const composerText = document.getElementById('composerText');
   const blogSyntaxHint = document.getElementById('blogSyntaxHint');
   const posterColorsEl = document.getElementById('posterColors');
@@ -248,6 +271,27 @@
   }
   function closeLoginModal() {
     loginModalOverlay.classList.remove('open');
+    pendingOpenComposer = false;
+  }
+
+  /* পোস্ট বক্স এখন একটা পপ-আপ (মোডাল) — হোমপেজে শুধু লম্বা বাটন থাকে */
+  function openComposerModal() {
+    if (!composerModalOverlay.classList.contains('open')) {
+      composerModalOverlay.classList.add('open');
+      document.body.classList.add('composerOpen');
+      composerModalOverlay.scrollTop = 0;
+      rearmGuard();
+    }
+  }
+  function closeComposerModal() {
+    composerModalOverlay.classList.remove('open');
+    document.body.classList.remove('composerOpen');
+  }
+  function showPostToast(msg) {
+    postToast.textContent = msg;
+    postToast.style.display = 'block';
+    clearTimeout(postToastTimer);
+    postToastTimer = setTimeout(() => { postToast.style.display = 'none'; }, 2200);
   }
   function requireLogin() {
     if (currentUser) return true;
@@ -306,14 +350,14 @@
      (স্ক্রিনের বাটন বা ফোনের ব্যাক বাটন) চাপলে সরাসরি অ্যাপ থেকে বের না হয়ে
      আগের ফিডে ফিরে আসবে */
   function openAboutUs() {
-    aboutUsComposerPrevDisplay = composer.style.display;
+    aboutUsComposerPrevDisplay = composerEntry.style.display;
     aboutUsTopAdBannerPrevDisplay = topAdBanner ? topAdBanner.style.display : '';
     aboutUsSearchBarPrevDisplay = searchBar.style.display;
     aboutUsPostsListPrevDisplay = postsList.style.display;
     aboutUsLoadMoreBtnPrevDisplay = loadMoreBtn.style.display;
     aboutUsFooterSectionPrevDisplay = footerSection ? footerSection.style.display : '';
 
-    composer.style.display = 'none';
+    composerEntry.style.display = 'none';
     if (topAdBanner) topAdBanner.style.display = 'none';
     searchBar.style.display = 'none';
     postsList.style.display = 'none';
@@ -325,7 +369,7 @@
     rearmGuard();
   }
   function closeAboutUs() {
-    composer.style.display = aboutUsComposerPrevDisplay;
+    composerEntry.style.display = aboutUsComposerPrevDisplay;
     if (topAdBanner) topAdBanner.style.display = aboutUsTopAdBannerPrevDisplay;
     searchBar.style.display = aboutUsSearchBarPrevDisplay;
     postsList.style.display = aboutUsPostsListPrevDisplay;
@@ -506,7 +550,8 @@
     submitPostBtn.textContent = 'আপডেট করুন';
     cancelEditBtn.style.display = 'block';
     composerStatus.textContent = '';
-    composer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    composerModalTitle.textContent = 'পোস্ট এডিট করুন';
+    openComposerModal();
     composerText.focus();
   }
 
@@ -524,9 +569,24 @@
     submitPostBtn.textContent = 'পোস্ট করুন';
     cancelEditBtn.style.display = 'none';
     composerStatus.textContent = '';
+    composerModalTitle.textContent = 'নতুন পোস্ট';
   }
 
-  cancelEditBtn.addEventListener('click', exitPostEditMode);
+  cancelEditBtn.addEventListener('click', () => { exitPostEditMode(); closeComposerModal(); });
+
+  composerOpenBtn.addEventListener('click', () => {
+    if (!currentUser) {
+      openLoginModal();
+      pendingOpenComposer = true;
+      return;
+    }
+    openComposerModal();
+    composerText.focus();
+  });
+  composerModalCloseBtn.addEventListener('click', () => {
+    if (editingPostId) exitPostEditMode();
+    closeComposerModal();
+  });
 
   /* নতুন পোস্ট সফলভাবে হওয়ার পর কম্পোজারকে সম্পূর্ণভাবে খালি/রিসেট করার জন্য —
      যাতে পোস্টারের প্রিভিউ, রং, বা আগের লেখা কম্পোজারে থেকে না যায় এবং মনে
@@ -582,8 +642,10 @@
         }
 
         exitPostEditMode();
+        closeComposerModal();
         composerStatus.textContent = '✅ পোস্ট আপডেট হয়েছে!';
         setTimeout(() => { composerStatus.textContent = ''; }, 2000);
+        showPostToast('✅ পোস্ট আপডেট হয়েছে!');
         renderPosts();
       } catch (e) {
         console.error(e);
@@ -612,8 +674,11 @@
       await addDoc(collection(db, "posts"), postData);
 
       resetComposerAfterPost();
+      closeComposerModal();
       composerStatus.textContent = '✅ পোস্ট হয়েছে!';
       setTimeout(() => { composerStatus.textContent = ''; }, 2000);
+      showPostToast('✅ পোস্ট হয়েছে!');
+      window.scrollTo({ top: 0 });
       resetFeed();
     } catch (e) {
       console.error(e);
@@ -1391,7 +1456,11 @@
   onAuthStateChanged(auth, (user) => {
     currentUser = user;
     updateAuthUI(user);
-    if (user) closeLoginModal();
+    const shouldOpenComposer = pendingOpenComposer;
+    if (user) {
+      closeLoginModal();
+      if (shouldOpenComposer) { openComposerModal(); composerText.focus(); }
+    }
 
     if (!appInitialized) {
       appInitialized = true;
@@ -1436,6 +1505,12 @@
     }
     if (loginModalOverlay.classList.contains('open')) {
       closeLoginModal();
+      rearmGuard();
+      return;
+    }
+    if (composerModalOverlay.classList.contains('open')) {
+      if (editingPostId) exitPostEditMode();
+      closeComposerModal();
       rearmGuard();
       return;
     }
@@ -1514,6 +1589,8 @@
   }, { passive: true });
   document.addEventListener('touchmove', function (e) {
     if (!tracking || e.touches.length !== 1) return;
+    var ov = e.target && e.target.closest ? e.target.closest('#composerModalOverlay') : null;
+    if (ov && ov.scrollHeight > ov.clientHeight) return;
     var y = e.touches[0].clientY;
     var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     var pullingDown = y > startY;
