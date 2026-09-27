@@ -1,0 +1,774 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == "hmjunaid9999@gmail.com";
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ---------- ভিডিও-কয়েন সেটিংস পড়ার হেল্পার ----------
+    function videoSettings() {
+      return get(/databases/$(database)/documents/settings/video).data;
+    }
+
+    // ---------- একটা রোলিং উইন্ডো (ঘণ্টা/দিন)-এর মধ্যে মোট আয় সীমার মধ্যে আছে কিনা যাচাই করার হেল্পার ----------
+    // oldStart/oldEarned: আগের উইন্ডোর শুরু-সময় ও এখন পর্যন্ত আয়, null/0 হতে পারে (প্রথমবার হলে)
+    // newStart/newEarned: ইউজার যে নতুন মান পাঠাচ্ছে
+    // rewardAmt: এই মুহূর্তে কত কয়েন যোগ হচ্ছে, capAmt: এই উইন্ডোতে সর্বোচ্চ কত হতে পারে
+    // windowSeconds: উইন্ডোর দৈর্ঘ্য (ঘণ্টার জন্য 3600, দিনের জন্য 86400)
+    function windowOk(oldStart, newStart, oldEarned, newEarned, rewardAmt, capAmt, windowSeconds) {
+      return (
+        // ----- কেস ১: আগের উইন্ডো নেই বা মেয়াদ শেষ — নতুন উইন্ডো শুরু হচ্ছে -----
+        (
+          (oldStart == null || request.time > oldStart + duration.value(windowSeconds, 's'))
+          && newStart == request.time
+          && newEarned == rewardAmt
+          && newEarned <= capAmt
+        )
+        ||
+        // ----- কেস ২: এখনো একই উইন্ডোর মধ্যে আছে — আয় যোগ হচ্ছে, ক্যাপ ছাড়ানো যাবে না -----
+        (
+          oldStart != null
+          && request.time <= oldStart + duration.value(windowSeconds, 's')
+          && newStart == oldStart
+          && newEarned == oldEarned + rewardAmt
+          && newEarned <= capAmt
+        )
+      );
+    }
+
+    // ---------- ভিডিও দেখার কয়েন-রিওয়ার্ড আপডেট বৈধ কিনা তার সম্পূর্ণ যাচাই ----------
+    function videoRewardValid(userId) {
+      let vs = videoSettings();
+      let oldD = resource.data;
+      let newD = request.resource.data;
+      return isOwner(userId)
+        && newD.diff(oldD).affectedKeys().hasOnly([
+             'videoBalance', 'lastVideoRewardAt',
+             'hourEarnedAmount', 'hourWindowStart',
+             'dayEarnedAmount', 'dayWindowStart'
+           ])
+        && newD.videoBalance == oldD.videoBalance + vs.rewardCoins
+        && newD.lastVideoRewardAt == request.time
+        && (!('lastVideoRewardAt' in oldD)
+            || request.time > oldD.lastVideoRewardAt + duration.value(vs.rewardIntervalSeconds - 1, 's'))
+        && windowOk(
+             'hourWindowStart' in oldD ? oldD.hourWindowStart : null,
+             newD.hourWindowStart,
+             'hourEarnedAmount' in oldD ? oldD.hourEarnedAmount : 0,
+             newD.hourEarnedAmount,
+             vs.rewardCoins, vs.maxCoinsPerHour, 3600
+           )
+        && windowOk(
+             'dayWindowStart' in oldD ? oldD.dayWindowStart : null,
+             newD.dayWindowStart,
+             'dayEarnedAmount' in oldD ? oldD.dayEarnedAmount : 0,
+             newD.dayEarnedAmount,
+             vs.rewardCoins, vs.maxCoinsPerDay, 86400
+           );
+    }
+
+    // ---------- কুইজ-কয়েন সেটিংস পড়ার হেল্পার (settings/quiz ডকুমেন্ট থেকে) ----------
+    function quizSettings() {
+      return get(/databases/$(database)/documents/settings/quiz).data;
+    }
+
+    // ---------- কুইজে সঠিক/ভুল উত্তরের কয়েন-রিওয়ার্ড আপডেট বৈধ কিনা তার সম্পূর্ণ যাচাই ----------
+    // (videoRewardValid() এর মতোই গঠন — কিন্তু quiz.html প্রতিটা "কুইজ" আসলে একটামাত্র
+    // প্রশ্ন, তাই রিওয়ার্ড coinPerCorrect অথবা coinPerWrong-এর ঠিক সমান হতে হবে —
+    // আগের ভার্সনে ভুলবশত questionsPerQuiz দিয়ে গুণ করা হচ্ছিল, যে ফিল্ডটা quiz-admin.html
+    // এ আদৌ সেট করার কোনো উপায় নেই — ফলে ওই রুলটা বাস্তবে সবসময় fail করে
+    // কয়েন জমা হওয়াই আটকে দিচ্ছিল। এছাড়া নতুন করে ন্যূনতম বিরতি (lastQuizRewardAt) ও
+    // দিনের সর্বমোট আয় সত্যিকারভাবে ক্রমান্বয়ে (windowOk দিয়ে) হিসাব করা হচ্ছে, যাতে
+    // কনসোল থেকে বারবার একই কল চালিয়ে সীমাহীন কয়েন বানানো না যায়।)
+    function quizRewardValid(userId) {
+      let qs = quizSettings();
+      let oldD = resource.data;
+      let newD = request.resource.data;
+      let coinPerCorrect = qs.coinPerCorrect;
+      let coinPerWrong = ('coinPerWrong' in qs) ? qs.coinPerWrong : 0;
+      let rewardAmt = newD.quizBalance - oldD.quizBalance;
+      return isOwner(userId)
+        && newD.diff(oldD).affectedKeys().hasOnly([
+             'quizBalance', 'lastQuizRewardAt',
+             'quizDayEarnedAmount', 'quizDayWindowStart'
+           ])
+        && rewardAmt > 0
+        && (rewardAmt == coinPerCorrect || rewardAmt == coinPerWrong)
+        && newD.lastQuizRewardAt == request.time
+        // ---- ন্যূনতম ১ সেকেন্ড বিরতি বাধ্যতামূলক — একই কল সেকেন্ডে বহুবার চালানো ঠেকাতে ----
+        && (!('lastQuizRewardAt' in oldD)
+            || request.time > oldD.lastQuizRewardAt + duration.value(1, 's'))
+        // ---- দিনের সর্বমোট আয় সত্যিই ক্রমান্বয়ে গণনা করে maxCoinsPerDay-এর মধ্যে রাখা ----
+        && windowOk(
+             'quizDayWindowStart' in oldD ? oldD.quizDayWindowStart : null,
+             newD.quizDayWindowStart,
+             'quizDayEarnedAmount' in oldD ? oldD.quizDayEarnedAmount : 0,
+             newD.quizDayEarnedAmount,
+             rewardAmt, qs.maxCoinsPerDay, 86400
+           );
+    }
+
+    // ---------- লাইভ স্ট্রিমিং (live.html): নির্দিষ্ট streamId এর হোস্ট কিনা যাচাই করার
+    // হেল্পার — WebRTC সিগন্যালিং-এ হোস্টকে ভিউয়ারের ডকে 'offer' লেখার/ICE candidate
+    // পড়ার/লেখার অনুমতি দিতে দরকার ----------
+    function isLiveHost(streamId) {
+      return signedIn()
+        && get(/databases/$(database)/documents/liveStreams/$(streamId)).data.hostUid == request.auth.uid;
+    }
+
+    // ---------- লাইভ স্ট্রিমিং গিফট: giftId ও coins এর জোড়া অ্যাডমিনের ঠিক করা তালিকার
+    // (❤️১০ / 🌹৫০ / 💎২০০ / 👑৫০০) সাথে হুবহু মিলছে কিনা যাচাই ----------
+    function validGift(giftId, coins) {
+      return (giftId == 'heart'   && coins == 10)
+        || (giftId == 'rose'    && coins == 50)
+        || (giftId == 'diamond' && coins == 200)
+        || (giftId == 'crown'   && coins == 500);
+    }
+
+    // ---------- লাইভ গিফটিং-এর কয়েন লেনদেনে (পাঠানো/পাওয়া) পরিমাণটা বৈধ গিফট-মূল্যের
+    // (১০/৫০/২০০/৫০০) মধ্যে একটা কিনা যাচাই ----------
+    function validGiftCost(n) {
+      return n == 10 || n == 50 || n == 200 || n == 500;
+    }
+
+    // ---------- Existing site settings ----------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- Existing posts ----------
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update: if signedIn()
+        && (isAdmin() || resource.data.authorUid == request.auth.uid);
+      allow delete: if signedIn()
+        && (isAdmin() || resource.data.authorUid == request.auth.uid);
+
+      // ---------- Comments নেস্টেড হিসেবে posts এর ভেতরে (আসল কোড এভাবেই লেখে) ----------
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.uid == request.auth.uid;
+        allow update: if signedIn()
+          && (isAdmin() || resource.data.uid == request.auth.uid);
+        allow delete: if signedIn()
+          && (isAdmin() || resource.data.uid == request.auth.uid);
+      }
+    }
+
+    // ---------- Old top-level comments (unused by current app code, kept harmless) ----------
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update: if signedIn()
+        && (isAdmin() || resource.data.uid == request.auth.uid);
+      allow delete: if signedIn()
+        && (isAdmin() || resource.data.uid == request.auth.uid);
+    }
+
+    // ---------- collectionGroup('comments') কোয়েরির জন্য wildcard read rule ----------
+    // এডমিন প্যানেল সব পোস্টের কমেন্ট/রিপ্লাই একসাথে (collectionGroup) কোয়েরি করে।
+    // উপরের নেস্টেড match (/posts/{postId}/comments/{commentId}) নির্দিষ্ট প্যারেন্ট পাথের জন্য
+    // ঠিকই আছে, কিন্তু collectionGroup কোয়েরি নির্ভরযোগ্যভাবে কাজ করার জন্য {path=**} wildcard
+    // প্যাটার্নটাও স্পষ্টভাবে থাকা দরকার (Firebase-এর অফিসিয়াল সুপারিশ অনুযায়ী)।
+    match /{path=**}/comments/{commentId} {
+      allow read: if true;
+    }
+
+    // ---------- Users / Point balance ----------
+    match /users/{userId} {
+      allow read: if signedIn() && (request.auth.uid == userId || isAdmin());
+
+      // New users can create their own profile.
+      // (আগে points==0 শর্ত ছিল, যেটা video.html-এর লগইন কোড points ফিল্ড না পাঠানোয়
+      //  নতুন ইউজারদের প্রোফাইল তৈরি ব্লক করে দিচ্ছিল — তাই শর্তটা সরানো হলো)
+      // অ্যাডমিন প্যানেল থেকে অ্যাডমিন অন্য কারো UID দিয়ে ম্যানুয়ালি একাউন্ট তৈরি করতে
+      // পারবে, তাই isAdmin() ও যোগ করা হলো (আগে শুধু isOwner ছিল, তাই এটা ব্লক হচ্ছিল)।
+      allow create: if isOwner(userId) || isAdmin();
+
+      // Admin can change anything.
+      allow update: if isAdmin();
+
+      // User can update only non-financial profile fields.
+      // Point/balance fields are protected from client-side changes.
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly([
+            'displayName',
+            'photoURL',
+            'name',
+            'updatedAt'
+          ]);
+
+      // ---------- নিচের ২টা রুল: ইউজার নিজে তার videoBalance বদলাতে পারবে,
+      // কিন্তু শুধু settings/video-তে অ্যাডমিনের সেট করা EXACT সূত্র মেনে —
+      // কনসোল থেকে ইচ্ছামতো সংখ্যা বসিয়ে দেওয়া ঠেকাতে ----------
+
+      // ১) ভিডিও দেখার রিওয়ার্ড (videoBalance বাড়বে) — অ্যাডমিনের ঠিক করা rewardIntervalSeconds
+      //    পরপর ঠিক rewardCoins পরিমাণে, এবং প্রতি ঘণ্টায় maxCoinsPerHour ও প্রতিদিন maxCoinsPerDay-এর
+      //    বেশি না — এই পুরো হিসাবটা videoRewardValid() ফাংশনে যাচাই হয় (উপরে দেখুন)।
+      //    বি.দ্র.: এটা শুধু "সর্বোচ্চ হার/সর্বোচ্চ পরিমাণ" সীমিত করে — ইউজার আসলেই ভিডিও দেখছে
+      //    কিনা তা পুরোপুরি যাচাই করতে হলে Cloud Functions (সার্ভার-সাইড ভেরিফিকেশন) লাগবে,
+      //    যেটা ফ্রি প্ল্যানে নেই।
+      allow update: if videoRewardValid(userId);
+
+      // ২) ভিডিও যোগ করার খরচ (videoBalance কমবে) — ঠিক settings-এ নির্ধারিত পরিমাণেই,
+      //    এবং ফলাফল কখনো ঋণাত্মক হতে পারবে না
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['videoBalance'])
+        && request.resource.data.videoBalance ==
+             resource.data.videoBalance - get(/databases/$(database)/documents/settings/video).data.videoCost
+        && request.resource.data.videoBalance >= 0;
+
+      // ---------- কুইজ কয়েন: নিচের ৩টা রুল ভিডিওর videoBalance রুলগুলোর মতোই কাজ করে,
+      // কিন্তু quizBalance ফিল্ডের জন্য (quiz.html/quiz-admin.html নতুন ফিচারের জন্য) ----------
+
+      // ১) কুইজ শুরুর এন্ট্রি ফি কাটা (quizBalance কমবে) — ঠিক settings/quiz এ
+      //    এডমিনের নির্ধারিত entryFee অনুযায়ী, এবং ফলাফল কখনো ঋণাত্মক হতে পারবে না
+      allow update: if isOwner(userId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['quizBalance'])
+        && request.resource.data.quizBalance ==
+             resource.data.quizBalance - quizSettings().entryFee
+        && request.resource.data.quizBalance >= 0;
+
+      // ২) কুইজ শেষে সঠিক/ভুল উত্তরের কয়েন যোগ (quizBalance বাড়বে) — ঠিক coinPerCorrect বা
+      //    coinPerWrong পরিমাণে, ন্যূনতম ১ সেকেন্ড বিরতি সাপেক্ষে, এবং settings/quiz এর
+      //    maxCoinsPerDay ছাড়িয়ে যাওয়া যাবে না (দিনের মোট আয় সত্যিকারভাবে ক্রমান্বয়ে গণনা হয়)।
+      //    বি.দ্র.: এটাও পুরোপুরি প্রতারণা-প্রতিরোধী নয় (আসলেই সঠিক উত্তর দিয়েছে কিনা তা
+      //    Security Rules দিয়ে যাচাই করা যায় না) — সেজন্য Cloud Functions লাগবে।
+      allow update: if quizRewardValid(userId);
+
+      // ---------- বি.দ্র.: "বিজ্ঞাপন দেখে কয়েন" নামে আলাদা কোনো রুল ইচ্ছাকৃতভাবে রাখা হয়নি —
+      // quiz.html-এ এমন কোনো ফিচারই (watch-ad-for-coins বাটন) নেই, শুধু স্বয়ংক্রিয়
+      // ইমপ্রেশন-ভিত্তিক ব্যানার দেখানো হয় যার সাথে কয়েনের কোনো সম্পর্ক নেই। ভবিষ্যতে আসল
+      // ফিচার বানালে তখন সঠিক ভেরিফিকেশনসহ (lastAdRewardAt বিরতি + দৈনিক ক্যাপ) নতুন রুল
+      // যোগ করে নিতে হবে। ----------
+
+      allow delete: if isAdmin();
+
+      // ---------- লাইভ স্ট্রিমিং কয়েন/গিফটিং (live.html) — এটা কোনো আসল পেমেন্ট গেটওয়ে
+      // ছাড়া ডেমো/টেস্ট কয়েন সিস্টেম, তাই videoBalance/quizBalance এর মতোই রুলগুলো শুধু
+      // "একবারে ঠিক কত বদলাতে পারে" সীমিত করে — সম্পূর্ণ প্রতারণা-প্রতিরোধী নয় (তার জন্য
+      // Cloud Functions লাগবে, যা ফ্রি প্ল্যানে নেই) ----------
+
+      // ১) নতুন ইউজারের জন্য একবারই শুরুর ১০০ কয়েন (আগে coins ফিল্ড না থাকলেই শুধু)
+      allow update: if isOwner(userId)
+        && !('coins' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins'])
+        && request.resource.data.coins == 100;
+
+      // ২) টেস্ট/ডেমো টপ-আপ বাটন — নিজের কয়েন ঠিক ৫০ করে বাড়ানো যাবে
+      allow update: if isOwner(userId)
+        && ('coins' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins'])
+        && request.resource.data.coins == resource.data.coins + 50;
+
+      // ৩) গিফট পাঠানো — নিজের কয়েন ঠিক একটা বৈধ গিফট-মূল্য (১০/৫০/২০০/৫০০) সমান কমবে,
+      //    ফলাফল কখনো ঋণাত্মক হতে পারবে না
+      allow update: if isOwner(userId)
+        && ('coins' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins'])
+        && validGiftCost(resource.data.coins - request.resource.data.coins)
+        && request.resource.data.coins >= 0;
+
+      // ৪) গিফট গ্রহণ করা (হোস্টের কয়েন বাড়া) — অন্য যেকোনো সাইন-ইন করা ইউজার (গিফট-প্রেরক)
+      //    হোস্টের কয়েন ঠিক একটা বৈধ গিফট-মূল্যের সমান বাড়াতে পারবে
+      allow update: if signedIn()
+        && ('coins' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['coins'])
+        && validGiftCost(request.resource.data.coins - resource.data.coins);
+
+      // ---------- Point history (পুরনো/অব্যবহৃত হতে পারে, ক্ষতিকর নয় বলে রাখা হলো) ----------
+      match /pointTransactions/{transactionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isAdmin();
+        allow update, delete: if isAdmin();
+      }
+
+      // ---------- ব্যালেন্স/একটিভিটি হিস্ট্রি (video-admin.html এই কালেকশনটাই ব্যবহার করে) ----------
+      match /history/{historyId} {
+        allow read: if isOwner(userId) || isAdmin();
+        // অ্যাডমিন প্যানেল থেকে ব্যালেন্স যোগের হিস্ট্রি (isAdmin) এবং মূল ভিডিও অ্যাপ থেকে
+        // ইউজারের নিজের ভিডিও-খরচ/ভিডিও-দেখার-ইনকাম হিস্ট্রি (isOwner) — দুই জায়গা থেকেই
+        // লেখা যাবে যেন অ্যাপ নিজে থেকেও videoSpend/videoWatchReward লিখতে পারে।
+        allow create: if isAdmin() || isOwner(userId);
+        allow update, delete: if isAdmin();
+      }
+
+      // ---------- দৈনিক ও মাসিক আয়-ব্যয়ের যোগফল (history-এর সারাংশ — "হিস্ট্রি" ফিচারের
+      // "গত ৩১ দিন" ও "গত ১২ মাস" ভিউ এই দুটো কালেকশন থেকেই পড়ে)।
+      // history-এর মতোই: ইউজার নিজে (ভিডিও দেখে আয়/ভিডিও যোগ করে খরচ) এবং অ্যাডমিন
+      // (ব্যালেন্স এডিট করলে) — দুই জায়গা থেকেই increment() দিয়ে লিখতে পারবে। আসল টাকার
+      // উৎস videoBalance ফিল্ড আলাদাভাবে ওপরের কড়া রুলগুলো দিয়েই সুরক্ষিত থাকে — এই দুটো
+      // কালেকশন শুধুই প্রদর্শনের জন্য সারাংশ, তাই এখানে লেখার অনুমতি একটু শিথিল রাখা নিরাপদ। ----------
+      match /dailyStats/{statId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+      match /monthlyStats/{statId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // ---------- কুইজের দৈনিক আয়ের সারাংশ (quiz.html এই কালেকশনটা ব্যবহার করে দিনের
+      // সর্বোচ্চ আয়ের হিসাব রাখতে) — dailyStats/monthlyStats এর মতোই এটাও শুধু প্রদর্শন/
+      // হিসাবের সারাংশ, আসল কয়েনের উৎস quizBalance ফিল্ড উপরের কড়া রুলগুলো দিয়েই
+      // সুরক্ষিত থাকে, তাই এখানে লেখার অনুমতি একটু শিথিল রাখা নিরাপদ। ----------
+      match /quizDailyStats/{statId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // ---------- কুইজ ঘণ্টাভিত্তিক খেলার সংখ্যা (hourlyQuizLimit ফিচারের জন্য) — আগে
+      // এই কালেকশনের কোনো রুলই ছিল না, তাই সবসময় deny হয়ে hourlyQuizLimit ফিচারটা
+      // নীরবে অকার্যকর হয়ে যাচ্ছিল। quizDailyStats-এর মতোই এটাও শুধু প্রদর্শন/হিসাবের
+      // সারাংশ। ----------
+      match /quizHourlyStats/{statId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+
+      // ---------- একই প্রশ্ন কবে শেষ খেলা হয়েছে (questionReplayDays কুলডাউন ফিচারের
+      // জন্য) — আগে এই কালেকশনেরও কোনো রুল ছিল না, তাই কুলডাউন ফিচারটা নীরবে
+      // অকার্যকর ছিল। ----------
+      match /questionPlays/{questionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // ---------- Videos ----------
+    match /videos/{videoId} {
+      allow read: if true;
+
+      // A user may create only a video belonging to themselves.
+      // The app should send ownerUid and pointsSpent.
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.pointsSpent is int
+        && request.resource.data.pointsSpent >= 0;
+
+      // Users cannot edit an existing video. Admin can.
+      allow update: if isAdmin();
+
+      // Owner can delete own video; admin can delete any.
+      allow delete: if signedIn()
+        && (isAdmin() || resource.data.ownerUid == request.auth.uid);
+
+      // ---------- Video statistics ----------
+      match /stats/{statsId} {
+        allow read: if true;
+
+        // Stats are created/updated by signed-in users.
+        // The client must use increment() for view/like counts.
+        allow create, update: if signedIn()
+          && statsId == "counts";
+
+        allow delete: if isAdmin();
+      }
+
+      // ---------- Likes ----------
+      match /likes/{userId} {
+        allow read: if true;
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId);
+        allow update: if false;
+      }
+
+      // ---------- Video comments ----------
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.uid == request.auth.uid;
+        allow update: if signedIn()
+          && (isAdmin() || resource.data.uid == request.auth.uid);
+        allow delete: if signedIn()
+          && (isAdmin() || resource.data.uid == request.auth.uid);
+      }
+    }
+
+    // ---------- Advertisements (কোম্পানির এড — শুধু এডমিন যোগ/এডিট/ডিলিট করতে পারবে,
+    // মিড-রোল হিসেবে দেখানোর জন্য; ইউজারদের জন্য কোনো খরচ বা রিওয়ার্ড নেই) ----------
+    match /advertisements/{adId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+
+      // Admin can edit anything about an ad.
+      allow update: if isAdmin();
+
+      // মিড-রোল হিসেবে বিজ্ঞাপন দেখানো হলে যেকোনো সাইন-ইন করা ইউজার শুধু viewCount
+      // ঠিক ১ করে বাড়াতে পারবে (আর কিছু বদলাতে পারবে না) — এটা ভিউ-কাউন্ট ট্র্যাকিংয়ের জন্য।
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['viewCount'])
+        && request.resource.data.viewCount == resource.data.viewCount + 1;
+
+      match /stats/{statsId} {
+        allow read: if true;
+        allow create, update: if signedIn() && statsId == "counts";
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ---------- Quiz feature: ক্যাটাগরি ও প্রশ্ন (শুধু quiz-admin.html থেকে এডমিন
+    // লেখে/এডিট/ডিলিট করে; quiz.html থেকে সবাই শুধু পড়তে পারবে) ----------
+    match /quizCategories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /quizQuestions/{questionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- Quiz feature: প্রতিটা কুইজ খেলার ফলাফল (লিডারবোর্ড/অ্যাটেম্পট লিস্টের
+    // জন্য) — ইউজার নিজের ফলাফল তৈরি করতে পারবে, এডিট/ডিলিট শুধু এডমিন ----------
+    match /quizAttempts/{attemptId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- Payment requests ----------
+    match /paymentRequests/{requestId} {
+      allow read: if signedIn()
+        && (isAdmin() || resource.data.uid == request.auth.uid);
+
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == "pending";
+
+      // Only admin can approve/reject or otherwise modify a request.
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- Point purchase packages/settings ----------
+    match /pointPackages/{packageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- রিপোর্ট (পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট) — শুধু এডমিন দেখতে পারবে,
+    // সাইন-ইন করা যেকোনো ইউজার নিজের রিপোর্টার আইডি দিয়ে রিপোর্ট তৈরি করতে পারবে ----------
+    match /reports/{reportId} {
+      allow read: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.type in ['post', 'comment', 'reply'];
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- লাইভ স্ট্রিমিং (live.html): P2P WebRTC + Firestore সিগন্যালিং, চ্যাট ও
+    // কয়েন/গিফটিং — কোনো পেইড থার্ড-পার্টি সার্ভিস (Agora ইত্যাদি) ব্যবহার হয় না ----------
+    match /liveStreams/{streamId} {
+      // লবিতে সবাই (লগইন ছাড়াও) চলমান লাইভের তালিকা দেখতে পারবে
+      allow read: if true;
+
+      // শুধু সাইন-ইন করা ইউজার নিজের নামে নতুন লাইভ স্ট্রিম শুরু করতে পারবে (ভিডিও অথবা অডিও লাইভ)।
+      // lastHeartbeat শুরুতেই request.time দিয়ে সেট হতে হবে — নিচের স্টেল-চেক রুলের ভিত্তি এটাই।
+      allow create: if signedIn()
+        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.status == 'live'
+        && request.resource.data.mode in ['video', 'audio']
+        && request.resource.data.viewerCount == 0
+        && request.resource.data.likedBy == []
+        && request.resource.data.lastHeartbeat == request.time;
+
+      // হোস্ট নিজের স্ট্রিমের status/viewerCount/endedAt/lastHeartbeat আপডেট করতে পারবে (লাইভ
+      // চলাকালীন ভিউয়ার-কাউন্ট রিফ্রেশ, পিরিয়ডিক হার্টবিট পাঠানো ও "লাইভ শেষ করুন" চাপলে
+      // status:'ended' করা — সবই হোস্টের ব্রাউজার থেকেই হয়)
+      allow update: if signedIn()
+        && resource.data.hostUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'viewerCount', 'endedAt', 'lastHeartbeat']);
+
+      // ---- স্টেল/ক্র্যাশড লাইভ স্বয়ংক্রিয়ভাবে বন্ধ করা ----
+      // হোস্টের ব্রাউজার ক্র্যাশ করলে, ফোর্স-ক্লোজ হলে, বা নেট চলে গেলে beforeunload/pagehide
+      // কোনোটাই চালানোর সুযোগ পায় না — ফলে status চিরকাল 'live' থেকে যায় আর লবিতে ভুতুড়ে
+      // কার্ড আটকে থাকে। এই রুলটা যেকোনো সাইন-ইন করা ইউজারকে (শুধু হোস্ট নয়) অনুমতি দেয়
+      // সেই স্ট্রিমকে 'ended' করে দিতে — কিন্তু কেবল তখনই, যখন সত্যিই প্রমাণ থাকে হোস্ট
+      // অনেকক্ষণ (৪৫ সেকেন্ড+) কোনো হার্টবিট পাঠায়নি। তাই সচল কোনো লাইভ কেউ জোর করে
+      // বন্ধ করে দিতে পারবে না (হোস্ট প্রতি ২০ সেকেন্ডে হার্টবিট পাঠায়, তাই সচল থাকলে এই
+      // শর্ত কখনোই সত্যি হবে না)। lastHeartbeat ফিল্ড না থাকা পুরনো (এই ফিচার আসার আগে
+      // তৈরি হওয়া) ডকের জন্য startedAt-কে fallback হিসেবে ব্যবহার করা হয়েছে।
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'endedAt'])
+        && resource.data.status == 'live'
+        && request.resource.data.status == 'ended'
+        && (
+          ('lastHeartbeat' in resource.data
+            && request.time > resource.data.lastHeartbeat + duration.value(45, 's'))
+          || (!('lastHeartbeat' in resource.data)
+            && request.time > resource.data.startedAt + duration.value(45, 's'))
+        );
+
+      // লাইক/আনলাইক — যেকোনো সাইন-ইন করা ইউজার শুধু নিজের uid likedBy অ্যারেতে
+      // যোগ অথবা বাদ দিতে পারবে (অন্য কারো লাইক টেম্পার করা যাবে না)
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likedBy'])
+        && (
+          request.resource.data.likedBy == resource.data.likedBy.concat([request.auth.uid])
+          || request.resource.data.likedBy == resource.data.likedBy.removeAll([request.auth.uid])
+        );
+
+      allow delete: if isAdmin();
+
+      // ---------- ভিউয়ার এন্ট্রি + WebRTC সিগন্যালিং (offer/answer) ----------
+      match /viewers/{viewerId} {
+        // নিজের এন্ট্রি (ভিউয়ার) অথবা এই স্ট্রিমের হোস্ট (সবগুলো ভিউয়ার এন্ট্রি দেখার জন্য) পড়তে পারবে
+        allow read: if isOwner(viewerId) || isLiveHost(streamId) || isAdmin();
+
+        // ভিউয়ার নিজের uid দিয়েই নিজের জয়েন-এন্ট্রি তৈরি করবে
+        allow create: if isOwner(viewerId)
+          && request.resource.data.uid == request.auth.uid;
+
+        // ভিউয়ার নিজের এন্ট্রিতে 'answer' (WebRTC এর উত্তর) এবং 'lastSeen' (পিরিয়ডিক
+        // হার্টবিট — ব্রাউজার ক্র্যাশ করলে হোস্ট এই এন্ট্রিটা পরিষ্কার করতে ব্যবহার করে) যোগ/আপডেট করতে পারবে
+        allow update: if isOwner(viewerId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answer', 'lastSeen']);
+
+        // হোস্ট প্রতিটা ভিউয়ারের এন্ট্রিতে শুধু 'offer' (WebRTC এর প্রস্তাব) লিখতে পারবে
+        allow update: if isLiveHost(streamId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['offer']);
+
+        // ভিউয়ার লাইভ ছেড়ে গেলে নিজের এন্ট্রি মুছবে; হোস্ট/এডমিনও মুছতে পারবে (ক্লিনআপ)
+        allow delete: if isOwner(viewerId) || isLiveHost(streamId) || isAdmin();
+
+        // ---------- ICE candidate আদান-প্রদান (WebRTC কানেকশন স্থাপনের জন্য) ----------
+        match /hostCandidates/{candId} {
+          allow read: if isOwner(viewerId) || isLiveHost(streamId) || isAdmin();
+          allow create: if isLiveHost(streamId);
+          allow update, delete: if isAdmin();
+        }
+        match /viewerCandidates/{candId} {
+          allow read: if isOwner(viewerId) || isLiveHost(streamId) || isAdmin();
+          allow create: if isOwner(viewerId);
+          allow update, delete: if isAdmin();
+        }
+      }
+
+      // ---------- লাইভ চ্যাট (সাধারণ মন্তব্য + গিফট-বার্তা) ----------
+      match /chat/{msgId} {
+        allow read: if signedIn();
+        allow create: if signedIn()
+          && request.resource.data.uid == request.auth.uid
+          && (
+            (
+              request.resource.data.type == 'chat'
+              && request.resource.data.text is string
+              && request.resource.data.text.size() > 0
+              && request.resource.data.text.size() <= 500
+            )
+            ||
+            (
+              request.resource.data.type == 'gift'
+              && validGift(request.resource.data.giftId, request.resource.data.coins)
+            )
+          );
+        allow update: if false;
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ---------- মেসেঞ্জার (messages.html / messages-admin.html): ১-টু-১ প্রাইভেট চ্যাট ----------
+    // conversationId সবসময় দুইজনের uid ছোট-বড় ক্রমে সাজিয়ে '_' দিয়ে জোড়া লাগিয়ে বানানো হয়
+    // (uidA < uidB হলে conversationId == uidA + '_' + uidB) — এতে একই দুইজনের মধ্যে দুইটা
+    // আলাদা কনভারসেশন তৈরি হওয়া অসম্ভব হয়ে যায়, আর এখানে সহজেই স্পুফিং ঠেকানো যায়।
+    function convIdMatches(conversationId, participants) {
+      return participants.size() == 2
+        && participants[0] < participants[1]
+        && conversationId == participants[0] + '_' + participants[1];
+    }
+
+    // ---------- মেসেজ এডিট বৈধ কিনা — নিজের মেসেজ, টেক্সট/edited/editedAt ছাড়া আর কিছু বদলায়নি,
+    // আর সবচেয়ে গুরুত্বপূর্ণ শর্ত: ওপাশের লোক এখনো এই মেসেজটা "সিন" করেনি (conversations ডকের
+    // lastSeenAt দেখেই সার্ভার-সাইডে যাচাই হয় — শুধু ক্লায়েন্ট-সাইড চেকের উপর ভরসা করা হয় না) ----------
+    function messageSeenByOther(conversationId, msgCreatedAt) {
+      let conv = get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+      let others = conv.participants.removeAll([request.auth.uid]);
+      let otherUid = others.size() > 0 ? others[0] : '';
+      let seenMap = ('lastSeenAt' in conv) ? conv.lastSeenAt : {};
+      return (otherUid in seenMap) && seenMap[otherUid] >= msgCreatedAt;
+    }
+    function messageEditValid(conversationId) {
+      let oldD = resource.data;
+      let newD = request.resource.data;
+      return signedIn()
+        && oldD.senderUid == request.auth.uid
+        && newD.diff(oldD).affectedKeys().hasOnly(['text', 'edited', 'editedAt'])
+        && newD.text is string && newD.text.size() > 0 && newD.text.size() <= 2000
+        && newD.edited == true
+        && newD.editedAt == request.time
+        && !messageSeenByOther(conversationId, oldD.createdAt);
+    }
+
+    // ---------- রিঅ্যাকশন (👍❤️😆😢😠😮) বৈধ কিনা — শুধু নিজের uid-কী দিয়ে reactions ম্যাপে
+    // যোগ/বাদ দেওয়া যাবে, অন্য কারো রিঅ্যাকশন টেম্পার করা যাবে না, আর মান অবশ্যই ৬টা বৈধ
+    // রিঅ্যাকশনের একটা হতে হবে (রিঅ্যাক্ট করতে হলে কনভারসেশনের অংশগ্রহণকারী হতে হবে) ----------
+    function messageReactionValid(conversationId) {
+      let oldD = resource.data;
+      let newD = request.resource.data;
+      let oldR = ('reactions' in oldD) ? oldD.reactions : {};
+      let uid = request.auth.uid;
+      return signedIn()
+        && uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+        && newD.diff(oldD).affectedKeys().hasOnly(['reactions'])
+        && newD.reactions.diff(oldR).affectedKeys().hasOnly([uid])
+        && (!(uid in newD.reactions) || newD.reactions[uid] in ['like', 'love', 'haha', 'sad', 'angry', 'wow']);
+    }
+
+    match /conversations/{conversationId} {
+      // শুধু দুইজন অংশগ্রহণকারী (অথবা এডমিন — মডারেশন প্যানেলের জন্য) কনভারসেশনটা পড়তে পারবে
+      allow read: if signedIn()
+        && (request.auth.uid in resource.data.participants || isAdmin());
+
+      // নতুন কনভারসেশন — নিজেকে participants লিস্টে থাকতেই হবে, আর conversationId অবশ্যই
+      // দুইজনের uid সাজানো-ক্রমে জোড়া লাগিয়ে বানানো হতে হবে (ভুয়া/স্পুফড কনভারসেশন ঠেকাতে)
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participants
+        && convIdMatches(conversationId, request.resource.data.participants);
+
+      // অংশগ্রহণকারীরা শুধু সর্বশেষ-মেসেজের সারাংশ, নিজেদের নাম/ছবি ক্যাশ (participantInfo),
+      // "পড়া হয়েছে" (lastRead — নিজের আনরিড ব্যাজ সরানোর জন্য, ইনবক্সের Mark as Read সহ) আর
+      // "সিন" (lastSeenAt — ওপাশের লোককে "সিন" দেখানোর জন্য, শুধু আসলেই চ্যাট খুললে সেট হয়)
+      // আপডেট করতে পারবে — participants লিস্ট (কনভারসেশনের মালিকানা) কখনো বদলানো যাবে না
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.participants
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['lastMessage', 'lastMessageAt', 'lastSenderUid', 'participantInfo', 'lastRead', 'lastSeenAt', 'updatedAt']);
+
+      // পুরো কনভারসেশন ডিলিট — এডমিন প্যানেল থেকে মডারেশনের জন্য, অথবা কোনো অংশগ্রহণকারী
+      // নিজের ইনবক্স থেকে পুরো চ্যাট মুছে দিতে চাইলে (messages.html-এর ইনবক্স লং-প্রেস মেনু)
+      allow delete: if isAdmin()
+        || (signedIn() && request.auth.uid in resource.data.participants);
+
+      // ---------- আসল মেসেজগুলো (সাব-কালেকশন) ----------
+      match /messages/{messageId} {
+        allow read: if signedIn()
+          && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+              || isAdmin());
+
+        // নিজের uid দিয়েই senderUid বসাতে হবে, আর অবশ্যই এই কনভারসেশনের একজন অংশগ্রহণকারী
+        // হতে হবে (তৃতীয় কেউ অন্যের চ্যাটে ঢুকে মেসেজ পাঠাতে পারবে না); টেক্সট খালি বা
+        // ২০০০ ক্যারেক্টারের বেশি হতে পারবে না (messages.html-এর client-side লিমিটের সাথে মিল রেখে)।
+        // অতিরিক্ত ঐচ্ছিক ফিল্ড (replyTo — রিপ্লাই করা হলে) এখানে সীমাবদ্ধ করা হয়নি, কারণ hasOnly()
+        // ব্যবহার হয়নি — replyTo শুধু তৈরির সময়েই বসে, পরে আর বদলানো যায় না (update rule আলাদা)।
+        allow create: if signedIn()
+          && request.resource.data.senderUid == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000;
+
+        // মেসেজ আপডেট — দুইভাবে সম্ভব: (১) নিজের মেসেজ এডিট করা (টেক্সট বদলানো, ওপাশের লোক
+        // "সিন" করার আগ পর্যন্তই — messageEditValid দেখুন), (২) যেকোনো অংশগ্রহণকারীর রিঅ্যাকশন
+        // (👍❤️😆😢😠😮) দেওয়া/সরানো — messageReactionValid দেখুন। এছাড়া আর কিছু বদলানো যাবে না।
+        allow update: if messageEditValid(conversationId);
+        allow update: if messageReactionValid(conversationId);
+
+        // নিজের পাঠানো মেসেজ নিজে "মুছুন" (unsend) করতে পারবে; কনভারসেশনের যেকোনো
+        // অংশগ্রহণকারী (নিজের বা অন্যের মেসেজ) মুছতে পারবে — এটা দরকার পুরো চ্যাট একবারে
+        // ডিলিট করার ফিচারের জন্য (তখন দুইজনেরই সব মেসেজ মুছতে হয়); এডমিনও মডারেশনের জন্য
+        // যেকোনো মেসেজ মুছতে পারবে। বি.দ্র.: এই দুইজন যেহেতু এমনিতেই একে অপরের সব মেসেজ
+        // দেখতে পায় (প্রাইভেট ১-টু-১ চ্যাট), তাই এই সামান্য বেশি অনুমতি নতুন কোনো ঝুঁকি তৈরি করে না।
+        allow delete: if isAdmin()
+          || (signedIn()
+              && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants);
+      }
+    }
+
+    // ---------- অনলাইন / লাস্ট একটিভ (messages.html) ----------
+    // users/{uid} ডকুমেন্টে ইমেইল, ব্যালেন্স ইত্যাদি সংবেদনশীল তথ্য আছে (তাই সেটা অন্যকে পড়তে দেওয়া হয় না)।
+    // এজন্য উপস্থিতি (presence) আলাদা একটা ছোট কালেকশনে রাখা হয় — এতে শুধু দুটো ফিল্ড:
+    // lastActive (সার্ভার-টাইম, ক্লায়েন্ট নিজে বানানো সময় দেওয়া যাবে না) ও online (true/false)।
+    // যেকোনো সাইন-ইন করা ইউজার পড়তে পারবে (চ্যাটের হেডারে দেখানোর জন্য), লিখতে পারবে শুধু নিজেরটা।
+    match /presence/{userId} {
+      allow read: if signedIn();
+      allow create, update: if isOwner(userId)
+        && request.resource.data.keys().hasOnly(['lastActive', 'online'])
+        && request.resource.data.lastActive == request.time
+        && request.resource.data.online is bool;
+      allow delete: if isAdmin();
+    }
+
+    // ---------- অডিও/ভিডিও কল (messages.html): P2P WebRTC + Firestore সিগন্যালিং ----------
+    // calls/{callId}: offer/answer ও কলের অবস্থা (status)। মিডিয়া (ভয়েস/ভিডিও) কখনো Firestore-এ যায় না,
+    // সরাসরি দুই ডিভাইসের মধ্যে যায়। ICE candidate থাকে দুই সাব-কালেকশনে।
+    match /calls/{callId} {
+      function callData() {
+        return get(/databases/$(database)/documents/calls/$(callId)).data;
+      }
+      function isCallParty() {
+        return signedIn()
+          && (callData().callerUid == request.auth.uid || callData().calleeUid == request.auth.uid);
+      }
+
+      // শুধু কলারও কলি (অথবা অ্যাডমিন) পড়তে পারবে — ইনকামিং কল খোঁজার কোয়েরি
+      // (calleeUid == নিজের uid, status == 'ringing') এই শর্তেই মেলে
+      allow read: if signedIn()
+        && (resource.data.callerUid == request.auth.uid
+            || resource.data.calleeUid == request.auth.uid
+            || isAdmin());
+
+      // নতুন কল — শুধু নিজের নামে (callerUid), নিজেকে নিজে নয়, শুরুর অবস্থা অবশ্যই 'ringing'
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['callerUid', 'calleeUid', 'callerName', 'callerPhoto',
+             'calleeName', 'type', 'status', 'offer', 'createdAt'])
+        && request.resource.data.callerUid == request.auth.uid
+        && request.resource.data.calleeUid is string
+        && request.resource.data.calleeUid != request.auth.uid
+        && request.resource.data.type in ['audio', 'video']
+        && request.resource.data.status == 'ringing'
+        && request.resource.data.createdAt == request.time;
+
+      // কলি: ধরা (accepted + answer), কেটে দেওয়া (declined), ব্যস্ত (busy) বা কল শেষ (ended)
+      allow update: if signedIn()
+        && resource.data.calleeUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'answer', 'endedAt'])
+        && request.resource.data.status in ['accepted', 'declined', 'busy', 'ended'];
+
+      // কলার: রিং চলাকালীন বাতিল (canceled), কেউ না ধরলে (missed) বা কল শেষ (ended)
+      allow update: if signedIn()
+        && resource.data.callerUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'endedAt'])
+        && request.resource.data.status in ['canceled', 'missed', 'ended'];
+
+      allow delete: if isAdmin();
+
+      // ---------- ICE candidate (কানেকশন স্থাপনের তথ্য) — কলার শুধু callerCandidates-এ লিখবে,
+      // কলি শুধু calleeCandidates-এ; দুজনেই দুটো পড়তে পারবে ----------
+      match /callerCandidates/{candId} {
+        allow read: if isCallParty();
+        allow create: if signedIn()
+          && callData().callerUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['candidate', 'sdpMid', 'sdpMLineIndex', 'usernameFragment']);
+        allow update, delete: if isAdmin();
+      }
+      match /calleeCandidates/{candId} {
+        allow read: if isCallParty();
+        allow create: if signedIn()
+          && callData().calleeUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['candidate', 'sdpMid', 'sdpMLineIndex', 'usernameFragment']);
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ---------- Deny everything not explicitly listed ----------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

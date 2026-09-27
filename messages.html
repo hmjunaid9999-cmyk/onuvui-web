@@ -7,8 +7,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px}
-html,body{height:100%}
-body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh;overscroll-behavior:none}
+html,body{height:100%;overscroll-behavior:none}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}
 
 /* ---------- লগইন / ব্লকড স্ক্রিন — প্রোফাইল পেইজের সাথে হুবহু একই স্টাইল ---------- */
 #loginScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
@@ -85,15 +85,11 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid #262c36;color:#eee;border-bottom-left-radius:4px}
 .msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:#6b7280}
 .msgRow.mine .msgMeta{justify-content:flex-end}
-.msgDeleteBtn{background:none;border:none;color:#6b7280;font-size:10px;cursor:pointer;padding:0}
-.msgDeleteBtn:hover{color:#f87171}
 #messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid #3a4453;background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
 #messageInput{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
 #sendBtn{background:var(--primary-color);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
 #sendBtn:disabled{opacity:0.5;cursor:default}
 #chatLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
-
-html,body{overscroll-behavior:none}
 
 /* ---------- কল বাটন (হেডারে) ---------- */
 #callBtns{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;gap:2px}
@@ -158,6 +154,41 @@ html,body{overscroll-behavior:none}
 .clBtn:active{background:#1a2230}
 .clBtn:disabled{opacity:.4;cursor:default}
 .clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- লাইক স্টিকার (শুধু 👍 হলে বড় সাইজে, বাবল ছাড়া) ---------- */
+.msgBubble.likeSticker{background:none!important;border:none!important;padding:0!important;font-size:42px;line-height:1}
+
+/* ---------- রিপ্লাই/এডিট প্রিভিউ বার (মেসেজ ইনপুটের ঠিক উপরে) ---------- */
+#composePreview{display:none;align-items:center;gap:8px;padding:8px 12px;background:#0f141b;border-top:1px solid #262c36;flex-shrink:0}
+#composePreview .cpLine{width:3px;align-self:stretch;background:var(--primary-color);border-radius:2px;flex-shrink:0}
+#composePreview .cpBody{flex:1;min-width:0}
+#composePreview .cpLabel{font-size:11px;color:var(--primary-color);font-weight:bold}
+#composePreview .cpText{font-size:12.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#composePreview .cpClose{background:none;border:none;color:#6b7280;font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+
+/* ---------- বাবলের ভিতরে কোটেড রিপ্লাই ---------- */
+.msgQuote{background:rgba(255,255,255,.15);border-left:3px solid rgba(255,255,255,.6);border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.msgRow.theirs .msgQuote{background:#0f141b;border-left-color:#30363d}
+
+/* ---------- মেসেজের রিয়াকশন ব্যাজ (বাবলের কোণায় ছোট বাবল) ---------- */
+.msgReactions{position:absolute;bottom:-10px;right:6px;background:var(--card-color);border:1px solid #30363d;border-radius:10px;padding:1px 5px;font-size:12px;line-height:1.4}
+.msgRow.theirs .msgReactions{right:auto;left:6px}
+
+/* ---------- "সিন" ইন্ডিকেটর — মেসেজের সময়ের পাশে ছোট প্রোফাইল আইকন ---------- */
+.av.seenAv{width:14px;height:14px;flex-shrink:0}
+.av.seenAv .avFallback{font-size:8px}
+.editedTag{font-style:italic;opacity:.75}
+
+/* ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- */
+#ctxBackdrop{position:fixed;inset:0;z-index:900;display:none}
+#ctxMenu{position:fixed;z-index:901;display:none;background:#21262d;border:1px solid #30363d;border-radius:14px;overflow:hidden;min-width:180px;max-width:88vw;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+#ctxMenu .ctxReactions{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid #30363d}
+#ctxMenu .ctxReactions button{background:none;border:none;font-size:23px;cursor:pointer;padding:3px;line-height:1;border-radius:50%}
+#ctxMenu .ctxReactions button:active{background:#30363d}
+#ctxMenu .ctxItem{display:block;width:100%;background:none;border:none;color:#eee;text-align:left;padding:12px 16px;font-size:14px;font-family:inherit;cursor:pointer;border-top:1px solid #262c36}
+#ctxMenu .ctxItem:first-child{border-top:none}
+#ctxMenu .ctxItem:active{background:#2d333b}
+#ctxMenu .ctxItem.danger{color:#f87171}
 </style>
 </head>
 <body>
@@ -213,9 +244,17 @@ html,body{overscroll-behavior:none}
           <div id="messagesEmpty" style="display:none;">এখনো কোনো মেসেজ নেই। প্রথম মেসেজ পাঠান 👋</div>
           <div id="messagesList"></div>
         </div>
+        <div id="composePreview">
+          <div class="cpLine"></div>
+          <div class="cpBody">
+            <div class="cpLabel" id="cpLabel">রিপ্লাই</div>
+            <div class="cpText" id="cpText"></div>
+          </div>
+          <button class="cpClose" id="cpClose">✕</button>
+        </div>
         <div id="messageBar">
           <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000" enterkeyhint="enter"></textarea>
-          <button id="sendBtn">➤</button>
+          <button id="sendBtn">👍</button>
         </div>
       </div>
     </main>
@@ -270,14 +309,18 @@ html,body{overscroll-behavior:none}
     </div>
   </div>
 
+  <!-- ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- -->
+  <div id="ctxBackdrop"></div>
+  <div id="ctxMenu"></div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
     getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, where, orderBy,
-    onSnapshot, addDoc, deleteDoc, serverTimestamp, limit
+    getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, collection, query, where, orderBy,
+    onSnapshot, addDoc, deleteDoc, serverTimestamp, limit, writeBatch, deleteField
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   // একই Firebase প্রজেক্ট — বাকি সব পেইজের (profile.html ইত্যাদি) সাথে অভিন্ন
@@ -322,10 +365,16 @@ html,body{overscroll-behavior:none}
   let lastMsgSnap = null;
   let unsubMessages = null;
   let unsubOther = null;
+  let unsubConv = null;      // চ্যাট খোলা অবস্থায় কনভারসেশন ডকুমেন্ট শোনে (lastSeenAt-এর জন্য, "সিন" ইন্ডিকেটর)
   let unsubInbox = null;
   let unreadUnsubs = [];     // ইনবক্সে প্রতিটা কনভারসেশনের "নতুন মেসেজ গণনা" লিসেনার
   let statusTimer = null;
   let routeToken = 0;
+  let otherSeenAt = null;    // ওপাশের লোক সর্বশেষ কখন চ্যাট দেখেছে (lastSeenAt) — "সিন" ইন্ডিকেটরের জন্য
+
+  // রিপ্লাই/এডিট — মেসেজ পাঠানোর আগে কোন মেসেজে রিপ্লাই দেওয়া হচ্ছে বা কোনটা এডিট হচ্ছে তা রাখে
+  let replyingTo = null;     // { id, text, mine }
+  let editingId = null;      // এডিট হচ্ছে এমন মেসেজের id (থাকলে সেন্ড বাটনে চাপলে নতুন মেসেজ না, আপডেট হবে)
 
   const bootScreen = document.getElementById('bootScreen');
   const loginScreen = document.getElementById('loginScreen');
@@ -356,6 +405,14 @@ html,body{overscroll-behavior:none}
   const messagesList = document.getElementById('messagesList');
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendBtn');
+  const composePreview = document.getElementById('composePreview');
+  const cpLabel = document.getElementById('cpLabel');
+  const cpText = document.getElementById('cpText');
+  const cpClose = document.getElementById('cpClose');
+  const ctxBackdrop = document.getElementById('ctxBackdrop');
+  const ctxMenu = document.getElementById('ctxMenu');
+
+  const REACTIONS = { like: '👍', love: '❤️', haha: '😆', sad: '😢', angry: '😠', wow: '😮' };
 
   function showOnly(which) {
     bootScreen.style.display = which === 'boot' ? 'flex' : 'none';
@@ -454,9 +511,200 @@ html,body{overscroll-behavior:none}
     const initial = (String(name || '?').trim().charAt(0) || '?').toUpperCase();
     const fb = '<span class="avFallback">' + escapeHtml(initial) + '</span>';
     const img = photo
-      ? '<img src="' + escapeHtml(photo) + '" alt="" referrerpolicy="no-referrer" onerror="this.remove()">'
+      ? '<img src="' + escapeHtml(photo) + '" alt="" referrerpolicy="no-referrer" loading="lazy" decoding="async" onerror="this.remove()">'
       : '';
     return '<div class="av ' + size + '">' + fb + img + '</div>';
+  }
+
+  // ================= লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) =================
+  function openCtxMenu(anchorEl, itemsHtml) {
+    ctxMenu.innerHTML = itemsHtml;
+    ctxMenu.style.display = 'block';
+    ctxBackdrop.style.display = 'block';
+    const r = anchorEl.getBoundingClientRect();
+    const mw = Math.min(ctxMenu.offsetWidth || 200, window.innerWidth - 16);
+    let left = r.left + r.width / 2 - mw / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - mw - 8));
+    const mh = ctxMenu.offsetHeight || 100;
+    let top = r.bottom + 8;
+    if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 8);
+    ctxMenu.style.left = left + 'px';
+    ctxMenu.style.top = top + 'px';
+  }
+  function closeCtxMenu() {
+    ctxMenu.style.display = 'none';
+    ctxMenu.innerHTML = '';
+    ctxBackdrop.style.display = 'none';
+  }
+  ctxBackdrop.addEventListener('click', closeCtxMenu);
+
+  // এলিমেন্টে টাচ/মাউস "লং-প্রেস" বাঁধে (৪৫০ms); নড়াচড়া করলে বা তাড়াতাড়ি ছেড়ে দিলে বাতিল হয়ে যায়।
+  // লং-প্রেস ট্রিগার হলে window.__lpFired সেট হয়, যাতে ওই একই এলিমেন্টের normal click handler
+  // (যেমন ইনবক্স রো-তে চ্যাট খোলার ক্লিক) ভুল করে চলে না যায় — lpConsumed() দিয়ে চেক হয়।
+  function bindLongPress(el, handler) {
+    let t = null, moved = false, sx = 0, sy = 0;
+    const start = (x, y) => {
+      moved = false; sx = x; sy = y;
+      clearTimeout(t);
+      t = setTimeout(() => { if (!moved) { window.__lpFired = true; handler(); } }, 450);
+    };
+    const move = (x, y) => { if (Math.abs(x - sx) > 10 || Math.abs(y - sy) > 10) { moved = true; clearTimeout(t); } };
+    const cancel = () => clearTimeout(t);
+    el.addEventListener('touchstart', e => start(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    el.addEventListener('touchmove', e => move(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+    el.addEventListener('touchend', cancel);
+    el.addEventListener('touchcancel', cancel);
+    el.addEventListener('mousedown', e => start(e.clientX, e.clientY));
+    el.addEventListener('mousemove', e => { if (t) move(e.clientX, e.clientY); });
+    el.addEventListener('mouseup', cancel);
+    el.addEventListener('mouseleave', cancel);
+    el.addEventListener('contextmenu', e => { e.preventDefault(); clearTimeout(t); window.__lpFired = true; handler(); });
+  }
+  function lpConsumed() {
+    if (window.__lpFired) { window.__lpFired = false; return true; }
+    return false;
+  }
+
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text || '').catch(() => fallbackCopy(text));
+    } else fallbackCopy(text);
+  }
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text || ''; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    } catch (e) {}
+  }
+
+  // ---------- রিপ্লাই/এডিট প্রিভিউ বার ----------
+  function updateComposePreview() {
+    if (editingId) {
+      composePreview.style.display = 'flex';
+      cpLabel.textContent = '✏️ মেসেজ এডিট করা হচ্ছে';
+      cpText.textContent = 'পরিবর্তন করে ➤ চাপুন';
+    } else if (replyingTo) {
+      composePreview.style.display = 'flex';
+      cpLabel.textContent = replyingTo.name + '-কে রিপ্লাই';
+      cpText.textContent = replyingTo.text;
+    } else {
+      composePreview.style.display = 'none';
+    }
+  }
+  function startEditMessage(msgId, text) {
+    editingId = msgId;
+    replyingTo = null;
+    messageInput.value = text || '';
+    messageInput.style.height = 'auto';
+    messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+    messageInput.focus();
+    updateComposePreview();
+    updateSendBtn();
+  }
+  function startReply(msgId, m, mine) {
+    editingId = null;
+    replyingTo = { id: msgId, text: (m.text || '').slice(0, 120), name: mine ? 'নিজের মেসেজ' : otherName };
+    messageInput.focus();
+    updateComposePreview();
+  }
+  cpClose.addEventListener('click', () => {
+    if (editingId) { editingId = null; messageInput.value = ''; messageInput.style.height = 'auto'; }
+    replyingTo = null;
+    updateComposePreview();
+    updateSendBtn();
+  });
+
+  // ---------- মেসেজ ডিলিট / রিঅ্যাকশন ----------
+  async function deleteMessage(msgId) {
+    if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
+    try { await deleteDoc(doc(db, "conversations", convId, "messages", msgId)); }
+    catch (e) { alert('এরর: ' + e.message); }
+  }
+  async function toggleReaction(msgId, key) {
+    if (!currentUser || !convId) return;
+    try {
+      const mRef = doc(db, "conversations", convId, "messages", msgId);
+      let already = false;
+      if (lastMsgSnap) {
+        lastMsgSnap.forEach(d => {
+          if (d.id === msgId) { const r = d.data().reactions; already = !!(r && r[currentUser.uid] === key); }
+        });
+      }
+      await updateDoc(mRef, already
+        ? { [`reactions.${currentUser.uid}`]: deleteField() }
+        : { [`reactions.${currentUser.uid}`]: key });
+    } catch (e) { console.error('রিঅ্যাকশন দেওয়া যায়নি:', e); }
+  }
+
+  // মেসেজটা এখনো এডিট করা যাবে কিনা — ওপাশের লোক ইতিমধ্যে চ্যাট "সিন" করে ফেললে আর যাবে না
+  function messageEditable(m) {
+    if (!m.createdAt || !m.createdAt.toMillis) return true;
+    if (!otherSeenAt || !otherSeenAt.toMillis) return true;
+    return otherSeenAt.toMillis() < m.createdAt.toMillis();
+  }
+
+  function openMessageMenu(anchorEl, msgId, m, mine) {
+    let html = '';
+    if (mine) {
+      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
+      html += '<button class="ctxItem danger" data-act="delete">🗑️ ডিলিট করুন</button>';
+    } else {
+      html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
+      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      html += '<div class="ctxReactions">' +
+        Object.keys(REACTIONS).map(k => '<button data-react="' + k + '">' + REACTIONS[k] + '</button>').join('') +
+        '</div>';
+    }
+    openCtxMenu(anchorEl, html);
+    ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      closeCtxMenu();
+      if (act === 'copy') copyText(m.text || '');
+      else if (act === 'edit') startEditMessage(msgId, m.text || '');
+      else if (act === 'delete') deleteMessage(msgId);
+      else if (act === 'reply') startReply(msgId, m, mine);
+    }));
+    ctxMenu.querySelectorAll('[data-react]').forEach(b => b.addEventListener('click', () => {
+      closeCtxMenu();
+      toggleReaction(msgId, b.dataset.react);
+    }));
+  }
+
+  // ---------- ইনবক্স রো: Mark as Read / পুরো চ্যাট ডিলিট ----------
+  function openInboxMenu(anchorEl, convIdTarget) {
+    const html =
+      '<button class="ctxItem" data-act="read">✅ Mark as Read</button>' +
+      '<button class="ctxItem danger" data-act="delete">🗑️ চ্যাট ডিলিট করুন</button>';
+    openCtxMenu(anchorEl, html);
+    ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', async () => {
+      const act = b.dataset.act;
+      closeCtxMenu();
+      if (act === 'read') markConversationRead(convIdTarget);
+      else if (act === 'delete') {
+        if (!confirm('পুরো চ্যাট ডিলিট করতে চান? এটা ফিরিয়ে আনা যাবে না।')) return;
+        try { await deleteConversation(convIdTarget); }
+        catch (e) { alert('এরর: ' + e.message); }
+      }
+    }));
+  }
+  async function markConversationRead(cid) {
+    try { await updateDoc(doc(db, "conversations", cid), { [`lastRead.${currentUser.uid}`]: serverTimestamp() }); }
+    catch (e) { console.error('Mark as read এরর:', e); }
+  }
+  async function deleteConversation(cid) {
+    const mcol = collection(db, "conversations", cid, "messages");
+    // ৪০০-৪০০ করে ব্যাচে মেসেজ মোছা হয় (Firestore batch limit 500) — সবগুলো শেষ হলে তারপর কনভারসেশন ডকুমেন্ট মোছা হয়
+    while (true) {
+      const snap = await getDocs(query(mcol, limit(400)));
+      if (snap.empty) break;
+      const batch = writeBatch(db);
+      snap.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      if (snap.size < 400) break;
+    }
+    await deleteDoc(doc(db, "conversations", cid));
   }
 
   function timeAgo(ts) {
@@ -474,11 +722,6 @@ html,body{overscroll-behavior:none}
   const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
   const BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
   function bn(n) { return String(n).replace(/\d/g, d => BN_DIGITS[d]); }
-  function fmtClock(d) {
-    const h = d.getHours(), m = d.getMinutes();
-    const per = h < 4 ? 'রাত' : h < 6 ? 'ভোর' : h < 12 ? 'সকাল' : h < 15 ? 'দুপুর' : h < 17 ? 'বিকাল' : h < 19 ? 'সন্ধ্যা' : 'রাত';
-    return per + ' ' + bn(h % 12 || 12) + ':' + bn(String(m).padStart(2, '0'));
-  }
   function fmtDateBn(d) {
     // "২০ সেপ্টেম্বর" (আলাদা বছর হলে বছরসহ)
     const now = new Date();
@@ -564,8 +807,11 @@ html,body{overscroll-behavior:none}
   function stopChat() {
     if (unsubMessages) { unsubMessages(); unsubMessages = null; }
     if (unsubOther) { unsubOther(); unsubOther = null; }
+    if (unsubConv) { unsubConv(); unsubConv = null; }
     if (statusTimer) { clearInterval(statusTimer); statusTimer = null; }
     convId = null; otherUid = null; lastMsgSnap = null; otherLastActive = null; otherOnline = false;
+    otherSeenAt = null; replyingTo = null; editingId = null;
+    updateComposePreview();
   }
 
   // ================= ইনবক্স মোড =================
@@ -598,7 +844,7 @@ html,body{overscroll-behavior:none}
         return;
       }
       inboxEmpty.style.display = 'none';
-      convList.innerHTML = '';
+      const frag = document.createDocumentFragment();
       snap.forEach(d => {
         const c = d.data();
         const otherU = (c.participants || []).find(u => u !== currentUser.uid);
@@ -634,15 +880,19 @@ html,body{overscroll-behavior:none}
             if (n > 0 && slot) slot.innerHTML = '<div class="unreadBadge">' + (n > 99 ? bn(99) + '+' : bn(n)) + '</div>';
           }, err => console.error('নতুন মেসেজ গণনা এরর:', err)));
         }
+        bindLongPress(row, () => openInboxMenu(row, d.id));
         row.addEventListener('click', () => {
+          if (lpConsumed()) return;   // লং-প্রেসের পরে ছাড়ার সময় যেন ভুল করে চ্যাট খুলে না যায়
           // পেইজ রিলোড ছাড়াই চ্যাট খোলা — তাই আর লগইন স্ক্রিন আসে না
           const url = location.pathname + '?uid=' + encodeURIComponent(otherU) +
             '&name=' + encodeURIComponent(name) + '&avatar=' + encodeURIComponent(photo);
           history.pushState({ inApp: true }, '', url);
           route();
         });
-        convList.appendChild(row);
+        frag.appendChild(row);
       });
+      convList.innerHTML = '';
+      convList.appendChild(frag);
     }, err => {
       console.error('ইনবক্স লোড এরর:', err);
       inboxLoading.style.display = 'block';
@@ -671,16 +921,16 @@ html,body{overscroll-behavior:none}
       return;
     }
     messagesEmpty.style.display = 'none';
-    messagesList.innerHTML = '';
-    const convRef = doc(db, "conversations", convId);
+    const frag = document.createDocumentFragment();
     const myPhoto = myProfile.photoURL || (currentUser && currentUser.photoURL) || '';
     const myName = myProfile.name || (currentUser && currentUser.displayName) || '';
     let prevSender = null;
+    let lastMineRow = null, lastMineCreatedAt = null;
     snap.forEach(d => {
       const m = d.data();
       if (m.type === 'call') {          // কল লগ (মিস কল ইত্যাদি) — আলাদা কার্ড
         prevSender = null;
-        messagesList.appendChild(buildCallLogRow(m, m.senderUid === currentUser.uid));
+        frag.appendChild(buildCallLogRow(m, m.senderUid === currentUser.uid));
         return;
       }
       const mine = m.senderUid === currentUser.uid;
@@ -689,29 +939,54 @@ html,body{overscroll-behavior:none}
       prevSender = m.senderUid;
 
       const row = document.createElement('div');
+      row.id = 'msg-' + d.id;
       row.className = 'msgRow ' + (mine ? 'mine' : 'theirs') + (first ? ' first' : '');
       const av = first
         ? avatarHtml(mine ? myPhoto : otherPhoto, mine ? myName : otherName, 'sm')
         : '<div class="avSpacer"></div>';
+
+      // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
+      const isLike = m.text === '👍' && !m.replyTo;
+      const quoteHtml = m.replyTo
+        ? '<div class="msgQuote" data-goto="' + escapeHtml(m.replyTo.id) + '">' + escapeHtml(m.replyTo.text || '') + '</div>'
+        : '';
+      const reactions = m.reactions || {};
+      const reactKeys = Object.keys(reactions);
+      const reactHtml = reactKeys.length
+        ? '<div class="msgReactions">' + reactKeys.map(u => REACTIONS[reactions[u]] || '').join('') + '</div>'
+        : '';
+      const editedHtml = m.edited ? '<span class="editedTag"> · এডিট করা</span>' : '';
+
       const content = `
         <div class="msgCol">
-          <div class="msgBubble">${escapeHtml(m.text)}</div>
-          <div class="msgMeta">
-            <span>${timeAgo(m.createdAt)}</span>
-            ${mine ? `<button class="msgDeleteBtn" data-id="${d.id}">মুছুন</button>` : ''}
-          </div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}">${quoteHtml}${isLike ? '👍' : escapeHtml(m.text)}${reactHtml}</div>
+          <div class="msgMeta"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
       row.innerHTML = mine ? content + av : av + content;
-      if (mine) {
-        row.querySelector('.msgDeleteBtn').addEventListener('click', async () => {
-          if (!confirm('মেসেজটি মুছে ফেলতে চান?')) return;
-          try { await deleteDoc(doc(convRef, "messages", d.id)); }
-          catch (e) { alert('এরর: ' + e.message); }
-        });
-      }
-      messagesList.appendChild(row);
+
+      const quoteEl = row.querySelector('.msgQuote');
+      if (quoteEl) quoteEl.addEventListener('click', () => {
+        const target = document.getElementById('msg-' + quoteEl.dataset.goto);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+
+      // লং-প্রেস → কপি/এডিট/ডিলিট (নিজের) অথবা রিপ্লাই/কপি/রিঅ্যাকশন (অন্যের)
+      bindLongPress(row.querySelector('.msgBubble'), () => openMessageMenu(row, d.id, m, mine));
+
+      if (mine) { lastMineRow = row; lastMineCreatedAt = m.createdAt; }
+      frag.appendChild(row);
     });
+
+    // ---------- "সিন" ইন্ডিকেটর — সর্বশেষ যে নিজের মেসেজটা ওপাশের লোক দেখে ফেলেছে, শুধু তার পাশেই ছোট আইকন ----------
+    if (lastMineRow && lastMineCreatedAt && lastMineCreatedAt.toMillis &&
+        otherSeenAt && otherSeenAt.toMillis && otherSeenAt.toMillis() >= lastMineCreatedAt.toMillis()) {
+      const meta = lastMineRow.querySelector('.msgMeta');
+      if (meta) meta.insertAdjacentHTML('beforeend', avatarHtml(otherPhoto, otherName, 'sm seenAv'));
+    }
+
+    messagesList.innerHTML = '';
+    messagesList.appendChild(frag);
     messagesScroll.scrollTop = messagesScroll.scrollHeight;
   }
 
@@ -730,6 +1005,9 @@ html,body{overscroll-behavior:none}
     messagesEmpty.style.display = 'none';
     chatLoading.style.display = 'block';
     messageInput.value = '';
+    replyingTo = null; editingId = null; otherSeenAt = null;
+    updateComposePreview();
+    updateSendBtn();
     inboxView.style.display = 'none';
     chatView.style.display = 'flex';
     renderHeader();
@@ -751,10 +1029,11 @@ html,body{overscroll-behavior:none}
     }
     if (token !== routeToken) return;
 
-    // "পড়া হয়েছে" মার্ক — চ্যাট খোলার সময় শুধু একবার
+    // "পড়া হয়েছে" মার্ক (lastRead — নিজের আনরিড ব্যাজ সরে) ও "সিন" (lastSeenAt — ওপাশের লোক জানবে দেখেছি) — চ্যাট খোলার সময়
     if (convExists) {
       updateDoc(convRef, {
         [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+        [`lastSeenAt.${currentUser.uid}`]: serverTimestamp(),
         [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
       }).catch(() => {});
     }
@@ -764,17 +1043,27 @@ html,body{overscroll-behavior:none}
     unsubMessages = onSnapshot(mq, snap => {
       lastMsgSnap = snap;
       renderMessages();
-      // চ্যাট খোলা থাকা অবস্থায় অন্যজনের নতুন মেসেজ এলে সেটাও "পড়া হয়েছে" — নইলে ইনবক্সে ফিরলে ভুল করে নতুন দেখাত
+      // চ্যাট খোলা থাকা অবস্থায় অন্যজনের নতুন মেসেজ এলে সেটাও "পড়া হয়েছে"+"সিন" — নইলে ইনবক্সে ফিরলে ভুল করে নতুন দেখাত
       const isFirst = firstMsgSnap; firstMsgSnap = false;
       if (!isFirst && !document.hidden && currentUser &&
           snap.docChanges().some(ch => ch.type === 'added' && !ch.doc.metadata.hasPendingWrites && ch.doc.data().senderUid !== currentUser.uid)) {
-        updateDoc(convRef, { [`lastRead.${currentUser.uid}`]: serverTimestamp() }).catch(() => {});
+        updateDoc(convRef, {
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`lastSeenAt.${currentUser.uid}`]: serverTimestamp()
+        }).catch(() => {});
       }
     }, err => {
       console.error('মেসেজ লোড এরর:', err);
       chatLoading.style.display = 'block';
       chatLoading.textContent = 'মেসেজ লোড করা যায়নি।';
     });
+
+    // ওপাশের লোক সর্বশেষ কখন চ্যাট "সিন" করেছে (lastSeenAt) — সিন-ইন্ডিকেটরের জন্য রিয়েল-টাইম শোনা হয়
+    unsubConv = onSnapshot(convRef, s => {
+      const d = s.exists() ? s.data() : {};
+      otherSeenAt = (d.lastSeenAt && d.lastSeenAt[uid]) || null;
+      renderMessages();
+    }, err => console.error('lastSeenAt শোনার এরর:', err));
 
     // অন্যজনের অনলাইন/লাস্ট একটিভ (presence/{uid})
     unsubOther = onSnapshot(doc(db, "presence", uid), s => {
@@ -803,9 +1092,35 @@ html,body{overscroll-behavior:none}
     }
   }
 
-  async function sendCurrentMessage() {
+  async function submitEdit() {
     const text = messageInput.value.trim();
+    if (!text || !convId || !editingId) { editingId = null; updateComposePreview(); updateSendBtn(); return; }
+    const id = editingId;
+    sendBtn.disabled = true;
+    try {
+      await updateDoc(doc(db, "conversations", convId, "messages", id), {
+        text: text.slice(0, 2000),
+        edited: true,
+        editedAt: serverTimestamp()
+      });
+      editingId = null;
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+      updateComposePreview();
+    } catch (e) {
+      alert('এডিট করা যায়নি — এরর: ' + e.message);
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+  async function sendCurrentMessage(forceLike) {
+    if (editingId) { await submitEdit(); return; }
+    const raw = messageInput.value.trim();
+    const text = raw || (forceLike ? '👍' : '');   // ইনপুট খালি থাকলে সেন্ড বাটনে 👍 দেখায়, চাপলে লাইক পাঠানো হয়
     if (!text || !messagingEnabled || !convId) return;
+    const replySnapshot = replyingTo;
     sendBtn.disabled = true;
     try {
       const convRef = doc(db, "conversations", convId);
@@ -835,30 +1150,46 @@ html,body{overscroll-behavior:none}
         });
       }
 
-      await addDoc(collection(convRef, "messages"), {
+      const payload = {
         senderUid: currentUser.uid,
         text: text.slice(0, 2000),
         createdAt: serverTimestamp()
-      });
+      };
+      if (replySnapshot) payload.replyTo = { id: replySnapshot.id, text: replySnapshot.text };
+      await addDoc(collection(convRef, "messages"), payload);
 
       messageInput.value = '';
       messageInput.style.height = 'auto';
+      replyingTo = null;
+      updateComposePreview();
     } catch (e) {
       alert('মেসেজ পাঠানো যায়নি — এরর: ' + e.message);
     } finally {
       sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
     }
   }
 
-  sendBtn.addEventListener('click', sendCurrentMessage);
-  // মোবাইলে কিবোর্ডের Enter = নতুন লাইন (পাঠাতে হবে ➤ বাটনে); ডেস্কটপে Enter = পাঠানো, Shift+Enter = নতুন লাইন
+  // সেন্ড বাটন: ইনপুট খালি থাকলে 👍, লেখা থাকলে ➤, এডিট চলাকালীন ✔ (Messenger-এর মতো)
+  function updateSendBtn() {
+    if (editingId) { sendBtn.textContent = '✔'; return; }
+    sendBtn.textContent = messageInput.value.trim() === '' ? '👍' : '➤';
+  }
+
+  sendBtn.addEventListener('click', () => sendCurrentMessage(true));
+  // মোবাইলে কিবোর্ডের Enter = নতুন লাইন (পাঠাতে হবে সেন্ড বাটনে); ডেস্কটপে Enter = পাঠানো, Shift+Enter = নতুন লাইন
   const isTouchOnly = () => window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   messageInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isTouchOnly()) { e.preventDefault(); sendCurrentMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isTouchOnly()) {
+      e.preventDefault();
+      if (editingId) submitEdit();
+      else if (messageInput.value.trim() !== '') sendCurrentMessage(false);
+    }
   });
   messageInput.addEventListener('input', () => {
     messageInput.style.height = 'auto';
     messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
+    updateSendBtn();
   });
 
   // ================= WebRTC অডিও/ভিডিও কল =================
