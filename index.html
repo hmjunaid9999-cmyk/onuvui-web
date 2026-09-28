@@ -950,11 +950,11 @@
 
     card.innerHTML = `
       <div class="postHeader">
-        <a class="postAuthorLink" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">
+        <a class="postAuthorLink"${d.authorUid ? ' href="profile.html?uid=' + encodeURIComponent(d.authorUid) + '"' : ''}>
           <img class="avatar" src="${d.authorPhoto || ''}" loading="lazy" decoding="async">
         </a>
         <div>
-          <a class="postAuthorLink pName" href="profile.html?uid=${encodeURIComponent(d.authorUid || '')}">${escapeHtml(d.authorName)}</a>
+          <a class="postAuthorLink pName"${d.authorUid ? ' href="profile.html?uid=' + encodeURIComponent(d.authorUid) + '"' : ''}>${escapeHtml(d.authorName)}</a>
           <div class="pTime">${timeAgo(d.createdAt)}</div>
         </div>
         <div class="postMenuWrap">
