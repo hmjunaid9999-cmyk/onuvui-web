@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>প্রোফাইল - Onuvuti</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--poster-height:180px;--own-action-scale:1;--other-action-scale:1;--post-buttons-justify:space-evenly;--clamp-lines:6}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}#loginScreen h1{font-size:22px;margin-bottom:6px}#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}#appScreen{display:none}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader h1{font-size:17px;font-weight:bold}#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;text-decoration:none}#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}main{padding:16px;max-width:var(--max-width);margin:0 auto}#profileCover{height:90px;border-radius:14px 14px 0 0;background:var(--primary-color)}#profileCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;margin-bottom:18px;overflow:hidden}#profileBody{padding:0 16px 16px;text-align:center}#profileAvatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#333;border:4px solid var(--card-color);margin-top:-42px;margin-bottom:10px}#profileName{font-size:18px;font-weight:bold;margin-bottom:2px}#profileNameRow{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px}#profileNameRow #profileName{margin-bottom:0}#statusText{font-size:12px;color:#9ca3af;margin-bottom:10px;min-height:14px}.statusDot{width:9px;height:9px;border-radius:50%;background:transparent;flex-shrink:0}.statusDot.online{background:#34A853;box-shadow:0 0 0 3px rgba(52,168,83,0.18)}#profileEmail{font-size:12px;color:#6b7280;margin-bottom:10px}#profileBio{font-size:13px;color:#ddd;white-space:pre-wrap;margin-bottom:6px;line-height:1.5}#profileBioEmpty{font-size:13px;color:#6b7280;font-style:italic;margin-bottom:6px}#profileExtra{font-size:12px;color:#9ca3af;margin-bottom:6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#profileJoined{font-size:11px;color:#6b7280;margin-bottom:14px}#profileActions,#ownActionRow{display:none;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}.actionCol{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}.subCountLabel{text-align:center;font-size:12px;color:#9ca3af}.subCountLabel span{color:#fff;font-weight:bold}#profileActions button,#profileActions a,#ownActionRow button{width:100%;text-align:center;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:11px 10px;border-radius:22px;font-weight:bold;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px}#ownActionRow button{font-size:calc(11.5px * var(--own-action-scale,1))}#profileActions button,#profileActions a{font-size:calc(11.5px * var(--other-action-scale,1))}#subscribeBtn{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#subscribeBtn.subscribed{background:#21262d;color:#f87171;border-color:#f87171}.staticBadge{opacity:0.85;cursor:default !important}#lockedPosts{text-align:center;color:#9ca3af;font-size:13px;padding:40px 16px;line-height:1.7}#tabsOther,#tabsOwn{display:none;gap:8px;padding:0 16px 14px;justify-content:center}.tabBtn{flex:1;max-width:200px;text-align:center;background:#161b22;color:#9ca3af;border:1px solid #262c36;padding:0.7em 1.1em;border-radius:1.4em;font-weight:bold;cursor:pointer;box-sizing:border-box}.tabBtn.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}#aboutSection{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:18px;text-align:left}#aboutInfoList{display:flex;flex-direction:column;gap:0}.aboutInfoRow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #21262d;font-size:13px}.aboutInfoRow:last-child{border-bottom:none}.aboutInfoLabel{color:#9ca3af;flex-shrink:0}.aboutInfoValue{color:#eee;text-align:right;word-break:break-word}.readonlyField{display:flex;align-items:center;gap:8px;background:#0d1117;border:1px solid #30363d;color:#9ca3af;padding:9px 11px;border-radius:10px;font-size:13px}.readonlyField span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.copyFieldBtn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer;flex-shrink:0}.birthdayRow{display:flex;gap:8px}.birthdayRow select{flex:1}#editOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center}#editOverlay.open{display:flex}#editModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:0;padding:18px 16px 24px;height:100vh;overflow-y:auto}#editModal h2{font-size:16px;margin-bottom:14px}.formRow{margin-bottom:12px}.formRow label{display:block;font-size:12px;color:#9ca3af;margin-bottom:5px}.formRow input,.formRow textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.formRow textarea{resize:vertical;min-height:70px}.formRow select{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.readonlyNote{font-size:11px;color:#6b7280;margin-bottom:14px}#coverColors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.coverSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}.coverSwatch.selected{border-color:#fff}#editModalBtns{display:flex;gap:8px;margin-top:6px}#editSaveBtn,#editCancelBtn{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;border:none}#editSaveBtn{background:var(--primary-color);color:#fff}#editCancelBtn{background:#21262d;color:#ddd}#editSaveBtn:disabled{opacity:0.6}#editStatus{font-size:12px;text-align:center;margin-top:8px;min-height:15px;color:#4ade80}#postsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#emptyPosts{text-align:center;color:#6b7280;font-size:13px;padding:40px 0}#postsLoading{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333;object-fit:cover}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify,space-evenly);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:44px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0;object-fit:cover}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:none;position:absolute;right:0;top:20px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:110px;z-index:10;overflow:hidden}.commentMenuDropdown.open{display:block}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:8px 10px;font-size:11px;cursor:pointer}.commentMenuDropdown button:hover{background:#30363d}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:40px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#loginScreen.asOverlay{position:fixed;inset:0;z-index:600;background:var(--bg-color);overflow-y:auto}#loginCloseBtn{display:none;position:absolute;right:14px;top:14px;background:#21262d;border:none;color:#9ca3af;font-size:16px;cursor:pointer;width:34px;height:34px;border-radius:50%}#loginScreen.asOverlay #loginCloseBtn{display:block}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--poster-height:180px;--own-action-scale:1;--other-action-scale:1;--post-buttons-justify:space-evenly;--clamp-lines:6}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}#loginScreen h1{font-size:22px;margin-bottom:6px}#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}#appScreen{display:none}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader h1{font-size:17px;font-weight:bold}#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px;text-decoration:none}#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}main{padding:16px;max-width:var(--max-width);margin:0 auto}#profileCover{height:90px;border-radius:14px 14px 0 0;background:var(--primary-color)}#profileCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;margin-bottom:18px;overflow:hidden}#profileBody{padding:0 16px 16px;text-align:center}#profileAvatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#333;border:4px solid var(--card-color);margin-top:-42px;margin-bottom:10px}#profileName{font-size:18px;font-weight:bold;margin-bottom:2px}#profileNameRow{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px}#profileNameRow #profileName{margin-bottom:0}#statusText{font-size:12px;color:#9ca3af;margin-bottom:10px;min-height:14px}.statusDot{width:9px;height:9px;border-radius:50%;background:transparent;flex-shrink:0}.statusDot.online{background:#34A853;box-shadow:0 0 0 3px rgba(52,168,83,0.18)}#profileEmail{font-size:12px;color:#6b7280;margin-bottom:10px}#profileBio{font-size:13px;color:#ddd;white-space:pre-wrap;margin-bottom:6px;line-height:1.5}#profileBioEmpty{font-size:13px;color:#6b7280;font-style:italic;margin-bottom:6px}#profileExtra{font-size:12px;color:#9ca3af;margin-bottom:6px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}#profileJoined{font-size:11px;color:#6b7280;margin-bottom:14px}#profileActions,#ownActionRow{display:none;gap:10px;padding:0 16px 14px;justify-content:center;align-items:flex-end}.actionCol{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;box-sizing:border-box}.subCountLabel{text-align:center;font-size:12px;color:#9ca3af}.subCountLabel span{color:#fff;font-weight:bold}#profileActions button,#profileActions a,#ownActionRow button{width:100%;text-align:center;background:#21262d;color:#c9d1d9;border:1px solid #30363d;padding:11px 10px;border-radius:22px;font-weight:bold;cursor:pointer;text-decoration:none;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;justify-content:center;gap:4px}#ownActionRow button{font-size:calc(11.5px * var(--own-action-scale,1))}#profileActions button,#profileActions a{font-size:calc(11.5px * var(--other-action-scale,1))}#subscribeBtn{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#subscribeBtn.subscribed{background:#21262d;color:#f87171;border-color:#f87171}.staticBadge{opacity:0.85;cursor:default !important}#lockedPosts{text-align:center;color:#9ca3af;font-size:13px;padding:40px 16px;line-height:1.7}#tabsOther,#tabsOwn{display:none;gap:8px;padding:0 16px 14px;justify-content:center}.tabBtn{flex:1;max-width:200px;text-align:center;background:#161b22;color:#9ca3af;border:1px solid #262c36;padding:0.7em 1.1em;border-radius:1.4em;font-weight:bold;cursor:pointer;box-sizing:border-box}.tabBtn.active{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}#aboutSection{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;margin-bottom:18px;text-align:left}#aboutInfoList{display:flex;flex-direction:column;gap:0}.aboutInfoRow{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #21262d;font-size:13px}.aboutInfoRow:last-child{border-bottom:none}.aboutInfoLabel{color:#9ca3af;flex-shrink:0}.aboutInfoValue{color:#eee;text-align:right;word-break:break-word}.readonlyField{display:flex;align-items:center;gap:8px;background:#0d1117;border:1px solid #30363d;color:#9ca3af;padding:9px 11px;border-radius:10px;font-size:13px}.readonlyField span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.copyFieldBtn{background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer;flex-shrink:0}.birthdayRow{display:flex;gap:8px}.birthdayRow select{flex:1}#editOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;justify-content:center}#editOverlay.open{display:flex}#editModal{background:var(--card-color);width:100%;max-width:var(--max-width);border-radius:0;padding:18px 16px 24px;height:100vh;overflow-y:auto}#editModal h2{font-size:16px;margin-bottom:14px}.formRow{margin-bottom:12px}.formRow label{display:block;font-size:12px;color:#9ca3af;margin-bottom:5px}.formRow input,.formRow textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.formRow textarea{resize:vertical;min-height:70px}.formRow select{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px;font-family:inherit}.readonlyNote{font-size:11px;color:#6b7280;margin-bottom:14px}#coverColors{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}.coverSwatch{width:30px;height:30px;border-radius:8px;cursor:pointer;border:2px solid transparent}.coverSwatch.selected{border-color:#fff}#editModalBtns{display:flex;gap:8px;margin-top:6px}#editSaveBtn,#editCancelBtn{flex:1;padding:11px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer;border:none}#editSaveBtn{background:var(--primary-color);color:#fff}#editCancelBtn{background:#21262d;color:#ddd}#editSaveBtn:disabled{opacity:0.6}#editStatus{font-size:12px;text-align:center;margin-top:8px;min-height:15px;color:#4ade80}#postsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#emptyPosts{text-align:center;color:#6b7280;font-size:13px;padding:40px 0}#postsLoading{text-align:center;color:#6b7280;font-size:13px;padding:20px 0}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333;object-fit:cover}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.postMenuDropdown{display:none;position:absolute;right:0;top:30px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:140px;z-index:10;overflow:hidden}.postMenuDropdown.open{display:block}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:10px 12px;font-size:12px;cursor:pointer}.postMenuDropdown button:hover{background:#30363d}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify,space-evenly);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:44px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0;object-fit:cover}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:none;position:absolute;right:0;top:20px;background:#21262d;border:1px solid #30363d;border-radius:10px;min-width:110px;z-index:10;overflow:hidden}.commentMenuDropdown.open{display:block}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;color:#fff;padding:8px 10px;font-size:11px;cursor:pointer}.commentMenuDropdown button:hover{background:#30363d}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:40px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#loginScreen.asOverlay{position:fixed;inset:0;z-index:600;background:var(--bg-color);overflow-y:auto}#loginCloseBtn{display:none;position:absolute;right:14px;top:14px;background:#21262d;border:none;color:#9ca3af;font-size:16px;cursor:pointer;width:34px;height:34px;border-radius:50%}#loginScreen.asOverlay #loginCloseBtn{display:block}#subsWrap{display:none}#subsHeading{font-size:15px;font-weight:bold;margin-bottom:10px;color:#ddd}#subsLoading,#subsEmpty{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}.subRow{display:flex;align-items:center;gap:12px;background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:10px 14px;margin-bottom:10px;color:inherit;text-decoration:none}.subRow:active{background:#21262d}.subRow img{width:42px;height:42px;border-radius:50%;background:#333;object-fit:cover;flex-shrink:0}.subRow .subName{font-size:14px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.subRow .subArrow{margin-left:auto;color:#6b7280;font-size:16px}#subsHeaderRow{display:flex;align-items:center;gap:10px;margin-bottom:12px}#subsHeaderRow #subsHeading{margin-bottom:0}#subsBackBtn{background:#21262d;color:#fff;border:1px solid #30363d;padding:8px 14px;border-radius:14px;font-size:13px;font-weight:bold;cursor:pointer;flex-shrink:0}</style>
 </head>
 <body>
 
@@ -89,6 +89,7 @@
       
       <div id="tabsOwn">
         <button id="myPostsTabBtn" class="tabBtn active">📝 মাই পোস্ট</button>
+        <button id="mySubsTabBtn" class="tabBtn">🔔 মাই সাবস্ক্রাইবার</button>
       </div>
 
       <div id="aboutSection" style="display:none;">
@@ -103,6 +104,16 @@
         <div id="emptyPosts" style="display:none;">আপনি এখনো কোনো পোস্ট করেননি</div>
         <div id="lockedPosts" style="display:none;">🔒 এই ব্যবহারকারীর পোস্ট দেখতে হলে আগে সাবস্ক্রাইব করুন</div>
         <div id="myPostsList"></div>
+      </div>
+
+      <div id="subsWrap">
+        <div id="subsHeaderRow">
+          <button id="subsBackBtn" type="button">← ফিরে যান</button>
+          <div id="subsHeading">🔔 আমার সাবস্ক্রাইবার</div>
+        </div>
+        <div id="subsLoading">লোড হচ্ছে...</div>
+        <div id="subsEmpty" style="display:none;">এখনো কেউ সাবস্ক্রাইব করেননি</div>
+        <div id="subsList"></div>
       </div>
     </main>
   </div>
@@ -298,6 +309,12 @@
   const postsTabBtn = document.getElementById('postsTabBtn');
   const aboutTabBtn = document.getElementById('aboutTabBtn');
   const myPostsTabBtn = document.getElementById('myPostsTabBtn');
+  const mySubsTabBtn = document.getElementById('mySubsTabBtn');
+  const subsWrap = document.getElementById('subsWrap');
+  const subsLoading = document.getElementById('subsLoading');
+  const subsEmpty = document.getElementById('subsEmpty');
+  const subsList = document.getElementById('subsList');
+  const subsBackBtn = document.getElementById('subsBackBtn');
   const aboutSection = document.getElementById('aboutSection');
   const postsWrap = document.getElementById('postsWrap');
 
@@ -407,12 +424,17 @@
     }
   }
 
+  // পেজ থেকে বের হয়ে আগের পেজে (যেখান থেকে এসেছি) ফেরা; আগের পেজ না থাকলে হোমে
+  function navigateBack() {
+    let sameOrigin = false;
+    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+    if (sameOrigin || window.history.length > 3) window.history.back();
+    else window.location.replace('index.html');
+  }
   backBtn.addEventListener('click', () => {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = 'index.html';
-    }
+    // ব্যাক-গার্ড চালু থাকলে ফোনের Back-এর মতোই চলে: আগে খোলা জিনিস (তালিকা/মেনু/মডাল) বন্ধ হবে, না থাকলে পেছনে যাবে
+    if (backGuardActive) window.history.back();
+    else navigateBack();
   });
 
   function escapeHtml(str) { return (str || '').replace(/</g, '&lt;'); }
@@ -576,7 +598,7 @@
 
   function startHeartbeat(uid) {
     stopHeartbeat();
-    const ref = doc(db, "users", uid);
+    const ref = doc(db, "publicProfiles", uid);
     const beat = () => setDoc(ref, { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
     beat();
     heartbeatTimer = setInterval(beat, HEARTBEAT_MS);
@@ -584,7 +606,7 @@
   }
   function onVisibilityBeat() {
     if (document.visibilityState === 'visible' && currentUser) {
-      setDoc(doc(db, "users", currentUser.uid), { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
+      setDoc(doc(db, "publicProfiles", currentUser.uid), { lastSeen: serverTimestamp() }, { merge: true }).catch(() => {});
     }
   }
   function stopHeartbeat() {
@@ -637,40 +659,63 @@
 
   function watchStatus(uid) {
     stopWatchingStatus();
-    statusUnsub = onSnapshot(doc(db, "users", uid), (snap) => {
+    statusUnsub = onSnapshot(doc(db, "publicProfiles", uid), (snap) => {
       const d = snap.exists() ? snap.data() : null;
       renderStatus(d ? d.lastSeen : null);
     }, (err) => { console.error('স্ট্যাটাস লোড এরর:', err); });
     statusRefreshTimer = setInterval(() => renderStatus(latestLastSeen), 15000);
   }
 
+  // প্রোফাইলের সার্বজনীন তথ্য এখন publicProfiles/{uid}-এ থাকে (ইমেইল/ব্যালেন্স ছাড়া) —
+  // users/{uid} শুধু নিজে পড়া যায়, তাই অন্যের প্রোফাইল দেখা/সাবস্ক্রাইব সেখান দিয়ে চলে না।
+  const PUBLIC_FIELDS = ['name', 'photoURL', 'bio', 'gender', 'birthday', 'country', 'state', 'institution', 'coverColor'];
+
   async function ensureUserProfile(user) {
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
-    // নাম এখানে সিঙ্ক করা হয় না — শুধু একাউন্ট খোলার সময় Google-এর নাম বসে,
-    // এরপর ব্যবহারকারী নিজে বদলালে সেটাই থেকে যাবে, প্রতি লগইনে আর ওভাররাইট হবে না।
-    const syncedFields = {
-      photoURL: user.photoURL || '',
-      email: user.email || ''
+    // ১) নিজের পুরনো users ডকুমেন্ট (শুধু পড়া; নিজেরটা পড়তে দেওয়া হয়) — পুরনো তথ্য আনতে
+    let old = null;
+    try {
+      const us = await getDoc(doc(db, "users", user.uid));
+      old = us.exists() ? us.data() : null;
+    } catch (e) { console.error('users ডকুমেন্ট পড়তে এরর:', e); }
+
+    // ২) publicProfiles ডকুমেন্ট
+    const pref = doc(db, "publicProfiles", user.uid);
+    let pub = null;
+    try {
+      const ps = await getDoc(pref);
+      pub = ps.exists() ? ps.data() : null;
+    } catch (e) { console.error('publicProfiles পড়তে এরর:', e); }
+
+    const base = {
+      name: user.displayName || 'User',
+      bio: '', gender: '', birthday: '', country: '', state: '', institution: '',
+      coverColor: '#4285F4'
     };
-    if (snap.exists()) {
-      myProfile = { ...snap.data(), ...syncedFields };
-      await setDoc(ref, syncedFields, { merge: true });
-    } else {
-      myProfile = {
-        name: user.displayName || 'User',
-        ...syncedFields,
-        bio: '',
-        gender: '',
-        birthday: '',
-        country: '',
-        state: '',
-        institution: '',
-        coverColor: '#4285F4',
-        createdAt: serverTimestamp()
-      };
-      await setDoc(ref, myProfile);
-    }
+    const merged = { ...base, ...(old || {}), ...(pub || {}) };
+    // নাম এখানে জোর করে সিঙ্ক করা হয় না — ব্যবহারকারী নিজে বদলালে সেটাই থাকে।
+    merged.photoURL = user.photoURL || merged.photoURL || '';
+    merged.email = user.email || (old && old.email) || '';
+    myProfile = merged;
+
+    // ৩) publicProfiles-এ না থাকলে (বা নাম না থাকলে) একবার তৈরি/পূরণ — পুরনো তথ্য ও সাবস্ক্রাইবার সহ
+    try {
+      if (!pub || !pub.name) {
+        const data = {};
+        PUBLIC_FIELDS.forEach(k => { data[k] = merged[k] !== undefined ? merged[k] : ''; });
+        data.createdAt = (old && old.createdAt) ? old.createdAt : serverTimestamp();
+        const subs = Array.from(new Set([...(((pub && pub.subscribers) || [])), ...(((old && old.subscribers) || []))]));
+        data.subscribers = subs;
+        await setDoc(pref, data, { merge: true });
+        if (!merged.createdAt || !merged.createdAt.toDate) {
+          const again = await getDoc(pref);
+          if (again.exists()) myProfile = { ...myProfile, createdAt: again.data().createdAt, subscribers: again.data().subscribers || [] };
+        } else {
+          myProfile.subscribers = subs;
+        }
+      } else if (user.photoURL && pub.photoURL !== user.photoURL) {
+        await setDoc(pref, { photoURL: user.photoURL }, { merge: true });
+      }
+    } catch (e) { console.error('publicProfiles তৈরি/আপডেটে এরর:', e); }
   }
 
   const GENDER_LABELS = { male: 'পুরুষ', female: 'মহিলা', other: 'অন্যান্য' };
@@ -712,7 +757,7 @@
         '</span><span class="aboutInfoValue">' + escapeHtml(value) + '</span></div>';
     }
     const rows = [];
-    if (currentUser) rows.push(aboutRow('ইমেইল', profileData.email || ''));
+    if (isOwn) rows.push(aboutRow('ইমেইল', profileData.email || ''));
     rows.push(aboutRow('ইউনিক আইডি', currentTargetUid || ''));
     rows.push(aboutRow('যোগদানের তারিখ', formatJoinDate(profileData.createdAt)));
     if (profileData.country) rows.push(aboutRow('দেশ', profileData.country));
@@ -735,6 +780,7 @@
       ownActionRow.style.display = 'flex';
       tabsOther.style.display = 'none';
       tabsOwn.style.display = 'flex';
+      setOwnTab('posts');
       aboutSection.style.display = 'none';
       postsWrap.style.display = 'block';
     } else {
@@ -742,6 +788,7 @@
       ownActionRow.style.display = 'none';
       tabsOther.style.display = 'flex';
       tabsOwn.style.display = 'none';
+      subsWrap.style.display = 'none';
       updateSubscribeBtnUI();
       var messageBtnUrl = 'messages.html?uid=' + encodeURIComponent(currentTargetUid) +
         '&name=' + encodeURIComponent(displayName) +
@@ -757,6 +804,108 @@
         window.location.href = messageBtnUrl;
       };
       setOtherTab('posts');
+    }
+  }
+
+  // ---- নিজের প্রোফাইলে: মাই পোস্ট / মাই সাবস্ক্রাইবার ট্যাব ----
+  let subsLoadToken = 0;
+
+  function setOwnTab(tab) {
+    if (tab === 'subs') {
+      const wasOpen = subsWrap.style.display === 'block';
+      postsWrap.style.display = 'none';
+      aboutSection.style.display = 'none';
+      subsWrap.style.display = 'block';
+      myPostsTabBtn.classList.remove('active');
+      mySubsTabBtn.classList.add('active');
+      // ফোনের Back চাপলে যেন আগে এই তালিকা বন্ধ হয়ে মাই পোস্টে ফেরে
+      if (!wasOpen && backGuardActive) rearmGuard();
+      loadSubscribers();
+    } else {
+      subsWrap.style.display = 'none';
+      aboutSection.style.display = 'none';
+      postsWrap.style.display = 'block';
+      myPostsTabBtn.classList.add('active');
+      mySubsTabBtn.classList.remove('active');
+    }
+  }
+  myPostsTabBtn.addEventListener('click', () => setOwnTab('posts'));
+  mySubsTabBtn.addEventListener('click', () => setOwnTab('subs'));
+  subsBackBtn.addEventListener('click', () => setOwnTab('posts'));
+
+  // একজন সাবস্ক্রাইবারের নাম/ছবি আনে: আগে publicProfiles, না পেলে তার কোনো পোস্ট থেকে
+  async function fetchSubscriberInfo(uid) {
+    try {
+      const s = await getDoc(doc(db, "publicProfiles", uid));
+      if (s.exists() && s.data().name) return { uid, name: s.data().name, photoURL: s.data().photoURL || '' };
+    } catch (e) { console.error('সাবস্ক্রাইবারের তথ্য আনতে এরর:', uid, e); }
+    try {
+      const fq = query(collection(db, "posts"), where("authorUid", "==", uid), limit(1));
+      const fs = await getDocs(fq);
+      if (!fs.empty) {
+        const f = fs.docs[0].data();
+        return { uid, name: f.authorName || 'ব্যবহারকারী', photoURL: f.authorPhoto || '' };
+      }
+    } catch (e) {}
+    return { uid, name: 'ব্যবহারকারী', photoURL: '' };
+  }
+
+  async function loadSubscribers() {
+    if (!currentUser) return;
+    const token = ++subsLoadToken;
+    subsList.innerHTML = '';
+    subsEmpty.style.display = 'none';
+    subsLoading.style.color = '';
+    subsLoading.textContent = 'লোড হচ্ছে...';
+    subsLoading.style.display = 'block';
+    try {
+      // সবসময় সর্বশেষ তালিকা আনা হয় (অন্যরা নতুন সাবস্ক্রাইব করে থাকতে পারে)
+      let subs = [];
+      try {
+        const ms = await getDoc(doc(db, "publicProfiles", currentUser.uid));
+        if (ms.exists()) subs = ms.data().subscribers || [];
+        else subs = (currentProfileData && currentProfileData.subscribers) || [];
+      } catch (e) {
+        console.error('সাবস্ক্রাইবার তালিকা আনতে এরর:', e);
+        subs = (currentProfileData && currentProfileData.subscribers) || [];
+      }
+      subs = Array.from(new Set(subs)).filter(u => u && u !== currentUser.uid);
+      if (currentProfileData) currentProfileData.subscribers = subs;
+      statSubscribersOwn.textContent = formatCount(subs.length);
+      if (subs.length === 0) {
+        if (token !== subsLoadToken) return;
+        subsLoading.style.display = 'none';
+        subsEmpty.style.display = 'block';
+        return;
+      }
+      const infos = await Promise.all(subs.map(fetchSubscriberInfo));
+      if (token !== subsLoadToken) return;
+      subsLoading.style.display = 'none';
+      infos.forEach(inf => {
+        const a = document.createElement('a');
+        a.className = 'subRow';
+        a.href = 'profile.html?uid=' + encodeURIComponent(inf.uid);
+        // এই পেজের history এন্ট্রিতে চিহ্ন রাখা হয় — ওই একাউন্ট থেকে Back করে ফিরলে সাবস্ক্রাইবার তালিকাই আবার খুলবে
+        a.addEventListener('click', () => {
+          try { history.replaceState({ ...(history.state || {}), profileTab: 'subs' }, ''); } catch (e) {}
+        });
+        const img = document.createElement('img');
+        img.src = inf.photoURL || '';
+        img.alt = '';
+        const nm = document.createElement('div');
+        nm.className = 'subName';
+        nm.textContent = inf.name;
+        const ar = document.createElement('span');
+        ar.className = 'subArrow';
+        ar.textContent = '›';
+        a.appendChild(img); a.appendChild(nm); a.appendChild(ar);
+        subsList.appendChild(a);
+      });
+    } catch (e) {
+      if (token !== subsLoadToken) return;
+      subsLoading.style.color = '#f87171';
+      subsLoading.style.display = 'block';
+      subsLoading.textContent = 'এরর: ' + e.message;
     }
   }
 
@@ -841,7 +990,9 @@
         birthday: birthday,
         coverColor: selectedCoverColor
       };
-      await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
+      await setDoc(doc(db, "publicProfiles", currentUser.uid), data, { merge: true });
+      // অন্য পেজের সাথে নাম মেলানোর জন্য (users-এ নাম বদলানোর অনুমতি আছে) — ব্যর্থ হলেও সমস্যা নেই
+      setDoc(doc(db, "users", currentUser.uid), { name: data.name }, { merge: true }).catch(() => {});
       myProfile = { ...myProfile, ...data };
       if (currentIsOwnProfile) { currentProfileData = myProfile; renderProfile(myProfile, true); }
       editStatus.textContent = '✅ সেভ হয়েছে!';
@@ -1409,7 +1560,7 @@
     subscribeBtn.disabled = true;
     const nowSubscribed = currentIsSubscribed;
     try {
-      await setDoc(doc(db, "users", currentTargetUid), {
+      await setDoc(doc(db, "publicProfiles", currentTargetUid), {
         subscribers: nowSubscribed ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
       }, { merge: true });
       currentIsSubscribed = !nowSubscribed;
@@ -1432,6 +1583,15 @@
     const targetUid = viewUid || (user ? user.uid : null);
     if (!targetUid) return;
     const isOwn = !!user && targetUid === user.uid;
+    // অন্য একাউন্ট থেকে Back করে ফিরলে সাবস্ক্রাইবার তালিকা আবার খোলার চিহ্ন (একবারই কাজ করে)
+    let restoreSubs = false;
+    try {
+      if (isOwn && history.state && history.state.profileTab === 'subs') {
+        restoreSubs = true;
+        const st = { ...history.state }; delete st.profileTab;
+        history.replaceState(st, '');
+      }
+    } catch (e) {}
     currentTargetUid = targetUid;
     currentIsOwnProfile = isOwn;
     try { watchStatus(targetUid); } catch (e) { console.error('watchStatus এরর:', e); }
@@ -1441,10 +1601,10 @@
       profileData = myProfile;
     } else {
       try {
-        const snap = await getDoc(doc(db, "users", targetUid));
+        const snap = await getDoc(doc(db, "publicProfiles", targetUid));
         profileData = snap.exists() ? snap.data() : null;
       } catch (e) {
-        console.error('ইউজার ডকুমেন্ট পড়তে এরর:', e);
+        console.error('পাবলিক প্রোফাইল পড়তে এরর:', e);
       }
     }
 
@@ -1464,6 +1624,7 @@
     currentIsSubscribed = isOwn ? true : (!!user && profileData.subscribers.includes(user.uid));
 
     renderProfile(profileData, isOwn);
+    if (restoreSubs) setOwnTab('subs');
 
     await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
   }
@@ -1597,19 +1758,17 @@
       rearmGuard();
       return;
     }
-
-    if (backPressCount === 0) {
-      backPressCount = 1;
-      exitToast.style.display = 'block';
+    // সাবস্ক্রাইবার তালিকা খোলা থাকলে আগে সেটা বন্ধ করে মাই পোস্টে ফেরা
+    if (subsWrap.style.display === 'block') {
+      setOwnTab('posts');
       rearmGuard();
-      backPressTimer = setTimeout(() => {
-        backPressCount = 0;
-        exitToast.style.display = 'none';
-      }, 2000);
-    } else {
-      clearTimeout(backPressTimer);
-      exitToast.style.display = 'none';
+      return;
     }
+
+    // কিছুই খোলা নেই — সরাসরি আগের পেজে (যেমন সাবস্ক্রাইবার তালিকা বা আগের একাউন্টে) ফেরা।
+    // প্রোফাইল পেজে আর "আবার Back চাপুন" ধাপ নেই, নইলে একাউন্ট থেকে একাউন্টে ফেরা আটকে যেত।
+    // গার্ডের জন্য জমা হওয়া বাড়তি এন্ট্রিগুলো একই নিয়মে একের পর এক পেরিয়ে যায়।
+    navigateBack();
   }
 </script>
 
