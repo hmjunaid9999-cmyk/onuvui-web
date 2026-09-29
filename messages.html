@@ -180,13 +180,15 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .editedTag{font-style:italic;opacity:.75}
 
 /* ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- */
-#ctxBackdrop{position:fixed;inset:0;z-index:900;display:none}
-#ctxMenu{position:fixed;z-index:901;display:none;background:#21262d;border:1px solid #30363d;border-radius:14px;overflow:hidden;min-width:180px;max-width:88vw;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-#ctxMenu .ctxReactions{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid #30363d}
-#ctxMenu .ctxReactions button{background:none;border:none;font-size:23px;cursor:pointer;padding:3px;line-height:1;border-radius:50%}
-#ctxMenu .ctxReactions button:active{background:#30363d}
-#ctxMenu .ctxItem{display:block;width:100%;background:none;border:none;color:#eee;text-align:left;padding:12px 16px;font-size:14px;font-family:inherit;cursor:pointer;border-top:1px solid #262c36}
-#ctxMenu .ctxItem:first-child{border-top:none}
+#ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
+#ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:#1c2128;border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
+#ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#3a4453;margin:0 auto 10px}
+@keyframes ctxSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+#ctxMenu .ctxReactions{display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;border-bottom:1px solid #30363d;margin-bottom:4px}
+#ctxMenu .ctxReactions button{background:none;border:none;font-size:34px;cursor:pointer;padding:6px;line-height:1;border-radius:50%}
+#ctxMenu .ctxReactions button:active{background:#30363d;transform:scale(1.15)}
+#ctxMenu .ctxItem{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:#eee;text-align:left;padding:17px 22px;font-size:18px;font-family:inherit;cursor:pointer;border-top:1px solid #262c36}
+#ctxMenu .ctxItem:first-child,#ctxMenu .ctxReactions + .ctxItem{border-top:none}
 #ctxMenu .ctxItem:active{background:#2d333b}
 #ctxMenu .ctxItem.danger{color:#f87171}
 </style>
@@ -310,8 +312,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   </div>
 
   <!-- ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- -->
-  <div id="ctxBackdrop"></div>
-  <div id="ctxMenu"></div>
+  <div id="ctxBackdrop"><div id="ctxMenu"></div></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -438,6 +439,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   blockedBackBtn.addEventListener('click', () => { showOnly('login'); });
 
   backBtn.addEventListener('click', () => {
+    if (ctxOpen) { closeCtxMenu(); return; }
     if (convId) {
       // চ্যাট থেকে ইনবক্সে — পেইজ রিলোড ছাড়াই
       if (history.state && history.state.inApp) history.back();
@@ -448,7 +450,11 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       window.location.href = 'index.html';
     }
   });
-  window.addEventListener('popstate', () => { route(); });
+  window.addEventListener('popstate', () => {
+    if (ctxOpen) { closeCtxMenu(true); return; }      // মেনু খোলা থাকলে ব্যাক = শুধু মেনু বন্ধ
+    if (ctxIgnorePop) { ctxIgnorePop = false; return; } // মেনু নিজে বন্ধ হওয়ার popstate — উপেক্ষা
+    route();
+  });
 
   // ---------- একাউন্ট ডিলিট/সাসপেন্ড চেক — profile.html এর মতোই একই লজিক ----------
   async function checkAccountBlocked(user) {
@@ -517,26 +523,41 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   }
 
   // ================= লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) =================
+  // মেনু এখন ফেসবুকের মতো ফুল-স্ক্রিন বটম শিট। খোলার সময় একটা history এন্ট্রি পুশ হয়,
+  // তাই ফোনের/ব্রাউজারের ব্যাক চাপলে শুধু মেনু বন্ধ হয় — চ্যাট থেকে বের হয় না।
+  let ctxOpen = false, ctxPushed = false, ctxIgnorePop = false;
   function openCtxMenu(anchorEl, itemsHtml) {
     ctxMenu.innerHTML = itemsHtml;
-    ctxMenu.style.display = 'block';
-    ctxBackdrop.style.display = 'block';
-    const r = anchorEl.getBoundingClientRect();
-    const mw = Math.min(ctxMenu.offsetWidth || 200, window.innerWidth - 16);
-    let left = r.left + r.width / 2 - mw / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - mw - 8));
-    const mh = ctxMenu.offsetHeight || 100;
-    let top = r.bottom + 8;
-    if (top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 8);
-    ctxMenu.style.left = left + 'px';
-    ctxMenu.style.top = top + 'px';
+    ctxMenu.scrollTop = 0;
+    ctxBackdrop.style.display = 'flex';
+    // লং-প্রেসের আঙুল ছাড়ার সময় যেন ভুল করে মেনু/বাটনে ট্যাপ না পড়ে — প্রথম ৩৫০ms ট্যাপ বন্ধ
+    ctxBackdrop.style.pointerEvents = 'none';
+    setTimeout(() => { if (ctxOpen) ctxBackdrop.style.pointerEvents = 'auto'; }, 350);
+    if (!ctxOpen) {
+      try {
+        history.pushState(Object.assign({}, history.state || {}, { ctx: true }), '', location.href);
+        ctxPushed = true;
+      } catch (e) { ctxPushed = false; }
+    }
+    ctxOpen = true;
   }
-  function closeCtxMenu() {
-    ctxMenu.style.display = 'none';
-    ctxMenu.innerHTML = '';
+  function closeCtxMenu(fromPop) {
+    const wasOpen = ctxOpen;
+    ctxOpen = false;
     ctxBackdrop.style.display = 'none';
+    ctxBackdrop.style.pointerEvents = 'auto';
+    ctxMenu.innerHTML = '';
+    if (wasOpen && ctxPushed) {
+      ctxPushed = false;
+      if (fromPop !== true) {
+        // বাটন/ব্যাকড্রপ দিয়ে বন্ধ হলে পুশ করা এন্ট্রিটা সরিয়ে দিই; এই popstate-এ route() চালানো যাবে না
+        ctxIgnorePop = true;
+        try { history.back(); } catch (e) { ctxIgnorePop = false; }
+        setTimeout(() => { ctxIgnorePop = false; }, 600);
+      }
+    }
   }
-  ctxBackdrop.addEventListener('click', closeCtxMenu);
+  ctxBackdrop.addEventListener('click', e => { if (e.target === ctxBackdrop) closeCtxMenu(); });
 
   // এলিমেন্টে টাচ/মাউস "লং-প্রেস" বাঁধে (৪৫০ms); নড়াচড়া করলে বা তাড়াতাড়ি ছেড়ে দিলে বাতিল হয়ে যায়।
   // লং-প্রেস ট্রিগার হলে window.__lpFired সেট হয়, যাতে ওই একই এলিমেন্টের normal click handler
@@ -651,11 +672,11 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       if (messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
       html += '<button class="ctxItem danger" data-act="delete">🗑️ ডিলিট করুন</button>';
     } else {
-      html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
-      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
       html += '<div class="ctxReactions">' +
         Object.keys(REACTIONS).map(k => '<button data-react="' + k + '">' + REACTIONS[k] + '</button>').join('') +
         '</div>';
+      html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
+      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
     }
     openCtxMenu(anchorEl, html);
     ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', () => {
