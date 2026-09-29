@@ -180,6 +180,10 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .editedTag{font-style:italic;opacity:.75}
 
 /* ---------- লং-প্রেস কনটেক্সট মেনু (মেসেজ ও ইনবক্স রো — দুই জায়গাতেই ব্যবহৃত হয়) ---------- */
+/* লং-প্রেসে ব্রাউজারের টেক্সট-সিলেকশন হাতল ও Google "Tap to see search results" প্যানেল যেন না আসে */
+.msgRow,.msgBubble,.msgQuote,.convRow,#ctxBackdrop,#ctxMenu{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
+.msgBubble *,.convRow *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#messageInput{-webkit-user-select:text;user-select:text}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
 #ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:#1c2128;border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
 #ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#3a4453;margin:0 auto 10px}
@@ -526,7 +530,16 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   // মেনু এখন ফেসবুকের মতো ফুল-স্ক্রিন বটম শিট। খোলার সময় একটা history এন্ট্রি পুশ হয়,
   // তাই ফোনের/ব্রাউজারের ব্যাক চাপলে শুধু মেনু বন্ধ হয় — চ্যাট থেকে বের হয় না।
   let ctxOpen = false, ctxPushed = false, ctxIgnorePop = false;
+  // মেসেজ বাবল / ইনবক্স রো-তে টেক্সট সিলেক্ট শুরুই হতে দেওয়া হবে না (ইনপুট বক্স বাদে)
+  document.addEventListener('selectstart', e => {
+    const t = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentElement);
+    if (t && t.closest && t.closest('.msgRow, .convRow, #ctxBackdrop')) e.preventDefault();
+  });
+  function clearTextSelection() {
+    try { const sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges(); } catch (e) {}
+  }
   function openCtxMenu(anchorEl, itemsHtml) {
+    clearTextSelection();
     ctxMenu.innerHTML = itemsHtml;
     ctxMenu.scrollTop = 0;
     ctxBackdrop.style.display = 'flex';
