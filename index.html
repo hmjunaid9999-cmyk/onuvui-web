@@ -977,7 +977,9 @@
     return wrap;
   }
 
-  // প্রতিটি পোস্টের নিচে একটি করে বিজ্ঞাপন — তালিকার বিজ্ঞাপনগুলো পালা করে ঘুরে ঘুরে আসবে।
+  // প্রতি ৪টি পোস্টের পর একটি করে বিজ্ঞাপন — তালিকার বিজ্ঞাপনগুলো পালা করে ঘুরে ঘুরে আসবে।
+  // কত পোস্ট পর পর বিজ্ঞাপন আসবে তা বদলাতে চাইলে শুধু নিচের AD_EVERY_N_POSTS এর সংখ্যা বদলান।
+  const AD_EVERY_N_POSTS = 4;
   // নতুন বিজ্ঞাপন যোগ করতে চাইলে শুধু নিচের তালিকায় তার বিল্ডার ফাংশনের নাম যোগ করুন।
   const FEED_ADS = [buildAdBanner300x250, buildAdContainerE11b62];
   function buildFeedAd(postIndex) {
@@ -995,7 +997,7 @@
       .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm))
       .forEach((p, i) => {
         postsList.appendChild(buildPostCard(p.id, p.data));
-        postsList.appendChild(buildFeedAd(i));
+        if ((i + 1) % AD_EVERY_N_POSTS === 0) postsList.appendChild(buildFeedAd(Math.floor(i / AD_EVERY_N_POSTS)));
       });
   }
 
