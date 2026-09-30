@@ -5,7 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>Onuvuti App</title>
 <meta name="description" id="siteMetaDescription" content="">
-<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--composer-height:100px;--poster-height:180px;--post-buttons-justify:space-evenly;--blog-composer-height:300px}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;padding:24px}.loginModalOverlay.open{display:flex}.loginModalBox{position:relative;width:100%;max-width:360px;background:var(--card-color);border-radius:18px;padding:32px 24px 28px;text-align:center}#loginModalCloseBtn{position:absolute;right:12px;top:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.loginModalBox img{width:72px;height:72px;border-radius:18px;margin-bottom:16px}.loginModalBox h1{font-size:20px;margin-bottom:6px}.loginModalBox p{color:#9ca3af;font-size:13px;margin-bottom:24px}#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader img{width:38px;height:38px;border-radius:10px;object-fit:cover}#siteHeader h1{font-size:19px;font-weight:bold}#sidebarToggleBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px}#logoutBtn,#headerLoginBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#headerLoginBtn{color:var(--primary-color)}#noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}#noticeBar span{display:inline-block;padding-left:100%;animation:scrollNotice 18s linear infinite;font-size:13px;color:#facc15}@keyframes scrollNotice{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#menuGrid{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--card-color);border-bottom:1px solid #262c36}#menuGrid a{background:var(--primary-color);color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}main{padding:16px;max-width:var(--max-width);margin:0 auto}#composer{background:transparent;border:none;border-radius:0;padding:0;margin:0}#composerEntry{margin-bottom:16px}#composerAboutRow{display:flex;justify-content:flex-end;margin-bottom:8px}#aboutUsTabBtn{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerOpenBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#9ca3af;padding:13px 18px;border-radius:26px;font-size:14px;cursor:pointer;font-family:inherit}#composerOpenBtn:active{background:#21262d}#composerModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;overscroll-behavior:contain}#composerModalOverlay.open{display:flex}#composerModalBox{width:100%;max-width:var(--max-width);background:var(--card-color);border:1px solid #262c36;border-radius:16px;padding:14px;margin-top:8px}#composerModalHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}#composerModalTitle{font-size:15px;font-weight:bold}#composerModalCloseBtn{background:#21262d;border:none;color:#9ca3af;font-size:15px;cursor:pointer;width:30px;height:30px;border-radius:50%}body.composerOpen{overflow:hidden}#postToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#composerTabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}#composerTabs button{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerTabs button.active{background:var(--primary-color);color:#fff}#composerText{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px;border-radius:10px;font-size:14px;min-height:var(--composer-height);resize:vertical;font-family:inherit;transition:min-height 0.2s ease}#composerText.blogSizeActive{min-height:var(--blog-composer-height)}#cancelEditBtn{display:none;margin-top:8px;width:100%;background:#21262d;color:#f87171;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#posterColors{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}.posterSwatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent}.posterSwatch.selected{border-color:#fff}#posterPreview{display:none;margin-top:10px;border-radius:12px;padding:50px 16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;min-height:var(--poster-height);align-items:center;justify-content:center}#submitPostBtn{margin-top:10px;width:100%;background:var(--primary-color);color:#fff;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#submitPostBtn:disabled{opacity:0.6}#blogSyntaxHint{display:none;font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.6}#searchBar{width:100%;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:10px 14px;border-radius:20px;font-size:14px;margin-bottom:16px}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}#postMenuBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:340;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease,visibility .25s ease}body:has(.postMenuDropdown.open) #postMenuBackdrop,body:has(.commentMenuDropdown.open) #postMenuBackdrop{opacity:1;visibility:visible;pointer-events:auto}.postMenuDropdown{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:var(--max-width);margin:0 auto;background:#161b22;border:none;border-top:1px solid #262c36;border-radius:22px 22px 0 0;z-index:350;overflow:hidden;padding:0 0 env(safe-area-inset-bottom,0px);transform:translateY(105%);visibility:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1),visibility .3s;box-shadow:0 -6px 24px rgba(0,0,0,0.5)}.postMenuDropdown::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#4b5563;margin:10px auto 6px}.postMenuDropdown.open{transform:translateY(0);visibility:visible}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid #262c36;color:#fff;padding:18px 22px;font-size:17px;cursor:pointer;font-family:inherit}.postMenuDropdown button:first-child{border-top:none}.postMenuDropdown button:active,.postMenuDropdown button:hover{background:#21262d}.postMenuDropdown button.deleteBtn{color:#f87171}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:var(--max-width);margin:0 auto;background:#161b22;border:none;border-top:1px solid #262c36;border-radius:22px 22px 0 0;z-index:350;overflow:hidden;padding:0 0 env(safe-area-inset-bottom,0px);transform:translateY(105%);visibility:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1),visibility .3s;box-shadow:0 -6px 24px rgba(0,0,0,0.5)}.commentMenuDropdown::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#4b5563;margin:10px auto 6px}.commentMenuDropdown.open{transform:translateY(0);visibility:visible}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid #262c36;color:#fff;padding:18px 22px;font-size:17px;cursor:pointer;font-family:inherit}.commentMenuDropdown button:first-child{border-top:none}.commentMenuDropdown button:active,.commentMenuDropdown button:hover{background:#21262d}.commentMenuDropdown button.cDeleteBtn{color:#f87171}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}#loadMoreBtn{display:block;width:100%;background:var(--card-color);color:#fff;border:1px solid #262c36;padding:10px;border-radius:12px;font-size:13px;margin-top:10px;cursor:pointer}#loadMoreBtn:disabled{opacity:0.5}#footerSection{padding:12px 16px;margin-top:8px;border-top:1px solid #262c36;text-align:center}#footerSiteName{font-size:16px;font-weight:bold;margin-bottom:12px;opacity:0.9}#footerGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#footerGrid a{background:#262c36;color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100}#sidebarOverlay.open{display:block}#sidebarDrawer{position:fixed;top:0;left:-260px;width:260px;height:100%;background:var(--card-color);z-index:101;transition:left 0.25s ease;padding:18px 14px;overflow-y:auto}#sidebarDrawer.open{left:0}#sidebarDrawer .drawerHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}#sidebarCloseBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}#sidebarGrid{display:flex;flex-direction:column;gap:8px}#sidebarGrid a{display:block;background:#0d1117;color:#fff;text-decoration:none;font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid #262c36}.sidebarGadgetBox{margin-bottom:8px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}html,body{overscroll-behavior:none;overscroll-behavior-y:none;overscroll-behavior-x:none;height:100%}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#aboutUsView{display:none}.aboutUsHeader{display:flex;align-items:center;gap:10px;margin-bottom:16px}.aboutUsBackBtn{background:#21262d;color:#fff;border:none;padding:8px 16px;border-radius:12px;font-size:14px;cursor:pointer;flex-shrink:0}.aboutUsTitle{font-size:17px;font-weight:bold}#aboutUsContent{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}#aboutUsContent:empty::before{content:"এই মুহূর্তে কোনো তথ্য যুক্ত করা হয়নি।";color:#6b7280}body.aboutUsOpen #composerEntry,body.aboutUsOpen #topAdBanner,body.aboutUsOpen #searchBar,body.aboutUsOpen #postsList,body.aboutUsOpen #loadMoreBtn,body.aboutUsOpen #footerSection{display:none}body.aboutUsOpen #aboutUsView{display:block}.commentsWrap{padding-bottom:12px}body.commentFocus main{padding-bottom:calc(var(--composer-space,110px) + 16px)}.feedAd{display:flex;justify-content:center;padding:10px 0;overflow:hidden}body.commentFocus #siteHeader,body.commentFocus #noticeBar,body.commentFocus #menuGrid,body.commentFocus #footerSection,body.commentFocus .feedAd{display:none!important}.commentComposer{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:var(--max-width);z-index:90;background:var(--card-color);border-top:1px solid #262c36;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,0.35)}.commentComposer .commentForm{margin-bottom:0;align-items:flex-end}.commentComposer .commentForm textarea{min-height:44px;max-height:120px;resize:none;overflow-y:auto}.commentComposer .commentForm button{min-height:44px;padding:0 16px}.composerTargetLabel{display:none;font-size:12px;color:var(--primary-color);margin-bottom:6px}.composerTargetLabel.show{display:block}</style>
+<style>*{box-sizing:border-box;margin:0;padding:0}:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px;--composer-height:100px;--poster-height:180px;--post-buttons-justify:space-evenly;--blog-composer-height:300px}body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}.loginModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:400;align-items:center;justify-content:center;padding:24px}.loginModalOverlay.open{display:flex}.loginModalBox{position:relative;width:100%;max-width:360px;background:var(--card-color);border-radius:18px;padding:32px 24px 28px;text-align:center}#loginModalCloseBtn{position:absolute;right:12px;top:12px;background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}.loginModalBox img{width:72px;height:72px;border-radius:18px;margin-bottom:16px}.loginModalBox h1{font-size:20px;margin-bottom:6px}.loginModalBox p{color:#9ca3af;font-size:13px;margin-bottom:24px}#googleLoginBtn{display:flex;align-items:center;gap:10px;justify-content:center;width:100%;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}#googleLoginBtn:disabled{opacity:0.6}#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}#siteHeader{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}#siteHeader img{width:38px;height:38px;border-radius:10px;object-fit:cover}#siteHeader h1{font-size:19px;font-weight:bold}#sidebarToggleBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px 8px}#logoutBtn,#headerLoginBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}#headerLoginBtn{color:var(--primary-color)}#noticeBar{background:#1c2128;overflow:hidden;white-space:nowrap;padding:8px 0;border-bottom:1px solid #262c36}#noticeBar span{display:inline-block;padding-left:100%;animation:scrollNotice 18s linear infinite;font-size:13px;color:#facc15}@keyframes scrollNotice{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}#menuGrid{display:flex;flex-wrap:wrap;gap:8px;padding:12px 16px;background:var(--card-color);border-bottom:1px solid #262c36}#menuGrid a{background:var(--primary-color);color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}main{padding:16px;max-width:var(--max-width);margin:0 auto}#composer{background:transparent;border:none;border-radius:0;padding:0;margin:0}#composerEntry{margin-bottom:16px}#composerAboutRow{display:flex;justify-content:flex-end;margin-bottom:8px}#aboutUsTabBtn{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerOpenBtn{display:block;width:100%;text-align:left;background:var(--card-color);border:1px solid #262c36;color:#9ca3af;padding:13px 18px;border-radius:26px;font-size:14px;cursor:pointer;font-family:inherit}#composerOpenBtn:active{background:#21262d}#composerModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;overscroll-behavior:contain}#composerModalOverlay.open{display:flex}#composerModalBox{width:100%;max-width:var(--max-width);background:var(--card-color);border:1px solid #262c36;border-radius:16px;padding:14px;margin-top:8px}#composerModalHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}#composerModalTitle{font-size:15px;font-weight:bold}#composerModalCloseBtn{background:#21262d;border:none;color:#9ca3af;font-size:15px;cursor:pointer;width:30px;height:30px;border-radius:50%}body.composerOpen{overflow:hidden}#postToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#composerTabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}#composerTabs button{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}#composerTabs button.active{background:var(--primary-color);color:#fff}#composerText{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px;border-radius:10px;font-size:14px;min-height:var(--composer-height);resize:vertical;font-family:inherit;transition:min-height 0.2s ease}#composerText.blogSizeActive{min-height:var(--blog-composer-height)}#cancelEditBtn{display:none;margin-top:8px;width:100%;background:#21262d;color:#f87171;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#posterColors{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}.posterSwatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent}.posterSwatch.selected{border-color:#fff}#posterPreview{display:none;margin-top:10px;border-radius:12px;padding:50px 16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;min-height:var(--poster-height);align-items:center;justify-content:center}#submitPostBtn{margin-top:10px;width:100%;background:var(--primary-color);color:#fff;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}#submitPostBtn:disabled{opacity:0.6}#blogSyntaxHint{display:none;font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.6}#searchBar{width:100%;background:var(--card-color);border:1px solid #262c36;color:#fff;padding:10px 14px;border-radius:20px;font-size:14px;margin-bottom:16px}.postCard{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:14px;margin-bottom:14px}.postHeader{display:flex;align-items:center;gap:8px;margin-bottom:8px;position:relative}.postHeader img.avatar{width:32px;height:32px;border-radius:50%;background:#333}.postHeader .pName{font-size:13px;font-weight:bold}.postHeader .pTime{font-size:11px;color:#6b7280}.postAuthorLink{color:inherit;text-decoration:none;display:block}.postAuthorLink.pName:active,.postAuthorLink.pName:hover{text-decoration:underline}.postMenuWrap{margin-left:auto;position:relative}.postMenuBtn{background:none;border:none;color:#9ca3af;font-size:18px;cursor:pointer;padding:4px 8px}#postMenuBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:340;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .25s ease,visibility .25s ease}body:has(.postMenuDropdown.open) #postMenuBackdrop,body:has(.commentMenuDropdown.open) #postMenuBackdrop{opacity:1;visibility:visible;pointer-events:auto}.postMenuDropdown{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:var(--max-width);margin:0 auto;background:#161b22;border:none;border-top:1px solid #262c36;border-radius:22px 22px 0 0;z-index:350;overflow:hidden;padding:0 0 env(safe-area-inset-bottom,0px);transform:translateY(105%);visibility:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1),visibility .3s;box-shadow:0 -6px 24px rgba(0,0,0,0.5)}.postMenuDropdown::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#4b5563;margin:10px auto 6px}.postMenuDropdown.open{transform:translateY(0);visibility:visible}.postMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid #262c36;color:#fff;padding:18px 22px;font-size:17px;cursor:pointer;font-family:inherit}.postMenuDropdown button:first-child{border-top:none}.postMenuDropdown button:active,.postMenuDropdown button:hover{background:#21262d}.postMenuDropdown button.deleteBtn{color:#f87171}.blogBig{font-size:22px;font-weight:bold;line-height:1.35}.blogMed{font-size:17px;font-weight:600;line-height:1.45}.blogSmall{font-size:14px;font-weight:normal}.blogLink{color:var(--primary-color);cursor:pointer;text-decoration:underline;word-break:break-all}.blogLink.blogLinkBig{font-size:22px;font-weight:bold}.blogLink.blogLinkMed{font-size:17px;font-weight:600}.blogLink.blogLinkSmall{font-size:14px;font-weight:normal}.postText{font-size:14px;line-height:1.6;white-space:pre-wrap;margin-bottom:4px}.postText.clamped{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--clamp-lines,6);overflow:hidden}.readMoreBtn{display:none;background:none;border:none;color:var(--primary-color);font-size:13px;font-weight:bold;cursor:pointer;padding:0;margin:0 0 8px;text-align:left}.postPhoto{max-width:100%;border-radius:10px;margin-bottom:8px}.postPoster{border-radius:10px;padding:50px 16px;text-align:center;font-size:17px;font-weight:bold;color:#fff;margin-bottom:8px;min-height:var(--poster-height);display:flex;align-items:center;justify-content:center;white-space:pre-wrap}.postButtons{display:flex;justify-content:var(--post-buttons-justify);gap:6px;border-top:1px solid #262c36;padding-top:8px}.postButtons button{background:#21262d;color:#c9d1d9;border:none;padding:6px 10px;border-radius:10px;font-size:11px;cursor:pointer}.postButtons button.liked{color:#f87171}.postStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}.commentsWrap{display:none;margin-top:10px;border-top:1px solid #262c36;padding-top:10px}.commentForm{display:flex;gap:8px;margin-bottom:10px}.commentForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:8px 10px;border-radius:10px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit}.commentForm button{background:var(--primary-color);color:#fff;border:none;padding:0 14px;border-radius:10px;font-size:12px}.commentRow{margin-bottom:10px}.commentMain{display:flex;gap:8px}.commentMain img{width:28px;height:28px;border-radius:50%;background:#333;flex-shrink:0}.commentBody{background:#0d1117;border-radius:12px;padding:8px 10px;position:relative}.commentBodyTop{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.commentBody .cName{font-size:12px;font-weight:bold}.commentBody .cText{font-size:13px;color:#ddd;white-space:pre-wrap;margin-top:2px}.cReplyToLine{font-size:11px;color:var(--primary-color);margin-top:2px}.cReplyToLine b{font-weight:bold}.commentMenuWrap{position:relative;flex-shrink:0}.commentMenuBtn{background:none;border:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:0 4px;line-height:1}.commentMenuDropdown{display:block;position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;max-width:var(--max-width);margin:0 auto;background:#161b22;border:none;border-top:1px solid #262c36;border-radius:22px 22px 0 0;z-index:350;overflow:hidden;padding:0 0 env(safe-area-inset-bottom,0px);transform:translateY(105%);visibility:hidden;transition:transform .3s cubic-bezier(.32,.72,0,1),visibility .3s;box-shadow:0 -6px 24px rgba(0,0,0,0.5)}.commentMenuDropdown::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#4b5563;margin:10px auto 6px}.commentMenuDropdown.open{transform:translateY(0);visibility:visible}.commentMenuDropdown button{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid #262c36;color:#fff;padding:18px 22px;font-size:17px;cursor:pointer;font-family:inherit}.commentMenuDropdown button:first-child{border-top:none}.commentMenuDropdown button:active,.commentMenuDropdown button:hover{background:#21262d}.commentMenuDropdown button.cDeleteBtn{color:#f87171}.commentBottomRow{font-size:10px;color:#6b7280;margin-top:3px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.commentBottomButtons{display:flex;gap:10px}.commentBottomButtons button{background:none;border:none;color:#4285F4;cursor:pointer;font-size:10px;padding:0}.commentBottomButtons button.cLiked{color:#f87171}.replyTargetLabel{font-size:11px;color:var(--primary-color);margin-bottom:4px;display:none}.replyTargetLabel.show{display:block}.cancelReplyTarget{color:#f87171;cursor:pointer;margin-left:4px}.replyBox{margin-top:8px;background:#12161d;border:1px solid #262c36;border-radius:10px;padding:8px 6px 8px 0}.replyBox .commentRow{margin-bottom:8px}.replyBox .commentRow:last-child{margin-bottom:0}.replyForm{display:flex;gap:6px;margin-top:8px}.replyForm textarea{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:6px 8px;border-radius:8px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit}.replyForm button{background:var(--primary-color);color:#fff;border:none;border-radius:8px;padding:0 10px;font-size:11px}#loadMoreBtn{display:block;width:100%;background:var(--card-color);color:#fff;border:1px solid #262c36;padding:10px;border-radius:12px;font-size:13px;margin-top:10px;cursor:pointer}#loadMoreBtn:disabled{opacity:0.5}#footerSection{padding:12px 16px;margin-top:8px;border-top:1px solid #262c36;text-align:center}#footerSiteName{font-size:16px;font-weight:bold;margin-bottom:12px;opacity:0.9}#footerGrid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}#footerGrid a{background:#262c36;color:#fff;text-decoration:none;font-size:12px;padding:7px 12px;border-radius:14px}#exitToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:300}#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100}#sidebarOverlay.open{display:block}#sidebarDrawer{position:fixed;top:0;left:-260px;width:260px;height:100%;background:var(--card-color);z-index:101;transition:left 0.25s ease;padding:18px 14px;overflow-y:auto}#sidebarDrawer.open{left:0}#sidebarDrawer .drawerHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}#sidebarCloseBtn{background:none;border:none;color:#fff;font-size:20px;cursor:pointer}#sidebarGrid{display:flex;flex-direction:column;gap:8px}#sidebarGrid a{display:block;background:#0d1117;color:#fff;text-decoration:none;font-size:13px;padding:10px 12px;border-radius:10px;border:1px solid #262c36}.sidebarGadgetBox{margin-bottom:8px}.reportModalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;display:flex;align-items:flex-end;justify-content:center}.reportModalBox{width:100%;max-width:480px;background:var(--card-color);border-radius:16px 16px 0 0;padding:18px 16px 22px;box-sizing:border-box}.reportModalTitle{font-size:15px;font-weight:bold;margin-bottom:12px}.reportReasonList{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}.reportReasonBtn{text-align:left;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:13px;cursor:pointer}.reportReasonBtn.selected{border-color:var(--primary-color);background:rgba(66,133,244,0.15)}.reportModalActions{display:flex;gap:8px}.reportModalActions button{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;border:none}#reportCancelBtn{background:#262c36;color:#9ca3af}#reportSubmitBtn{background:var(--primary-color);color:#fff}html,body{overscroll-behavior:none;overscroll-behavior-y:none;overscroll-behavior-x:none;height:100%}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}#aboutUsView{display:none}.aboutUsHeader{display:flex;align-items:center;gap:10px;margin-bottom:16px}.aboutUsBackBtn{background:#21262d;color:#fff;border:none;padding:8px 16px;border-radius:12px;font-size:14px;cursor:pointer;flex-shrink:0}.aboutUsTitle{font-size:17px;font-weight:bold}#aboutUsContent{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:16px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}#aboutUsContent:empty::before{content:"এই মুহূর্তে কোনো তথ্য যুক্ত করা হয়নি।";color:#6b7280}body.aboutUsOpen #composerEntry,body.aboutUsOpen #topAdBanner,body.aboutUsOpen #searchBar,body.aboutUsOpen #postsList,body.aboutUsOpen #loadMoreBtn,body.aboutUsOpen #footerSection{display:none}body.aboutUsOpen #aboutUsView{display:block}.commentsWrap{padding-bottom:12px}body.commentFocus main{padding-bottom:calc(var(--composer-space,110px) + 16px)}.feedAd{display:flex;justify-content:center;padding:10px 0;overflow:hidden}body.commentFocus #siteHeader,body.commentFocus #noticeBar,body.commentFocus #menuGrid,body.commentFocus #footerSection,body.commentFocus .feedAd{display:none!important}.commentComposer{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:var(--max-width);z-index:90;background:var(--card-color);border-top:1px solid #262c36;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(0,0,0,0.35)}.commentComposer .commentForm{margin-bottom:0;align-items:flex-end}.commentComposer .commentForm textarea{min-height:44px;max-height:120px;resize:none;overflow-y:auto}.commentComposer .commentForm button{min-height:44px;padding:0 16px}.composerTargetLabel{display:none;font-size:12px;color:var(--primary-color);margin-bottom:6px}.composerTargetLabel.show{display:block}
+.likeBtn,.postButtons button.likeBtn{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.reactSummary{display:none;align-items:center;gap:6px;font-size:12px;color:#9ca3af;padding:2px 2px 8px;cursor:pointer;width:fit-content}
+.reactSummary.show{display:flex}
+.reactSummary .rsEmojis{font-size:14px;letter-spacing:1px}
+.reactPickerBackdrop{position:fixed;inset:0;z-index:640;background:transparent}
+.reactPicker{position:fixed;z-index:650;display:flex;gap:2px;background:#21262d;border:1px solid #30363d;border-radius:30px;padding:6px 8px;box-shadow:0 6px 22px rgba(0,0,0,0.55);animation:reactPop .16s ease-out}
+@keyframes reactPop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.reactPicker button.reactPickBtn{background:none;border:none;font-size:30px;line-height:1;padding:4px 6px;border-radius:50%;cursor:pointer;transition:transform .12s ease}
+.reactPicker button.reactPickBtn:active,.reactPicker button.reactPickBtn:hover{transform:scale(1.3)}
+.reactPicker button.reactPickBtn.sel{background:#30363d}
+.reactSheetOverlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.55);display:flex;align-items:flex-end;justify-content:center}
+.reactSheet{width:100%;max-width:var(--max-width,640px);max-height:75vh;background:#161b22;border-radius:22px 22px 0 0;border-top:1px solid #262c36;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,0px)}
+.reactSheetHead{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 6px}
+.reactSheetTitle{font-size:16px;font-weight:bold;color:#fff}
+.reactSheetClose{background:#21262d;border:none;color:#9ca3af;font-size:15px;cursor:pointer;width:30px;height:30px;border-radius:50%}
+.reactTabs{display:flex;gap:6px;padding:6px 16px 10px;overflow-x:auto;flex-shrink:0}
+.reactTab{background:#21262d;color:#c9d1d9;border:none;padding:6px 12px;border-radius:14px;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.reactTab.active{background:var(--primary-color,#4285F4);color:#fff}
+.reactList{overflow-y:auto;padding:0 16px 14px;flex:1}
+.reactRow{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #262c36;text-decoration:none;color:#fff}
+.reactRow:first-child{border-top:none}
+.reactRow .rrAvatar{width:38px;height:38px;border-radius:50%;background:#333;object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;color:#9ca3af;overflow:hidden}
+.reactRow .rrAvatar img{width:100%;height:100%;object-fit:cover}
+.reactRow .rrName{flex:1;font-size:14px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reactRow .rrEmoji{font-size:24px;flex-shrink:0}
+.reactEmpty{color:#6b7280;font-size:13px;text-align:center;padding:20px 0}
+</style>
 </head>
 <body>
 
@@ -144,7 +171,7 @@
   import {
     getFirestore, doc, onSnapshot, collection, addDoc, updateDoc, deleteDoc,
     query, orderBy, limit, startAfter, getDocs, getDoc, setDoc,
-    serverTimestamp, arrayUnion, arrayRemove
+    serverTimestamp, arrayUnion, arrayRemove, deleteField
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
   const firebaseConfig = {
     apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
@@ -967,6 +994,227 @@
       });
   }
 
+
+  // ================= রিঅ্যাকশন সিস্টেম (লাইক + লং-প্রেসে ৬টা রিঅ্যাকশন) =================
+  // ডেটা: likedBy (সবাই — পুরনো লাইকের সাথে সামঞ্জস্য) + reactions.{uid} = {type, name, photo}
+  // likedBy তে uid আছে কিন্তু reactions এ নেই = পুরনো সাধারণ লাইক ('like' ধরা হয়)
+  const REACTIONS = [
+    { k: 'like',  e: '👍', l: 'লাইক',   c: '#4285F4' },
+    { k: 'love',  e: '❤️', l: 'ভালোবাসা', c: '#f87171' },
+    { k: 'haha',  e: '😆', l: 'হাহা',    c: '#facc15' },
+    { k: 'sad',   e: '😢', l: 'দুঃখ',    c: '#facc15' },
+    { k: 'angry', e: '😠', l: 'রাগ',     c: '#f97316' },
+    { k: 'wow',   e: '😮', l: 'ওয়াও',   c: '#facc15' }
+  ];
+  const REACT_MAP = {};
+  REACTIONS.forEach(r => { REACT_MAP[r.k] = r; });
+
+  function reactionTypeOf(d, uid) {
+    if (!uid || !(d.likedBy || []).includes(uid)) return null;
+    const r = d.reactions && d.reactions[uid];
+    return (r && REACT_MAP[r.type]) ? r.type : 'like';
+  }
+  function myReactionOf(d) { return currentUser ? reactionTypeOf(d, currentUser.uid) : null; }
+
+  async function setPostReaction(postId, d, type) {
+    const uid = currentUser.uid;
+    const upd = {};
+    if (type === null) {
+      upd.likedBy = arrayRemove(uid);
+      upd['reactions.' + uid] = deleteField();
+    } else {
+      upd.likedBy = arrayUnion(uid);
+      upd['reactions.' + uid] = { type: type, name: currentUser.displayName || 'ব্যবহারকারী', photo: currentUser.photoURL || '' };
+    }
+    await updateDoc(doc(db, "posts", postId), upd);
+    d.reactions = Object.assign({}, d.reactions || {});
+    if (type === null) {
+      d.likedBy = (d.likedBy || []).filter(u => u !== uid);
+      delete d.reactions[uid];
+    } else {
+      if (!(d.likedBy || []).includes(uid)) d.likedBy = [...(d.likedBy || []), uid];
+      d.reactions[uid] = { type: type, name: currentUser.displayName || 'ব্যবহারকারী', photo: currentUser.photoURL || '' };
+    }
+  }
+
+  function renderLikeBtn(b, d) {
+    const t = myReactionOf(d);
+    const n = (d.likedBy || []).length;
+    if (t) {
+      b.className = 'likeBtn liked';
+      b.style.color = REACT_MAP[t].c;
+      b.innerHTML = `${REACT_MAP[t].e} ${REACT_MAP[t].l} (<span class="likeCount">${n}</span>)`;
+    } else {
+      b.className = 'likeBtn';
+      b.style.color = '';
+      b.innerHTML = `👍 লাইক (<span class="likeCount">${n}</span>)`;
+    }
+  }
+
+  // ট্যাপ = লাইক/আনলাইক, লং-প্রেস (≈০.৪ সেকেন্ড) = রিঅ্যাকশন পিকার
+  function attachReactionPress(b, onTap, onLong) {
+    let timer = null, fired = false, sx = 0, sy = 0;
+    const cancel = () => { clearTimeout(timer); timer = null; };
+    b.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      fired = false; sx = e.clientX; sy = e.clientY;
+      cancel();
+      timer = setTimeout(() => { timer = null; fired = true; onLong(); }, 420);
+    });
+    b.addEventListener('pointermove', (e) => {
+      if (timer && (Math.abs(e.clientX - sx) > 10 || Math.abs(e.clientY - sy) > 10)) cancel();
+    });
+    b.addEventListener('pointerup', cancel);
+    b.addEventListener('pointercancel', cancel);
+    b.addEventListener('pointerleave', cancel);
+    b.addEventListener('contextmenu', (e) => e.preventDefault());
+    b.addEventListener('click', (e) => {
+      if (fired) { fired = false; e.preventDefault(); return; }
+      onTap();
+    });
+  }
+
+  let reactPickerEl = null, reactPickerBackdrop = null, reactPickerOpenedAt = 0;
+  function closeReactionPicker() {
+    if (reactPickerEl) { reactPickerEl.remove(); reactPickerEl = null; }
+    if (reactPickerBackdrop) { reactPickerBackdrop.remove(); reactPickerBackdrop = null; }
+  }
+  function openReactionPicker(anchor, current, onPick) {
+    closeReactionPicker();
+    reactPickerOpenedAt = Date.now();
+    const bd = document.createElement('div');
+    bd.className = 'reactPickerBackdrop';
+    bd.addEventListener('click', () => { if (Date.now() - reactPickerOpenedAt > 250) closeReactionPicker(); });
+    bd.addEventListener('contextmenu', (e) => e.preventDefault());
+    const el = document.createElement('div');
+    el.className = 'reactPicker';
+    REACTIONS.forEach(r => {
+      const bt = document.createElement('button');
+      bt.type = 'button';
+      bt.className = 'reactPickBtn' + (current === r.k ? ' sel' : '');
+      bt.textContent = r.e;
+      bt.title = r.l;
+      bt.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        if (Date.now() - reactPickerOpenedAt < 250) return;
+        closeReactionPicker();
+        onPick(r.k);
+      });
+      el.appendChild(bt);
+    });
+    document.body.appendChild(bd);
+    document.body.appendChild(el);
+    reactPickerBackdrop = bd; reactPickerEl = el;
+    const rect = anchor.getBoundingClientRect();
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let left = rect.left + rect.width / 2 - w / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    let top = rect.top - h - 10;
+    if (top < 8) top = rect.bottom + 10;
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+  }
+
+  // কারা কোন রিঅ্যাকশন দিয়েছে তার তালিকা (বটম শিট)
+  let reactSheetEl = null;
+  function closeReactionList() {
+    if (reactSheetEl) { reactSheetEl.remove(); reactSheetEl = null; }
+  }
+  function openReactionList(d) {
+    closeReactionList();
+    closeReactionPicker();
+    const ids = [...(d.likedBy || [])].reverse();
+    const entries = ids.map(uid => {
+      const r = d.reactions && d.reactions[uid];
+      return { uid: uid, type: reactionTypeOf(d, uid), name: (r && r.name) || '', photo: (r && r.photo) || '' };
+    });
+    const ov = document.createElement('div');
+    ov.className = 'reactSheetOverlay';
+    const sheet = document.createElement('div');
+    sheet.className = 'reactSheet';
+    const head = document.createElement('div');
+    head.className = 'reactSheetHead';
+    const title = document.createElement('div');
+    title.className = 'reactSheetTitle';
+    title.textContent = 'প্রতিক্রিয়া';
+    const cl = document.createElement('button');
+    cl.className = 'reactSheetClose';
+    cl.textContent = '✕';
+    cl.addEventListener('click', closeReactionList);
+    head.appendChild(title); head.appendChild(cl);
+    const tabs = document.createElement('div');
+    tabs.className = 'reactTabs';
+    const list = document.createElement('div');
+    list.className = 'reactList';
+    sheet.appendChild(head); sheet.appendChild(tabs); sheet.appendChild(list);
+    ov.appendChild(sheet);
+    ov.addEventListener('click', (e) => { if (e.target === ov) closeReactionList(); });
+    document.body.appendChild(ov);
+    reactSheetEl = ov;
+
+    let activeTab = 'all';
+    function renderList() {
+      tabs.innerHTML = '';
+      const counts = {};
+      entries.forEach(en => { counts[en.type] = (counts[en.type] || 0) + 1; });
+      const mkTab = (key, label) => {
+        const t = document.createElement('button');
+        t.className = 'reactTab' + (activeTab === key ? ' active' : '');
+        t.textContent = label;
+        t.addEventListener('click', () => { activeTab = key; renderList(); });
+        tabs.appendChild(t);
+      };
+      mkTab('all', 'সব ' + entries.length);
+      REACTIONS.forEach(r => { if (counts[r.k]) mkTab(r.k, r.e + ' ' + counts[r.k]); });
+      list.innerHTML = '';
+      const shown = entries.filter(en => activeTab === 'all' || en.type === activeTab);
+      if (!shown.length) {
+        const em = document.createElement('div');
+        em.className = 'reactEmpty';
+        em.textContent = 'এখনো কেউ রিঅ্যাক্ট করেনি।';
+        list.appendChild(em);
+        return;
+      }
+      shown.forEach(en => {
+        const row = document.createElement('a');
+        row.className = 'reactRow';
+        row.href = 'profile.html?uid=' + encodeURIComponent(en.uid);
+        const av = document.createElement('div');
+        av.className = 'rrAvatar';
+        if (en.photo) {
+          const im = document.createElement('img');
+          im.src = en.photo; im.loading = 'lazy';
+          im.addEventListener('error', () => { im.remove(); av.textContent = (en.name || '?').charAt(0); });
+          av.appendChild(im);
+        } else {
+          av.textContent = (en.name || '?').charAt(0);
+        }
+        const nm = document.createElement('div');
+        nm.className = 'rrName';
+        nm.textContent = en.name || 'ব্যবহারকারী';
+        const em = document.createElement('div');
+        em.className = 'rrEmoji';
+        em.textContent = REACT_MAP[en.type].e;
+        row.appendChild(av); row.appendChild(nm); row.appendChild(em);
+        list.appendChild(row);
+      });
+    }
+    renderList();
+
+    // পুরনো লাইক (নাম/ছবি সংরক্ষিত নেই) — publicProfiles থেকে পূরণ করার চেষ্টা
+    const missing = entries.filter(en => !en.name);
+    if (missing.length) {
+      Promise.all(missing.map(async (en) => {
+        try {
+          const s = await getDoc(doc(db, "publicProfiles", en.uid));
+          if (s.exists()) { const p = s.data(); en.name = p.name || ''; en.photo = p.photoURL || ''; }
+        } catch (e) {}
+      })).then(() => { if (reactSheetEl === ov) renderList(); });
+    }
+  }
+  function isReactionUiOpen() { return !!(reactPickerEl || reactSheetEl); }
+  function closeReactionUi() { closeReactionPicker(); closeReactionList(); }
+
   function buildPostCard(postId, d) {
     const isOwner = currentUser && d.authorUid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
@@ -1037,22 +1285,46 @@
     const menuContainer = card.querySelector('.postMenuDropdown');
     const menuBtn0 = card.querySelector('.postMenuBtn');
 
+    // ---- রিঅ্যাকশন সারাংশ (ট্যাপ করলে কারা কী রিঅ্যাক্ট দিয়েছে তার তালিকা খোলে) ----
+    const reactSummaryEl = document.createElement('div');
+    reactSummaryEl.className = 'reactSummary';
+    reactSummaryEl.addEventListener('click', () => openReactionList(d));
+    bottomContainer.parentNode.insertBefore(reactSummaryEl, bottomContainer);
+    function updateReactSummary() {
+      const ids = d.likedBy || [];
+      if (!ids.length) { reactSummaryEl.className = 'reactSummary'; reactSummaryEl.innerHTML = ''; return; }
+      const cnt = {};
+      ids.forEach(u => { const t = reactionTypeOf(d, u); cnt[t] = (cnt[t] || 0) + 1; });
+      const top = REACTIONS.filter(r => cnt[r.k]).sort((a, b) => cnt[b.k] - cnt[a.k]).slice(0, 3);
+      reactSummaryEl.className = 'reactSummary show';
+      reactSummaryEl.innerHTML = '<span class="rsEmojis">' + top.map(r => r.e).join('') + '</span><span>' + ids.length + ' জন</span>';
+    }
+    updateReactSummary();
+
     const buttonDefs = {
       like: () => {
         const b = document.createElement('button');
-        b.className = 'likeBtn' + (liked ? ' liked' : '');
-        b.innerHTML = `${liked ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
-        b.addEventListener('click', async () => {
+        b.className = 'likeBtn';
+        let busy = false;
+        const doReact = async (type) => {
           if (!requireLogin()) return;
-          const postRef = doc(db, "posts", postId);
-          const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-          await updateDoc(postRef, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
-          if (nowLiked) d.likedBy = (d.likedBy || []).filter(u => u !== currentUser.uid);
-          else d.likedBy = [...(d.likedBy || []), currentUser.uid];
-          const nowLikedState = (d.likedBy || []).includes(currentUser.uid);
-          b.className = 'likeBtn' + (nowLikedState ? ' liked' : '');
-          b.innerHTML = `${nowLikedState ? '❤️' : '🤍'} লাইক (<span class="likeCount">${(d.likedBy || []).length}</span>)`;
-        });
+          if (busy) return;
+          busy = true;
+          try {
+            await setPostReaction(postId, d, type);
+            
+            renderLikeBtn(b, d);
+            updateReactSummary();
+          } catch (e) { console.error(e); alert('লাইক দেওয়া যায়নি: ' + e.message); }
+          busy = false;
+        };
+        attachReactionPress(b,
+          () => doReact(myReactionOf(d) ? null : 'like'),
+          () => {
+            if (!requireLogin()) return;
+            openReactionPicker(b, myReactionOf(d), (k) => { if (k !== myReactionOf(d)) doReact(k); });
+          });
+        renderLikeBtn(b, d);
         return b;
       },
       comment: () => {
@@ -1390,7 +1662,8 @@
           if (!requireLogin()) return;
           const ref2 = doc(db, "posts", postId, "comments", commentId);
           const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-          await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) });
+          try { await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) }); }
+          catch (e) { console.error(e); alert('লাইক দেওয়া যায়নি: ' + e.message); }
         });
         return b;
       },
@@ -1584,6 +1857,11 @@
 
   function handleBack() {
     if (suppressPops) { suppressPops = 0; return; }
+    if (isReactionUiOpen()) {
+      closeReactionUi();
+      rearmGuard();
+      return;
+    }
     if (document.body.classList.contains('aboutUsOpen')) {
       closeAboutUs();
       rearmGuard();
