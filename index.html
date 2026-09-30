@@ -1067,12 +1067,13 @@
             if (!commentsLoaded) { loadComments(postId, card); commentsLoaded = true; }
             if (!openCommentSections.includes(commentsWrap)) openCommentSections.push(commentsWrap);
             enterCommentFocus(card);
-            rearmGuard();
+            pushLayer('comments');
           } else {
             openCommentSections = openCommentSections.filter(w => w !== commentsWrap);
             openReplyBoxes = openReplyBoxes.filter(b => !commentsWrap.contains(b));
             card._clearReplyTarget();
             exitCommentFocus();
+            unwindLayers();
           }
         });
         return b;
@@ -1137,6 +1138,8 @@
             openReplyBoxes = openReplyBoxes.filter(b => !wrap.contains(b));
             const nextAd = card.nextElementSibling;
             if (nextAd && nextAd.classList.contains('feedAd')) nextAd.remove();
+            if (activeReplyCard === card) activeReplyCard = null;
+            if (focusedCard === card) { focusedCard = null; exitCommentFocus(); unwindLayers(); }
             card.remove();
           } catch (e) { alert('এরর: ' + e.message); }
         });
@@ -1222,7 +1225,7 @@
       activeReplyCard = card;
       composerLabel.classList.add('show');
       composerLabel.innerHTML = `↩ <b>${escapeHtml(name)}</b> কে উত্তর দিচ্ছেন <span class="cancelReplyTarget">✕</span>`;
-      composerLabel.querySelector('.cancelReplyTarget').addEventListener('click', () => card._clearReplyTarget());
+      composerLabel.querySelector('.cancelReplyTarget').addEventListener('click', () => { card._clearReplyTarget(); syncReplyLayer(); });
       composerInput.placeholder = 'উত্তর লিখুন...';
       composerInput.focus();
     };
@@ -1364,6 +1367,7 @@
           replyBox.style.display = 'none';
           openReplyBoxes = openReplyBoxes.filter(bx => bx !== replyBox);
           card._clearReplyTarget();
+          syncReplyLayer();
           return;
         }
         card._openReplyIds.add(commentId);
@@ -1372,7 +1376,7 @@
           if (!openReplyBoxes.includes(replyBox)) openReplyBoxes.push(replyBox);
         }
         card._setReplyTarget(commentId, id, name);
-        rearmGuard();
+        if (!historyLayers.includes('reply')) pushLayer('reply');
       };
       return newCtx;
     })() : ctx;
@@ -1535,6 +1539,42 @@
     history.pushState({ guard: true }, '', location.href);
   }
 
+  // কমেন্ট/রিপ্লাইয়ের জন্য স্তরভিত্তিক ব্যাক: ব্যবহারকারীর ট্যাপেই এন্ট্রি বসে,
+  // ব্যাক চাপলে একটা স্তর বন্ধ হয় — ব্যাক-হ্যান্ডলারের ভেতরে আর নতুন এন্ট্রি বসানো হয় না
+  // (ওভাবে বসালে ব্রাউজার সেগুলো টপকে গিয়ে সরাসরি সাইট থেকে বের করে দেয়)
+  let historyLayers = [];
+  let suppressPops = 0;
+  function pushLayer(kind) {
+    if (!backGuardActive) return;
+    history.pushState({ layer: kind }, '', location.href);
+    historyLayers.push(kind);
+  }
+  function goBackQuietly(n) {
+    suppressPops = 1;
+    history.go(-n);
+    setTimeout(() => { suppressPops = 0; }, 600);
+  }
+  function unwindLayers() {
+    const n = historyLayers.length;
+    historyLayers.length = 0;
+    if (n) goBackQuietly(n);
+  }
+  function syncReplyLayer() {
+    if (historyLayers[historyLayers.length - 1] !== 'reply') return;
+    if ((activeReplyCard && activeReplyCard._replyTarget) || openReplyBoxes.length) return;
+    historyLayers.pop();
+    goBackQuietly(1);
+  }
+  function closeReplyLayer() {
+    if (activeReplyCard && activeReplyCard._replyTarget) activeReplyCard._clearReplyTarget();
+    while (openReplyBoxes.length) {
+      const bx = openReplyBoxes.pop();
+      bx.style.display = 'none';
+      if (bx._onClose) bx._onClose();
+    }
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  }
+
   function initBackGuard() {
     if (backGuardActive) return;
     backGuardActive = true;
@@ -1543,6 +1583,7 @@
   }
 
   function handleBack() {
+    if (suppressPops) { suppressPops = 0; return; }
     if (document.body.classList.contains('aboutUsOpen')) {
       closeAboutUs();
       rearmGuard();
@@ -1573,6 +1614,18 @@
     if (openMenu) {
       openMenu.classList.remove('open');
       rearmGuard();
+      return;
+    }
+    if (historyLayers.length) {
+      const kind = historyLayers.pop();
+      closeReplyLayer();
+      if (kind === 'comments' && openCommentSections.length) {
+        const wrap = openCommentSections.pop();
+        wrap.style.display = 'none';
+        const wrapCard = wrap.closest('.postCard');
+        if (wrapCard && wrapCard._clearReplyTarget) wrapCard._clearReplyTarget();
+        exitCommentFocus();
+      }
       return;
     }
     if (activeReplyCard && activeReplyCard._replyTarget) {
