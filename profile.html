@@ -31,6 +31,11 @@
 .reactRow .rrName{flex:1;font-size:14px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .reactRow .rrEmoji{font-size:24px;flex-shrink:0}
 .reactEmpty{color:#6b7280;font-size:13px;text-align:center;padding:20px 0}
+.lkEmoji{display:inline-block}
+.lkEmoji.lkOff{filter:grayscale(1) opacity(.65)}
+.lkEmoji.lkPop{animation:lkPopAnim .32s ease-out}
+@keyframes lkPopAnim{0%{transform:scale(.6)}55%{transform:scale(1.45)}100%{transform:scale(1)}}
+.postButtons button.likeBtn{transition:background .18s ease,color .18s ease}
 </style>
 </head>
 <body>
@@ -1161,12 +1166,12 @@
   // ডেটা: likedBy (সবাই — পুরনো লাইকের সাথে সামঞ্জস্য) + reactions.{uid} = {type, name, photo}
   // likedBy তে uid আছে কিন্তু reactions এ নেই = পুরনো সাধারণ লাইক ('like' ধরা হয়)
   const REACTIONS = [
-    { k: 'like',  e: '👍', l: 'লাইক',   c: '#4285F4' },
-    { k: 'love',  e: '❤️', l: 'ভালোবাসা', c: '#f87171' },
-    { k: 'haha',  e: '😆', l: 'হাহা',    c: '#facc15' },
-    { k: 'sad',   e: '😢', l: 'দুঃখ',    c: '#facc15' },
-    { k: 'angry', e: '😠', l: 'রাগ',     c: '#f97316' },
-    { k: 'wow',   e: '😮', l: 'ওয়াও',   c: '#facc15' }
+    { k: 'like',  e: '👍', l: 'লাইক',   c: '#4285F4', bg: 'rgba(66,133,244,0.18)' },
+    { k: 'love',  e: '❤️', l: 'ভালোবাসা', c: '#f87171', bg: 'rgba(248,113,113,0.18)' },
+    { k: 'haha',  e: '😆', l: 'হাহা',    c: '#facc15', bg: 'rgba(250,204,21,0.16)' },
+    { k: 'sad',   e: '😢', l: 'দুঃখ',    c: '#facc15', bg: 'rgba(250,204,21,0.16)' },
+    { k: 'angry', e: '😠', l: 'রাগ',     c: '#f97316', bg: 'rgba(249,115,22,0.18)' },
+    { k: 'wow',   e: '😮', l: 'ওয়াও',   c: '#facc15', bg: 'rgba(250,204,21,0.16)' }
   ];
   const REACT_MAP = {};
   REACTIONS.forEach(r => { REACT_MAP[r.k] = r; });
@@ -1199,17 +1204,26 @@
     }
   }
 
-  function renderLikeBtn(b, d) {
+  function renderLikeBtn(b, d, animate) {
     const t = myReactionOf(d);
     const n = (d.likedBy || []).length;
     if (t) {
+      const r = REACT_MAP[t];
       b.className = 'likeBtn liked';
-      b.style.color = REACT_MAP[t].c;
-      b.innerHTML = `${REACT_MAP[t].e} ${REACT_MAP[t].l} (<span class="likeCount">${n}</span>)`;
+      b.style.color = r.c;
+      b.style.background = r.bg;
+      b.style.fontWeight = 'bold';
+      b.innerHTML = `<span class="lkEmoji">${r.e}</span> ${r.l} (<span class="likeCount">${n}</span>)`;
     } else {
       b.className = 'likeBtn';
       b.style.color = '';
-      b.innerHTML = `👍 লাইক (<span class="likeCount">${n}</span>)`;
+      b.style.background = '';
+      b.style.fontWeight = '';
+      b.innerHTML = `<span class="lkEmoji lkOff">👍</span> লাইক (<span class="likeCount">${n}</span>)`;
+    }
+    if (animate && t) {
+      const em = b.querySelector('.lkEmoji');
+      if (em) { em.classList.add('lkPop'); setTimeout(() => em.classList.remove('lkPop'), 350); }
     }
   }
 
@@ -1377,6 +1391,10 @@
   function isReactionUiOpen() { return !!(reactPickerEl || reactSheetEl); }
   function closeReactionUi() { closeReactionPicker(); closeReactionList(); }
 
+  // স্ক্রল করলে বা Esc চাপলে ভেসে থাকা পিকার বন্ধ হয়ে যাবে (পিকার বাটনের অবস্থানে আটকানো থাকে)
+  window.addEventListener('scroll', () => { if (reactPickerEl) closeReactionPicker(); }, { passive: true });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isReactionUiOpen()) closeReactionUi(); });
+
   function buildPostCard(postId, d) {
     const isOwner = currentUser && d.authorUid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
@@ -1476,7 +1494,7 @@
             await setPostReaction(postId, d, type);
             const idx = myPosts.findIndex(p => p.id === postId);
             if (idx > -1) myPosts[idx].data = d;
-            renderLikeBtn(b, d);
+            renderLikeBtn(b, d, true);
             updateReactSummary();
           } catch (e) { console.error(e); alert('লাইক দেওয়া যায়নি: ' + e.message); }
           busy = false;
