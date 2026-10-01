@@ -71,6 +71,16 @@ body.sidebarOpen{overflow:hidden}
 #focusBackBar{display:none;position:sticky;top:0;z-index:80;background:var(--card-color);padding:8px 12px;border-bottom:1px solid #262c36}
 body.commentFocus #focusBackBar{display:flex}
 #focusBackBtn{background:#262c36;color:#fff;border:none;border-radius:18px;padding:7px 14px 7px 10px;font-size:14px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+
+/* ===== ক্যাটাগরি ট্যাব: সবগুলো | টেক্সট | পোস্টার | ব্লগ ===== */
+#filterTabs{display:flex;gap:8px;margin:0 0 16px}
+#filterTabs button{flex:1;background:#21262d;color:#9ca3af;border:none;padding:9px 4px;border-radius:14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+#filterTabs button.active{background:var(--primary-color);color:#fff}
+body.commentFocus #filterTabs,body.aboutUsOpen #filterTabs{display:none!important}
+#emptyFilterMsg{text-align:center;color:#6b7280;font-size:14px;padding:28px 0}
+/* সার্চ খোলা থাকলে: শুধু ক্যাটাগরি ট্যাব আর পোস্ট */
+body.searchOpen #noticeBar,body.searchOpen #menuGrid,body.searchOpen #composerEntry,body.searchOpen #topAdBanner,body.searchOpen #footerSection{display:none!important}
+body.searchOpen main{padding-top:12px}
 </style>
 </head>
 <body>
@@ -141,6 +151,13 @@ body.commentFocus #focusBackBar{display:flex}
           <button type="button" id="aboutUsTabBtn">ℹ️ আমাদের সম্পর্কে</button>
         </div>
         <button type="button" id="composerOpenBtn">✍️ আপনার অনুভূতি ব্যক্ত করুন / পোস্ট করুন</button>
+      </div>
+
+      <div id="filterTabs">
+        <button type="button" class="active" data-filter="all">সবগুলো</button>
+        <button type="button" data-filter="text">টেক্সট</button>
+        <button type="button" data-filter="poster">পোস্টার</button>
+        <button type="button" data-filter="blog">ব্লগ</button>
       </div>
 
       <div id="composerModalOverlay">
@@ -881,7 +898,13 @@ body.commentFocus #focusBackBar{display:flex}
     });
   }
 
+  let loadingPosts = false;
   async function loadPosts(isFirstLoad) {
+    if (loadingPosts) return;
+    loadingPosts = true;
+    try { await loadPostsInner(isFirstLoad); } finally { loadingPosts = false; }
+  }
+  async function loadPostsInner(isFirstLoad) {
     loadMoreBtn.disabled = true;
     loadMoreBtn.textContent = 'লোড হচ্ছে...';
 
@@ -904,10 +927,10 @@ body.commentFocus #focusBackBar{display:flex}
       allLoadedPosts.push({ id: docSnap.id, data: docSnap.data() });
     });
 
-    renderPosts();
     loadMoreBtn.style.display = snap.docs.length < postsPerPage ? 'none' : 'block';
     loadMoreBtn.disabled = false;
     loadMoreBtn.textContent = 'আরও পোস্ট দেখুন';
+    renderPosts();
   }
 
   function resetFeed() {
@@ -1065,17 +1088,41 @@ body.commentFocus #focusBackBar{display:flex}
     return slot;
   }
 
+  let activeFilter = 'all';
+  function postKind(d) { return d.type === 'poster' ? 'poster' : (d.type === 'blog' ? 'blog' : 'text'); }
+  let autoLoadingMore = false;
   function renderPosts() {
     const searchTerm = searchBar.value.trim().toLowerCase();
     postsList.innerHTML = '';
 
-    allLoadedPosts
-      .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm))
-      .forEach((p, i) => {
-        postsList.appendChild(buildPostCard(p.id, p.data));
-        if ((i + 1) % AD_EVERY_N_POSTS === 0) postsList.appendChild(buildFeedAd(Math.floor(i / AD_EVERY_N_POSTS)));
-      });
+    const shown = allLoadedPosts
+      .filter(p => activeFilter === 'all' || postKind(p.data) === activeFilter)
+      .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm));
+    shown.forEach((p, i) => {
+      postsList.appendChild(buildPostCard(p.id, p.data));
+      if ((i + 1) % AD_EVERY_N_POSTS === 0) postsList.appendChild(buildFeedAd(Math.floor(i / AD_EVERY_N_POSTS)));
+    });
+
+    const moreAvailable = loadMoreBtn.style.display === 'block' && !loadMoreBtn.disabled;
+    const filtering = activeFilter !== 'all' || searchTerm;
+    // ফিল্টারে কম পোস্ট মিললে বাকি পোস্ট নিজে থেকেই লোড করে আনে
+    if (filtering && shown.length < postsPerPage && moreAvailable && !autoLoadingMore) {
+      autoLoadingMore = true;
+      autoLoadingMore = false; setTimeout(() => loadPosts(false), 0);
+    } else if (!shown.length && allLoadedPosts.length && !moreAvailable) {
+      const m = document.createElement('div');
+      m.id = 'emptyFilterMsg';
+      m.textContent = 'এই ক্যাটাগরিতে কোনো পোস্ট নেই।';
+      postsList.appendChild(m);
+    }
   }
+  document.querySelectorAll('#filterTabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.getAttribute('data-filter');
+      document.querySelectorAll('#filterTabs button').forEach(b => b.classList.toggle('active', b === btn));
+      renderPosts();
+    });
+  });
 
 
   // ================= রিঅ্যাকশন সিস্টেম (লাইক + লং-প্রেসে ৬টা রিঅ্যাকশন) =================
