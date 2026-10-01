@@ -37,6 +37,40 @@
 .lkEmoji.lkPop{animation:lkPopAnim .32s ease-out}
 @keyframes lkPopAnim{0%{transform:scale(.6)}55%{transform:scale(1.45)}100%{transform:scale(1)}}
 .postButtons button.likeBtn{transition:background .18s ease,color .18s ease}
+
+/* ===== হেডার: মেনু + প্লাস + সার্চ বাটন ===== */
+#siteHeader{justify-content:flex-start;gap:6px;padding:10px 10px}
+#sidebarToggleBtn,#headerPlusBtn,#headerSearchBtn,#searchBackBtn,#drawerBackBtn{position:static;transform:none;width:36px;height:36px;border-radius:50%;background:#262c36;border:none;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+#sidebarToggleBtn:active,#headerPlusBtn:active,#headerSearchBtn:active,#searchBackBtn:active,#drawerBackBtn:active{background:#323a47}
+#headerPlusBtn{background:var(--primary-color)}
+#brandWrap{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:6px}
+#siteHeader #siteLogo{width:32px;height:32px;flex-shrink:0}
+#siteHeader #siteName{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#logoutBtn,#headerLoginBtn{position:static;transform:none;flex-shrink:0;padding:6px 12px}
+/* সার্চ বার: পুরো হেডার জুড়ে খোলে */
+#headerSearchRow{display:none;flex:1;align-items:center;gap:8px;min-width:0}
+body.searchOpen #headerSearchRow{display:flex}
+body.searchOpen #siteHeader>:not(#headerSearchRow){display:none!important}
+#headerSearchRow #searchBar{flex:1;min-width:0;width:auto;margin:0;height:38px;background:#0d1117;border:1px solid #30363d;border-radius:20px;padding:0 14px;font-size:15px;outline:none}
+#headerSearchRow #searchBar:focus{border-color:var(--primary-color)}
+/* ===== সাইডবার: পুরো স্ক্রিন ===== */
+#sidebarDrawer{width:100%;left:-100%;padding:0;transition:left .25s ease}
+#sidebarDrawer.open{left:0}
+#sidebarOverlay,#sidebarOverlay.open{display:none!important}
+#sidebarDrawer .drawerHeader{position:sticky;top:0;z-index:2;margin:0;padding:12px 14px;background:var(--card-color);border-bottom:1px solid #262c36;gap:10px;justify-content:flex-start}
+#sidebarDrawer .drawerHeader strong{flex:1;font-size:17px}
+#sidebarCloseBtn{width:36px;height:36px;border-radius:50%;background:#262c36;font-size:17px}
+#sidebarGrid{padding:14px}
+body.sidebarOpen{overflow:hidden}
+/* ===== প্রতিটি সেকশনে ব্যাক বাটন ===== */
+.modalBackBtn{background:#262c36;border:none;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0}
+.modalBackBtn:active{background:#323a47}
+#composerModalTitle{flex:1;margin-left:10px}
+#loginModalBackBtn{position:absolute;left:12px;top:12px}
+.aboutUsBackBtn{display:inline-flex;align-items:center;gap:6px}
+#focusBackBar{display:none;position:sticky;top:0;z-index:80;background:var(--card-color);padding:8px 12px;border-bottom:1px solid #262c36}
+body.commentFocus #focusBackBar{display:flex}
+#focusBackBtn{background:#262c36;color:#fff;border:none;border-radius:18px;padding:7px 14px 7px 10px;font-size:14px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -61,6 +95,7 @@
   
   <div id="loginModalOverlay" class="loginModalOverlay">
     <div class="loginModalBox">
+      <button type="button" class="modalBackBtn" id="loginModalBackBtn" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
       <button id="loginModalCloseBtn">✕</button>
       <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">
       <h1>Onuvuti App</h1>
@@ -74,20 +109,30 @@
 
     <div id="sidebarOverlay"></div>
     <div id="sidebarDrawer">
-      <div class="drawerHeader"><strong>মেনু</strong><button id="sidebarCloseBtn">✕</button></div>
+      <div class="drawerHeader"><button id="drawerBackBtn" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><strong>মেনু</strong><button id="sidebarCloseBtn">✕</button></div>
       <div id="sidebarGrid"></div>
     </div>
 
     <div id="siteHeader">
-      <button id="sidebarToggleBtn">☰</button>
-      <img id="siteLogo" src="" alt="">
-      <h1 id="siteName">Onuvuti</h1>
+      <button id="sidebarToggleBtn" type="button" aria-label="মেনু"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <button id="headerPlusBtn" type="button" aria-label="নতুন পোস্ট"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="headerSearchBtn" type="button" aria-label="সার্চ"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+      <div id="brandWrap">
+        <img id="siteLogo" src="" alt="">
+        <h1 id="siteName">Onuvuti</h1>
+      </div>
       <button id="logoutBtn" style="display:none;">লগ আউট</button>
       <button id="headerLoginBtn" style="display:none;">লগইন</button>
+      <div id="headerSearchRow">
+        <button id="searchBackBtn" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <input type="text" id="searchBar" placeholder="পোস্ট খুঁজুন..." autocomplete="off" enterkeyhint="search">
+      </div>
     </div>
 
     <div id="noticeBar"><span id="noticeText"></span></div>
     <div id="menuGrid"></div>
+
+    <div id="focusBackBar"><button id="focusBackBtn" type="button"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> ফিরে যান</button></div>
 
     <main>
       
@@ -101,6 +146,7 @@
       <div id="composerModalOverlay">
        <div id="composerModalBox">
         <div id="composerModalHeader">
+          <button type="button" class="modalBackBtn" id="composerModalBackBtn" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
           <span id="composerModalTitle">নতুন পোস্ট</span>
           <button type="button" id="composerModalCloseBtn">✕</button>
         </div>
@@ -141,7 +187,6 @@
       </div>
 
       
-      <input type="text" id="searchBar" placeholder="🔍 পোস্ট খুঁজুন...">
 
       
       <div id="postsList"></div>
@@ -150,7 +195,7 @@
       
       <div id="aboutUsView">
         <div class="aboutUsHeader">
-          <button type="button" class="aboutUsBackBtn" id="aboutUsBackBtn">← ফিরে যান</button>
+          <button type="button" class="aboutUsBackBtn" id="aboutUsBackBtn"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> ফিরে যান</button>
           <div class="aboutUsTitle">ℹ️ আমাদের সম্পর্কে</div>
         </div>
         <div id="aboutUsContent"></div>
@@ -379,8 +424,8 @@
   logoutBtn.addEventListener('click', async () => { await signOut(auth); });
   headerLoginBtn.addEventListener('click', openLoginModal);
 
-  function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); }
-  function closeSidebar() { sidebarDrawer.classList.remove('open'); sidebarOverlay.classList.remove('open'); }
+  function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); document.body.classList.add('sidebarOpen'); }
+  function closeSidebar() { sidebarDrawer.classList.remove('open'); sidebarOverlay.classList.remove('open'); document.body.classList.remove('sidebarOpen'); }
   sidebarToggleBtn.addEventListener('click', openSidebar);
   sidebarCloseBtn.addEventListener('click', closeSidebar);
   sidebarOverlay.addEventListener('click', closeSidebar);
@@ -389,6 +434,7 @@
      (স্ক্রিনের বাটন বা ফোনের ব্যাক বাটন) চাপলে সরাসরি অ্যাপ থেকে বের না হয়ে
      আগের ফিডে ফিরে আসবে */
   function openAboutUs() {
+    closeSearch();
     aboutUsComposerPrevDisplay = composerEntry.style.display;
     aboutUsTopAdBannerPrevDisplay = topAdBanner ? topAdBanner.style.display : '';
     aboutUsSearchBarPrevDisplay = searchBar.style.display;
@@ -419,6 +465,36 @@
   }
   aboutUsTabBtn.addEventListener('click', openAboutUs);
   aboutUsBackBtn.addEventListener('click', closeAboutUs);
+
+  /* হেডারের সার্চ: বাটনে চাপলে হেডার জুড়ে সার্চ বার খোলে, ব্যাক চাপলে (স্ক্রিনের বা ফোনের) আগের অবস্থায় ফেরে */
+  const headerSearchBtn = document.getElementById('headerSearchBtn');
+  const headerPlusBtn = document.getElementById('headerPlusBtn');
+  const searchBackBtn = document.getElementById('searchBackBtn');
+  function openSearch() {
+    if (document.body.classList.contains('searchOpen')) return;
+    if (document.body.classList.contains('aboutUsOpen')) closeAboutUs();
+    document.body.classList.add('searchOpen');
+    rearmGuard();
+    searchBar.focus();
+  }
+  function closeSearch() {
+    if (!document.body.classList.contains('searchOpen')) return;
+    document.body.classList.remove('searchOpen');
+    searchBar.blur();
+    if (searchBar.value) { searchBar.value = ''; renderPosts(); }
+  }
+  headerSearchBtn.addEventListener('click', openSearch);
+  searchBackBtn.addEventListener('click', closeSearch);
+  searchBar.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBar.blur(); });
+  headerPlusBtn.addEventListener('click', () => composerOpenBtn.click());
+
+  /* বাকি সেকশনের ব্যাক বাটন */
+  document.getElementById('drawerBackBtn').addEventListener('click', closeSidebar);
+  document.getElementById('composerModalBackBtn').addEventListener('click', () => composerModalCloseBtn.click());
+  document.getElementById('loginModalBackBtn').addEventListener('click', () => loginModalCloseBtn.click());
+  document.getElementById('focusBackBtn').addEventListener('click', () => {
+    if (historyLayers.length) history.back(); else handleBack();
+  });
 
   function buildLegacyEntries(items, gadgets) {
     const out = [];
@@ -1879,6 +1955,11 @@
     if (suppressPops) { suppressPops = 0; return; }
     if (isReactionUiOpen()) {
       closeReactionUi();
+      rearmGuard();
+      return;
+    }
+    if (document.body.classList.contains('searchOpen')) {
+      closeSearch();
       rearmGuard();
       return;
     }
