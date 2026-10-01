@@ -42,7 +42,8 @@ html,body{overscroll-behavior:none;overscroll-behavior-y:none}
 #siteHeader{justify-content:flex-start;gap:6px;padding:10px 10px}
 #backBtn,#headerPlusBtn,#headerSearchBtn,#searchBackBtn{position:static;transform:none;width:36px;height:36px;border-radius:50%;background:#262c36;border:none;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex-shrink:0;font-size:20px;-webkit-tap-highlight-color:transparent}
 #backBtn:active,#headerPlusBtn:active,#headerSearchBtn:active,#searchBackBtn:active{background:#323a47}
-#headerPlusBtn{background:var(--primary-color)}
+#headerPlusBtn{background:var(--primary-color);display:none}
+body.ownProfile #headerPlusBtn{display:flex}
 #siteHeader h1{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #logoutBtn{position:static;transform:none;flex-shrink:0;padding:6px 12px}
 #headerSearchRow{display:none;flex:1;align-items:center;gap:8px;min-width:0}
@@ -2123,6 +2124,7 @@ body.composerOpen{overflow:hidden}
     } catch (e) {}
     currentTargetUid = targetUid;
     currentIsOwnProfile = isOwn;
+    document.body.classList.toggle('ownProfile', isOwn);
     try { watchStatus(targetUid); } catch (e) { console.error('watchStatus এরর:', e); }
 
     let profileData = null;
@@ -2334,6 +2336,7 @@ body.composerOpen{overflow:hidden}
   }
 
   document.getElementById('headerPlusBtn').addEventListener('click', () => {
+    if (!currentIsOwnProfile) return;
     if (!currentUser) { showLoginOverlay('পোস্ট করতে Google দিয়ে লগইন করুন'); return; }
     closeSearch();
     openComposerModal();
