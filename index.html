@@ -81,6 +81,27 @@ body.commentFocus #filterTabs,body.aboutUsOpen #filterTabs{display:none!importan
 /* সার্চ খোলা থাকলে: শুধু ক্যাটাগরি ট্যাব আর পোস্ট */
 body.searchOpen #noticeBar,body.searchOpen #menuGrid,body.searchOpen #composerEntry,body.searchOpen #topAdBanner,body.searchOpen #footerSection{display:none!important}
 body.searchOpen main{padding-top:12px}
+
+/* ===== পোস্ট বক্সের বামে লোগো ===== */
+#composerRow{display:flex;align-items:center;gap:10px}
+#composerLogo{width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;background:#21262d}
+#composerRow #composerOpenBtn{flex:1;min-width:0;width:auto;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:14px;padding-right:14px}
+/* ===== লগ আউট নিশ্চিতকরণ ===== */
+#logoutConfirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:450;align-items:center;justify-content:center;padding:24px}
+#logoutConfirmOverlay.open{display:flex}
+#logoutConfirmBox{position:relative;width:100%;max-width:340px;background:var(--card-color);border:1px solid #262c36;border-radius:18px;padding:22px 18px 18px;text-align:center}
+#logoutConfirmBox h3{font-size:17px;margin-bottom:8px}
+#logoutConfirmBox p{font-size:13px;color:#9ca3af;margin-bottom:18px}
+#logoutConfirmActions{display:flex;gap:10px}
+#logoutConfirmActions button{flex:1;padding:11px;border:none;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;font-family:inherit}
+#logoutNoBtn{background:#262c36;color:#c9d1d9}
+#logoutYesBtn{background:#dc2626;color:#fff}
+#logoutYesBtn:disabled{opacity:.6}
+/* ===== টেনে রিফ্রেশ ===== */
+#ptrIndicator{position:fixed;top:0;left:50%;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--card-color);border:1px solid #30363d;box-shadow:0 4px 14px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;transform:translateY(-60px);pointer-events:none;color:#fff}
+#ptrIndicator svg{transition:transform .15s}
+#ptrIndicator.spin svg{animation:ptrSpin .8s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -150,7 +171,10 @@ body.searchOpen main{padding-top:12px}
         <div id="composerAboutRow">
           <button type="button" id="aboutUsTabBtn">ℹ️ আমাদের সম্পর্কে</button>
         </div>
-        <button type="button" id="composerOpenBtn">✍️ আপনার অনুভূতি ব্যক্ত করুন / পোস্ট করুন</button>
+        <div id="composerRow">
+          <img id="composerLogo" src="" alt="" onerror="this.style.display='none'">
+          <button type="button" id="composerOpenBtn">✍️ আপনার অনুভূতি ব্যক্ত করুন / পোস্ট করুন</button>
+        </div>
       </div>
 
       <div id="filterTabs">
@@ -225,6 +249,17 @@ body.searchOpen main{padding-top:12px}
     </div>
   </div>
 
+  <div id="logoutConfirmOverlay">
+    <div id="logoutConfirmBox">
+      <h3>লগ আউট করবেন?</h3>
+      <p>আপনি কি সত্যিই লগ আউট করতে চান?</p>
+      <div id="logoutConfirmActions">
+        <button type="button" id="logoutNoBtn">না, থাক</button>
+        <button type="button" id="logoutYesBtn">হ্যাঁ, লগ আউট</button>
+      </div>
+    </div>
+  </div>
+  <div id="ptrIndicator"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></div>
   <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
   <div id="postToast"></div>
   <div id="postMenuBackdrop"></div>
@@ -438,7 +473,31 @@ body.searchOpen main{padding-top:12px}
       loginBtn.disabled = false;
     }
   });
-  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  const logoutConfirmOverlay = document.getElementById('logoutConfirmOverlay');
+  const logoutYesBtn = document.getElementById('logoutYesBtn');
+  function openLogoutConfirm() {
+    logoutYesBtn.disabled = false;
+    logoutConfirmOverlay.classList.add('open');
+    rearmGuard();
+  }
+  function closeLogoutConfirm() { logoutConfirmOverlay.classList.remove('open'); }
+  logoutBtn.addEventListener('click', openLogoutConfirm);
+  document.getElementById('logoutNoBtn').addEventListener('click', closeLogoutConfirm);
+  logoutConfirmOverlay.addEventListener('click', (e) => { if (e.target === logoutConfirmOverlay) closeLogoutConfirm(); });
+  logoutYesBtn.addEventListener('click', async () => {
+    logoutYesBtn.disabled = true;
+    try { await signOut(auth); } finally { closeLogoutConfirm(); }
+  });
+
+  /* টেনে রিফ্রেশ: ফিড নতুন করে লোড করে */
+  window.addEventListener('pullrefresh', async () => {
+    try {
+      allLoadedPosts = [];
+      lastVisibleDoc = null;
+      await loadPosts(true);
+    } catch (e) { console.warn(e); }
+    window.dispatchEvent(new Event('pullrefreshdone'));
+  });
   headerLoginBtn.addEventListener('click', openLoginModal);
 
   function openSidebar() { sidebarDrawer.classList.add('open'); sidebarOverlay.classList.add('open'); document.body.classList.add('sidebarOpen'); }
@@ -581,6 +640,8 @@ body.searchOpen main{padding-top:12px}
     readMoreLines = s.readMoreLines || 6;
     if (allLoadedPosts.length) renderPosts();
     siteLogo.src = s.logoUrl || 'https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png';
+    const composerLogoEl = document.getElementById('composerLogo');
+    if (composerLogoEl) { composerLogoEl.style.display = ''; composerLogoEl.src = siteLogo.src; }
     siteName.textContent = s.siteName || 'Onuvuti';
     footerSiteName.textContent = s.siteName || 'Onuvuti';
     noticeText.textContent = s.noticeText || '';
@@ -2005,6 +2066,11 @@ body.searchOpen main{padding-top:12px}
       rearmGuard();
       return;
     }
+    if (logoutConfirmOverlay.classList.contains('open')) {
+      closeLogoutConfirm();
+      rearmGuard();
+      return;
+    }
     if (document.body.classList.contains('searchOpen')) {
       closeSearch();
       rearmGuard();
@@ -2114,28 +2180,66 @@ body.searchOpen main{padding-top:12px}
 (function () {
   // পাতার একদম উপরে থাকা অবস্থায় নিচের দিকে টান দিলে (pull-to-refresh /
   // overscroll bounce) ব্রাউজারের গোল রিফ্রেশ বাটন বা পেজ বাউন্স হওয়া বন্ধ রাখে।
-  var startY = 0;
-  var tracking = false;
+  var startY = 0, tracking = false, pulling = false, refreshing = false, dist = 0;
+  var THRESHOLD = 80, MAX = 130;
+  var ind = document.getElementById('ptrIndicator');
+  function blocked() {
+    var c = document.body.classList;
+    return c.contains('composerOpen') || c.contains('sidebarOpen') || c.contains('commentFocus') || c.contains('searchOpen') || document.querySelector('.postMenuDropdown.open, .commentMenuDropdown.open');
+  }
+  function setInd(d, spin) {
+    ind.style.opacity = d > 0 || spin ? '1' : '0';
+    ind.style.transform = 'translateY(' + (d - 50 + 12) + 'px)';
+    var svg = ind.firstElementChild;
+    if (!spin) svg.style.transform = 'rotate(' + (d * 3) + 'deg)';
+  }
+  function endRefresh() {
+    refreshing = false;
+    ind.classList.remove('spin');
+    ind.style.transition = 'transform .2s ease, opacity .2s ease';
+    setInd(0, false);
+    setTimeout(function () { ind.style.transition = ''; }, 250);
+  }
+  window.addEventListener('pullrefreshdone', endRefresh);
   document.addEventListener('touchstart', function (e) {
-    if (e.touches.length === 1) {
+    if (e.touches.length === 1 && !refreshing) {
       startY = e.touches[0].clientY;
-      tracking = true;
+      tracking = true; pulling = false; dist = 0;
     } else {
       tracking = false;
     }
   }, { passive: true });
   document.addEventListener('touchmove', function (e) {
     if (!tracking || e.touches.length !== 1) return;
-    var ov = e.target && e.target.closest ? e.target.closest('#composerModalOverlay') : null;
+    var ov = e.target && e.target.closest ? e.target.closest('#composerModalOverlay, #sidebarDrawer') : null;
     if (ov && ov.scrollHeight > ov.clientHeight) return;
     var y = e.touches[0].clientY;
     var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     var pullingDown = y > startY;
     if (scrollTop <= 0 && pullingDown) {
       e.preventDefault();
+      if (!blocked()) {
+        pulling = true;
+        dist = Math.min((y - startY) * 0.5, MAX);
+        setInd(dist, false);
+      }
     }
   }, { passive: false });
-  document.addEventListener('touchend', function () { tracking = false; }, { passive: true });
+  document.addEventListener('touchend', function () {
+    if (pulling && !refreshing) {
+      if (dist >= THRESHOLD * 0.6) {
+        refreshing = true;
+        ind.classList.add('spin');
+        ind.style.transition = 'transform .15s ease';
+        setInd(50, true);
+        window.dispatchEvent(new Event('pullrefresh'));
+        setTimeout(function () { if (refreshing) endRefresh(); }, 8000);
+      } else {
+        endRefresh();
+      }
+    }
+    tracking = false; pulling = false;
+  }, { passive: true });
 })();
 </script>
 </body>
