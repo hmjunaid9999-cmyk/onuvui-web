@@ -2,10 +2,11 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>লাইভ স্ট্রিম - Onuvuti</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<style>:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#e6edf3}*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg-color);color:var(--text-color);font-family:'Segoe UI',Arial,sans-serif}::-webkit-scrollbar{width:0;height:0}@keyframes floatUp{0%{transform:translateY(0) scale(0.5);opacity:0}15%{opacity:1;transform:translateY(-10px) scale(1)}100%{transform:translateY(-280px) scale(1.15);opacity:0}}.giftFloat{position:absolute;bottom:70px;font-size:34px;animation:floatUp 2.2s ease-out forwards;pointer-events:none}#chatMessages{scroll-behavior:smooth}#chatMessages > div{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}.audioBar{width:5px;height:10px;background:rgba(255,255,255,.8);border-radius:3px;animation:audioBounce 1s ease-in-out infinite}@keyframes audioBounce{0%,100%{height:8px}50%{height:28px}}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
+<style>:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg-color);color:var(--text-color);font-family:'Segoe UI',Arial,sans-serif}::-webkit-scrollbar{width:0;height:0}@keyframes floatUp{0%{transform:translateY(0) scale(0.5);opacity:0}15%{opacity:1;transform:translateY(-10px) scale(1)}100%{transform:translateY(-280px) scale(1.15);opacity:0}}.giftFloat{position:absolute;bottom:70px;font-size:34px;animation:floatUp 2.2s ease-out forwards;pointer-events:none}#chatMessages{scroll-behavior:smooth}#chatMessages > div{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}.audioBar{width:5px;height:10px;background:var(--surface-active);border-radius:3px;animation:audioBounce 1s ease-in-out infinite}@keyframes audioBounce{0%,100%{height:8px}50%{height:28px}}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
 </head>
 <body>
 
@@ -145,10 +146,10 @@
     if (!snap.exists()) return;
     const s = snap.data();
     const root = document.documentElement.style;
-    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
-    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
-    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
-    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    {const __theme=(s.theme==='light')?'light':'dark';document.documentElement.setAttribute('data-theme',__theme);try{localStorage.setItem('onuvutiTheme',__theme);}catch(e){}}
+    
+    
+    
     const gadgetBox = document.getElementById('globalGadgetBox');
     if (gadgetBox) {
       gadgetBox.innerHTML = '';
@@ -247,17 +248,17 @@
     ov.id = 'permHelpOverlay';
     ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center';
     ov.innerHTML = `
-      <div style="width:100%;max-width:520px;background:#161b22;color:#fff;border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px;font-family:inherit">
+      <div style="width:100%;max-width:520px;background:var(--surface);color:var(--text-color);border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px;font-family:inherit">
         <div style="font-size:18px;font-weight:bold">🔐 ক্যামেরা / মাইক্রোফোনের অনুমতি দিন</div>
-        <div style="font-size:13px;color:#cbd5e1;line-height:1.7">
+        <div style="font-size:13px;color:var(--text-color);line-height:1.7">
           লাইভে আসতে ক্যামেরা ও মাইক্রোফোন লাগবে, কিন্তু ব্রাউজারে এগুলো ব্লক করা আছে — তাই ব্রাউজার আর নিজে থেকে চাইতে পারছে না। হাতে ঠিক করুন:<br>
           ১) ঠিকানার বারের বাঁ পাশের আইকনে ট্যাপ করুন<br>
           ২) <b>Permissions</b> / <b>Site settings</b> খুলুন<br>
           ৩) ক্যামেরা ও মাইক্রোফোন <b>Allow</b> করুন<br>
           ৪) নিচের "রিলোড" চাপুন
         </div>
-        <button id="permReloadBtn" style="background:#4285f4;color:#fff;border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:bold">🔄 রিলোড করুন</button>
-        <button id="permCloseBtn" style="background:none;color:#9ca3af;border:none;padding:8px;font-size:14px">পরে (শুধু দেখতে চাই)</button>
+        <button id="permReloadBtn" style="background:var(--surface);color:var(--text-color);border:none;border-radius:12px;padding:13px;font-size:16px;font-weight:bold">🔄 রিলোড করুন</button>
+        <button id="permCloseBtn" style="background:none;color:var(--text-color);border:none;padding:8px;font-size:14px">পরে (শুধু দেখতে চাই)</button>
       </div>`;
     document.body.appendChild(ov);
     document.getElementById('permReloadBtn').addEventListener('click', () => location.reload());
@@ -397,7 +398,7 @@
   function buildStreamCard(id, d) {
     const card = document.createElement('div');
     card.className = 'relative rounded-xl overflow-hidden cursor-pointer aspect-[9/12] flex flex-col justify-end p-2';
-    card.style.background = 'linear-gradient(160deg,#1f2937,#0d1117)';
+    card.style.background = 'linear-gradient(160deg,var(--surface),var(--surface))';
     card.innerHTML = `
       <div class="absolute top-2 left-2 bg-red-600 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
         <span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>${d.mode === 'audio' ? '🎙️' : '🎥'} LIVE

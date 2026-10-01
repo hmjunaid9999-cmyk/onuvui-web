@@ -2,21 +2,22 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>রেডিও — Onuvuti</title>
 <style>
-  :root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff}
+  :root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); color: var(--text-color); min-height: 100vh; }
   header {
     position: relative; display: flex; align-items: center; justify-content: center;
-    padding: 16px; background: var(--card-color); border-bottom: 1px solid #262c36;
+    padding: 16px; background: var(--card-color); border-bottom: 1px solid var(--line);
   }
   header h1 { font-size: 18px; font-weight: bold; }
   #backBtn, #playerBackBtn {
     position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    background: #21262d; color: #fff; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface); color: var(--text-color); width: 36px; height: 36px; border-radius: 50%;
     text-decoration: none; font-size: 16px; display: flex; align-items: center; justify-content: center;
     border: none; cursor: pointer;
   }
@@ -25,27 +26,27 @@
   .radioChannelList { display: flex; flex-direction: column; gap: 10px; }
   .radioChannelBtn {
     display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
-    background: var(--card-color); border: 1px solid #262c36; color: var(--text-color);
+    background: var(--card-color); border: 1px solid var(--line); color: var(--text-color);
     padding: 14px; border-radius: 14px; font-size: 14px; cursor: pointer;
   }
-  .radioChannelBtn.playing { border-color: var(--primary-color); color: var(--primary-color); }
-  .emptyMsg { text-align: center; color: #6b7280; font-size: 13px; padding: 40px 16px; }
+  .radioChannelBtn.playing { border-color: var(--primary-color); color: var(--text-color); }
+  .emptyMsg { text-align: center; color: var(--text-color); font-size: 13px; padding: 40px 16px; }
 
   /* --- player (new page) view --- */
   #playerView { display: none; }
   .playerCard {
-    background: var(--card-color); border: 1px solid #262c36; border-radius: 16px;
+    background: var(--card-color); border: 1px solid var(--line); border-radius: 16px;
     padding: 28px 20px; text-align: center;
   }
   .playerChannelName { font-size: 17px; font-weight: bold; margin-bottom: 4px; }
-  .playerStatus { font-size: 12px; color: #6b7280; margin-bottom: 20px; min-height: 16px; }
+  .playerStatus { font-size: 12px; color: var(--text-color); margin-bottom: 20px; min-height: 16px; }
   .playPauseBig {
-    width: 76px; height: 76px; border-radius: 50%; background: var(--primary-color); color: #fff;
+    width: 76px; height: 76px; border-radius: 50%; background: var(--surface); color: var(--text-color);
     font-size: 30px; border: none; display: flex; align-items: center; justify-content: center;
     margin: 0 auto; cursor: pointer;
   }
   .retryBtn {
-    margin-top: 16px; background: #21262d; color: #fff; padding: 8px 18px;
+    margin-top: 16px; background: var(--surface); color: var(--text-color); padding: 8px 18px;
     border-radius: 20px; font-size: 13px; font-weight: normal;
   }
   .visualizer {
@@ -53,7 +54,7 @@
     height: 46px; margin-top: 22px;
   }
   .visualizer span {
-    width: 5px; border-radius: 3px; background: var(--primary-color); opacity: 0.85;
+    width: 5px; border-radius: 3px; background: var(--surface); opacity: 0.85;
     animation: bar 1s ease-in-out infinite;
   }
   .visualizer span:nth-child(1) { height: 14px; animation-delay: 0s; }
@@ -69,21 +70,21 @@
 
   /* --- ad slot (renders admin-provided ad code) --- */
   #adSlot { margin-top: 18px; display: none; }
-  .adLabel { font-size: 11px; color: #6b7280; margin-bottom: 6px; text-align: center; }
+  .adLabel { font-size: 11px; color: var(--text-color); margin-bottom: 6px; text-align: center; }
   #adInner { border-radius: 12px; overflow: hidden; }
   #adInner img, #adInner video, #adInner iframe { width: 100%; display: block; border: 0; border-radius: 12px; }
 
   /* --- debug panel --- */
   .debugBox {
-    margin-top: 18px; background: #161b22; border: 1px solid #30363d; border-radius: 12px;
-    padding: 12px; font-size: 12px; line-height: 1.7; color: #9ca3af;
+    margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px; font-size: 12px; line-height: 1.7; color: var(--text-color);
     white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto;
   }
-  .debugBox b { color: #fff; }
-  .debugBox .err { color: #f87171; }
-  .debugBox .ok { color: #4ade80; }
+  .debugBox b { color: var(--text-color); }
+  .debugBox .err { color: var(--text-color); }
+  .debugBox .ok { color: var(--text-color); }
   .debugTitle {
-    font-size: 12px; color: #6b7280; margin: 18px 0 6px; background: none; border: none;
+    font-size: 12px; color: var(--text-color); margin: 18px 0 6px; background: none; border: none;
     padding: 6px 0; text-align: left; width: 100%; font-weight: normal; cursor: pointer;
     text-decoration: underline;
   }
@@ -151,10 +152,10 @@
     if (!snap.exists()) return;
     const s = snap.data();
     const root = document.documentElement.style;
-    if (s.primaryColor) root.setProperty('--primary-color', s.primaryColor);
-    if (s.bgColor) root.setProperty('--bg-color', s.bgColor);
-    if (s.cardColor) root.setProperty('--card-color', s.cardColor);
-    if (s.textColor) root.setProperty('--text-color', s.textColor);
+    {const __theme=(s.theme==='light')?'light':'dark';document.documentElement.setAttribute('data-theme',__theme);try{localStorage.setItem('onuvutiTheme',__theme);}catch(e){}}
+    
+    
+    
     const gadgetBox = document.getElementById('globalGadgetBox');
     if (gadgetBox) {
       gadgetBox.innerHTML = '';

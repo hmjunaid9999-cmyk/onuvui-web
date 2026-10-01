@@ -2,11 +2,12 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
+<script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
 <title>মেসেজ - Onuvuti</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--primary-color:#4285F4;--bg-color:#0d1117;--card-color:#161b22;--text-color:#ffffff;--max-width:640px}
+:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;;--max-width:640px}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}
 html,body{height:100%;overscroll-behavior:none}
 body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--text-color);min-height:100vh}
 
@@ -14,35 +15,35 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 #loginScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
 #loginScreen img{width:84px;height:84px;border-radius:20px;margin-bottom:18px}
 #loginScreen h1{font-size:22px;margin-bottom:6px}
-#loginScreen p{color:#9ca3af;font-size:14px;margin-bottom:28px}
-#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--primary-color);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}
+#loginScreen p{color:var(--text-color);font-size:14px;margin-bottom:28px}
+#googleLoginBtn{display:flex;align-items:center;gap:10px;background:var(--surface);color:var(--text-color);border:none;padding:12px 26px;border-radius:24px;font-size:15px;font-weight:bold;cursor:pointer}
 #googleLoginBtn:disabled{opacity:0.6}
-#loginStatus{margin-top:16px;font-size:13px;color:#f87171;min-height:18px}
+#loginStatus{margin-top:16px;font-size:13px;color:var(--text-color);min-height:18px}
 #blockedScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center}
-#blockedScreen h1{font-size:20px;margin-bottom:10px;color:#f87171}
-#blockedScreen p{color:#9ca3af;font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}
-#blockedScreen button{background:#21262d;color:#fff;border:1px solid #30363d;padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}
+#blockedScreen h1{font-size:20px;margin-bottom:10px;color:var(--text-color)}
+#blockedScreen p{color:var(--text-color);font-size:14px;margin-bottom:24px;line-height:1.7;max-width:420px;white-space:pre-wrap}
+#blockedScreen button{background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:12px 26px;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer}
 
 /* ---------- মূল অ্যাপ স্ক্রিন — পুরো ভিউপোর্ট জুড়ে ফ্লেক্স কলাম (হেডার + কন্টেন্ট) ---------- */
 #appScreen{display:none;flex-direction:column;height:100vh;height:100dvh}
-#siteHeader{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid #262c36}
+#siteHeader{position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--card-color);border-bottom:1px solid var(--line)}
 #siteHeader h1{font-size:16px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:4px 8px}
-#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:#262c36;color:#f87171;border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
+#backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px 8px}
+#logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--surface);color:var(--text-color);border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
 #bootScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
-#bootScreen .spin{width:34px;height:34px;border:3px solid #262c36;border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
+#bootScreen .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
 #headerText{min-width:0;text-align:left}
 #headerAvatar{display:none;overflow:visible;position:relative;background:none}
-#headerAvatar.online::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #161b22;z-index:2}
-#headerStatus{font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
-#headerStatus.active{color:#34d399}
+#headerAvatar.online::after{content:'';position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;background:var(--text-color);border:2px solid var(--bg-color);z-index:2}
+#headerStatus{font-size:11px;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;display:none}
+#headerStatus.active{color:var(--text-color)}
 #headerCenter.inbox #headerText{text-align:center}
 /* অ্যাভাটার (ছবি না থাকলে/লোড না হলে নামের প্রথম অক্ষর) */
-.av{position:relative;border-radius:50%;overflow:hidden;background:#2d3748;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.av{position:relative;border-radius:50%;overflow:hidden;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.avFallback{font-weight:bold;color:#cbd5e1}
+.avFallback{font-weight:bold;color:var(--text-color)}
 .av.sm{width:34px;height:34px}.av.sm .avFallback{font-size:14px}
 .av.hd{width:38px;height:38px}.av.hd .avFallback{font-size:15px}
 .av.md{width:48px;height:48px}.av.md .avFallback{font-size:18px}
@@ -51,107 +52,107 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--max-width);width:100%;margin:0 auto}
 
 /* ---------- মেসেজিং বন্ধ থাকলে দেখানো নোটিশ (settings/messages থেকে নিয়ন্ত্রিত) ---------- */
-#disabledNotice{display:none;background:#3b2a15;color:#fbbf24;font-size:12.5px;padding:9px 14px;text-align:center;line-height:1.5;flex-shrink:0}
+#disabledNotice{display:none;background:var(--surface);color:var(--text-color);font-size:12.5px;padding:9px 14px;text-align:center;line-height:1.5;flex-shrink:0}
 
 /* ---------- ইনবক্স (কনভারসেশন লিস্ট) ---------- */
 #inboxView{flex:1;overflow-y:auto;padding:12px}
-#inboxEmpty{text-align:center;color:#6b7280;font-size:13px;padding:60px 20px;line-height:1.7}
-#inboxLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
-.convRow{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid #1c222b;cursor:pointer}
+#inboxEmpty{text-align:center;color:var(--text-color);font-size:13px;padding:60px 20px;line-height:1.7}
+#inboxLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
+.convRow{display:flex;align-items:center;gap:12px;padding:12px 8px;border-bottom:1px solid var(--line);cursor:pointer}
 .convBody{flex:1;min-width:0}
 .convTop{display:flex;justify-content:space-between;gap:8px}
 .convName{font-size:14px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.convTime{font-size:11px;color:#6b7280;flex-shrink:0}
-.convLast{font-size:12.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
-.convRow.unread .convName{color:#fff}
-.convRow.unread .convLast{color:#e5e7eb;font-weight:600}
-.convRow.unread .convTime{color:var(--primary-color);font-weight:bold}
-.unreadDot{width:9px;height:9px;border-radius:50%;background:var(--primary-color);flex-shrink:0}
+.convTime{font-size:11px;color:var(--text-color);flex-shrink:0}
+.convLast{font-size:12.5px;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.convRow.unread .convName{color:var(--text-color)}
+.convRow.unread .convLast{color:var(--text-color);font-weight:600}
+.convRow.unread .convTime{color:var(--text-color);font-weight:bold}
+.unreadDot{width:9px;height:9px;border-radius:50%;background:var(--text-color);flex-shrink:0}
 .unreadSlot{display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.unreadBadge{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:var(--primary-color);color:#fff;font-size:12.5px;font-weight:bold;display:flex;align-items:center;justify-content:center}
+.unreadBadge{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:var(--text-color);color:var(--bg-color);font-size:12.5px;font-weight:bold;display:flex;align-items:center;justify-content:center}
 
 /* ---------- চ্যাট ভিউ ---------- */
 #chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
 #messagesScroll{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
 #messagesList{display:flex;flex-direction:column;gap:2px}
-#messagesEmpty{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
+#messagesEmpty{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
 .msgRow{display:flex;align-items:flex-start;gap:8px;max-width:88%}
 .msgRow.first{margin-top:8px}
 .msgRow.mine{align-self:flex-end;justify-content:flex-end}
 .msgRow.theirs{align-self:flex-start}
 .msgCol{min-width:0}
 .msgBubble{padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
-.msgRow.mine .msgBubble{background:var(--primary-color);color:#fff;border-bottom-right-radius:4px}
-.msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid #262c36;color:#eee;border-bottom-left-radius:4px}
-.msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:#6b7280}
+.msgRow.mine .msgBubble{background:var(--text-color);color:var(--bg-color);border-bottom-right-radius:4px}
+.msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid var(--line);color:var(--text-color);border-bottom-left-radius:4px}
+.msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:var(--text-color)}
 .msgRow.mine .msgMeta{justify-content:flex-end}
-#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid #3a4453;background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
-#messageInput{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
-#sendBtn{background:var(--primary-color);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+#messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
+#messageInput{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--text-color);padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
+#sendBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
 #sendBtn:disabled{opacity:0.5;cursor:default}
-#chatLoading{text-align:center;color:#6b7280;font-size:13px;padding:30px 0}
+#chatLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
 
 /* ---------- কল বাটন (হেডারে) ---------- */
 #callBtns{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:none;gap:2px}
-.callBtn{background:none;border:none;color:#fff;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.callBtn:active{background:#262c36}
+.callBtn{background:none;border:none;color:var(--text-color);width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.callBtn:active{background:var(--surface-active)}
 .callBtn:disabled{opacity:.35;cursor:default}
 .callBtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .av.xl{width:110px;height:110px}.av.xl .avFallback{font-size:44px}
 
 /* ---------- কল স্ক্রিন ---------- */
-#callScreen{position:fixed;inset:0;z-index:1000;background:#0b0f14;display:none;flex-direction:column;overflow:hidden}
-#remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;opacity:0}
+#callScreen{position:fixed;inset:0;z-index:1000;background:#000000;display:none;flex-direction:column;overflow:hidden}
+#remoteVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000000;opacity:0}
 #callScreen.video.hasRemote #remoteVideo{opacity:1}
-#localVideo{position:absolute;top:14px;right:12px;width:96px;height:136px;object-fit:cover;border-radius:12px;background:#111;z-index:3;transform:scaleX(-1);border:1px solid #2a3140;display:none}
+#localVideo{position:absolute;top:14px;right:12px;width:96px;height:136px;object-fit:cover;border-radius:12px;background:#000000;z-index:3;transform:scaleX(-1);border:1px solid rgba(255,255,255,0.3);display:none}
 #callInfo{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:16px}
 #callName{font-size:22px;font-weight:bold}
-#callStatus{font-size:14px;color:#9ca3af}
+#callStatus{font-size:14px;color:#ffffff}
 #callScreen.video.hasRemote #callInfo{flex:none;justify-content:flex-start;padding:22px 120px 30px 16px;background:linear-gradient(#000000aa,#00000000);text-shadow:0 1px 4px #000}
 #callScreen.video.hasRemote #callAvatar{display:none}
 #callScreen.video.hasRemote #callName{font-size:17px}
 #callControls{position:relative;z-index:2;margin-top:auto;display:flex;flex-wrap:wrap;justify-content:center;gap:14px;padding:20px 12px 34px;background:linear-gradient(#00000000,#000000aa)}
-.ctlWrap{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#cbd5e1}
-.ctlBtn{width:56px;height:56px;border-radius:50%;border:none;background:#2a3140;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ctlWrap{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#ffffff}
+.ctlBtn{width:56px;height:56px;border-radius:50%;border:none;background:#000000;color:#ffffff;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ctlBtn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.ctlBtn.off,.ctlBtn.on{background:#fff;color:#111}
+.ctlBtn.off,.ctlBtn.on{background:#000000;color:#ffffff}
 @media (max-width:380px){.ctlBtn{width:50px;height:50px}#callControls{gap:10px}}
-.ctlBtn.end{background:#ef4444}
-.ctlBtn.accept{background:#22c55e}
+.ctlBtn.end{background:#000000}
+.ctlBtn.accept{background:#000000}
 
 /* ---------- ইনকামিং কল ---------- */
-#incomingCall{position:fixed;inset:0;z-index:1100;background:rgba(13,17,23,.98);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
+#incomingCall{position:fixed;inset:0;z-index:1100;background:#000000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px}
 #incName{font-size:24px;font-weight:bold}
-#incType{font-size:14px;color:#9ca3af}
+#incType{font-size:14px;color:var(--text-color)}
 #incBtns{display:flex;gap:70px;margin-top:50px}
-@keyframes ringPulse{0%{box-shadow:0 0 0 0 rgba(66,133,244,.5)}100%{box-shadow:0 0 0 26px rgba(66,133,244,0)}}
+@keyframes ringPulse{0%{box-shadow:0 0 0 0 var(--line)}100%{box-shadow:0 0 0 26px var(--line)}}
 #incAvatar .av{animation:ringPulse 1.4s infinite}
 
 /* ---------- পারমিশন শিট ---------- */
-#permOpenBtn{display:none;width:100%;background:#1a2230;border:none;border-bottom:1px solid #262c36;color:#93c5fd;font-size:13px;padding:10px 14px;text-align:left;cursor:pointer}
+#permOpenBtn{display:none;width:100%;background:var(--surface);border:none;border-bottom:1px solid var(--line);color:var(--text-color);font-size:13px;padding:10px 14px;text-align:left;cursor:pointer}
 #permSheet{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center}
-#permCard{width:100%;max-width:520px;background:#161b22;border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px}
+#permCard{width:100%;max-width:520px;background:var(--surface);border-radius:18px 18px 0 0;padding:20px 18px 26px;display:flex;flex-direction:column;gap:12px}
 #permCard h2{font-size:18px}
-#permCard p{font-size:13px;color:#9ca3af;line-height:1.5}
-.permRow{display:flex;justify-content:space-between;align-items:center;background:#0f141b;border-radius:10px;padding:11px 14px;font-size:14px}
-#permHelp{display:none;background:#2a1a1a;border:1px solid #7f1d1d;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:#fecaca}
-.permBtnMain{background:#4285f4;color:#fff;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer}
-.permBtnSub{background:none;color:#9ca3af;border:none;padding:8px;font-size:14px;cursor:pointer}
+#permCard p{font-size:13px;color:var(--text-color);line-height:1.5}
+.permRow{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border-radius:10px;padding:11px 14px;font-size:14px}
+#permHelp{display:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.7;color:var(--text-color)}
+.permBtnMain{background:var(--surface);color:var(--text-color);border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer}
+.permBtnSub{background:none;color:var(--text-color);border:none;padding:8px;font-size:14px;cursor:pointer}
 
 /* ---------- চ্যাটের ভেতরে কল লগ (মিস কল / কল দেওয়া হয়েছিল) ---------- */
 .callLogRow{align-self:center;width:min(300px,90%);margin:8px 0}
-.callLog{background:var(--card-color);border:1px solid #262c36;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.callLog{background:var(--card-color);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
 .clTop{display:flex;align-items:center;gap:10px}
-.clIcon{width:34px;height:34px;border-radius:50%;background:#262c36;color:#9ca3af;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clIcon{width:34px;height:34px;border-radius:50%;background:var(--surface);color:var(--text-color);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .clIcon svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.callLog.missed .clIcon{background:#3b1d1d;color:#f87171}
+.callLog.missed .clIcon{background:var(--surface);color:var(--text-color)}
 .clText{min-width:0}
-.clTitle{font-size:13.5px;font-weight:bold;color:#e5e7eb}
-.callLog.missed .clTitle{color:#f87171}
-.clSub{font-size:11px;color:#6b7280;margin-top:1px}
+.clTitle{font-size:13.5px;font-weight:bold;color:var(--text-color)}
+.callLog.missed .clTitle{color:var(--text-color)}
+.clSub{font-size:11px;color:var(--text-color);margin-top:1px}
 .clBtns{display:flex;gap:8px}
-.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#0f141b;border:1px solid #30363d;color:#93c5fd;border-radius:10px;padding:8px 6px;font-size:12.5px;font-family:inherit;cursor:pointer}
-.clBtn:active{background:#1a2230}
+.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--text-color);border-radius:10px;padding:8px 6px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.clBtn:active{background:var(--surface-active)}
 .clBtn:disabled{opacity:.4;cursor:default}
 .clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
@@ -159,19 +160,19 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgBubble.likeSticker{background:none!important;border:none!important;padding:0!important;font-size:42px;line-height:1}
 
 /* ---------- রিপ্লাই/এডিট প্রিভিউ বার (মেসেজ ইনপুটের ঠিক উপরে) ---------- */
-#composePreview{display:none;align-items:center;gap:8px;padding:8px 12px;background:#0f141b;border-top:1px solid #262c36;flex-shrink:0}
-#composePreview .cpLine{width:3px;align-self:stretch;background:var(--primary-color);border-radius:2px;flex-shrink:0}
+#composePreview{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-top:1px solid var(--line);flex-shrink:0}
+#composePreview .cpLine{width:3px;align-self:stretch;background:var(--surface);border-radius:2px;flex-shrink:0}
 #composePreview .cpBody{flex:1;min-width:0}
-#composePreview .cpLabel{font-size:11px;color:var(--primary-color);font-weight:bold}
-#composePreview .cpText{font-size:12.5px;color:#9ca3af;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#composePreview .cpClose{background:none;border:none;color:#6b7280;font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
+#composePreview .cpLabel{font-size:11px;color:var(--text-color);font-weight:bold}
+#composePreview .cpText{font-size:12.5px;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#composePreview .cpClose{background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px;flex-shrink:0}
 
 /* ---------- বাবলের ভিতরে কোটেড রিপ্লাই ---------- */
-.msgQuote{background:rgba(255,255,255,.15);border-left:3px solid rgba(255,255,255,.6);border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-.msgRow.theirs .msgQuote{background:#0f141b;border-left-color:#30363d}
+.msgQuote{background:var(--surface-active);border-left:3px solid var(--line);border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.msgRow.theirs .msgQuote{background:var(--surface);border-left-color:var(--line)}
 
 /* ---------- মেসেজের রিয়াকশন ব্যাজ (বাবলের কোণায় ছোট বাবল) ---------- */
-.msgReactions{position:absolute;bottom:-10px;right:6px;background:var(--card-color);border:1px solid #30363d;border-radius:10px;padding:1px 5px;font-size:12px;line-height:1.4}
+.msgReactions{position:absolute;bottom:-10px;right:6px;background:var(--card-color);border:1px solid var(--line);border-radius:10px;padding:1px 5px;font-size:12px;line-height:1.4}
 .msgRow.theirs .msgReactions{right:auto;left:6px}
 
 /* ---------- "সিন" ইন্ডিকেটর — মেসেজের সময়ের পাশে ছোট প্রোফাইল আইকন ---------- */
@@ -185,16 +186,18 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgBubble *,.convRow *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #messageInput{-webkit-user-select:text;user-select:text}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
-#ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:#1c2128;border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
-#ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:#3a4453;margin:0 auto 10px}
+#ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
+#ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
 @keyframes ctxSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-#ctxMenu .ctxReactions{display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;border-bottom:1px solid #30363d;margin-bottom:4px}
+#ctxMenu .ctxReactions{display:flex;justify-content:space-around;align-items:center;padding:10px 12px 14px;border-bottom:1px solid var(--line);margin-bottom:4px}
 #ctxMenu .ctxReactions button{background:none;border:none;font-size:34px;cursor:pointer;padding:6px;line-height:1;border-radius:50%}
-#ctxMenu .ctxReactions button:active{background:#30363d;transform:scale(1.15)}
-#ctxMenu .ctxItem{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:#eee;text-align:left;padding:17px 22px;font-size:18px;font-family:inherit;cursor:pointer;border-top:1px solid #262c36}
+#ctxMenu .ctxReactions button:active{background:var(--surface-active);transform:scale(1.15)}
+#ctxMenu .ctxItem{display:flex;align-items:center;gap:14px;width:100%;background:none;border:none;color:var(--text-color);text-align:left;padding:17px 22px;font-size:18px;font-family:inherit;cursor:pointer;border-top:1px solid var(--line)}
 #ctxMenu .ctxItem:first-child,#ctxMenu .ctxReactions + .ctxItem{border-top:none}
-#ctxMenu .ctxItem:active{background:#2d333b}
-#ctxMenu .ctxItem.danger{color:#f87171}
+#ctxMenu .ctxItem:active{background:var(--surface-active)}
+#ctxMenu .ctxItem.danger{color:var(--text-color)}
+
+#callScreen,#incomingCall{color:#ffffff}.ctlBtn{background:rgba(255,255,255,0.2)}.ctlBtn.off,.ctlBtn.on{background:#ffffff;color:#000000}.ctlBtn.end{background:#000000;border:2px solid #ffffff}.ctlBtn.accept{background:#ffffff;color:#000000}
 </style>
 </head>
 <body>
@@ -279,7 +282,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
         ২) <b>Permissions</b> / <b>Site settings</b> খুলুন<br>
         ৩) মাইক্রোফোন ও ক্যামেরা <b>Allow</b> করুন<br>
         ৪) নিচের "রিলোড" চাপুন<br>
-        <button class="permBtnSub" id="permReloadBtn" style="color:#fff;text-decoration:underline;padding:6px 0">🔄 রিলোড করুন</button>
+        <button class="permBtnSub" id="permReloadBtn" style="color:var(--text-color);text-decoration:underline;padding:6px 0">🔄 রিলোড করুন</button>
       </div>
       <button class="permBtnMain" id="permGrantBtn">✅ সব অনুমতি দিন</button>
       <button class="permBtnSub" id="permLaterBtn">পরে</button>
@@ -342,6 +345,14 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  // থিম (ডার্ক/লাইট) — settings/site থেকে, বাকি পেজের মতোই
+  onSnapshot(doc(db, "settings", "site"), (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+    const __theme = (s.theme === 'light') ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', __theme);
+    try { localStorage.setItem('onuvutiTheme', __theme); } catch (e) {}
+  });
   const provider = new GoogleAuthProvider();
 
   // ---------- মোবাইলে ঠিকানার বক্স/টুলবারের কারণে 100vh আসল স্ক্রিনের চেয়ে বড় হয়ে যাওয়ার
