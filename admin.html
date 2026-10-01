@@ -552,8 +552,7 @@
           </div>
           <div class="section">
             <h2>🎨 থিম</h2>
-            <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
-            <div class="hint">থিম বাছাই করুন — সেভ করলে পুরো সাইটে বদলে যাবে।<br>🌙 ডার্ক মোড: সব লেখা ও বাটনের নাম সাদা, বাকি সব কালো।<br>☀️ লাইট মোড: সব লেখা ও বাটনের নাম কালো, বাকি সব সাদা।</div>
+            <div class="hint">থিম বাছাই করুন — সেভ করলে পুরো সাইটে বদলে যাবে।<br>🌙 ডার্ক মোড: সব কালো, লেখা ও বাটনের নাম সাদা।<br>☀️ লাইট মোড: সব সাদা, লেখা ও বাটনের নাম কালো।<br>দুই মোডে শুধু সাদা আর কালো রং থাকবে।</div>
             <div class="addTypeRow" id="themeRow">
               <button type="button" class="addTypeBtn" id="themeDarkBtn">🌙 ডার্ক মোড</button>
               <button type="button" class="addTypeBtn" id="themeLightBtn">☀️ লাইট মোড</button>
@@ -698,7 +697,6 @@
   const noticeText = document.getElementById('noticeText');
   const composerPlaceholder = document.getElementById('composerPlaceholder');
   const posterPlaceholder = document.getElementById('posterPlaceholder');
-  const primaryColor = document.getElementById('primaryColor');
   let currentTheme = 'dark';
   const themeDarkBtn = document.getElementById('themeDarkBtn');
   const themeLightBtn = document.getElementById('themeLightBtn');
@@ -1354,7 +1352,6 @@
     noticeText.value = s.noticeText || '';
     composerPlaceholder.value = s.composerPlaceholder || '';
     posterPlaceholder.value = s.posterPlaceholder || '';
-    primaryColor.value = s.primaryColor || '#4285F4';
     setThemeChoice(s.theme);
     maxWidth.value = s.maxWidth || 640;
     composerHeight.value = s.composerHeight || 100;
@@ -1401,7 +1398,7 @@
       if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
       data = { posterColors: colors };
     }
-    else if (section === 'colors') data = { primaryColor: primaryColor.value, theme: currentTheme };
+    else if (section === 'colors') data = { theme: currentTheme };
     else if (section === 'blog') data = {
       blogComposerHeight: Number(blogComposerHeight.value) || 300,
       blogBigOpen: blogBigOpen.value || '(', blogBigClose: blogBigClose.value || ')',
