@@ -420,7 +420,7 @@
             <span class="csListBtnIcon">🎨</span><span class="csListBtnText">পোস্টার রং বাছাই করুন</span><span class="csListBtnArrow">›</span>
           </button>
           <button type="button" class="csListBtn" data-cs-open="csDetail-colors">
-            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">রং (থিম কালার)</span><span class="csListBtnArrow">›</span>
+            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">থিম</span><span class="csListBtnArrow">›</span>
           </button>
           <button type="button" class="csListBtn" data-cs-open="csDetail-blog">
             <span class="csListBtnIcon">📰</span><span class="csListBtnText">ব্লগ</span><span class="csListBtnArrow">›</span>
@@ -548,14 +548,16 @@
         <div class="csDetailView" id="csDetail-colors">
           <div class="csDetailHeader">
             <button type="button" class="csBackBtn" data-cs-back>←</button>
-            <div class="csDetailTitle">🎨 রং (থিম কালার)</div>
+            <div class="csDetailTitle">🎨 থিম</div>
           </div>
           <div class="section">
-            <h2>🎨 রং</h2>
+            <h2>🎨 থিম</h2>
             <div class="row"><label>Primary (বাটন)</label><input type="color" id="primaryColor"></div>
-            <div class="row"><label>Background</label><input type="color" id="bgColor"></div>
-            <div class="row"><label>Card রং</label><input type="color" id="cardColor"></div>
-            <div class="row"><label>টেক্সট রং</label><input type="color" id="textColor"></div>
+            <div class="hint">থিম বাছাই করুন — সেভ করলে পুরো সাইটে বদলে যাবে।<br>🌙 ডার্ক মোড: সব লেখা ও বাটনের নাম সাদা, বাকি সব কালো।<br>☀️ লাইট মোড: সব লেখা ও বাটনের নাম কালো, বাকি সব সাদা।</div>
+            <div class="addTypeRow" id="themeRow">
+              <button type="button" class="addTypeBtn" id="themeDarkBtn">🌙 ডার্ক মোড</button>
+              <button type="button" class="addTypeBtn" id="themeLightBtn">☀️ লাইট মোড</button>
+            </div>
             <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
             <div class="sectionStatus" id="statusColors"></div>
           </div>
@@ -697,9 +699,17 @@
   const composerPlaceholder = document.getElementById('composerPlaceholder');
   const posterPlaceholder = document.getElementById('posterPlaceholder');
   const primaryColor = document.getElementById('primaryColor');
-  const bgColor = document.getElementById('bgColor');
-  const cardColor = document.getElementById('cardColor');
-  const textColor = document.getElementById('textColor');
+  let currentTheme = 'dark';
+  const themeDarkBtn = document.getElementById('themeDarkBtn');
+  const themeLightBtn = document.getElementById('themeLightBtn');
+  function setThemeChoice(t) {
+    currentTheme = (t === 'light') ? 'light' : 'dark';
+    themeDarkBtn.classList.toggle('active', currentTheme === 'dark');
+    themeLightBtn.classList.toggle('active', currentTheme === 'light');
+  }
+  themeDarkBtn.addEventListener('click', () => setThemeChoice('dark'));
+  themeLightBtn.addEventListener('click', () => setThemeChoice('light'));
+  setThemeChoice('dark');
   const maxWidth = document.getElementById('maxWidth');
   const composerHeight = document.getElementById('composerHeight');
   const posterHeight = document.getElementById('posterHeight');
@@ -1345,9 +1355,7 @@
     composerPlaceholder.value = s.composerPlaceholder || '';
     posterPlaceholder.value = s.posterPlaceholder || '';
     primaryColor.value = s.primaryColor || '#4285F4';
-    bgColor.value = s.bgColor || '#0d1117';
-    cardColor.value = s.cardColor || '#161b22';
-    textColor.value = s.textColor || '#ffffff';
+    setThemeChoice(s.theme);
     maxWidth.value = s.maxWidth || 640;
     composerHeight.value = s.composerHeight || 100;
     posterHeight.value = s.posterHeight || 180;
@@ -1393,7 +1401,7 @@
       if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
       data = { posterColors: colors };
     }
-    else if (section === 'colors') data = { primaryColor: primaryColor.value, bgColor: bgColor.value, cardColor: cardColor.value, textColor: textColor.value };
+    else if (section === 'colors') data = { primaryColor: primaryColor.value, theme: currentTheme };
     else if (section === 'blog') data = {
       blogComposerHeight: Number(blogComposerHeight.value) || 300,
       blogBigOpen: blogBigOpen.value || '(', blogBigClose: blogBigClose.value || ')',
