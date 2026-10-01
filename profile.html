@@ -36,6 +36,71 @@
 .lkEmoji.lkPop{animation:lkPopAnim .32s ease-out}
 @keyframes lkPopAnim{0%{transform:scale(.6)}55%{transform:scale(1.45)}100%{transform:scale(1)}}
 .postButtons button.likeBtn{transition:background .18s ease,color .18s ease}
+
+html,body{overscroll-behavior:none;overscroll-behavior-y:none}
+/* ===== হেডার: ব্যাক + প্লাস + সার্চ ===== */
+#siteHeader{justify-content:flex-start;gap:6px;padding:10px 10px}
+#backBtn,#headerPlusBtn,#headerSearchBtn,#searchBackBtn{position:static;transform:none;width:36px;height:36px;border-radius:50%;background:#262c36;border:none;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex-shrink:0;font-size:20px;-webkit-tap-highlight-color:transparent}
+#backBtn:active,#headerPlusBtn:active,#headerSearchBtn:active,#searchBackBtn:active{background:#323a47}
+#headerPlusBtn{background:var(--primary-color)}
+#siteHeader h1{flex:1;min-width:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#logoutBtn{position:static;transform:none;flex-shrink:0;padding:6px 12px}
+#headerSearchRow{display:none;flex:1;align-items:center;gap:8px;min-width:0}
+body.searchOpen #headerSearchRow{display:flex}
+body.searchOpen #siteHeader>:not(#headerSearchRow){display:none!important}
+#headerSearchRow #searchBar{flex:1;min-width:0;width:auto;margin:0;height:38px;background:#0d1117;border:1px solid #30363d;color:#fff;border-radius:20px;padding:0 14px;font-size:15px;outline:none;font-family:inherit}
+#headerSearchRow #searchBar:focus{border-color:var(--primary-color)}
+/* সার্চ খোলা থাকলে: শুধু ক্যাটাগরি ট্যাব + পোস্ট */
+body.searchOpen #profileCard,body.searchOpen #profileActions,body.searchOpen #ownActionRow,body.searchOpen #tabsOther,body.searchOpen #tabsOwn,body.searchOpen #aboutSection,body.searchOpen #subsWrap,body.searchOpen #postsHeading{display:none!important}
+body.searchOpen #postsWrap{display:block!important}
+body.searchOpen main{padding-top:12px}
+/* ===== ক্যাটাগরি ট্যাব ===== */
+#filterTabs{display:flex;gap:8px;margin:0 0 14px}
+#filterTabs button{flex:1;background:#21262d;color:#9ca3af;border:none;padding:9px 4px;border-radius:14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+#filterTabs button.active{background:var(--primary-color);color:#fff}
+body.commentFocus #filterTabs{display:none!important}
+#emptyFilterMsg{text-align:center;color:#6b7280;font-size:14px;padding:28px 0}
+/* ===== নতুন পোস্ট বক্স (ইনডেক্সের মতো) ===== */
+#composer{background:transparent;border:none;border-radius:0;padding:0;margin:0}
+#composerModalOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;overscroll-behavior:contain}
+#composerModalOverlay.open{display:flex}
+#composerModalBox{width:100%;max-width:var(--max-width);background:var(--card-color);border:1px solid #262c36;border-radius:16px;padding:14px;margin-top:8px}
+#composerModalHeader{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+#composerModalTitle{flex:1;margin-left:10px;font-size:15px;font-weight:bold}
+#composerModalCloseBtn{background:#21262d;border:none;color:#9ca3af;font-size:15px;cursor:pointer;width:30px;height:30px;border-radius:50%}
+.modalBackBtn{background:#262c36;border:none;color:#fff;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0}
+.modalBackBtn:active{background:#323a47}
+body.composerOpen{overflow:hidden}
+#postToast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#21262d;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:700;max-width:90%;text-align:center}
+#composerTabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+#composerTabs button{background:#21262d;color:#9ca3af;border:none;padding:6px 12px;border-radius:12px;font-size:12px;cursor:pointer}
+#composerTabs button.active{background:var(--primary-color);color:#fff}
+#composerText{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px;border-radius:10px;font-size:14px;min-height:var(--composer-height,100px);resize:vertical;font-family:inherit;transition:min-height 0.2s ease}
+#composerText.blogSizeActive{min-height:var(--blog-composer-height,300px)}
+#posterColors{display:none;gap:8px;margin-top:10px;flex-wrap:wrap}
+.posterSwatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent}
+.posterSwatch.selected{border-color:#fff}
+#posterPreview{display:none;margin-top:10px;border-radius:12px;padding:50px 16px;text-align:center;font-size:18px;font-weight:bold;color:#fff;min-height:var(--poster-height);align-items:center;justify-content:center;white-space:pre-wrap}
+#submitPostBtn{margin-top:10px;width:100%;background:var(--primary-color);color:#fff;border:none;padding:10px;border-radius:10px;font-size:14px;font-weight:bold;cursor:pointer}
+#submitPostBtn:disabled{opacity:0.6}
+#blogSyntaxHint{display:none;font-size:11px;color:#6b7280;margin-bottom:8px;line-height:1.6}
+#composerStatus{font-size:11px;color:#4ade80;margin-top:6px;min-height:14px}
+/* ===== লগ আউট নিশ্চিতকরণ ===== */
+#logoutConfirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:650;align-items:center;justify-content:center;padding:24px}
+#logoutConfirmOverlay.open{display:flex}
+#logoutConfirmBox{width:100%;max-width:340px;background:var(--card-color);border:1px solid #262c36;border-radius:18px;padding:22px 18px 18px;text-align:center}
+#logoutConfirmBox h3{font-size:17px;margin-bottom:8px}
+#logoutConfirmBox p{font-size:13px;color:#9ca3af;margin-bottom:18px}
+#logoutConfirmActions{display:flex;gap:10px}
+#logoutConfirmActions button{flex:1;padding:11px;border:none;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;font-family:inherit}
+#logoutNoBtn{background:#262c36;color:#c9d1d9}
+#logoutYesBtn{background:#dc2626;color:#fff}
+#logoutYesBtn:disabled{opacity:.6}
+/* ===== টেনে রিফ্রেশ ===== */
+#ptrIndicator{position:fixed;top:0;left:50%;width:40px;height:40px;margin-left:-20px;border-radius:50%;background:var(--card-color);border:1px solid #30363d;box-shadow:0 4px 14px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:700;opacity:0;transform:translateY(-60px);pointer-events:none;color:#fff}
+#ptrIndicator svg{transition:transform .15s}
+#ptrIndicator.spin svg{animation:ptrSpin .8s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -58,6 +123,42 @@
 
   <div id="postMenuBackdrop"></div>
   <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+  <div id="postToast"></div>
+
+  <div id="composerModalOverlay">
+    <div id="composerModalBox">
+      <div id="composerModalHeader">
+        <button type="button" class="modalBackBtn" id="composerModalBackBtn" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <span id="composerModalTitle">নতুন পোস্ট</span>
+        <button type="button" id="composerModalCloseBtn">✕</button>
+      </div>
+      <div id="composer">
+        <div id="composerTabs">
+          <button class="active" data-mode="text">📝 টেক্সট</button>
+          <button data-mode="poster">🎨 পোস্টার</button>
+          <button data-mode="blog">📰 ব্লগ</button>
+        </div>
+        <div id="blogSyntaxHint"></div>
+        <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
+        <div id="posterColors"></div>
+        <div id="posterPreview"></div>
+        <button id="submitPostBtn">পোস্ট করুন</button>
+        <div id="composerStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="logoutConfirmOverlay">
+    <div id="logoutConfirmBox">
+      <h3>লগ আউট করবেন?</h3>
+      <p>আপনি কি সত্যিই লগ আউট করতে চান?</p>
+      <div id="logoutConfirmActions">
+        <button type="button" id="logoutNoBtn">না, থাক</button>
+        <button type="button" id="logoutYesBtn">হ্যাঁ, লগ আউট</button>
+      </div>
+    </div>
+  </div>
+  <div id="ptrIndicator"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></div>
 
   <div id="loginScreen">
     <button id="loginCloseBtn" type="button">✕</button>
@@ -76,9 +177,15 @@
 
   <div id="appScreen">
     <div id="siteHeader">
-      <button id="backBtn">←</button>
+      <button id="backBtn" type="button" aria-label="ফিরে যান">←</button>
+      <button id="headerPlusBtn" type="button" aria-label="নতুন পোস্ট"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="headerSearchBtn" type="button" aria-label="সার্চ"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
       <h1>প্রোফাইল</h1>
       <button id="logoutBtn">লগ আউট</button>
+      <div id="headerSearchRow">
+        <button id="searchBackBtn" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <input type="text" id="searchBar" placeholder="পোস্ট খুঁজুন..." autocomplete="off" enterkeyhint="search">
+      </div>
     </div>
 
     <main>
@@ -133,6 +240,12 @@
 
       <div id="postsWrap">
         <div id="postsHeading">📝 আমার পোস্ট</div>
+        <div id="filterTabs">
+          <button type="button" class="active" data-filter="all">সবগুলো</button>
+          <button type="button" data-filter="text">টেক্সট</button>
+          <button type="button" data-filter="poster">পোস্টার</button>
+          <button type="button" data-filter="blog">ব্লগ</button>
+        </div>
         <div id="postsLoading">লোড হচ্ছে...</div>
         <div id="emptyPosts" style="display:none;">আপনি এখনো কোনো পোস্ট করেননি</div>
         <div id="lockedPosts" style="display:none;">🔒 এই ব্যবহারকারীর পোস্ট দেখতে হলে আগে সাবস্ক্রাইব করুন</div>
@@ -422,7 +535,21 @@
       loginBtn.disabled = false;
     }
   });
-  logoutBtn.addEventListener('click', async () => { await signOut(auth); });
+  const logoutConfirmOverlay = document.getElementById('logoutConfirmOverlay');
+  const logoutYesBtn = document.getElementById('logoutYesBtn');
+  function openLogoutConfirm() {
+    logoutYesBtn.disabled = false;
+    logoutConfirmOverlay.classList.add('open');
+    if (backGuardActive) rearmGuard();
+  }
+  function closeLogoutConfirm() { logoutConfirmOverlay.classList.remove('open'); }
+  logoutBtn.addEventListener('click', openLogoutConfirm);
+  document.getElementById('logoutNoBtn').addEventListener('click', closeLogoutConfirm);
+  logoutConfirmOverlay.addEventListener('click', (e) => { if (e.target === logoutConfirmOverlay) closeLogoutConfirm(); });
+  logoutYesBtn.addEventListener('click', async () => {
+    logoutYesBtn.disabled = true;
+    try { await signOut(auth); } finally { closeLogoutConfirm(); }
+  });
   blockedBackBtn.addEventListener('click', () => {
     blockedScreen.style.display = 'none';
     loginScreen.style.display = 'flex';
@@ -600,6 +727,11 @@
       root.setProperty('--text-color', s.textColor || '#ffffff');
       if (s.maxWidth) root.setProperty('--max-width', s.maxWidth + 'px');
       if (s.posterHeight) root.setProperty('--poster-height', s.posterHeight + 'px');
+      if (s.composerHeight) root.setProperty('--composer-height', s.composerHeight + 'px');
+      if (s.blogComposerHeight) root.setProperty('--blog-composer-height', s.blogComposerHeight + 'px');
+      if (s.posterColors && s.posterColors.length) buildPosterSwatches(s.posterColors);
+      posterPlaceholderText = s.posterPlaceholder || 'পোস্টারের লেখা এখানে দেখাবে';
+      composerText.placeholder = s.composerPlaceholder || 'আপনার মনে কী চলছে?';
 
       blogSymbols = {
         big: [s.blogBigOpen || '(', s.blogBigClose || ')'],
@@ -607,6 +739,7 @@
         small: [s.blogSmallOpen || '[', s.blogSmallClose || ']'],
         link: [s.blogLinkOpen || '<', s.blogLinkClose || '>']
       };
+      updateBlogSyntaxHint();
 
       if (s.bottomButtons && s.bottomButtons.length) buttonOrder.bottom = s.bottomButtons;
       if (s.menuButtons && s.menuButtons.length) buttonOrder.menu = s.menuButtons;
@@ -1127,6 +1260,7 @@
     lockedPosts.style.display = 'none';
     emptyPosts.style.display = 'none';
     myPostsList.innerHTML = '';
+    filterTabs.style.display = canView ? '' : 'none';
 
     if (!canView) {
       postsLoading.style.display = 'none';
@@ -1149,11 +1283,7 @@
       });
 
       postsLoading.style.display = 'none';
-      if (myPosts.length === 0) { emptyPosts.style.display = 'block'; return myPosts; }
-      myPosts.forEach((p, i) => {
-        myPostsList.appendChild(buildPostCard(p.id, p.data));
-        if ((i + 1) % AD_EVERY_N_POSTS === 0) myPostsList.appendChild(buildFeedAd(Math.floor(i / AD_EVERY_N_POSTS)));
-      });
+      renderMyPosts();
     } catch (e) {
       postsLoading.style.color = '#f87171';
       postsLoading.style.display = 'block';
@@ -2028,6 +2158,257 @@
     await loadUserPosts(targetUid, isOwn || currentIsSubscribed);
   }
 
+  // ================= ক্যাটাগরি ফিল্টার + সার্চ =================
+  const searchBar = document.getElementById('searchBar');
+  const filterTabs = document.getElementById('filterTabs');
+  let activeFilter = 'all';
+  function postKind(d) { return d.type === 'poster' ? 'poster' : (d.type === 'blog' ? 'blog' : 'text'); }
+
+  function renderMyPosts() {
+    myPostsList.innerHTML = '';
+    emptyPosts.style.display = 'none';
+    if (!myPosts.length) { emptyPosts.style.display = 'block'; return; }
+    const term = searchBar.value.trim().toLowerCase();
+    const shown = myPosts
+      .filter(p => activeFilter === 'all' || postKind(p.data) === activeFilter)
+      .filter(p => !term || (p.data.text || '').toLowerCase().includes(term));
+    shown.forEach((p, i) => {
+      myPostsList.appendChild(buildPostCard(p.id, p.data));
+      if ((i + 1) % AD_EVERY_N_POSTS === 0) myPostsList.appendChild(buildFeedAd(Math.floor(i / AD_EVERY_N_POSTS)));
+    });
+    if (!shown.length) {
+      const m = document.createElement('div');
+      m.id = 'emptyFilterMsg';
+      m.textContent = term ? 'কোনো পোস্ট পাওয়া যায়নি।' : 'এই ক্যাটাগরিতে কোনো পোস্ট নেই।';
+      myPostsList.appendChild(m);
+    }
+  }
+  filterTabs.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeFilter = btn.getAttribute('data-filter');
+      filterTabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+      renderMyPosts();
+    });
+  });
+  searchBar.addEventListener('input', renderMyPosts);
+  searchBar.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchBar.blur(); });
+
+  function openSearch() {
+    if (document.body.classList.contains('searchOpen')) return;
+    document.body.classList.add('searchOpen');
+    if (backGuardActive) rearmGuard();
+    window.scrollTo(0, 0);
+    searchBar.focus();
+  }
+  function closeSearch() {
+    if (!document.body.classList.contains('searchOpen')) return;
+    document.body.classList.remove('searchOpen');
+    searchBar.blur();
+    if (searchBar.value) { searchBar.value = ''; renderMyPosts(); }
+  }
+  document.getElementById('headerSearchBtn').addEventListener('click', openSearch);
+  document.getElementById('searchBackBtn').addEventListener('click', () => {
+    if (backGuardActive) window.history.back(); else closeSearch();
+  });
+
+  // ================= নতুন পোস্ট (ইনডেক্সের পোস্ট-বক্সের মতোই) =================
+  const composerModalOverlay = document.getElementById('composerModalOverlay');
+  const composerModalCloseBtn = document.getElementById('composerModalCloseBtn');
+  const composerText = document.getElementById('composerText');
+  const blogSyntaxHint = document.getElementById('blogSyntaxHint');
+  const posterColorsEl = document.getElementById('posterColors');
+  const posterPreview = document.getElementById('posterPreview');
+  const submitPostBtn = document.getElementById('submitPostBtn');
+  const composerStatus = document.getElementById('composerStatus');
+  const postToast = document.getElementById('postToast');
+  const DEFAULT_POSTER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827'];
+  let composerMode = 'text';
+  let selectedPosterColor = '#4285F4';
+  let posterPlaceholderText = 'পোস্টারের লেখা এখানে দেখাবে';
+  let postToastTimer = null;
+
+  function showPostToast(msg) {
+    postToast.textContent = msg;
+    postToast.style.display = 'block';
+    clearTimeout(postToastTimer);
+    postToastTimer = setTimeout(() => { postToast.style.display = 'none'; }, 2200);
+  }
+  function openComposerModal() {
+    if (!composerModalOverlay.classList.contains('open')) {
+      composerModalOverlay.classList.add('open');
+      document.body.classList.add('composerOpen');
+      composerModalOverlay.scrollTop = 0;
+      if (backGuardActive) rearmGuard();
+    }
+  }
+  function closeComposerModal() {
+    composerModalOverlay.classList.remove('open');
+    document.body.classList.remove('composerOpen');
+  }
+  function updatePosterPreview() {
+    posterPreview.style.background = selectedPosterColor;
+    posterPreview.textContent = composerText.value || posterPlaceholderText;
+  }
+  function applyComposerHeightForMode() {
+    composerText.classList.toggle('blogSizeActive', composerMode === 'blog');
+  }
+  function updateBlogSyntaxHint() {
+    const b = blogSymbols.big, m = blogSymbols.med, sm = blogSymbols.small, lk = blogSymbols.link;
+    blogSyntaxHint.innerHTML =
+      'বড় লেখার জন্য ' + escapeHtml(b[0]) + 'এভাবে লিখুন' + escapeHtml(b[1]) +
+      ' · মাঝারির জন্য ' + escapeHtml(m[0]) + 'এভাবে লিখুন' + escapeHtml(m[1]) +
+      ' · স্বাভাবিকের জন্য ' + escapeHtml(sm[0]) + 'এভাবে লিখুন' + escapeHtml(sm[1]) + '<br>' +
+      'অন্য পোস্টের লিংক যুক্ত করতে ' + escapeHtml(lk[0]) + 'লিংক' + escapeHtml(lk[1]) + ' এভাবে বসান';
+  }
+  updateBlogSyntaxHint();
+
+  function buildPosterSwatches(colors) {
+    posterColorsEl.innerHTML = '';
+    const list = (colors && colors.length) ? colors : DEFAULT_POSTER_COLORS;
+    list.forEach((color, i) => {
+      const sw = document.createElement('div');
+      sw.className = 'posterSwatch' + (i === 0 ? ' selected' : '');
+      sw.style.background = color;
+      sw.dataset.color = color;
+      sw.addEventListener('click', () => {
+        selectedPosterColor = color;
+        posterColorsEl.querySelectorAll('.posterSwatch').forEach(x => x.classList.remove('selected'));
+        sw.classList.add('selected');
+        updatePosterPreview();
+      });
+      posterColorsEl.appendChild(sw);
+    });
+    selectedPosterColor = list[0];
+  }
+  buildPosterSwatches(DEFAULT_POSTER_COLORS);
+
+  document.querySelectorAll('#composerTabs button[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      composerMode = btn.getAttribute('data-mode');
+      document.querySelectorAll('#composerTabs button[data-mode]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      posterColorsEl.style.display = composerMode === 'poster' ? 'flex' : 'none';
+      posterPreview.style.display = composerMode === 'poster' ? 'flex' : 'none';
+      blogSyntaxHint.style.display = composerMode === 'blog' ? 'block' : 'none';
+      applyComposerHeightForMode();
+      if (composerMode === 'poster') updatePosterPreview();
+    });
+  });
+  composerText.addEventListener('input', () => { if (composerMode === 'poster') updatePosterPreview(); });
+
+  function resetComposerAfterPost() {
+    composerMode = 'text';
+    document.querySelectorAll('#composerTabs button[data-mode]').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-mode') === 'text');
+    });
+    posterColorsEl.style.display = 'none';
+    posterPreview.style.display = 'none';
+    posterPreview.textContent = '';
+    blogSyntaxHint.style.display = 'none';
+    applyComposerHeightForMode();
+    composerText.value = '';
+  }
+
+  async function getSuspensionRemainingMs() {
+    if (!currentUser) return null;
+    try {
+      const snap = await getDoc(doc(db, "users", currentUser.uid));
+      if (!snap.exists()) return null;
+      const u = snap.data();
+      if (!u.suspendedUntil) return null;
+      const untilMs = u.suspendedUntil.toMillis ? u.suspendedUntil.toMillis() : new Date(u.suspendedUntil).getTime();
+      const diffMs = untilMs - Date.now();
+      return diffMs > 0 ? diffMs : null;
+    } catch (e) { return null; }
+  }
+  function formatSuspensionRemaining(ms) {
+    const totalMin = Math.max(1, Math.ceil(ms / 60000));
+    const days = Math.floor(totalMin / 1440);
+    const hrs = Math.floor((totalMin % 1440) / 60);
+    const mins = totalMin % 60;
+    const parts = [];
+    if (days > 0) parts.push(days + ' দিন');
+    if (hrs > 0) parts.push(hrs + ' ঘণ্টা');
+    if (mins > 0 || parts.length === 0) parts.push(mins + ' মিনিট');
+    return parts.join(' ');
+  }
+
+  document.getElementById('headerPlusBtn').addEventListener('click', () => {
+    if (!currentUser) { showLoginOverlay('পোস্ট করতে Google দিয়ে লগইন করুন'); return; }
+    closeSearch();
+    openComposerModal();
+    composerText.focus();
+  });
+  composerModalCloseBtn.addEventListener('click', closeComposerModal);
+  document.getElementById('composerModalBackBtn').addEventListener('click', () => {
+    if (backGuardActive) window.history.back(); else closeComposerModal();
+  });
+
+  submitPostBtn.addEventListener('click', async () => {
+    if (!currentUser) { closeComposerModal(); showLoginOverlay('পোস্ট করতে Google দিয়ে লগইন করুন'); return; }
+
+    const suspendedMs = await getSuspensionRemainingMs();
+    if (suspendedMs) {
+      composerStatus.textContent = `⛔ আপনি আর ${formatSuspensionRemaining(suspendedMs)} এর জন্য পোস্ট করতে পারবেন না`;
+      return;
+    }
+
+    const text = composerText.value.trim();
+    if (composerMode === 'text' && !text) { composerStatus.textContent = 'কিছু লিখুন'; return; }
+    if (composerMode === 'poster' && !text) { composerStatus.textContent = 'পোস্টারের জন্য লেখা দিন'; return; }
+    if (composerMode === 'blog' && !text) { composerStatus.textContent = 'ব্লগের লেখা দিন'; return; }
+
+    submitPostBtn.disabled = true;
+    composerStatus.textContent = 'পোস্ট হচ্ছে...';
+    try {
+      await addDoc(collection(db, "posts"), {
+        authorUid: currentUser.uid,
+        authorName: currentUser.displayName || 'User',
+        authorEmail: currentUser.email || '',
+        authorPhoto: currentUser.photoURL || '',
+        type: composerMode,
+        text: text,
+        posterColor: composerMode === 'poster' ? selectedPosterColor : null,
+        likedBy: [],
+        commentCount: 0,
+        createdAt: serverTimestamp()
+      });
+
+      resetComposerAfterPost();
+      closeComposerModal();
+      composerStatus.textContent = '';
+      showPostToast('✅ পোস্ট হয়েছে!');
+
+      if (currentIsOwnProfile) {
+        // নিজের প্রোফাইলে থাকলে: ফিল্টার/সার্চ সরিয়ে "মাই পোস্ট" খুলে নতুন পোস্টে (সবার উপরে) চলে যায়
+        activeFilter = 'all';
+        filterTabs.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.getAttribute('data-filter') === 'all'));
+        closeSearch();
+        setOwnTab('posts');
+        await loadUserPosts(currentTargetUid, true);
+        const first = myPostsList.querySelector('.postCard');
+        if (first) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo({ top: 0 });
+      } else {
+        // অন্যের প্রোফাইলে থাকলে: নিজের প্রোফাইলে গিয়ে নতুন পোস্ট দেখায়
+        setTimeout(() => { window.location.href = 'profile.html'; }, 700);
+      }
+    } catch (e) {
+      console.error(e);
+      composerStatus.textContent = 'এরর: ' + e.message;
+    }
+    submitPostBtn.disabled = false;
+  });
+
+  // ================= টেনে রিফ্রেশ: প্রোফাইল ও পোস্ট নতুন করে লোড =================
+  window.addEventListener('pullrefresh', async () => {
+    try {
+      stopWatchingStatus();
+      await openProfileFor(currentUser);
+    } catch (e) { console.warn(e); }
+    window.dispatchEvent(new Event('pullrefreshdone'));
+  });
+
   let guestSettingsLoaded = false;
 
   onAuthStateChanged(auth, async (user) => {
@@ -2175,6 +2556,16 @@
       rearmGuard();
       return;
     }
+    if (logoutConfirmOverlay.classList.contains('open')) {
+      closeLogoutConfirm();
+      rearmGuard();
+      return;
+    }
+    if (composerModalOverlay.classList.contains('open')) {
+      closeComposerModal();
+      rearmGuard();
+      return;
+    }
     if (editOverlay.classList.contains('open')) {
       editOverlay.classList.remove('open');
       rearmGuard();
@@ -2183,6 +2574,11 @@
     const openMenu = document.querySelector('.postMenuDropdown.open, .commentMenuDropdown.open');
     if (openMenu) {
       openMenu.classList.remove('open');
+      rearmGuard();
+      return;
+    }
+    if (document.body.classList.contains('searchOpen')) {
+      closeSearch();
       rearmGuard();
       return;
     }
@@ -2250,6 +2646,72 @@
     document.body.classList.add('pageLeaving');
     setTimeout(function () { window.location.href = href; }, 120);
   }, true);
+})();
+</script>
+<script>
+(function () {
+  var startY = 0, tracking = false, pulling = false, refreshing = false, dist = 0;
+  var THRESHOLD = 80, MAX = 130;
+  var ind = document.getElementById('ptrIndicator');
+  function overlayOpen() {
+    var ls = document.getElementById('loginScreen');
+    return document.getElementById('editOverlay').classList.contains('open') ||
+      document.getElementById('composerModalOverlay').classList.contains('open') ||
+      document.getElementById('logoutConfirmOverlay').classList.contains('open') ||
+      (ls && ls.classList.contains('asOverlay') && ls.style.display === 'flex') ||
+      !!document.querySelector('.reactSheetOverlay');
+  }
+  function blocked() {
+    var c = document.body.classList;
+    return c.contains('commentFocus') || c.contains('searchOpen') || overlayOpen() ||
+      !!document.querySelector('.postMenuDropdown.open, .commentMenuDropdown.open');
+  }
+  function setInd(d, spin) {
+    ind.style.opacity = d > 0 || spin ? '1' : '0';
+    ind.style.transform = 'translateY(' + (d - 50 + 12) + 'px)';
+    if (!spin) ind.firstElementChild.style.transform = 'rotate(' + (d * 3) + 'deg)';
+  }
+  function endRefresh() {
+    refreshing = false;
+    ind.classList.remove('spin');
+    ind.style.transition = 'transform .2s ease, opacity .2s ease';
+    setInd(0, false);
+    setTimeout(function () { ind.style.transition = ''; }, 250);
+  }
+  window.addEventListener('pullrefreshdone', endRefresh);
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 1 && !refreshing) {
+      startY = e.touches[0].clientY;
+      tracking = true; pulling = false; dist = 0;
+    } else { tracking = false; }
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (!tracking || e.touches.length !== 1) return;
+    if (overlayOpen()) return;
+    var y = e.touches[0].clientY;
+    var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    if (scrollTop <= 0 && y > startY) {
+      e.preventDefault();
+      if (!blocked()) {
+        pulling = true;
+        dist = Math.min((y - startY) * 0.5, MAX);
+        setInd(dist, false);
+      }
+    }
+  }, { passive: false });
+  document.addEventListener('touchend', function () {
+    if (pulling && !refreshing) {
+      if (dist >= THRESHOLD * 0.6) {
+        refreshing = true;
+        ind.classList.add('spin');
+        ind.style.transition = 'transform .15s ease';
+        setInd(50, true);
+        window.dispatchEvent(new Event('pullrefresh'));
+        setTimeout(function () { if (refreshing) endRefresh(); }, 8000);
+      } else { endRefresh(); }
+    }
+    tracking = false; pulling = false;
+  }, { passive: true });
 })();
 </script>
 </body>
