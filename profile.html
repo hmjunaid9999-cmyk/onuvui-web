@@ -157,6 +157,27 @@ html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tab
 #profileNameRow #profileName{word-break:break-word}
 #statusText{grid-column:2;grid-row:2;align-self:start;margin:3px 0 0 !important;min-height:0 !important;text-align:left}
 
+/* ===== প্রোফাইল এডিট ফর্ম: ধূসর বক্স, মোটা লেবেল, সবুজ সেভ, নীল বাতিল ===== */
+:root{--field-gray:#2b2b2b;--field-gray-line:#454545;--field-gray-muted:#9b9b9b}
+.formRow label{font-weight:800 !important;font-size:13.5px !important;margin-bottom:6px !important;color:var(--text-color) !important}
+.formRow input,.formRow textarea,.formRow select,.readonlyField{
+  background:var(--field-gray) !important;border:1px solid var(--field-gray-line) !important;color:#ffffff !important
+}
+.formRow input::placeholder,.formRow textarea::placeholder{color:var(--field-gray-muted) !important;opacity:1}
+.formRow select option{background:var(--field-gray);color:#ffffff}
+.copyFieldBtn{background:#3d3d3d !important;color:#ffffff !important;border:1px solid #5a5a5a !important}
+html[data-theme="light"]{--field-gray:#e4e4e7;--field-gray-line:#c4c4cc;--field-gray-muted:#6b6b73}
+html[data-theme="light"] .formRow input,html[data-theme="light"] .formRow textarea,html[data-theme="light"] .formRow select,html[data-theme="light"] .readonlyField{color:#000000 !important}
+html[data-theme="light"] .formRow select option{color:#000000}
+html[data-theme="light"] .copyFieldBtn{background:#d1d1d6 !important;color:#000000 !important;border-color:#b0b0b8 !important}
+
+#editModalBtns{gap:12px !important;margin-top:10px !important}
+#editModalBtns button{flex:1 1 0;padding:12px 8px !important;border-radius:4px !important;border:none !important;font-weight:bold;font-size:14px;color:#ffffff !important;cursor:pointer}
+#editSaveBtn{background:#0b6b32 !important}
+#editCancelBtn{background:#1d4ed8 !important}
+#editSaveBtn:active{background:#0e7f3b !important}
+#editCancelBtn:active{background:#2563eb !important}
+
 /* "অমুকের পোস্ট" / "আমার পোস্ট" লেখা সরানো হলো */
 #postsHeading{display:none !important}
 </style>
