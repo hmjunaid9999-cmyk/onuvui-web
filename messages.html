@@ -196,7 +196,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 #recTime{flex:1;font-size:14px;color:var(--text-color)}
 #recCancel,#recSend{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
 .vp{display:flex;align-items:center;gap:8px;min-width:190px}
-.vpBtn{width:32px;height:32px;border-radius:50%;border:1.5px solid currentColor;background:none;color:inherit;cursor:pointer;font-size:12px;flex-shrink:0;padding:0}
+.vpBtn{width:34px;height:34px;border-radius:50%;border:none;background:#22c55e;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
+.msgRow.mine .vp{flex-direction:row-reverse}
 .vpBar{flex:1;min-width:0;accent-color:currentColor;height:4px}
 .vpTime{font-size:12px;min-width:34px;text-align:right}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
@@ -385,6 +386,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   let currentUser = null;
   let myProfile = {};
   let messagingEnabled = true;
+  let VOICE_MAX_SEC = 300;   // ভয়েসের সর্বোচ্চ সময় (সেকেন্ড) — অ্যাডমিন প্যানেলের settings/messages.voiceMaxMin থেকে বদলায়
 
   // চ্যাটের অবস্থা (পেইজ রিলোড ছাড়াই ইনবক্স ↔ চ্যাট বদলায়, তাই আবার লগইন স্ক্রিন আসে না)
   let otherUid = null;
@@ -854,6 +856,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       const snap = await getDoc(doc(db, "settings", "messages"));
       const d = snap.exists() ? snap.data() : {};
       messagingEnabled = d.enabled !== false;
+      VOICE_MAX_SEC = Math.max(1, Math.min(60, Number(d.voiceMaxMin) || 5)) * 60;
       disabledNotice.style.display = messagingEnabled ? 'none' : 'block';
       sendBtn.disabled = !messagingEnabled;
       messageInput.disabled = !messagingEnabled;
@@ -1247,7 +1250,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   const SUPABASE_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_MTiahKNII0LDV_K3aL11QQ_pOzleTx0';
   const VOICE_BUCKET = 'voice';
-  const VOICE_MAX_SEC = 300;           // সর্বোচ্চ ৫ মিনিট — বদলাতে এই একটা সংখ্যা বদলালেই হবে
+  const VP_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M8 5v14l11-7z" fill="#fff"/></svg>';
+  const VP_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="#fff"/></svg>';
   const voiceBtn = document.getElementById('voiceBtn');
   const messageBarEl = document.getElementById('messageBar');
   const recTime = document.getElementById('recTime');
@@ -1395,7 +1399,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   function voicePlayerHtml(m) {
     const dur = Math.max(0, Number(m.duration) || 0);
     return '<div class="vp" data-url="' + escapeHtml(m.audioUrl) + '" data-dur="' + dur + '">' +
-      '<button class="vpBtn" type="button" aria-label="প্লে">▶</button>' +
+      '<button class="vpBtn" type="button" aria-label="প্লে">' + VP_PLAY + '</button>' +
       '<input class="vpBar" type="range" min="0" max="100" step="0.1" value="0" aria-label="সময়">' +
       '<span class="vpTime">' + fmtSec(dur) + '</span></div>';
   }
@@ -1404,7 +1408,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     const playing = !!(vpAudio && vpUrl === vpUi.url && !vpAudio.paused);
     const cur = (vpAudio && vpUrl === vpUi.url) ? vpAudio.currentTime : 0;
     const total = vpUi.dur || (vpAudio && isFinite(vpAudio.duration) ? vpAudio.duration : 0);
-    vpUi.btn.textContent = playing ? '⏸' : '▶';
+    vpUi.btn.innerHTML = playing ? VP_PAUSE : VP_PLAY;
     vpUi.bar.value = total ? Math.min(100, (cur / total) * 100) : 0;
     vpUi.tm.textContent = fmtSec(playing || cur > 0 ? cur : total);
   }

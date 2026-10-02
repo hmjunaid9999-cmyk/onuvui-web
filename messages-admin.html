@@ -98,6 +98,10 @@ input:checked + .slider:before{transform:translateX(20px)}
           <label>একটা মেসেজে সর্বোচ্চ অক্ষর</label>
           <input type="number" id="maxLenInput" class="numInput" min="50" max="2000" value="2000">
         </div>
+        <div class="settingsRow">
+          <label>ভয়েস মেসেজের সর্বোচ্চ সময় (মিনিট)</label>
+          <input type="number" id="voiceMaxInput" class="numInput" min="1" max="60" value="5">
+        </div>
         <button id="saveSettingsBtn">💾 সেভ করুন</button>
         <div id="settingsStatus"></div>
       </div>
@@ -170,6 +174,7 @@ input:checked + .slider:before{transform:translateX(20px)}
 
   const enabledToggle = document.getElementById('enabledToggle');
   const maxLenInput = document.getElementById('maxLenInput');
+  const voiceMaxInput = document.getElementById('voiceMaxInput');
   const saveSettingsBtn = document.getElementById('saveSettingsBtn');
   const settingsStatus = document.getElementById('settingsStatus');
 
@@ -223,6 +228,7 @@ input:checked + .slider:before{transform:translateX(20px)}
       const d = snap.exists() ? snap.data() : {};
       enabledToggle.checked = d.enabled !== false;
       maxLenInput.value = d.maxLength || 2000;
+      voiceMaxInput.value = d.voiceMaxMin || 5;
     } catch (e) { console.error(e); }
   }
 
@@ -232,7 +238,8 @@ input:checked + .slider:before{transform:translateX(20px)}
     try {
       await setDoc(doc(db, "settings", "messages"), {
         enabled: enabledToggle.checked,
-        maxLength: Number(maxLenInput.value) || 2000
+        maxLength: Number(maxLenInput.value) || 2000,
+        voiceMaxMin: Math.max(1, Math.min(60, Number(voiceMaxInput.value) || 5))
       }, { merge: true });
       settingsStatus.textContent = '✅ সেভ হয়েছে';
       setTimeout(() => { settingsStatus.textContent = ''; }, 2500);
