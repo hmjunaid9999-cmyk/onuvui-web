@@ -132,9 +132,11 @@ body.composerOpen{overflow:hidden}
 #profileActions button:active,#profileActions a:active,#ownActionRow button:active{background:var(--btn-green-active) !important}
 
 /* ===== নিচের ২টা ট্যাব: সবুজ নয়, সবগুলো/টেক্সট/পোস্টার/ব্লগ ট্যাবের মতো ===== */
-#tabsOther,#tabsOwn{gap:8px !important;padding:0 !important;margin:0 0 14px;justify-content:stretch !important}
+#tabsOther,#tabsOwn{gap:8px !important;padding:0 !important;margin:0 0 10px;justify-content:space-between !important}
+/* বামেরটা "সবগুলো"-র ঠিক উপরে, ডানেরটা "ব্লগ"-এর ঠিক উপরে (ফিল্টার ট্যাবের সমান চওড়া) */
 #tabsOther .tabBtn,#tabsOwn .tabBtn{
-  flex:1 1 0 !important;max-width:none !important;width:auto !important;min-width:0;
+  flex:0 0 calc((100% - 24px) / 4) !important;max-width:calc((100% - 24px) / 4) !important;width:calc((100% - 24px) / 4) !important;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   background:transparent !important;color:var(--text-color) !important;
   border:none !important;border-radius:14px !important;box-shadow:none !important;
   padding:9px 4px !important;font-weight:bold;text-align:center;
@@ -261,7 +263,7 @@ html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tab
       <div id="ownActionRow">
         <div class="actionCol">
           <div class="subCountLabel"><span id="statSubscribersOwn">0</span></div>
-          <button class="staticBadge" disabled>🔔 সাবস্ক্রাইবার</button>
+          <button class="staticBadge" disabled>🔔 সাবস্ক্রাইব সংখ্যা</button>
         </div>
         <div class="actionCol">
           <button id="editProfileBtn">✏️ প্রোফাইল এডিট করুন</button>
