@@ -149,6 +149,14 @@ body.composerOpen{overflow:hidden}
 }
 html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tabsOwn .tabBtn.active{background:rgba(0,0,0,0.08) !important}
 
+/* ===== কভার ফটো বাদ; বামে প্রোফাইল আইকন, ডানে নাম + সবুজ বাতি, নিচে স্ট্যাটাস ===== */
+#profileCover{display:none !important}
+#profileBody{display:grid !important;grid-template-columns:auto minmax(0,1fr);column-gap:14px;align-items:center;text-align:left !important;padding:16px !important}
+#profileAvatar{grid-column:1;grid-row:1 / span 2;margin:0 !important;align-self:center}
+#profileNameRow{grid-column:2;grid-row:1;justify-content:flex-start !important;align-self:end;margin:0 !important;min-width:0}
+#profileNameRow #profileName{word-break:break-word}
+#statusText{grid-column:2;grid-row:2;align-self:start;margin:3px 0 0 !important;min-height:0 !important;text-align:left}
+
 /* "অমুকের পোস্ট" / "আমার পোস্ট" লেখা সরানো হলো */
 #postsHeading{display:none !important}
 </style>
@@ -367,7 +375,7 @@ html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tab
           <option value="other">অন্যান্য</option>
         </select>
       </div>
-      <div class="formRow">
+      <div class="formRow" style="display:none">
         <label>কভার রং</label>
         <div id="coverColors"></div>
       </div>
