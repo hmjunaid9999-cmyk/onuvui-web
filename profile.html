@@ -109,17 +109,13 @@ body.composerOpen{overflow:hidden}
 .statusDot{width:11px;height:11px}
 .statusDot.online{background:#00c853 !important;box-shadow:0 0 0 3px rgba(0,200,83,0.35) !important}
 
-/* ===== ৮টি বাটন: গাঢ় সবুজ, আয়তাকার, লেখার চেয়ে সামান্য বড় ===== */
+/* ===== উপরের ২টা বাটন (সবুজ, আয়তাকার, লেখার চেয়ে সামান্য বড়) ===== */
 :root{--btn-green:#0b6b32;--btn-green-active:#0e7f3b;--btn-radius:4px}
-#profileActions,#ownActionRow,#tabsOther,#tabsOwn{gap:10px !important;padding:0 16px 10px !important;justify-content:center !important}
-#tabsOther,#tabsOwn{padding-bottom:14px !important}
+#profileActions,#ownActionRow{gap:10px !important;padding:0 16px 10px !important;justify-content:center !important}
 #profileActions .actionCol,#ownActionRow .actionCol{flex:0 0 auto !important;max-width:none !important;width:auto !important;min-width:0}
-#tabsOther .tabBtn,#tabsOwn .tabBtn{flex:0 0 auto !important;max-width:none !important;width:auto !important;min-width:0}
-
 #profileActions button,#profileActions a,#ownActionRow button,
 #profileActions #subscribeBtn,#profileActions #subscribeBtn.subscribed,
-#ownActionRow .staticBadge,
-#tabsOther .tabBtn,#tabsOwn .tabBtn{
+#ownActionRow .staticBadge{
   width:auto !important;height:auto !important;min-height:0 !important;
   padding:8px 14px !important;
   background:var(--btn-green) !important;color:#ffffff !important;
@@ -131,16 +127,28 @@ body.composerOpen{overflow:hidden}
   box-shadow:none;opacity:1 !important;
   -webkit-tap-highlight-color:transparent
 }
-#ownActionRow button,#tabsOwn .tabBtn{font-size:calc(12.5px * var(--own-action-scale,1))}
-#profileActions button,#profileActions a,#tabsOther .tabBtn{font-size:calc(12.5px * var(--other-action-scale,1))}
+#ownActionRow button{font-size:calc(12.5px * var(--own-action-scale,1))}
+#profileActions button,#profileActions a{font-size:calc(12.5px * var(--other-action-scale,1))}
+#profileActions button:active,#profileActions a:active,#ownActionRow button:active{background:var(--btn-green-active) !important}
 
-/* সিলেক্টেড ট্যাব: একই সবুজ, সাদা বর্ডার দিয়ে আলাদা */
-#tabsOther .tabBtn.active,#tabsOwn .tabBtn.active{
-  background:var(--btn-green-active) !important;color:#ffffff !important;
-  border-color:#ffffff !important;box-shadow:inset 0 0 0 1px #ffffff
+/* ===== নিচের ২টা ট্যাব: সবুজ নয়, সবগুলো/টেক্সট/পোস্টার/ব্লগ ট্যাবের মতো ===== */
+#tabsOther,#tabsOwn{gap:8px !important;padding:0 !important;margin:0 0 14px;justify-content:stretch !important}
+#tabsOther .tabBtn,#tabsOwn .tabBtn{
+  flex:1 1 0 !important;max-width:none !important;width:auto !important;min-width:0;
+  background:transparent !important;color:var(--text-color) !important;
+  border:none !important;border-radius:14px !important;box-shadow:none !important;
+  padding:9px 4px !important;font-weight:bold;text-align:center;
+  font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent
 }
-#profileActions button:active,#profileActions a:active,#ownActionRow button:active,
-#tabsOther .tabBtn:active,#tabsOwn .tabBtn:active{background:var(--btn-green-active) !important}
+#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}
+#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}
+#tabsOther .tabBtn.active,#tabsOwn .tabBtn.active{
+  background:rgba(255,255,255,0.1) !important;color:var(--text-color) !important
+}
+html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tabsOwn .tabBtn.active{background:rgba(0,0,0,0.08) !important}
+
+/* "অমুকের পোস্ট" / "আমার পোস্ট" লেখা সরানো হলো */
+#postsHeading{display:none !important}
 </style>
 </head>
 <body>
@@ -262,14 +270,14 @@ body.composerOpen{overflow:hidden}
 
       
       <div id="tabsOther">
-        <button id="postsTabBtn" class="tabBtn active">📝 পোস্ট</button>
-        <button id="aboutTabBtn" class="tabBtn">ℹ️ এবাউট</button>
+        <button id="postsTabBtn" class="tabBtn active">পোস্ট</button>
+        <button id="aboutTabBtn" class="tabBtn">এবাউট</button>
       </div>
 
       
       <div id="tabsOwn">
-        <button id="myPostsTabBtn" class="tabBtn active">📝 মাই পোস্ট</button>
-        <button id="mySubsTabBtn" class="tabBtn">🔔 মাই সাবস্ক্রাইবার</button>
+        <button id="myPostsTabBtn" class="tabBtn active">পোস্ট</button>
+        <button id="mySubsTabBtn" class="tabBtn">সাবস্ক্রাইবার</button>
       </div>
 
       <div id="aboutSection" style="display:none;">
