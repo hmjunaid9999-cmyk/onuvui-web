@@ -113,7 +113,12 @@ body.searchOpen main{padding-top:12px}
 html[data-theme="light"]{--ash-bg:#d4d7da}
 #noticeBar{background:var(--ash-bg)}
 #composerOpenBtn,#composerOpenBtn:active{background:var(--ash-bg)}
+#composerModalOverlay{background:var(--bg-color)}
 #composerModalBox{background:var(--ash-bg)}
+#composerText{background:var(--ash-bg)}
+#posterPreview{display:none!important}
+#composerText.posterActive{color:#fff;font-weight:bold;font-size:18px;text-align:center;min-height:var(--poster-height);border-color:transparent;padding-top:calc(var(--poster-height)/2 - 20px)}
+#composerText.posterActive::placeholder{color:rgba(255,255,255,0.7)}
 #submitPostBtn,#submitPostBtn:active{background:#16a34a;color:#ffffff}
 </style>
 </head>
@@ -708,6 +713,12 @@ html[data-theme="light"]{--ash-bg:#d4d7da}
 
   function applyComposerHeightForMode() {
     composerText.classList.toggle('blogSizeActive', composerMode === 'blog');
+    syncPosterBox();
+  }
+  function syncPosterBox() {
+    const on = composerMode === 'poster';
+    composerText.classList.toggle('posterActive', on);
+    composerText.style.background = on ? selectedPosterColor : '';
   }
 
   document.querySelectorAll('#composerTabs button[data-mode]').forEach(btn => {
@@ -730,6 +741,7 @@ html[data-theme="light"]{--ash-bg:#d4d7da}
   function updatePosterPreview() {
     posterPreview.style.background = selectedPosterColor;
     posterPreview.textContent = composerText.value || posterPlaceholderText;
+    syncPosterBox();
   }
 
   function enterPostEditMode(postId, d) {
