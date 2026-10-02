@@ -185,6 +185,20 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgRow,.msgBubble,.msgQuote,.convRow,#ctxBackdrop,#ctxMenu{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}
 .msgBubble *,.convRow *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #messageInput{-webkit-user-select:text;user-select:text}
+/* ভয়েস মেসেজ */
+#voiceBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+#voiceBtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#voiceRec{display:none;flex:1;align-items:center;gap:12px;min-height:40px}
+#messageBar.recording #voiceRec{display:flex}
+#messageBar.recording #messageInput,#messageBar.recording #sendBtn,#messageBar.recording #voiceBtn{display:none}
+.recDot{width:10px;height:10px;border-radius:50%;background:var(--text-color);animation:recBlink 1s infinite;flex-shrink:0}
+@keyframes recBlink{50%{opacity:.25}}
+#recTime{flex:1;font-size:14px;color:var(--text-color)}
+#recCancel,#recSend{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+.vp{display:flex;align-items:center;gap:8px;min-width:190px}
+.vpBtn{width:32px;height:32px;border-radius:50%;border:1.5px solid currentColor;background:none;color:inherit;cursor:pointer;font-size:12px;flex-shrink:0;padding:0}
+.vpBar{flex:1;min-width:0;accent-color:currentColor;height:4px}
+.vpTime{font-size:12px;min-width:34px;text-align:right}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
 #ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
 #ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
@@ -262,6 +276,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
           <button class="cpClose" id="cpClose">✕</button>
         </div>
         <div id="messageBar">
+          <button id="voiceBtn" type="button" aria-label="ভয়েস মেসেজ"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+          <div id="voiceRec"><button id="recCancel" type="button" aria-label="বাতিল">✕</button><span class="recDot"></span><span id="recTime">0:00</span><button id="recSend" type="button" aria-label="পাঠান">➤</button></div>
           <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000" enterkeyhint="enter"></textarea>
           <button id="sendBtn">👍</button>
         </div>
@@ -692,15 +708,15 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   function openMessageMenu(anchorEl, msgId, m, mine) {
     let html = '';
     if (mine) {
-      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
-      if (messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
+      if (m.type !== 'voice') html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (m.type !== 'voice' && messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
       html += '<button class="ctxItem danger" data-act="delete">🗑️ ডিলিট করুন</button>';
     } else {
       html += '<div class="ctxReactions">' +
         Object.keys(REACTIONS).map(k => '<button data-react="' + k + '">' + REACTIONS[k] + '</button>').join('') +
         '</div>';
       html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
-      html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (m.type !== 'voice') html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
     }
     openCtxMenu(anchorEl, html);
     ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', () => {
@@ -992,6 +1008,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
       const isLike = m.text === '👍' && !m.replyTo;
+      const isVoice = m.type === 'voice' && !!m.audioUrl;
       const quoteHtml = m.replyTo
         ? '<div class="msgQuote" data-goto="' + escapeHtml(m.replyTo.id) + '">' + escapeHtml(m.replyTo.text || '') + '</div>'
         : '';
@@ -1004,11 +1021,14 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}">${quoteHtml}${isLike ? '👍' : escapeHtml(m.text)}${reactHtml}</div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
           <div class="msgMeta"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
       row.innerHTML = mine ? content + av : av + content;
+
+      const vpEl = row.querySelector('.vp');
+      if (vpEl) bindVoicePlayer(vpEl);
 
       const quoteEl = row.querySelector('.msgQuote');
       if (quoteEl) quoteEl.addEventListener('click', () => {
@@ -1222,6 +1242,203 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   }
 
   sendBtn.addEventListener('click', () => sendCurrentMessage(true));
+
+  // ================= ভয়েস মেসেজ (অডিও Supabase Storage-এ, মেসেজ Firestore-এ) =================
+  const SUPABASE_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_MTiahKNII0LDV_K3aL11QQ_pOzleTx0';
+  const VOICE_BUCKET = 'voice';
+  const VOICE_MAX_SEC = 300;           // সর্বোচ্চ ৫ মিনিট — বদলাতে এই একটা সংখ্যা বদলালেই হবে
+  const voiceBtn = document.getElementById('voiceBtn');
+  const messageBarEl = document.getElementById('messageBar');
+  const recTime = document.getElementById('recTime');
+  const recCancel = document.getElementById('recCancel');
+  const recSend = document.getElementById('recSend');
+  let vRec = null;                     // { recorder, stream, chunks, startedAt, timer, mime }
+  let sbClient = null;
+
+  function fmtSec(t) {
+    t = Math.max(0, Math.round(t || 0));
+    return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+  }
+  async function getSupabase() {
+    if (sbClient) return sbClient;
+    const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sbClient = mod.createClient(SUPABASE_URL, SUPABASE_KEY);
+    return sbClient;
+  }
+  function pickVoiceMime() {
+    if (!window.MediaRecorder) return '';
+    const list = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    for (const t of list) { try { if (MediaRecorder.isTypeSupported(t)) return t; } catch (e) {} }
+    return '';
+  }
+  function releaseVoiceStream() {
+    if (!vRec) return;
+    clearInterval(vRec.timer);
+    try { vRec.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+  }
+  function endRecordingUI() {
+    messageBarEl.classList.remove('recording');
+    recTime.textContent = '0:00';
+  }
+
+  async function startVoiceRecording() {
+    if (vRec || editingId || !messagingEnabled || !convId) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      alert('এই ব্রাউজারে ভয়েস রেকর্ড সাপোর্ট করে না।');
+      return;
+    }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+    catch (e) { alert('মাইক্রোফোনের অনুমতি পাওয়া যায়নি। ব্রাউজারের সেটিংস থেকে মাইক্রোফোন চালু করুন।'); return; }
+    const mime = pickVoiceMime();
+    let recorder;
+    try { recorder = new MediaRecorder(stream, Object.assign({ audioBitsPerSecond: 32000 }, mime ? { mimeType: mime } : {})); }
+    catch (e) { stream.getTracks().forEach(t => t.stop()); alert('রেকর্ড শুরু করা যায়নি।'); return; }
+    vRec = { recorder, stream, chunks: [], startedAt: Date.now(), timer: null, mime: recorder.mimeType || mime || 'audio/webm' };
+    recorder.ondataavailable = ev => { if (ev.data && ev.data.size) vRec && vRec.chunks.push(ev.data); };
+    recorder.start(1000);
+    messageBarEl.classList.add('recording');
+    vRec.timer = setInterval(() => {
+      if (!vRec) return;
+      const sec = (Date.now() - vRec.startedAt) / 1000;
+      recTime.textContent = fmtSec(sec) + ' / ' + fmtSec(VOICE_MAX_SEC);
+      if (sec >= VOICE_MAX_SEC) finishVoiceRecording(true);
+    }, 250);
+  }
+
+  function cancelVoiceRecording() {
+    if (!vRec) return;
+    const r = vRec; vRec = null;
+    clearInterval(r.timer);
+    try { r.recorder.onstop = null; if (r.recorder.state !== 'inactive') r.recorder.stop(); } catch (e) {}
+    try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+    endRecordingUI();
+  }
+
+  function finishVoiceRecording(send) {
+    if (!vRec) return;
+    if (!send) { cancelVoiceRecording(); return; }
+    const r = vRec; vRec = null;
+    clearInterval(r.timer);
+    const duration = Math.min(VOICE_MAX_SEC, Math.round((Date.now() - r.startedAt) / 1000));
+    r.recorder.onstop = async () => {
+      try { r.stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+      endRecordingUI();
+      const blob = new Blob(r.chunks, { type: r.mime });
+      if (duration < 1 || !blob.size) return;     // খুব ছোট রেকর্ড পাঠানো হবে না
+      await sendVoiceMessage(blob, duration);
+    };
+    try { r.recorder.stop(); } catch (e) { endRecordingUI(); }
+  }
+
+  async function sendVoiceMessage(blob, duration) {
+    if (!messagingEnabled || !convId || !currentUser) return;
+    const label = '🎤 ভয়েস মেসেজ';
+    voiceBtn.disabled = true; sendBtn.disabled = true;
+    try {
+      const baseType = (blob.type || 'audio/webm').split(';')[0];
+      const ext = baseType.includes('mp4') ? 'm4a' : baseType.includes('ogg') ? 'ogg' : 'webm';
+      const path = convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+      const sb = await getSupabase();
+      const up = await sb.storage.from(VOICE_BUCKET).upload(path, blob, { contentType: baseType, upsert: false });
+      if (up.error) throw up.error;
+      const audioUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(path).data.publicUrl;
+
+      const convRef = doc(db, "conversations", convId);
+      if (!convExists) {
+        await setDoc(convRef, {
+          participants: [currentUser.uid, otherUid].sort(),
+          participantInfo: {
+            [currentUser.uid]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' },
+            [otherUid]: { name: otherName, photoURL: otherPhoto }
+          },
+          createdAt: serverTimestamp(),
+          lastMessage: label,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp()
+        });
+        convExists = true;
+      } else {
+        await updateDoc(convRef, {
+          lastMessage: label,
+          lastMessageAt: serverTimestamp(),
+          lastSenderUid: currentUser.uid,
+          [`lastRead.${currentUser.uid}`]: serverTimestamp(),
+          [`participantInfo.${currentUser.uid}`]: { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' }
+        });
+      }
+      await addDoc(collection(convRef, "messages"), {
+        senderUid: currentUser.uid,
+        text: label,
+        type: 'voice',
+        audioUrl: audioUrl,
+        duration: duration,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      alert('ভয়েস মেসেজ পাঠানো যায়নি — এরর: ' + (e && e.message ? e.message : e));
+    } finally {
+      voiceBtn.disabled = false;
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
+  voiceBtn.addEventListener('click', startVoiceRecording);
+  recCancel.addEventListener('click', cancelVoiceRecording);
+  recSend.addEventListener('click', () => finishVoiceRecording(true));
+
+  // ---------- ভয়েস প্লেয়ার (একসাথে একটাই বাজবে; লিস্ট রিফ্রেশ হলেও চালু প্লেয়ার ঠিক থাকবে) ----------
+  let vpAudio = null, vpUrl = null, vpUi = null;
+  function voicePlayerHtml(m) {
+    const dur = Math.max(0, Number(m.duration) || 0);
+    return '<div class="vp" data-url="' + escapeHtml(m.audioUrl) + '" data-dur="' + dur + '">' +
+      '<button class="vpBtn" type="button" aria-label="প্লে">▶</button>' +
+      '<input class="vpBar" type="range" min="0" max="100" step="0.1" value="0" aria-label="সময়">' +
+      '<span class="vpTime">' + fmtSec(dur) + '</span></div>';
+  }
+  function vpPaint() {
+    if (!vpUi) return;
+    const playing = !!(vpAudio && vpUrl === vpUi.url && !vpAudio.paused);
+    const cur = (vpAudio && vpUrl === vpUi.url) ? vpAudio.currentTime : 0;
+    const total = vpUi.dur || (vpAudio && isFinite(vpAudio.duration) ? vpAudio.duration : 0);
+    vpUi.btn.textContent = playing ? '⏸' : '▶';
+    vpUi.bar.value = total ? Math.min(100, (cur / total) * 100) : 0;
+    vpUi.tm.textContent = fmtSec(playing || cur > 0 ? cur : total);
+  }
+  function bindVoicePlayer(root) {
+    const ui = {
+      url: root.dataset.url, dur: Number(root.dataset.dur) || 0,
+      btn: root.querySelector('.vpBtn'), bar: root.querySelector('.vpBar'), tm: root.querySelector('.vpTime')
+    };
+    if (vpAudio && vpUrl === ui.url) { vpUi = ui; vpPaint(); }
+    ui.btn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (vpAudio && vpUrl === ui.url) {
+        vpUi = ui;
+        if (vpAudio.paused) vpAudio.play().catch(() => {}); else vpAudio.pause();
+        vpPaint();
+        return;
+      }
+      if (vpAudio) { vpAudio.pause(); }
+      vpAudio = new Audio(ui.url);
+      vpUrl = ui.url; vpUi = ui;
+      vpAudio.addEventListener('timeupdate', vpPaint);
+      vpAudio.addEventListener('play', vpPaint);
+      vpAudio.addEventListener('pause', vpPaint);
+      vpAudio.addEventListener('ended', () => { vpAudio.currentTime = 0; vpPaint(); });
+      vpAudio.addEventListener('error', () => { alert('ভয়েস মেসেজটি চালানো যায়নি।'); });
+      vpAudio.play().catch(() => {});
+    });
+    ui.bar.addEventListener('input', () => {
+      if (!(vpAudio && vpUrl === ui.url)) return;
+      const total = ui.dur || (isFinite(vpAudio.duration) ? vpAudio.duration : 0);
+      if (total) vpAudio.currentTime = (ui.bar.value / 100) * total;
+    });
+    ui.bar.addEventListener('click', ev => ev.stopPropagation());
+  }
   // মোবাইলে কিবোর্ডের Enter = নতুন লাইন (পাঠাতে হবে সেন্ড বাটনে); ডেস্কটপে Enter = পাঠানো, Shift+Enter = নতুন লাইন
   const isTouchOnly = () => window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   messageInput.addEventListener('keydown', e => {
