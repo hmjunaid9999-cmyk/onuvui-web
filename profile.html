@@ -131,23 +131,24 @@ body.composerOpen{overflow:hidden}
 #profileActions button,#profileActions a{font-size:calc(12.5px * var(--other-action-scale,1))}
 #profileActions button:active,#profileActions a:active,#ownActionRow button:active{background:var(--btn-green-active) !important}
 
-/* ===== নিচের ২টা ট্যাব: সবুজ নয়, সবগুলো/টেক্সট/পোস্টার/ব্লগ ট্যাবের মতো ===== */
-#tabsOther,#tabsOwn{gap:8px !important;padding:0 !important;margin:0 0 10px;justify-content:space-between !important}
-/* বামেরটা "সবগুলো"-র ঠিক উপরে, ডানেরটা "ব্লগ"-এর ঠিক উপরে (ফিল্টার ট্যাবের সমান চওড়া) */
+/* ===== নিচের ২টা বাটন (পোস্ট / এবাউট বা সাবস্ক্রাইবার): নীল, লেখার চেয়ে সামান্য বড় ===== */
+#tabsOther,#tabsOwn{gap:8px !important;padding:0 !important;margin:0 0 10px;justify-content:space-between !important;align-items:center}
+/* ঘরের মাপ ফিল্টার ট্যাবের সমান: বামটা "সবগুলো"-র উপরে, ডানটা "ব্লগ"-এর উপরে, বাটন ঘরের মাঝখানে */
+.tabCell{flex:0 0 calc((100% - 24px) / 4);max-width:calc((100% - 24px) / 4);min-width:0;display:flex;justify-content:center}
 #tabsOther .tabBtn,#tabsOwn .tabBtn{
-  flex:0 0 calc((100% - 24px) / 4) !important;max-width:calc((100% - 24px) / 4) !important;width:calc((100% - 24px) / 4) !important;min-width:0;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  background:transparent !important;color:var(--text-color) !important;
-  border:none !important;border-radius:14px !important;box-shadow:none !important;
-  padding:9px 4px !important;font-weight:bold;text-align:center;
+  flex:0 0 auto !important;width:auto !important;max-width:none !important;min-width:0;
+  padding:8px 12px !important;
+  background:#1d4ed8 !important;color:#ffffff !important;
+  border:1px solid rgba(255,255,255,0.18) !important;border-radius:4px !important;box-shadow:none !important;
+  font-weight:bold;line-height:1.3;text-align:center;white-space:nowrap;
   font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent
 }
-#tabsOther .tabBtn{font-size:calc(13px * var(--other-action-scale,1))}
-#tabsOwn .tabBtn{font-size:calc(13px * var(--own-action-scale,1))}
-#tabsOther .tabBtn.active,#tabsOwn .tabBtn.active{
-  background:rgba(255,255,255,0.1) !important;color:var(--text-color) !important
-}
-html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tabsOwn .tabBtn.active{background:rgba(0,0,0,0.08) !important}
+#tabsOther .tabBtn{font-size:calc(12.5px * var(--other-action-scale,1))}
+#tabsOwn .tabBtn{font-size:calc(12.5px * var(--own-action-scale,1))}
+/* সিলেক্ট করা বাটন: একটু উজ্জ্বল নীল + সাদা বর্ডার */
+#tabsOther .tabBtn.active,#tabsOwn .tabBtn.active{background:#2563eb !important;color:#ffffff !important;border-color:#ffffff !important}
+#tabsOther .tabBtn:active,#tabsOwn .tabBtn:active{background:#2563eb !important}
+html[data-theme="light"] #tabsOther .tabBtn.active,html[data-theme="light"] #tabsOwn .tabBtn.active{background:#2563eb !important}
 
 /* ===== কভার ফটো বাদ; বামে প্রোফাইল আইকন, ডানে নাম + সবুজ বাতি, নিচে স্ট্যাটাস ===== */
 #profileCover{display:none !important}
@@ -177,6 +178,10 @@ html[data-theme="light"] .copyFieldBtn{background:#d1d1d6 !important;color:#0000
 #editCancelBtn{background:#1d4ed8 !important}
 #editSaveBtn:active{background:#0e7f3b !important}
 #editCancelBtn:active{background:#2563eb !important}
+
+/* ===== লগ আউট বাটন: নীল ===== */
+#logoutBtn{background:#1d4ed8 !important;color:#ffffff !important;border:none !important;border-radius:4px !important;padding:6px 12px !important;font-weight:bold}
+#logoutBtn:active{background:#2563eb !important}
 
 /* "অমুকের পোস্ট" / "আমার পোস্ট" লেখা সরানো হলো */
 #postsHeading{display:none !important}
@@ -301,14 +306,14 @@ html[data-theme="light"] .copyFieldBtn{background:#d1d1d6 !important;color:#0000
 
       
       <div id="tabsOther">
-        <button id="postsTabBtn" class="tabBtn active">পোস্ট</button>
-        <button id="aboutTabBtn" class="tabBtn">এবাউট</button>
+        <div class="tabCell"><button id="postsTabBtn" class="tabBtn active">পোস্ট</button></div>
+        <div class="tabCell"><button id="aboutTabBtn" class="tabBtn">এবাউট</button></div>
       </div>
 
       
       <div id="tabsOwn">
-        <button id="myPostsTabBtn" class="tabBtn active">পোস্ট</button>
-        <button id="mySubsTabBtn" class="tabBtn">সাবস্ক্রাইবার</button>
+        <div class="tabCell"><button id="myPostsTabBtn" class="tabBtn active">পোস্ট</button></div>
+        <div class="tabCell"><button id="mySubsTabBtn" class="tabBtn">সাবস্ক্রাইবার</button></div>
       </div>
 
       <div id="aboutSection" style="display:none;">
