@@ -114,11 +114,16 @@ html[data-theme="light"]{--ash-bg:#d4d7da}
 #noticeBar{background:var(--ash-bg)}
 #composerOpenBtn,#composerOpenBtn:active{background:var(--ash-bg)}
 #composerModalOverlay{background:var(--bg-color)}
-#composerModalBox{background:var(--ash-bg)}
-#composerText{background:var(--ash-bg)}
+#composerText{background:var(--ash-bg);color:var(--text-color);-webkit-font-smoothing:antialiased;text-shadow:none;opacity:1;filter:none}
+#composerText::placeholder{color:var(--text-color);opacity:0.7}
 #posterPreview{display:none!important}
-#composerText.posterActive{color:#fff;font-weight:bold;font-size:18px;text-align:center;min-height:var(--poster-height);border-color:transparent;padding-top:calc(var(--poster-height)/2 - 20px)}
-#composerText.posterActive::placeholder{color:rgba(255,255,255,0.7)}
+#composerArea{position:relative}
+#composerArea #posterColors{position:absolute;left:10px;right:10px;bottom:10px;margin:0;flex-wrap:nowrap;overflow-x:auto;gap:8px}
+#composerArea #posterColors .posterSwatch{flex:0 0 auto}
+#composerText.posterActive{color:#fff;font-weight:bold;font-size:20px;text-align:center;resize:none;min-height:max(var(--poster-height),240px);border-color:transparent;padding:calc(max(var(--poster-height),240px)/2 - 40px) 14px 64px}
+#composerText.posterActive::placeholder{color:#fff;opacity:0.8}
+.commentForm textarea,.replyForm textarea{background:var(--ash-bg);color:var(--text-color)}
+.commentForm textarea::placeholder,.replyForm textarea::placeholder{color:var(--text-color);opacity:0.7}
 #submitPostBtn,#submitPostBtn:active{background:#16a34a;color:#ffffff}
 </style>
 </head>
@@ -219,9 +224,10 @@ html[data-theme="light"]{--ash-bg:#d4d7da}
           বড় লেখার জন্য (এভাবে লিখুন) · মাঝারির জন্য {এভাবে লিখুন} · স্বাভাবিকের জন্য [এভাবে লিখুন]<br>
           অন্য পোস্টের লিংক যুক্ত করতে &lt;লিংক&gt; এভাবে বসান
         </div>
+        <div id="composerArea">
         <textarea id="composerText" placeholder="আপনার মনে কী চলছে?"></textarea>
-
         <div id="posterColors"></div>
+        </div>
         <div id="posterPreview"></div>
 
         <button id="submitPostBtn">পোস্ট করুন</button>
