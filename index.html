@@ -130,8 +130,7 @@ html[data-theme="light"]{--ash-bg:#d4d7da}
 :root{--ash-btn:#4a4e52}
 html[data-theme="light"]{--ash-btn:#c2c6ca}
 .postCard{overflow:hidden}
-.postButtons{flex-wrap:wrap;row-gap:0;align-content:flex-start}
-.postButtons::after{content:'';flex:0 0 100%;order:99;height:14px;margin:8px 0 -14px;background:var(--ash-bg);border-radius:0 0 12px 12px}
+.postButtons{position:static;clear:both;flex-wrap:nowrap;margin:10px 0 0;padding:8px 6px;border-top:none;background:var(--ash-bg);border-radius:12px}
 .postCard .postStatus:empty{display:none}
 #loadMoreBtn{background:var(--ash-bg)}
 .postButtons button{background:var(--ash-btn)}
