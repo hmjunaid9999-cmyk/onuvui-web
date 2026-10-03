@@ -62,6 +62,43 @@ input:checked + .slider:before{transform:translateX(20px)}
 .tMsg.right .tMsgMeta{color:#dbeafe}
 .tMsgMeta button{background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:10px;padding:0}
 .tSender{font-size:10px;font-weight:bold;margin-bottom:3px;opacity:0.8}
+
+/* পেজ ট্যাব ও স্টোরেজ পেজ */
+#pageTabs{display:flex;gap:8px;padding:10px 16px 0;max-width:var(--max-width);margin:0 auto;position:sticky;top:0;z-index:50;background:var(--bg-color)}
+#pageTabs button{flex:1;background:#21262d;color:#9ca3af;border:1px solid #30363d;padding:10px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer}
+#pageTabs button.on{background:var(--primary-color);color:#fff;border-color:var(--primary-color)}
+.pageIn{animation:pgIn .22s ease}
+@keyframes pgIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.stField{width:100%;background:#0d1117;border:1px solid #30363d;color:#fff;padding:10px 12px;border-radius:10px;font-size:14px;margin-bottom:10px}
+#stLoginBtn,#stRefresh,#stLogout{background:var(--primary-color);color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer}
+#stRefresh,#stLogout{background:#21262d;border:1px solid #30363d;color:#c9d1d9;font-weight:normal;margin-right:8px;margin-top:12px}
+#stLoginStatus,#stStatus{font-size:12px;color:#f87171;margin-top:8px;min-height:14px}
+#stStatus{color:#9ca3af}
+#stNums{display:flex;justify-content:space-between;gap:8px;font-size:13px;margin:10px 0 6px;flex-wrap:wrap}
+#stNums b{color:#fff}
+#stBar{height:12px;background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden}
+#stBarFill{height:100%;width:0;background:#22c55e;transition:width .3s}
+#stBarFill.warn{background:#f59e0b}
+#stBarFill.full{background:#ef4444}
+#stBtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.stKind{background:var(--card-color);border:1px solid #262c36;color:#fff;border-radius:14px;padding:16px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;font-family:inherit}
+.stKind .kI{font-size:26px}
+.stKind .kL{font-size:14px;font-weight:bold}
+.stKind .kC{font-size:11px;color:#9ca3af}
+#stOverlay{display:none;position:fixed;inset:0;z-index:300;background:var(--bg-color);flex-direction:column}
+#stOverlay.open{display:flex}
+#stOvHeader{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card-color);border-bottom:1px solid #262c36}
+#stOvBack{background:#262c36;border:1px solid #30363d;color:#fff;padding:7px 12px;border-radius:10px;font-size:13px;cursor:pointer}
+#stOvTitle{font-size:15px;font-weight:bold}
+#stOvSummary{padding:10px 16px;font-size:12px;color:#9ca3af;border-bottom:1px solid #1c222b}
+#stOvList{flex:1;overflow-y:auto;padding:0 16px 30px}
+.stRow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #1c222b}
+.stNo{width:26px;font-size:11px;color:#6b7280;flex-shrink:0}
+.stInfo{flex:1;min-width:0}
+.stName{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stMeta{font-size:11px;color:#9ca3af;margin-top:2px}
+.stDel{background:#262c36;border:1px solid #f87171;color:#f87171;border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;flex-shrink:0}
+.stDel:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -84,6 +121,12 @@ input:checked + .slider:before{transform:translateX(20px)}
       <button id="logoutBtn">লগ আউট</button>
     </div>
 
+    <div id="pageTabs">
+      <button id="tabMsg" class="on" type="button">💬 মেসেজ</button>
+      <button id="tabStore" type="button">💾 স্টোরেজ</button>
+    </div>
+
+    <div id="page1">
     <main>
       <div class="card">
         <h2>⚙️ ফিচার কন্ট্রোল</h2>
@@ -130,6 +173,34 @@ input:checked + .slider:before{transform:translateX(20px)}
         <button id="loadMoreBtn" style="display:none;">আরও লোড করুন</button>
       </div>
     </main>
+    </div>
+
+    <div id="page2" style="display:none">
+    <main>
+      <div class="card" id="stLoginCard">
+        <h2>🔐 স্টোরেজ ম্যানেজ করতে সুপাবেজে লগইন করুন</h2>
+        <input class="stField" id="stEmail" type="email" autocomplete="username" placeholder="ইমেইল">
+        <input class="stField" id="stPass" type="password" autocomplete="current-password" placeholder="পাসওয়ার্ড">
+        <button id="stLoginBtn" type="button">লগইন</button>
+        <div id="stLoginStatus"></div>
+      </div>
+
+      <div id="stMain" style="display:none">
+        <div class="card">
+          <h2>💾 স্টোরেজের অবস্থা</h2>
+          <div id="stNums"><span>মোট: <b id="stTotal">-</b></span><span>ভরা: <b id="stUsed">-</b></span><span>খালি: <b id="stFree">-</b></span></div>
+          <div id="stBar"><div id="stBarFill"></div></div>
+          <div id="stStatus"></div>
+          <button id="stRefresh" type="button">🔄 আবার হিসাব করুন</button><button id="stLogout" type="button">লগআউট</button>
+        </div>
+        <div id="stBtns">
+          <button class="stKind" data-kind="photos" type="button"><span class="kI">🖼️</span><span class="kL">ফটো</span><span class="kC" id="kc-photos">-</span></button>
+          <button class="stKind" data-kind="voice" type="button"><span class="kI">🎤</span><span class="kL">ভয়েস</span><span class="kC" id="kc-voice">-</span></button>
+          <button class="stKind" data-kind="audio" type="button"><span class="kI">🎵</span><span class="kL">অডিও</span><span class="kC" id="kc-audio">-</span></button>
+        </div>
+      </div>
+    </main>
+    </div>
   </div>
 
   <div id="threadOverlay">
@@ -143,6 +214,12 @@ input:checked + .slider:before{transform:translateX(20px)}
       </div>
       <div id="threadMessages"></div>
     </div>
+  </div>
+
+  <div id="stOverlay">
+    <div id="stOvHeader"><button id="stOvBack" type="button">← ফিরুন</button><div id="stOvTitle"></div></div>
+    <div id="stOvSummary"></div>
+    <div id="stOvList"></div>
   </div>
 
 <script type="module">
@@ -407,6 +484,261 @@ input:checked + .slider:before{transform:translateX(20px)}
       deleteConvBtn.disabled = false;
     }
   });
+
+
+  // ================= স্টোরেজ পেজ (সুপাবেজ ফাইল তালিকা ও ডিলিট) + পেজ সোয়াইপ + ব্যাক বাটন =================
+  const SB_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
+  const SB_KEY = 'sb_publishable_MTiahKNII0LDV_K3aL11QQ_pOzleTx0';
+  const STORAGE_TOTAL_BYTES = 1 * 1024 * 1024 * 1024;   // সুপাবেজ ফ্রি প্ল্যান: ১ GB — প্ল্যান বদলালে এই সংখ্যা বদলাবেন
+  const KINDS = {
+    photos: { label: 'ফটো', icon: '🖼️', bucket: 'photos', prefix: '',      skip: [] },
+    voice:  { label: 'ভয়েস', icon: '🎤', bucket: 'voice',  prefix: '',      skip: ['files'] },
+    audio:  { label: 'অডিও', icon: '🎵', bucket: 'voice',  prefix: 'files', skip: [] }
+  };
+  const stData = { photos: [], voice: [], audio: [] };
+  let sbAdmin = null, stLoaded = false, curPage = 1, curList = null;
+
+  const page1 = document.getElementById('page1');
+  const page2 = document.getElementById('page2');
+  const tabMsg = document.getElementById('tabMsg');
+  const tabStore = document.getElementById('tabStore');
+  const stLoginCard = document.getElementById('stLoginCard');
+  const stMain = document.getElementById('stMain');
+  const stEmail = document.getElementById('stEmail');
+  const stPass = document.getElementById('stPass');
+  const stLoginBtn = document.getElementById('stLoginBtn');
+  const stLoginStatus = document.getElementById('stLoginStatus');
+  const stStatus = document.getElementById('stStatus');
+  const stOverlay = document.getElementById('stOverlay');
+  const stOvTitle = document.getElementById('stOvTitle');
+  const stOvSummary = document.getElementById('stOvSummary');
+  const stOvList = document.getElementById('stOvList');
+
+  function fmtBytes(b) {
+    b = Number(b) || 0;
+    if (b < 1024 * 1024) return Math.max(0, Math.round(b / 1024)) + ' KB';
+    if (b < 1024 * 1024 * 1024) return (b / 1048576).toFixed(2) + ' MB';
+    return (b / 1073741824).toFixed(2) + ' GB';
+  }
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    try { return d.toLocaleString('bn-BD', { dateStyle: 'medium', timeStyle: 'short' }); }
+    catch (e) { return d.toLocaleString(); }
+  }
+
+  async function getSb() {
+    if (sbAdmin) return sbAdmin;
+    const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+    sbAdmin = mod.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, storageKey: 'sb-admin-storage' } });
+    return sbAdmin;
+  }
+  async function sbList(bucket, prefix) {
+    const sb = await getSb();
+    const out = [];
+    let offset = 0;
+    while (true) {
+      const { data, error } = await sb.storage.from(bucket).list(prefix, { limit: 1000, offset, sortBy: { column: 'name', order: 'asc' } });
+      if (error) throw error;
+      out.push(...(data || []));
+      if (!data || data.length < 1000) break;
+      offset += 1000;
+    }
+    return out;
+  }
+  async function collectFiles(kind) {
+    const k = KINDS[kind];
+    const files = [];
+    const mk = (path, x) => ({
+      bucket: k.bucket, path, name: x.name,
+      size: (x.metadata && x.metadata.size) || 0,
+      created: x.created_at || x.updated_at || ''
+    });
+    const top = await sbList(k.bucket, k.prefix);
+    for (const f of top) {
+      if (f.name.startsWith('.')) continue;
+      if (f.id === null) {                                   // ফোল্ডার (প্রতিটা কনভারসেশনের)
+        if (k.skip.includes(f.name)) continue;
+        const base = k.prefix ? k.prefix + '/' + f.name : f.name;
+        const inner = await sbList(k.bucket, base);
+        for (const x of inner) { if (x.id !== null && !x.name.startsWith('.')) files.push(mk(base + '/' + x.name, x)); }
+      } else {
+        files.push(mk(k.prefix ? k.prefix + '/' + f.name : f.name, f));
+      }
+    }
+    files.sort((a, b) => (new Date(a.created).getTime() || 0) - (new Date(b.created).getTime() || 0));   // সবচেয়ে পুরনো সবার উপরে
+    return files;
+  }
+
+  function paintSummary() {
+    let used = 0;
+    Object.keys(stData).forEach(kind => {
+      const sum = stData[kind].reduce((s, f) => s + f.size, 0);
+      used += sum;
+      document.getElementById('kc-' + kind).textContent = stData[kind].length + ' টি · ' + fmtBytes(sum);
+    });
+    const free = Math.max(0, STORAGE_TOTAL_BYTES - used);
+    const pct = Math.min(100, (used / STORAGE_TOTAL_BYTES) * 100);
+    document.getElementById('stTotal').textContent = fmtBytes(STORAGE_TOTAL_BYTES);
+    document.getElementById('stUsed').textContent = fmtBytes(used) + ' (' + pct.toFixed(1) + '%)';
+    document.getElementById('stFree').textContent = fmtBytes(free);
+    const fill = document.getElementById('stBarFill');
+    fill.style.width = pct + '%';
+    fill.className = pct >= 90 ? 'full' : pct >= 70 ? 'warn' : '';
+  }
+
+  async function loadStorage() {
+    stStatus.style.color = '#9ca3af';
+    stStatus.textContent = 'ফাইলের তালিকা লোড হচ্ছে...';
+    try {
+      const [p, v, a] = await Promise.all([collectFiles('photos'), collectFiles('voice'), collectFiles('audio')]);
+      stData.photos = p; stData.voice = v; stData.audio = a;
+      stLoaded = true;
+      paintSummary();
+      stStatus.textContent = 'হিসাব: ফটো + ভয়েস + অডিও ফাইলের মোট সাইজ থেকে।';
+    } catch (e) {
+      stStatus.style.color = '#f87171';
+      stStatus.textContent = 'তালিকা আনা যায়নি: ' + (e && e.message ? e.message : e);
+    }
+  }
+  function showStMain() {
+    stLoginCard.style.display = 'none';
+    stMain.style.display = 'block';
+    loadStorage();
+  }
+  async function enterStorage() {
+    if (stLoaded) return;
+    try {
+      const sb = await getSb();
+      const { data } = await sb.auth.getSession();
+      if (data && data.session) showStMain();
+    } catch (e) {}
+  }
+  stLoginBtn.addEventListener('click', async () => {
+    const email = stEmail.value.trim(), pass = stPass.value;
+    if (!email || !pass) { stLoginStatus.textContent = 'ইমেইল ও পাসওয়ার্ড দিন।'; return; }
+    stLoginBtn.disabled = true;
+    stLoginStatus.textContent = 'লগইন হচ্ছে...';
+    try {
+      const sb = await getSb();
+      const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+      if (error) throw error;
+      stPass.value = '';
+      stLoginStatus.textContent = '';
+      showStMain();
+    } catch (e) {
+      stLoginStatus.textContent = 'লগইন হয়নি: ' + (e && e.message ? e.message : e);
+    } finally { stLoginBtn.disabled = false; }
+  });
+  document.getElementById('stRefresh').addEventListener('click', loadStorage);
+  document.getElementById('stLogout').addEventListener('click', async () => {
+    try { const sb = await getSb(); await sb.auth.signOut(); } catch (e) {}
+    stLoaded = false;
+    stMain.style.display = 'none';
+    stLoginCard.style.display = 'block';
+  });
+
+  // ---------- পূর্ণ স্ক্রিন তালিকা ----------
+  function renderList(kind) {
+    const files = stData[kind];
+    const total = files.reduce((s, f) => s + f.size, 0);
+    stOvTitle.textContent = KINDS[kind].icon + ' ' + KINDS[kind].label;
+    stOvSummary.textContent = files.length + ' টি ফাইল · মোট ' + fmtBytes(total) + ' · সবচেয়ে পুরনো সবার উপরে';
+    stOvList.innerHTML = '';
+    if (!files.length) {
+      const e = document.createElement('div');
+      e.style.cssText = 'text-align:center;color:#6b7280;font-size:13px;padding:30px 0';
+      e.textContent = 'কোনো ফাইল নেই';
+      stOvList.appendChild(e);
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    files.forEach((f, i) => {
+      const row = document.createElement('div'); row.className = 'stRow';
+      const no = document.createElement('span'); no.className = 'stNo'; no.textContent = (i + 1) + '.';
+      const info = document.createElement('div'); info.className = 'stInfo';
+      const nm = document.createElement('div'); nm.className = 'stName'; nm.textContent = f.name;
+      const mt = document.createElement('div'); mt.className = 'stMeta'; mt.textContent = fmtBytes(f.size) + (f.created ? ' · ' + fmtDate(f.created) : '');
+      info.appendChild(nm); info.appendChild(mt);
+      const del = document.createElement('button'); del.className = 'stDel'; del.type = 'button'; del.textContent = '🗑 ডিলিট';
+      del.addEventListener('click', () => deleteStFile(kind, f, del));
+      row.appendChild(no); row.appendChild(info); row.appendChild(del);
+      frag.appendChild(row);
+    });
+    stOvList.appendChild(frag);
+  }
+  async function deleteStFile(kind, f, btn) {
+    if (!confirm('"' + f.name + '" (' + fmtBytes(f.size) + ') স্থায়ীভাবে মুছে ফেলবেন? এটা ফেরানো যাবে না।')) return;
+    btn.disabled = true;
+    try {
+      const sb = await getSb();
+      const { data, error } = await sb.storage.from(f.bucket).remove([f.path]);
+      if (error) throw error;
+      if (!data || !data.length) throw new Error('মোছা যায়নি — সুপাবেজে লগইন আছে কিনা দেখুন (লগআউট করে আবার ঢুকুন)।');
+      stData[kind] = stData[kind].filter(x => x.path !== f.path);
+      paintSummary();
+      renderList(kind);
+    } catch (e) {
+      alert('এরর: ' + (e && e.message ? e.message : e));
+      btn.disabled = false;
+    }
+  }
+
+  // ---------- পেজ বদল + ব্যাক বাটন (ইতিহাস) ----------
+  function showListUi(kind) { curList = kind; renderList(kind); stOverlay.classList.add('open'); stOvList.scrollTop = 0; }
+  function hideListUi() { curList = null; stOverlay.classList.remove('open'); }
+  function setPage(n) {
+    curPage = n;
+    page1.style.display = n === 1 ? 'block' : 'none';
+    page2.style.display = n === 2 ? 'block' : 'none';
+    tabMsg.classList.toggle('on', n === 1);
+    tabStore.classList.toggle('on', n === 2);
+    const pg = n === 1 ? page1 : page2;
+    pg.classList.remove('pageIn'); void pg.offsetWidth; pg.classList.add('pageIn');
+    if (n === 2) enterStorage();
+  }
+  function applyUi(st) {
+    const p = (st && st.p) || 1, l = (st && st.l) || null;
+    setPage(p === 2 ? 2 : 1);
+    if (p === 2 && l && KINDS[l]) showListUi(l); else hideListUi();
+  }
+  function navPage(n) {
+    if (n === curPage) return;
+    if (n === 2) { try { history.pushState({ p: 2 }, '', location.href); } catch (e) {} setPage(2); }
+    else if (history.state && history.state.p === 2) history.back();
+    else setPage(1);
+  }
+  try { history.replaceState({ p: 1 }, '', location.href); } catch (e) {}
+  window.addEventListener('popstate', () => applyUi(history.state));
+  tabMsg.addEventListener('click', () => navPage(1));
+  tabStore.addEventListener('click', () => navPage(2));
+  document.querySelectorAll('.stKind').forEach(b => b.addEventListener('click', () => {
+    const kind = b.dataset.kind;
+    if (!stLoaded) return;
+    try { history.pushState({ p: 2, l: kind }, '', location.href); } catch (e) {}
+    showListUi(kind);
+  }));
+  document.getElementById('stOvBack').addEventListener('click', () => {
+    if (history.state && history.state.l) history.back(); else hideListUi();
+  });
+
+  // ---------- সোয়াইপ: বামে টানলে স্টোরেজ পেজ, ডানে টানলে মেসেজ পেজ ----------
+  let swX = 0, swY = 0, swOk = false;
+  document.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) { swOk = false; return; }
+    const t = e.touches[0]; swX = t.clientX; swY = t.clientY;
+    const tg = e.target;
+    swOk = !(tg.closest && tg.closest('input,textarea,select,#threadOverlay,#stOverlay'));
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!swOk) return; swOk = false;
+    if (appScreen.style.display !== 'block') return;
+    if (threadOverlay.classList.contains('open') || stOverlay.classList.contains('open')) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - swX, dy = t.clientY - swY;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) navPage(dx < 0 ? 2 : 1);
+  }, { passive: true });
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {

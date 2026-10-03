@@ -82,13 +82,13 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgRow.theirs{align-self:flex-start}
 .msgCol{min-width:0}
 .msgBubble{padding:9px 13px;border-radius:16px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word;position:relative}
-.msgRow.mine .msgBubble{background:var(--text-color);color:var(--bg-color);border-bottom-right-radius:4px}
-.msgRow.theirs .msgBubble{background:var(--card-color);border:1px solid var(--line);color:var(--text-color);border-bottom-left-radius:4px}
+.msgRow.mine .msgBubble{background:#16a34a;color:#fff;border-bottom-right-radius:4px}
+.msgRow.theirs .msgBubble{background:#2563eb;border:1px solid transparent;color:#fff;border-bottom-left-radius:4px}
 .msgMeta{display:flex;align-items:center;gap:6px;margin-top:3px;font-size:10px;color:var(--text-color)}
 .msgRow.mine .msgMeta{justify-content:flex-end}
 #messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
 #messageInput{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--text-color);padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
-#sendBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+#sendBtn{background:var(--surface);color:#22c55e;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
 #sendBtn:disabled{opacity:0.5;cursor:default}
 #chatLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
 
@@ -169,7 +169,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
 /* ---------- বাবলের ভিতরে কোটেড রিপ্লাই ---------- */
 .msgQuote{background:var(--surface-active);border-left:3px solid var(--line);border-radius:8px;padding:5px 8px;margin-bottom:5px;font-size:12px;opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
-.msgRow.theirs .msgQuote{background:var(--surface);border-left-color:var(--line)}
+.msgRow.theirs .msgQuote{background:rgba(0,0,0,.25);border-left-color:rgba(255,255,255,.6)}
 
 /* ---------- মেসেজের রিয়াকশন ব্যাজ (বাবলের কোণায় ছোট বাবল) ---------- */
 .msgReactions{position:absolute;bottom:-10px;right:6px;background:var(--card-color);border:1px solid var(--line);border-radius:10px;padding:1px 5px;font-size:12px;line-height:1.4}
@@ -231,6 +231,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .vp{display:flex;align-items:center;gap:8px;min-width:190px}
 .vpBtn{width:34px;height:34px;border-radius:50%;border:none;background:#22c55e;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
 .msgRow.mine .vp{flex-direction:row-reverse}
+.vpBtn{color:#fff}
+.msgRow.mine .vpBtn{background:#fff;color:#16a34a}
 .vpBar{flex:1;min-width:0;accent-color:currentColor;height:4px}
 .vpTime{font-size:12px;min-width:34px;text-align:right}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
@@ -1309,8 +1311,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   const SUPABASE_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_MTiahKNII0LDV_K3aL11QQ_pOzleTx0';
   const VOICE_BUCKET = 'voice';
-  const VP_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M8 5v14l11-7z" fill="#fff"/></svg>';
-  const VP_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="#fff"/></svg>';
+  const VP_PLAY = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  const VP_PAUSE = '<svg viewBox="0 0 24 24" width="15" height="15"><path d="M6 5h4v14H6zM14 5h4v14h-4z" fill="currentColor"/></svg>';
   const voiceBtn = document.getElementById('voiceBtn');
   const messageBarEl = document.getElementById('messageBar');
   const recTime = document.getElementById('recTime');
@@ -1326,7 +1328,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   async function getSupabase() {
     if (sbClient) return sbClient;
     const mod = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-    sbClient = mod.createClient(SUPABASE_URL, SUPABASE_KEY);
+    sbClient = mod.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
     return sbClient;
   }
   function pickVoiceMime() {
