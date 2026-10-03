@@ -102,6 +102,14 @@ input:checked + .slider:before{transform:translateX(20px)}
           <label>ভয়েস মেসেজের সর্বোচ্চ সময় (মিনিট)</label>
           <input type="number" id="voiceMaxInput" class="numInput" min="1" max="60" value="5">
         </div>
+        <div class="settingsRow">
+          <label>অডিও ফাইলের সর্বোচ্চ সাইজ (MB)</label>
+          <input type="number" id="audioMaxInput" class="numInput" min="1" max="50" value="10">
+        </div>
+        <div class="settingsRow">
+          <label>ফটোর সর্বোচ্চ সাইজ (MB)</label>
+          <input type="number" id="photoMaxInput" class="numInput" min="1" max="20" value="5">
+        </div>
         <button id="saveSettingsBtn">💾 সেভ করুন</button>
         <div id="settingsStatus"></div>
       </div>
@@ -175,6 +183,8 @@ input:checked + .slider:before{transform:translateX(20px)}
   const enabledToggle = document.getElementById('enabledToggle');
   const maxLenInput = document.getElementById('maxLenInput');
   const voiceMaxInput = document.getElementById('voiceMaxInput');
+  const audioMaxInput = document.getElementById('audioMaxInput');
+  const photoMaxInput = document.getElementById('photoMaxInput');
   const saveSettingsBtn = document.getElementById('saveSettingsBtn');
   const settingsStatus = document.getElementById('settingsStatus');
 
@@ -229,6 +239,8 @@ input:checked + .slider:before{transform:translateX(20px)}
       enabledToggle.checked = d.enabled !== false;
       maxLenInput.value = d.maxLength || 2000;
       voiceMaxInput.value = d.voiceMaxMin || 5;
+      audioMaxInput.value = d.audioMaxMB || 10;
+      photoMaxInput.value = d.photoMaxMB || 5;
     } catch (e) { console.error(e); }
   }
 
@@ -239,7 +251,9 @@ input:checked + .slider:before{transform:translateX(20px)}
       await setDoc(doc(db, "settings", "messages"), {
         enabled: enabledToggle.checked,
         maxLength: Number(maxLenInput.value) || 2000,
-        voiceMaxMin: Math.max(1, Math.min(60, Number(voiceMaxInput.value) || 5))
+        voiceMaxMin: Math.max(1, Math.min(60, Number(voiceMaxInput.value) || 5)),
+        audioMaxMB: Math.max(1, Math.min(50, Number(audioMaxInput.value) || 10)),
+        photoMaxMB: Math.max(1, Math.min(20, Number(photoMaxInput.value) || 5))
       }, { merge: true });
       settingsStatus.textContent = '✅ সেভ হয়েছে';
       setTimeout(() => { settingsStatus.textContent = ''; }, 2500);

@@ -186,8 +186,38 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgBubble *,.convRow *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #messageInput{-webkit-user-select:text;user-select:text}
 /* ভয়েস মেসেজ */
-#voiceBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
-#voiceBtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* মিডিয়া আইকন সারি / টাইপিং মোড */
+#mediaRow{display:flex;gap:8px;align-items:center;flex:1}
+#messageBar #messageInput{display:none}
+#messageBar #textBack{display:none}
+#messageBar.typing #mediaRow{display:none}
+#messageBar.typing #messageInput{display:block}
+#messageBar.typing #textBack{display:flex}
+#messageBar.recording #mediaRow{display:none}
+#attachPreview{display:none;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--line);background:var(--card-color)}
+#attachPreview.has{display:flex}
+#apThumb{width:44px;height:44px;border-radius:8px;object-fit:cover;display:none}
+#apIcon{font-size:26px;display:none}
+#apInfo{flex:1;min-width:0}
+#apName{font-size:13px;color:var(--text-color);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#apSize{font-size:12px;color:var(--text-soft)}
+#apClose{background:none;border:none;color:var(--text-color);font-size:18px;cursor:pointer;padding:6px}
+.vpDl{background:none;border:none;color:inherit;font-size:14px;cursor:pointer;padding:0 2px;opacity:.85;flex-shrink:0}
+.msgBubble.hasImg{padding:4px}
+.imgWrap{position:relative;line-height:0}
+.msgImg{display:block;max-width:100%;width:240px;max-height:320px;object-fit:cover;border-radius:12px;cursor:pointer}
+.imgDl{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:14px;cursor:pointer;line-height:1;padding:0}
+.mcap{margin-top:6px;white-space:pre-wrap;word-break:break-word}
+.hasImg .mcap{padding:0 8px 6px}
+#imgViewer{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.95);display:none;align-items:center;justify-content:center}
+#imgViewer.open{display:flex}
+#imgViewer img{max-width:100%;max-height:100%;object-fit:contain}
+#ivClose,#ivDl{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer}
+#ivClose{right:12px}
+#ivDl{right:64px}
+#voiceBtn,.barBtn{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:0}
+#voiceBtn svg,.barBtn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #voiceRec{display:none;flex:1;align-items:center;gap:12px;min-height:40px}
 #messageBar.recording #voiceRec{display:flex}
 #messageBar.recording #messageInput,#messageBar.recording #sendBtn,#messageBar.recording #voiceBtn{display:none}
@@ -276,15 +306,26 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
           </div>
           <button class="cpClose" id="cpClose">✕</button>
         </div>
+        <div id="attachPreview"><img id="apThumb" alt=""><span id="apIcon"></span><div id="apInfo"><div id="apName"></div><div id="apSize"></div></div><button id="apClose" type="button" aria-label="বাতিল">✕</button></div>
         <div id="messageBar">
+          <div id="mediaRow">
           <button id="voiceBtn" type="button" aria-label="ভয়েস মেসেজ"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
+          <button id="audioFileBtn" class="barBtn" type="button" aria-label="ফোনের অডিও"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
+          <button id="photoBtn" class="barBtn" type="button" aria-label="ফটো"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
+          <button id="textBtn" class="barBtn" type="button" aria-label="লিখুন"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+          </div>
           <div id="voiceRec"><button id="recCancel" type="button" aria-label="বাতিল">✕</button><span class="recDot"></span><span id="recTime">0:00</span><button id="recSend" type="button" aria-label="পাঠান">➤</button></div>
+          <button id="textBack" class="barBtn" type="button" aria-label="পিছনে"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
           <textarea id="messageInput" placeholder="মেসেজ লিখুন..." rows="1" maxlength="2000" enterkeyhint="enter"></textarea>
           <button id="sendBtn">👍</button>
+          <input type="file" id="audioFileInput" accept="audio/*" hidden>
+          <input type="file" id="photoInput" accept="image/*" hidden>
         </div>
       </div>
     </main>
   </div>
+
+  <div id="imgViewer"><button id="ivDl" type="button" aria-label="ডাউনলোড">⬇</button><button id="ivClose" type="button" aria-label="বন্ধ">✕</button><img id="ivImg" alt=""></div>
 
   <!-- ---------- পারমিশন শিট ---------- -->
   <div id="permSheet">
@@ -386,6 +427,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   let currentUser = null;
   let myProfile = {};
   let messagingEnabled = true;
+  let AUDIO_MAX_MB = 10, PHOTO_MAX_MB = 5;   // অ্যাডমিন সেটিং থেকে বদলায়
   let VOICE_MAX_SEC = 300;   // ভয়েসের সর্বোচ্চ সময় (সেকেন্ড) — অ্যাডমিন প্যানেলের settings/messages.voiceMaxMin থেকে বদলায়
 
   // চ্যাটের অবস্থা (পেইজ রিলোড ছাড়াই ইনবক্স ↔ চ্যাট বদলায়, তাই আবার লগইন স্ক্রিন আসে না)
@@ -656,6 +698,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     }
   }
   function startEditMessage(msgId, text) {
+    setTyping(true);
     editingId = msgId;
     replyingTo = null;
     messageInput.value = text || '';
@@ -668,6 +711,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   function startReply(msgId, m, mine) {
     editingId = null;
     replyingTo = { id: msgId, text: (m.text || '').slice(0, 120), name: mine ? 'নিজের মেসেজ' : otherName };
+    setTyping(true);
     messageInput.focus();
     updateComposePreview();
   }
@@ -710,15 +754,17 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   function openMessageMenu(anchorEl, msgId, m, mine) {
     let html = '';
     if (mine) {
-      if (m.type !== 'voice') html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
-      if (m.type !== 'voice' && messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
+      if (!isMediaMsg(m)) html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (!isMediaMsg(m) && messageEditable(m)) html += '<button class="ctxItem" data-act="edit">✏️ এডিট করুন</button>';
+      if (isMediaMsg(m)) html += '<button class="ctxItem" data-act="download">⬇ ডাউনলোড</button>';
       html += '<button class="ctxItem danger" data-act="delete">🗑️ ডিলিট করুন</button>';
     } else {
       html += '<div class="ctxReactions">' +
         Object.keys(REACTIONS).map(k => '<button data-react="' + k + '">' + REACTIONS[k] + '</button>').join('') +
         '</div>';
       html += '<button class="ctxItem" data-act="reply">↩️ রিপ্লাই</button>';
-      if (m.type !== 'voice') html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (!isMediaMsg(m)) html += '<button class="ctxItem" data-act="copy">📋 কপি করুন</button>';
+      if (isMediaMsg(m)) html += '<button class="ctxItem" data-act="download">⬇ ডাউনলোড</button>';
     }
     openCtxMenu(anchorEl, html);
     ctxMenu.querySelectorAll('.ctxItem').forEach(b => b.addEventListener('click', () => {
@@ -727,6 +773,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       if (act === 'copy') copyText(m.text || '');
       else if (act === 'edit') startEditMessage(msgId, m.text || '');
       else if (act === 'delete') deleteMessage(msgId);
+      else if (act === 'download') downloadMedia(m.audioUrl || m.imageUrl, mediaName(m));
       else if (act === 'reply') startReply(msgId, m, mine);
     }));
     ctxMenu.querySelectorAll('[data-react]').forEach(b => b.addEventListener('click', () => {
@@ -857,6 +904,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       const d = snap.exists() ? snap.data() : {};
       messagingEnabled = d.enabled !== false;
       VOICE_MAX_SEC = Math.max(1, Math.min(60, Number(d.voiceMaxMin) || 5)) * 60;
+      AUDIO_MAX_MB = Math.max(1, Math.min(50, Number(d.audioMaxMB) || 10));
+      PHOTO_MAX_MB = Math.max(1, Math.min(20, Number(d.photoMaxMB) || 5));
       disabledNotice.style.display = messagingEnabled ? 'none' : 'block';
       sendBtn.disabled = !messagingEnabled;
       messageInput.disabled = !messagingEnabled;
@@ -1011,7 +1060,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
       const isLike = m.text === '👍' && !m.replyTo;
-      const isVoice = m.type === 'voice' && !!m.audioUrl;
+      const isVoice = (m.type === 'voice' || m.type === 'audio') && !!m.audioUrl;
+      const isImage = m.type === 'image' && !!m.imageUrl;
       const quoteHtml = m.replyTo
         ? '<div class="msgQuote" data-goto="' + escapeHtml(m.replyTo.id) + '">' + escapeHtml(m.replyTo.text || '') + '</div>'
         : '';
@@ -1024,7 +1074,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isImage ? ' hasImg' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
           <div class="msgMeta"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
@@ -1032,6 +1082,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       const vpEl = row.querySelector('.vp');
       if (vpEl) bindVoicePlayer(vpEl);
+      bindMediaExtras(row, m);
 
       const quoteEl = row.querySelector('.msgQuote');
       if (quoteEl) quoteEl.addEventListener('click', () => {
@@ -1076,6 +1127,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     replyingTo = null; editingId = null; otherSeenAt = null;
     updateComposePreview();
     updateSendBtn();
+    resetComposerMode();
     inboxView.style.display = 'none';
     chatView.style.display = 'flex';
     renderHeader();
@@ -1185,6 +1237,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
   async function sendCurrentMessage(forceLike) {
     if (editingId) { await submitEdit(); return; }
+    if (pendingAttach) { await sendAttachment(); return; }
     const raw = messageInput.value.trim();
     const text = raw || (forceLike ? '👍' : '');   // ইনপুট খালি থাকলে সেন্ড বাটনে 👍 দেখায়, চাপলে লাইক পাঠানো হয়
     if (!text || !messagingEnabled || !convId) return;
@@ -1241,6 +1294,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   // সেন্ড বাটন: ইনপুট খালি থাকলে 👍, লেখা থাকলে ➤, এডিট চলাকালীন ✔ (Messenger-এর মতো)
   function updateSendBtn() {
     if (editingId) { sendBtn.textContent = '✔'; return; }
+    if (pendingAttach) { sendBtn.textContent = '➤'; return; }
     sendBtn.textContent = messageInput.value.trim() === '' ? '👍' : '➤';
   }
 
@@ -1390,6 +1444,236 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     }
   }
 
+
+  // ================= ফটো ও ফোনের অডিও ফাইল পাঠানো =================
+  const PHOTO_BUCKET = 'photos';
+  const audioFileBtn = document.getElementById('audioFileBtn');
+  const photoBtn = document.getElementById('photoBtn');
+  const textBtn = document.getElementById('textBtn');
+  const textBack = document.getElementById('textBack');
+  const audioFileInput = document.getElementById('audioFileInput');
+  const photoInput = document.getElementById('photoInput');
+  const attachPreview = document.getElementById('attachPreview');
+  const apThumb = document.getElementById('apThumb');
+  const apIcon = document.getElementById('apIcon');
+  const apName = document.getElementById('apName');
+  const apSize = document.getElementById('apSize');
+  const apClose = document.getElementById('apClose');
+  const imgViewer = document.getElementById('imgViewer');
+  const ivImg = document.getElementById('ivImg');
+  const ivDl = document.getElementById('ivDl');
+  const ivClose = document.getElementById('ivClose');
+  let pendingAttach = null;      // { kind:'image'|'audio', blob/file, name, size, duration, previewUrl }
+  let viewerUrl = '', viewerName = '';
+
+  function setTyping(on) {
+    messageBarEl.classList.toggle('typing', !!on);
+    if (on) { messageInput.focus(); }
+  }
+  function resetComposerMode() {
+    clearAttach();
+    messageBarEl.classList.remove('typing');
+  }
+  function fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
+  function isMediaMsg(m) { return m.type === 'voice' || m.type === 'audio' || m.type === 'image'; }
+
+  function downloadMedia(url, name) {
+    if (!url) return;
+    const a = document.createElement('a');
+    a.href = url + (url.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(name || 'file');
+    a.download = name || 'file';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  function mediaName(m) {
+    if (m.fileName) return m.fileName;
+    const url = m.audioUrl || m.imageUrl || '';
+    const ext = (url.split('?')[0].split('.').pop() || '').slice(0, 5);
+    return (m.type === 'image' ? 'photo-' : 'audio-') + Date.now() + (ext ? '.' + ext : '');
+  }
+  function captionHtml(m) {
+    return m.caption ? '<div class="mcap">' + escapeHtml(m.caption) + '</div>' : '';
+  }
+  function imageBubbleHtml(m) {
+    return '<div class="imgWrap"><img class="msgImg" src="' + escapeHtml(m.imageUrl) + '" loading="lazy" alt="ফটো">' +
+      '<button class="imgDl" type="button" aria-label="ডাউনলোড">⬇</button></div>';
+  }
+  function bindMediaExtras(row, m) {
+    const img = row.querySelector('.msgImg');
+    if (img) img.addEventListener('click', ev => { ev.stopPropagation(); openImgViewer(m.imageUrl, mediaName(m)); });
+    const idl = row.querySelector('.imgDl');
+    if (idl) idl.addEventListener('click', ev => { ev.stopPropagation(); downloadMedia(m.imageUrl, mediaName(m)); });
+    const vdl = row.querySelector('.vpDl');
+    if (vdl) vdl.addEventListener('click', ev => { ev.stopPropagation(); downloadMedia(m.audioUrl, mediaName(m)); });
+  }
+  function openImgViewer(url, name) {
+    viewerUrl = url; viewerName = name;
+    ivImg.src = url;
+    imgViewer.classList.add('open');
+  }
+  function closeImgViewer() { imgViewer.classList.remove('open'); ivImg.removeAttribute('src'); }
+  ivClose.addEventListener('click', closeImgViewer);
+  imgViewer.addEventListener('click', ev => { if (ev.target === imgViewer) closeImgViewer(); });
+  ivDl.addEventListener('click', () => downloadMedia(viewerUrl, viewerName));
+
+  function showAttachPreview() {
+    const a = pendingAttach;
+    if (!a) { attachPreview.classList.remove('has'); return; }
+    attachPreview.classList.add('has');
+    apName.textContent = a.name;
+    apSize.textContent = fmtMB(a.size);
+    if (a.kind === 'image') { apThumb.src = a.previewUrl; apThumb.style.display = 'block'; apIcon.style.display = 'none'; }
+    else { apThumb.style.display = 'none'; apIcon.style.display = 'block'; apIcon.textContent = '🎵'; }
+  }
+  function clearAttach() {
+    if (pendingAttach && pendingAttach.previewUrl) { try { URL.revokeObjectURL(pendingAttach.previewUrl); } catch (e) {} }
+    pendingAttach = null;
+    attachPreview.classList.remove('has');
+    apThumb.removeAttribute('src');
+    updateSendBtn();
+  }
+  apClose.addEventListener('click', clearAttach);
+
+  async function compressImage(file) {
+    if (file.type === 'image/gif') return file;
+    try {
+      const bmp = await createImageBitmap(file);
+      const sc = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const w = Math.max(1, Math.round(bmp.width * sc)), h = Math.max(1, Math.round(bmp.height * sc));
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(bmp, 0, 0, w, h);
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+      return (blob && blob.size) ? blob : file;
+    } catch (e) { return file; }
+  }
+  function readAudioDuration(file) {
+    return new Promise(resolve => {
+      const url = URL.createObjectURL(file);
+      const au = new Audio();
+      let done = false;
+      const fin = d => { if (done) return; done = true; try { URL.revokeObjectURL(url); } catch (e) {} resolve(d); };
+      au.preload = 'metadata';
+      au.onloadedmetadata = () => fin(isFinite(au.duration) ? Math.round(au.duration) : 0);
+      au.onerror = () => fin(0);
+      setTimeout(() => fin(0), 3000);
+      au.src = url;
+    });
+  }
+
+  function canAttach() {
+    if (!messagingEnabled || !convId || !currentUser) return false;
+    if (editingId || vRec) return false;
+    return true;
+  }
+  photoBtn.addEventListener('click', () => { if (canAttach()) photoInput.click(); });
+  audioFileBtn.addEventListener('click', () => { if (canAttach()) audioFileInput.click(); });
+  textBtn.addEventListener('click', () => { if (messagingEnabled) setTyping(true); });
+  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); });
+
+  photoInput.addEventListener('change', async () => {
+    const file = photoInput.files && photoInput.files[0];
+    photoInput.value = '';
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('শুধু ছবি বাছাই করুন।'); return; }
+    const blob = await compressImage(file);
+    if (blob.size > PHOTO_MAX_MB * 1048576) { alert('ফটোটি বেশি বড় — সর্বোচ্চ ' + PHOTO_MAX_MB + ' MB।'); return; }
+    clearAttach();
+    pendingAttach = { kind: 'image', blob, name: file.name || 'photo.jpg', size: blob.size, previewUrl: URL.createObjectURL(blob) };
+    showAttachPreview();
+    updateSendBtn();
+    setTyping(true);
+  });
+  audioFileInput.addEventListener('change', async () => {
+    const file = audioFileInput.files && audioFileInput.files[0];
+    audioFileInput.value = '';
+    if (!file) return;
+    if (!(file.type.startsWith('audio/') || /\.(mp3|m4a|aac|wav|ogg|opus|amr|flac|webm)$/i.test(file.name))) { alert('শুধু অডিও ফাইল বাছাই করুন।'); return; }
+    if (file.size > AUDIO_MAX_MB * 1048576) { alert('অডিও ফাইলটি বেশি বড় — সর্বোচ্চ ' + AUDIO_MAX_MB + ' MB।'); return; }
+    const duration = await readAudioDuration(file);
+    clearAttach();
+    pendingAttach = { kind: 'audio', file, name: file.name || 'audio', size: file.size, duration, previewUrl: '' };
+    showAttachPreview();
+    updateSendBtn();
+    setTyping(true);
+  });
+
+  // কনভারসেশন ডক (না থাকলে তৈরি) + মেসেজ — ফটো/অডিও ফাইলের জন্য
+  async function postChatMessage(label, extra) {
+    const me = currentUser.uid;
+    const myInfo = { name: myProfile.name || 'ব্যবহারকারী', photoURL: myProfile.photoURL || '' };
+    const convRef = doc(db, "conversations", convId);
+    if (!convExists) {
+      await setDoc(convRef, {
+        participants: [me, otherUid].sort(),
+        participantInfo: { [me]: myInfo, [otherUid]: { name: otherName, photoURL: otherPhoto } },
+        createdAt: serverTimestamp(),
+        lastMessage: label,
+        lastMessageAt: serverTimestamp(),
+        lastSenderUid: me,
+        [`lastRead.${me}`]: serverTimestamp()
+      });
+      convExists = true;
+    } else {
+      await updateDoc(convRef, {
+        lastMessage: label,
+        lastMessageAt: serverTimestamp(),
+        lastSenderUid: me,
+        [`lastRead.${me}`]: serverTimestamp(),
+        [`participantInfo.${me}`]: myInfo
+      });
+    }
+    await addDoc(collection(convRef, "messages"), Object.assign({
+      senderUid: me,
+      text: label,
+      createdAt: serverTimestamp()
+    }, extra));
+  }
+
+  async function sendAttachment() {
+    const a = pendingAttach;
+    if (!a || !messagingEnabled || !convId || !currentUser) return;
+    const caption = messageInput.value.trim().slice(0, 2000);
+    sendBtn.disabled = true;
+    apName.textContent = 'পাঠানো হচ্ছে...';
+    try {
+      const sb = await getSupabase();
+      let extra, label;
+      if (a.kind === 'image') {
+        const isGif = a.blob.type === 'image/gif';
+        const ext = isGif ? 'gif' : 'jpg';
+        const path = convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+        const up = await sb.storage.from(PHOTO_BUCKET).upload(path, a.blob, { contentType: isGif ? 'image/gif' : 'image/jpeg', upsert: false });
+        if (up.error) throw up.error;
+        const imageUrl = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+        extra = { type: 'image', imageUrl, fileName: 'photo-' + Date.now() + '.' + ext };
+        label = '📷 ফটো';
+      } else {
+        const ext = ((a.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3').slice(0, 5);
+        const path = 'files/' + convId + '/' + currentUser.uid + '_' + Date.now() + '.' + ext;
+        const up = await sb.storage.from(VOICE_BUCKET).upload(path, a.file, { contentType: a.file.type || 'audio/mpeg', upsert: false });
+        if (up.error) throw up.error;
+        const audioUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(path).data.publicUrl;
+        extra = { type: 'audio', audioUrl, duration: a.duration || 0, fileName: a.name };
+        label = '🎵 অডিও';
+      }
+      if (caption) extra.caption = caption;
+      await postChatMessage(label, extra);
+      clearAttach();
+      messageInput.value = '';
+      messageInput.style.height = 'auto';
+    } catch (e) {
+      alert('পাঠানো যায়নি — এরর: ' + (e && e.message ? e.message : e));
+      showAttachPreview();
+    } finally {
+      sendBtn.disabled = !messagingEnabled;
+      updateSendBtn();
+    }
+  }
+
   voiceBtn.addEventListener('click', startVoiceRecording);
   recCancel.addEventListener('click', cancelVoiceRecording);
   recSend.addEventListener('click', () => finishVoiceRecording(true));
@@ -1401,7 +1685,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     return '<div class="vp" data-url="' + escapeHtml(m.audioUrl) + '" data-dur="' + dur + '">' +
       '<button class="vpBtn" type="button" aria-label="প্লে">' + VP_PLAY + '</button>' +
       '<input class="vpBar" type="range" min="0" max="100" step="0.1" value="0" aria-label="সময়">' +
-      '<span class="vpTime">' + fmtSec(dur) + '</span></div>';
+      '<span class="vpTime">' + fmtSec(dur) + '</span>' +
+      '<button class="vpDl" type="button" aria-label="ডাউনলোড">⬇</button></div>';
   }
   function vpPaint() {
     if (!vpUi) return;
@@ -1449,7 +1734,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !isTouchOnly()) {
       e.preventDefault();
       if (editingId) submitEdit();
-      else if (messageInput.value.trim() !== '') sendCurrentMessage(false);
+      else if (messageInput.value.trim() !== '' || pendingAttach) sendCurrentMessage(false);
     }
   });
   messageInput.addEventListener('input', () => {
