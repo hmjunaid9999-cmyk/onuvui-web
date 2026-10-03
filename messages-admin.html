@@ -331,12 +331,32 @@ input:checked + .slider:before{transform:translateX(20px)}
   loadMoreBtn.addEventListener('click', () => loadConversations(false));
 
   // ================= থ্রেড (একটা কনভারসেশনের সব মেসেজ) দেখা ও মডারেশন =================
+  // ব্যাক বাটন: কথোপকথন খোলা থাকলে শুধু সেটা বন্ধ হবে, সাইট থেকে বের হবে না
+  let threadPushed = false, threadIgnorePop = false;
+  function hideThread(fromPop) {
+    threadOverlay.classList.remove('open');
+    openConvId = null;
+    if (threadPushed) {
+      threadPushed = false;
+      if (fromPop !== true) {
+        threadIgnorePop = true;
+        try { history.back(); } catch (e) { threadIgnorePop = false; }
+        setTimeout(() => { threadIgnorePop = false; }, 600);
+      }
+    }
+  }
+  window.addEventListener('popstate', () => {
+    if (threadOverlay.classList.contains('open')) hideThread(true);
+    else if (threadIgnorePop) threadIgnorePop = false;
+  });
+
   async function openThread(convId, convData) {
     openConvId = convId;
     const names = (convData.participants || []).map(u => (convData.participantInfo && convData.participantInfo[u] && convData.participantInfo[u].name) || u.slice(0, 6));
     threadTitle.textContent = names.join(' ↔ ');
     threadMessages.innerHTML = 'লোড হচ্ছে...';
     threadOverlay.classList.add('open');
+    if (!threadPushed) { try { history.pushState({ thread: true }, '', location.href); threadPushed = true; } catch (e) {} }
 
     try {
       const mq = query(collection(db, "conversations", convId, "messages"), orderBy("createdAt", "asc"), limit(500));
@@ -369,10 +389,7 @@ input:checked + .slider:before{transform:translateX(20px)}
     }
   }
 
-  closeThreadBtn.addEventListener('click', () => {
-    threadOverlay.classList.remove('open');
-    openConvId = null;
-  });
+  closeThreadBtn.addEventListener('click', () => { hideThread(); });
 
   deleteConvBtn.addEventListener('click', async () => {
     if (!openConvId) return;
@@ -382,8 +399,7 @@ input:checked + .slider:before{transform:translateX(20px)}
       const mSnap = await getDocs(collection(db, "conversations", openConvId, "messages"));
       for (const m of mSnap.docs) { await deleteDoc(m.ref); }
       await deleteDoc(doc(db, "conversations", openConvId));
-      threadOverlay.classList.remove('open');
-      openConvId = null;
+      hideThread();
       loadConversations(true);
     } catch (e) {
       alert('এরর: ' + e.message);
