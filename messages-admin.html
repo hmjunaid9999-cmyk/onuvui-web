@@ -34,6 +34,7 @@ input:checked + .slider{background:var(--primary-color)}
 input:checked + .slider:before{transform:translateX(20px)}
 .numInput{width:90px;background:#0d1117;border:1px solid #30363d;color:#fff;padding:7px 9px;border-radius:8px;font-size:13px}
 #saveSettingsBtn{background:var(--primary-color);color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer}
+.noteTxt{font-size:12px;color:#9ca3af;line-height:1.6;margin-bottom:14px}
 #settingsStatus{font-size:12px;color:#4ade80;margin-top:8px;min-height:14px}
 .searchRow{display:flex;gap:8px;margin-bottom:12px}
 .searchRow input{flex:1;background:#0d1117;border:1px solid #30363d;color:#fff;padding:9px 11px;border-radius:10px;font-size:13px}
@@ -130,6 +131,7 @@ input:checked + .slider:before{transform:translateX(20px)}
     <main>
       <div class="card">
         <h2>⚙️ ফিচার কন্ট্রোল</h2>
+        <div class="noteTxt">ভয়েসের সময়, অডিও ও ফটোর সাইজ সীমা — মেসেজ এবং হোম পেজের পোস্ট (ফটো / ভয়েস / অডিও), দুই জায়গাতেই একসাথে প্রযোজ্য।</div>
         <div class="settingsRow">
           <label>মেসেজিং ফিচার চালু রাখুন</label>
           <label class="switch">
@@ -596,7 +598,7 @@ input:checked + .slider:before{transform:translateX(20px)}
       stData.photos = p; stData.voice = v; stData.audio = a;
       stLoaded = true;
       paintSummary();
-      stStatus.textContent = 'হিসাব: ফটো + ভয়েস + অডিও ফাইলের মোট সাইজ থেকে।';
+      stStatus.textContent = 'হিসাব: ফটো + ভয়েস + অডিও ফাইলের মোট সাইজ থেকে (মেসেজ ও হোম পোস্ট মিলিয়ে)।';
     } catch (e) {
       stStatus.style.color = '#f87171';
       stStatus.textContent = 'তালিকা আনা যায়নি: ' + (e && e.message ? e.message : e);
@@ -659,7 +661,7 @@ input:checked + .slider:before{transform:translateX(20px)}
       const no = document.createElement('span'); no.className = 'stNo'; no.textContent = (i + 1) + '.';
       const info = document.createElement('div'); info.className = 'stInfo';
       const nm = document.createElement('div'); nm.className = 'stName'; nm.textContent = f.name;
-      const mt = document.createElement('div'); mt.className = 'stMeta'; mt.textContent = fmtBytes(f.size) + (f.created ? ' · ' + fmtDate(f.created) : '');
+      const mt = document.createElement('div'); mt.className = 'stMeta'; mt.textContent = (/(^|\/)posts\//.test(f.path) ? '🏠 হোম পোস্ট · ' : '💬 মেসেজ · ') + fmtBytes(f.size) + (f.created ? ' · ' + fmtDate(f.created) : '');
       info.appendChild(nm); info.appendChild(mt);
       const del = document.createElement('button'); del.className = 'stDel'; del.type = 'button'; del.textContent = '🗑 ডিলিট';
       del.addEventListener('click', () => deleteStFile(kind, f, del));
