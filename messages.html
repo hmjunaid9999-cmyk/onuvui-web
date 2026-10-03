@@ -73,11 +73,11 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
 /* ---------- চ্যাট ভিউ ---------- */
 #chatView{display:none;flex:1;flex-direction:column;overflow:hidden}
-#messagesScroll{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
-#messagesList{display:flex;flex-direction:column;gap:2px}
+#messagesScroll{flex:1;overflow-y:auto;padding:14px 14px;display:flex;flex-direction:column;gap:8px}
+#messagesList{display:flex;flex-direction:column;gap:3px}
 #messagesEmpty{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
-.msgRow{display:flex;align-items:flex-start;gap:8px;max-width:88%}
-.msgRow.first{margin-top:8px}
+.msgRow{display:flex;align-items:flex-start;gap:8px;max-width:80%}
+.msgRow.first{margin-top:16px}
 .msgRow.mine{align-self:flex-end;justify-content:flex-end}
 .msgRow.theirs{align-self:flex-start}
 .msgCol{min-width:0}
@@ -140,8 +140,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .permBtnSub{background:none;color:var(--text-color);border:none;padding:8px;font-size:14px;cursor:pointer}
 
 /* ---------- চ্যাটের ভেতরে কল লগ (মিস কল / কল দেওয়া হয়েছিল) ---------- */
-.callLogRow{align-self:center;width:min(300px,90%);margin:8px 0}
-.callLog{background:var(--card-color);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.callLogRow{align-self:center;width:min(250px,72%);margin:14px 0}
+.callLog{background:var(--card-color);border:1px solid var(--line);border-radius:14px;padding:8px 10px;display:flex;flex-direction:column;gap:8px}
 .clTop{display:flex;align-items:center;gap:10px}
 .clIcon{width:34px;height:34px;border-radius:50%;background:var(--surface);color:var(--text-color);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .clIcon svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -151,7 +151,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .callLog.missed .clTitle{color:var(--text-color)}
 .clSub{font-size:11px;color:var(--text-color);margin-top:1px}
 .clBtns{display:flex;gap:8px}
-.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--text-color);border-radius:10px;padding:8px 6px;font-size:12.5px;font-family:inherit;cursor:pointer}
+.clBtn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--surface);border:1px solid var(--line);color:var(--text-color);border-radius:10px;padding:6px 4px;font-size:12px;font-family:inherit;cursor:pointer}
 .clBtn:active{background:var(--surface-active)}
 .clBtn:disabled{opacity:.4;cursor:default}
 .clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
@@ -209,7 +209,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .vpDl{background:none;border:none;color:inherit;font-size:14px;cursor:pointer;padding:0 2px;opacity:.85;flex-shrink:0}
 .msgBubble.hasImg{padding:4px}
 .imgWrap{position:relative;line-height:0}
-.msgImg{display:block;max-width:100%;width:240px;max-height:320px;object-fit:cover;border-radius:12px;cursor:pointer}
+.msgImg{display:block;max-width:100%;width:176px;max-height:236px;object-fit:cover;border-radius:12px;cursor:pointer}
 .imgDl{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:14px;cursor:pointer;line-height:1;padding:0}
 .mcap{margin-top:6px;white-space:pre-wrap;word-break:break-word}
 .hasImg .mcap{padding:0 8px 6px}
@@ -228,13 +228,16 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 @keyframes recBlink{50%{opacity:.25}}
 #recTime{flex:1;font-size:14px;color:var(--text-color)}
 #recCancel,#recSend{background:var(--surface);color:var(--text-color);border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
-.vp{display:flex;align-items:center;gap:8px;min-width:190px}
-.vpBtn{width:34px;height:34px;border-radius:50%;border:none;background:#22c55e;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
+.vp{display:flex;align-items:center;gap:6px;width:164px}
+.vpBtn{width:32px;height:32px;border-radius:50%;border:none;background:#22c55e;cursor:pointer;flex-shrink:0;padding:0;display:flex;align-items:center;justify-content:center}
 .msgRow.mine .vp{flex-direction:row-reverse}
 .vpBtn{color:#fff}
+.msgBubble.hasVp{padding:7px 10px}
+.msgMeta.noTime{display:none}
+.msgRow:has(.msgReactions){margin-bottom:10px}
 .msgRow.mine .vpBtn{background:#fff;color:#16a34a}
 .vpBar{flex:1;min-width:0;accent-color:currentColor;height:4px}
-.vpTime{font-size:12px;min-width:34px;text-align:right}
+.vpTime{font-size:11px;min-width:28px;text-align:right}
 #ctxBackdrop{position:fixed;inset:0;z-index:900;display:none;background:rgba(0,0,0,.62);align-items:flex-end;justify-content:center}
 #ctxMenu{position:relative;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:22px 22px 0 0;padding:14px 0 calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px rgba(0,0,0,.55);animation:ctxSlideUp .18s ease-out}
 #ctxMenu::before{content:'';display:block;width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 10px}
@@ -1046,8 +1049,12 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     const myName = myProfile.name || (currentUser && currentUser.displayName) || '';
     let prevSender = null;
     let lastMineRow = null, lastMineCreatedAt = null;
-    snap.forEach(d => {
+    const _docs = [];
+    snap.forEach(d => { _docs.push(d); });
+    _docs.forEach((d, _i) => {
       const m = d.data();
+      const _next = _docs[_i + 1] ? _docs[_i + 1].data() : null;
+      const showTime = !_next || _next.type === 'call' || _next.senderUid !== m.senderUid;   // টানা মেসেজের শুধু শেষটায় সময়
       if (m.type === 'call') {          // কল লগ (মিস কল ইত্যাদি) — আলাদা কার্ড
         prevSender = null;
         frag.appendChild(buildCallLogRow(m, m.senderUid === currentUser.uid));
@@ -1081,8 +1088,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isImage ? ' hasImg' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
-          <div class="msgMeta"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgMeta${showTime ? '' : ' noTime'}"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
       row.innerHTML = mine ? content + av : av + content;
