@@ -172,14 +172,17 @@ html[data-theme="light"]{--ash-btn:#c2c6ca}
 @keyframes mpViz{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
 .mpInfo{text-align:center;margin-top:6px;min-width:0}
 .mpTitle{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpTitleIn{display:inline-block;white-space:nowrap}
+.mpTitle.marq{text-align:left;text-overflow:clip}
+.mpTitle.marq .mpTitleIn{padding-left:100%;animation:mpMarq var(--md,12s) linear infinite;will-change:transform}
+@keyframes mpMarq{from{transform:translateX(0)}to{transform:translateX(-100%)}}
 .mpSub{font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 .mpSeek{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:11px;font-variant-numeric:tabular-nums}
 .mpSeek span{min-width:32px;opacity:.9}
 .mpSeek .mpTot{text-align:right}
-.mpLine{position:relative;flex:1;height:26px;cursor:pointer;touch-action:none}
-.mpLine::before{content:'';position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;border-radius:2px;background:rgba(255,255,255,.22)}
-.mpFill{position:absolute;left:0;top:50%;height:3px;margin-top:-1.5px;border-radius:2px;background:#fff;width:0}
-.mpThumb{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(80,200,255,.75)}
+.mpLine{position:relative;flex:1;height:26px;margin:0 7px;cursor:pointer;touch-action:none}
+.mpSvg{position:absolute;left:0;top:0;width:100%;height:26px;overflow:visible;pointer-events:none;display:block}
+.mpCtl svg.mpSvg{width:100%;height:26px}
 .mpCtl{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
 .mpCtl button{background:none;border:none;color:#fff;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;-webkit-tap-highlight-color:transparent;font-family:inherit}
 .mpCtl button:active{background:rgba(255,255,255,.14)}
@@ -188,14 +191,16 @@ html[data-theme="light"]{--ash-btn:#c2c6ca}
 .mpLoop svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
 .mpLoop.on svg{opacity:1;stroke:#3fe0ff}
 .mpLoop.on{color:#3fe0ff}
-.mpCtl .mpBtn{width:58px;height:58px;border:2px solid #fff;background:transparent;position:relative}
-.mpCtl .mpBtn svg{width:26px;height:26px;fill:#fff}
+.mpCtl .mpBtn{width:58px;height:58px;border:none;background:transparent;position:relative}
+.mpCtl .mpBtn svg.mpRing{position:absolute;left:0;top:0;width:100%;height:100%}
+.mpIco{display:flex;align-items:center;justify-content:center;position:relative}
+.mpCtl .mpBtn .mpIco svg{width:26px;height:26px}
 .mp.playing .mpBtn::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(63,224,255,.7);animation:mpPulse 1.5s ease-out infinite;pointer-events:none}
 @keyframes mpPulse{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.3);opacity:0}}
 .mpGone{display:none;flex:1;align-items:center;justify-content:center;text-align:center;font-size:14px}
 .mp.broken > :not(.mpGone){display:none}
 .mp.broken .mpGone{display:flex}
-@media (prefers-reduced-motion:reduce){.mpBars i,.mp.playing .mpBtn::after{animation:none}}
+@media (prefers-reduced-motion:reduce){.mpBars i,.mp.playing .mpBtn::after,.mpTitle.marq .mpTitleIn{animation:none}.mpTitle.marq .mpTitleIn{padding-left:0}}
 
 /* ===== সাব-অপশন: পোস্ট (টেক্সট|পোস্টার|ব্লগ) ও অডিও (রেকর্ড|মিউজিক) ===== */
 #subTabs{display:none;align-items:center;gap:8px;margin:-4px 0 16px}
@@ -257,6 +262,40 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 #pvBack,#pvDl{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 #pvBack{left:12px}
 #pvDl{right:12px}
+
+/* ===== পোস্ট বক্স: কিবোর্ড উঠলেও স্থির ===== */
+#composerModalOverlay{overflow:hidden;overscroll-behavior:none;top:var(--vvt,0px);bottom:auto;height:var(--vvh,100%)}
+#composerModalBox{display:flex;flex-direction:column;max-height:calc(var(--vvh,100vh) - 40px)}
+#composerModalHeader{flex:none}
+#composer{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#composerText{overscroll-behavior:contain}
+body.composerOpen,body.voiceOpen{overscroll-behavior:none}
+body.kbOpen #composerText{min-height:96px}
+body.kbOpen #composerText.blogSizeActive{min-height:120px}
+body.kbOpen #composerText.posterActive{min-height:150px;padding:50px 14px}
+#voicePage{top:var(--vvt,0px);bottom:auto;height:var(--vvh,100%)}
+#vrBody{overscroll-behavior:contain}
+
+/* ===== পোস্টার লেখার সময় অক্ষরের সাইজ (একটু ছোট) ===== */
+#composerText.posterActive{font-size:16px}
+
+/* ===== ডাউনলোড নিশ্চিতকরণ ===== */
+#dlConfirmOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:940;align-items:center;justify-content:center;padding:24px}
+#dlConfirmOverlay.open{display:flex}
+#dlConfirmBox{position:relative;width:100%;max-width:340px;background:var(--card-color);border:1px solid var(--line);border-radius:18px;padding:22px 18px 18px;text-align:center}
+#dlConfirmBox h3{font-size:17px;margin-bottom:8px}
+#dlConfirmBox p{font-size:13px;color:var(--text-muted);margin-bottom:6px}
+#dlConfirmName{font-size:12px;opacity:.75;margin-bottom:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dlConfirmActions{display:flex;gap:10px}
+#dlConfirmActions button{flex:1;padding:11px;border:none;border-radius:12px;font-size:14px;font-weight:bold;cursor:pointer;font-family:inherit}
+#dlNoBtn{background:var(--line);color:var(--text-soft);box-shadow:inset 0 0 0 1px var(--line)}
+#dlYesBtn{background:var(--text-color);color:var(--bg-color)}
+body.kbOpen #composerMediaList{flex-direction:row;gap:6px}
+body.kbOpen .cmRow{flex:1;min-width:0;justify-content:center;gap:6px;padding:6px}
+body.kbOpen .cmHint{display:none}
+body.kbOpen .cmLabel{flex:none;font-size:13px}
+body.kbOpen .cmIcon{width:28px;height:28px}
+body.kbOpen .cmIcon svg{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -473,8 +512,20 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   <!-- ---------- ফটো ভিউয়ার ---------- -->
   <div id="photoViewer">
     <button type="button" id="pvBack" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
-    <button type="button" id="pvDl" aria-label="ডাউনলোড">⬇</button>
     <img id="pvImg" alt="">
+  </div>
+
+  <!-- ---------- ডাউনলোড নিশ্চিতকরণ ---------- -->
+  <div id="dlConfirmOverlay">
+    <div id="dlConfirmBox">
+      <h3>ডাউনলোড করবেন?</h3>
+      <p>আপনি কি নিশ্চিত যে ডাউনলোড করতে চান?</p>
+      <div id="dlConfirmName"></div>
+      <div id="dlConfirmActions">
+        <button type="button" id="dlNoBtn">না, থাক</button>
+        <button type="button" id="dlYesBtn">হ্যাঁ, ডাউনলোড</button>
+      </div>
+    </div>
   </div>
 
   <div id="ptrIndicator"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg></div>
@@ -1173,10 +1224,34 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => { try { URL.revokeObjectURL(objUrl); } catch (e) {} }, 20000);
   }
+  // ডাউনলোডের আগে (প্রথমবার থেকেই) নিশ্চিতকরণ: "আপনি কি নিশ্চিত যে ডাউনলোড করতে চান?"
+  const dlConfirmOverlay = document.getElementById('dlConfirmOverlay');
+  const dlConfirmName = document.getElementById('dlConfirmName');
+  let dlResolve = null;
+  function confirmDownload(name) {
+    return new Promise(resolve => {
+      if (dlResolve) { const prev = dlResolve; dlResolve = null; prev(false); }
+      dlResolve = resolve;
+      dlConfirmName.textContent = name || '';
+      dlConfirmOverlay.classList.add('open');
+      rearmGuard();
+    });
+  }
+  function closeDlConfirm(ok) {
+    dlConfirmOverlay.classList.remove('open');
+    const r = dlResolve; dlResolve = null;
+    if (r) r(!!ok);
+  }
+  document.getElementById('dlYesBtn').addEventListener('click', () => closeDlConfirm(true));
+  document.getElementById('dlNoBtn').addEventListener('click', () => closeDlConfirm(false));
+  dlConfirmOverlay.addEventListener('click', ev => { if (ev.target === dlConfirmOverlay) closeDlConfirm(false); });
+
   async function downloadMedia(url, name) {
     if (!url || dlBusy) return;
-    dlBusy = true;
     name = name || ('file-' + Date.now());
+    if (!(await confirmDownload(name))) return;
+    if (dlBusy) return;
+    dlBusy = true;
     showPostToast('⬇️ ডাউনলোড হচ্ছে...', 0);
     try {
       const res = await fetch(url, { mode: 'cors' });
@@ -1323,8 +1398,8 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   }
 
   // ---------- মিউজিক প্লেয়ার (বর্গাকার; চলার সময় রঙিন স্পেকট্রাম ঝিলমিল করে, থামালে থেমে যায়) ----------
-  const MP_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-  const MP_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
+  const MP_PLAY = '<svg viewBox="0 0 24 24"><path fill="#fff" d="M8 5v14l11-7z"/></svg>';
+  const MP_PAUSE = '<svg viewBox="0 0 24 24"><path fill="#fff" d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
   const MP_BACK10 = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor">10</text></svg>';
   const MP_FWD10 = '<svg viewBox="0 0 24 24"><path fill="currentColor" transform="translate(24,0) scale(-1,1)" d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor">10</text></svg>';
   const MP_LOOP = '<svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
@@ -1357,15 +1432,19 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     const dur = Math.max(0, Number(o.dur) || 0);
     return '<div class="mp" data-url="' + escAttr(o.url) + '" data-dur="' + dur + '">' +
       '<div class="mpViz"><div class="mpGlow"></div><div class="mpBars">' + mpBarsHtml(String(o.url)) + '</div></div>' +
-      '<div class="mpInfo"><div class="mpTitle">' + escAttr(o.title || '') + '</div>' +
+      '<div class="mpInfo"><div class="mpTitle"><span class="mpTitleIn">' + escAttr(o.title || '') + '</span></div>' +
         (o.sub ? '<div class="mpSub">' + escAttr(o.sub) + '</div>' : '') + '</div>' +
       '<div class="mpSeek"><span class="mpCur">0:00</span>' +
-        '<div class="mpLine"><div class="mpFill"></div><div class="mpThumb"></div></div>' +
+        '<div class="mpLine"><svg class="mpSvg" width="100%" height="26" aria-hidden="true">' +
+          '<line class="mpTrack" x1="0" y1="13" x2="100%" y2="13" stroke="#ffffff" stroke-opacity=".28" stroke-width="3" stroke-linecap="round"/>' +
+          '<line class="mpFill" x1="0" y1="13" x2="0%" y2="13" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>' +
+          '<circle class="mpHalo" cx="0%" cy="13" r="13" fill="#3fe0ff" fill-opacity=".28"/>' +
+          '<circle class="mpThumb" cx="0%" cy="13" r="7" fill="#ffffff"/></svg></div>' +
         '<span class="mpTot">' + fmtSec(dur) + '</span></div>' +
       '<div class="mpCtl">' +
         '<button class="mpSpeed" type="button" aria-label="গতি">1x</button>' +
         '<button class="mpSkip" data-skip="-10" type="button" aria-label="১০ সেকেন্ড পিছনে">' + MP_BACK10 + '</button>' +
-        '<button class="mpBtn" type="button" aria-label="চালান">' + MP_PLAY + '</button>' +
+        '<button class="mpBtn" type="button" aria-label="চালান"><svg class="mpRing" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="27" fill="none" stroke="#ffffff" stroke-width="2"/></svg><span class="mpIco">' + MP_PLAY + '</span></button>' +
         '<button class="mpSkip" data-skip="10" type="button" aria-label="১০ সেকেন্ড সামনে">' + MP_FWD10 + '</button>' +
         '<button class="mpLoop" type="button" aria-label="বারবার চালান">' + MP_LOOP + '</button>' +
       '</div>' +
@@ -1377,16 +1456,31 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     const playing = active && !mpAudio.paused;
     const curT = active ? mpAudio.currentTime : 0;
     const total = ui.dur || (active && isFinite(mpAudio.duration) ? mpAudio.duration : 0);
-    ui.btn.innerHTML = playing ? MP_PAUSE : MP_PLAY;
-    ui.btn.setAttribute('aria-label', playing ? 'থামান' : 'চালান');
-    ui.root.classList.toggle('playing', playing);
-    const p = total ? Math.min(1, curT / total) : 0;
-    ui.fill.style.width = (p * 100) + '%';
-    ui.thumb.style.left = (p * 100) + '%';
-    ui.cur.textContent = fmtSec(curT);
-    ui.tot.textContent = fmtSec(total);
+    if (ui._pl !== playing) {
+      ui._pl = playing;
+      ui.ico.innerHTML = playing ? MP_PAUSE : MP_PLAY;
+      ui.btn.setAttribute('aria-label', playing ? 'থামান' : 'চালান');
+      ui.root.classList.toggle('playing', playing);
+    }
+    // যতটুকু শোনা হয়েছে ততটুকু সাদা হয়ে বলের সাথে সাথে এগোয়
+    const pct = (total ? Math.min(1, curT / total) * 100 : 0).toFixed(2) + '%';
+    if (ui._pct !== pct) {
+      ui._pct = pct;
+      ui.fill.setAttribute('x2', pct);
+      ui.thumb.setAttribute('cx', pct);
+      ui.halo.setAttribute('cx', pct);
+    }
+    const ct = fmtSec(curT), tt = fmtSec(total);
+    if (ui.cur.textContent !== ct) ui.cur.textContent = ct;
+    if (ui.tot.textContent !== tt) ui.tot.textContent = tt;
     ui.loopBtn.classList.toggle('on', !!ui.loop);
   }
+  let mpRaf = 0;
+  function mpTick() {
+    mpRaf = 0;
+    if (mpAudio && !mpAudio.paused && mpUi) { mpPaint(mpUi); mpRaf = requestAnimationFrame(mpTick); }
+  }
+  function mpKick() { if (!mpRaf) mpRaf = requestAnimationFrame(mpTick); }
   function mpStart(ui, ratio) {
     const old = mpUi;
     if (mpAudio) { try { mpAudio.pause(); } catch (e) {} }
@@ -1397,7 +1491,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     mpAudio = a; mpUrl = ui.url; mpUi = ui;
     const repaint = () => { if (mpAudio === a && mpUi) mpPaint(mpUi); };
     a.addEventListener('timeupdate', repaint);
-    a.addEventListener('play', repaint);
+    a.addEventListener('play', () => { repaint(); mpKick(); });
     a.addEventListener('pause', repaint);
     a.addEventListener('ended', () => { try { a.currentTime = 0; } catch (e) {} repaint(); });
     a.addEventListener('error', () => {
@@ -1419,13 +1513,30 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     mpAudio = null; mpUrl = null; mpUi = null;
     if (old) mpPaint(old);
   }
+  // লম্বা নাম হলে ডান থেকে বামে চলতে থাকে (শেষ হলে আবার ডান থেকে শুরু); ছোট নাম হলে স্থির মাঝখানে
+  function mpFitTitle(root) {
+    const t = root.querySelector('.mpTitle'), inner = root.querySelector('.mpTitleIn');
+    if (!t || !inner) return;
+    t.classList.remove('marq');
+    inner.style.removeProperty('--md');
+    const cw = t.clientWidth;
+    if (!cw) return;
+    const tw = inner.offsetWidth;
+    if (tw > cw + 1) {
+      inner.style.setProperty('--md', ((tw + cw) / 45).toFixed(1) + 's');   // প্রায় ৪৫ পিক্সেল/সেকেন্ড
+      t.classList.add('marq');
+    }
+  }
   function bindMediaPlayer(root) {
     if (!root || root._mpBound) return;
     root._mpBound = true;
+    if (window.ResizeObserver) { try { new ResizeObserver(() => mpFitTitle(root)).observe(root.querySelector('.mpTitle')); } catch (e) {} }
+    requestAnimationFrame(() => mpFitTitle(root));
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => mpFitTitle(root)).catch(() => {});
     const ui = {
       root, url: root.dataset.url, dur: Number(root.dataset.dur) || 0, loop: false,
-      btn: root.querySelector('.mpBtn'), line: root.querySelector('.mpLine'),
-      fill: root.querySelector('.mpFill'), thumb: root.querySelector('.mpThumb'),
+      btn: root.querySelector('.mpBtn'), ico: root.querySelector('.mpIco'), line: root.querySelector('.mpLine'),
+      fill: root.querySelector('.mpFill'), thumb: root.querySelector('.mpThumb'), halo: root.querySelector('.mpHalo'),
       cur: root.querySelector('.mpCur'), tot: root.querySelector('.mpTot'),
       speed: root.querySelector('.mpSpeed'), loopBtn: root.querySelector('.mpLoop')
     };
@@ -1541,7 +1652,6 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     pvImg.removeAttribute('src');
   }
   document.getElementById('pvBack').addEventListener('click', closePhotoViewer);
-  document.getElementById('pvDl').addEventListener('click', () => downloadMedia(pvUrl, pvName));
   photoViewer.addEventListener('click', ev => { if (ev.target === photoViewer) closePhotoViewer(); });
 
   // ---------- ভয়েস রেকর্ড পেজ ----------
@@ -1772,6 +1882,34 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   });
   document.addEventListener('contextmenu', e => { if (!isTextField(e.target)) e.preventDefault(); });
   document.addEventListener('dragstart', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); });
+
+  // ---------- কিবোর্ড উঠলেও পোস্ট বক্স স্থির (ফেসবুকের মতো): দৃশ্যমান এলাকার মাপে বক্স বসে, টানলে উপরে-নিচে নড়ে না ----------
+  (function keepComposerFixed() {
+    const vv = window.visualViewport;
+    const root = document.documentElement;
+    let baseH = Math.max(window.innerHeight, vv ? vv.height : 0);
+    function isTyping() {
+      const ae = document.activeElement;
+      return !!(ae && /^(INPUT|TEXTAREA)$/.test(ae.tagName));
+    }
+    function sync() {
+      const h = vv ? vv.height : window.innerHeight;
+      const top = vv ? vv.offsetTop : 0;
+      const typing = isTyping();
+      baseH = typing ? Math.max(baseH, h) : h;       // কিবোর্ড ছাড়া অবস্থার উচ্চতা
+      root.style.setProperty('--vvh', Math.round(h) + 'px');
+      root.style.setProperty('--vvt', Math.round(top) + 'px');
+      document.body.classList.toggle('kbOpen', typing && h < baseH - 120);
+    }
+    if (vv) { vv.addEventListener('resize', sync); vv.addEventListener('scroll', sync); }
+    window.addEventListener('resize', sync);
+    window.addEventListener('orientationchange', () => setTimeout(() => { baseH = 0; sync(); }, 300));
+    document.addEventListener('focusin', () => { sync(); setTimeout(sync, 150); setTimeout(sync, 450); });
+    document.addEventListener('focusout', () => { setTimeout(sync, 80); setTimeout(sync, 400); });
+    // বক্সের বাইরের অংশে আঙুল টানলে কিছুই নড়বে না; ভেতরের লেখা-অংশ (#composer) দরকারে নিজে স্ক্রল করবে
+    composerModalOverlay.addEventListener('touchmove', e => { if (!(e.target.closest && e.target.closest('#composer'))) e.preventDefault(); }, { passive: false });
+    sync();
+  })();
 
 
   function timeAgo(ts) {
@@ -2066,9 +2204,9 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   const KIND_GROUP = { text: 'post', poster: 'post', blog: 'post', photo: 'photo', record: 'audio', music: 'audio' };
   const SUB_DEFS = {
     post:  [['text', 'টেক্সট'], ['poster', 'পোস্টার'], ['blog', 'ব্লগ']],
-    audio: [['record', 'রেকর্ড'], ['music', 'মিউজিক']]
+    audio: [['music', 'মিউজিক'], ['record', 'রেকর্ড']]
   };
-  const subFilter = { post: 'text', audio: 'record' };
+  const subFilter = { post: 'text', audio: 'music' };
   function postKind(d) {
     if (d.type === 'photo') return 'photo';
     if (d.type === 'voice') return 'record';     // সরাসরি রেকর্ড করা ভয়েস
@@ -3030,6 +3168,11 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 
   function handleBack() {
     if (suppressPops) { suppressPops = 0; return; }
+    if (dlConfirmOverlay.classList.contains('open')) {
+      closeDlConfirm(false);
+      rearmGuard();
+      return;
+    }
     if (photoViewer.classList.contains('open')) {
       closePhotoViewer();
       rearmGuard();
@@ -3197,7 +3340,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   document.addEventListener('touchmove', function (e) {
     if (!tracking || e.touches.length !== 1) return;
     var ov = e.target && e.target.closest ? e.target.closest('#composerModalOverlay, #sidebarDrawer, #vrBody') : null;
-    if (ov && ov.scrollHeight > ov.clientHeight) return;
+    if (ov && (ov.scrollHeight > ov.clientHeight || document.body.classList.contains('composerOpen'))) return;
     var y = e.touches[0].clientY;
     var scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
     var pullingDown = y > startY;
