@@ -100,6 +100,20 @@ input:checked + .slider:before{transform:translateX(20px)}
 .stMeta{font-size:11px;color:#9ca3af;margin-top:2px}
 .stDel{background:#262c36;border:1px solid #f87171;color:#f87171;border-radius:8px;padding:7px 11px;font-size:12px;cursor:pointer;flex-shrink:0}
 .stDel:disabled{opacity:.5}
+#cleanCard{margin-top:14px}
+#cleanScanBtn,#clDeleteAllBtn{background:var(--primary-color);color:#fff;border:none;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit}
+#cleanScanBtn:disabled,#clDeleteAllBtn:disabled{opacity:.55}
+#cleanStatus{font-size:12px;color:#9ca3af;margin-top:10px;min-height:14px;line-height:1.6}
+#cleanOverlay{display:none;position:fixed;inset:0;z-index:310;background:var(--bg-color);flex-direction:column}
+#cleanOverlay.open{display:flex}
+#clOvHeader{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--card-color);border-bottom:1px solid #262c36}
+#clOvBack{background:#262c36;border:1px solid #30363d;color:#fff;padding:7px 12px;border-radius:10px;font-size:13px;cursor:pointer}
+#clOvTitle{font-size:15px;font-weight:bold}
+#clOvSummary{padding:10px 16px;font-size:12px;color:#9ca3af;border-bottom:1px solid #1c222b;line-height:1.6}
+#clOvList{flex:1;overflow-y:auto;padding:0 16px 20px}
+#clOvFooter{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid #262c36;background:var(--card-color)}
+#clDeleteAllBtn{width:100%;background:#dc2626;padding:12px}
+.clKind{font-size:10px;color:#9ca3af;border:1px solid #30363d;border-radius:6px;padding:1px 6px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -200,6 +214,12 @@ input:checked + .slider:before{transform:translateX(20px)}
           <button class="stKind" data-kind="voice" type="button"><span class="kI">🎤</span><span class="kL">ভয়েস</span><span class="kC" id="kc-voice">-</span></button>
           <button class="stKind" data-kind="audio" type="button"><span class="kI">🎵</span><span class="kL">অডিও</span><span class="kC" id="kc-audio">-</span></button>
         </div>
+        <div class="card" id="cleanCard">
+          <h2>🧹 অপ্রয়োজনীয় ফাইল পরিষ্কার</h2>
+          <div class="noteTxt">পোস্ট ডিলিট বা পোস্ট ব্যর্থ হওয়ার পর যে ফটো/ভয়েস/অডিও স্টোরেজে পড়ে আছে (কোনো হোম বা প্রোফাইল পোস্টে আর ব্যবহার হচ্ছে না), শুধু সেগুলো খুঁজে দেখাবে। মেসেজের ফাইলে হাত দেবে না। ডিলিটের আগে তালিকা দেখে নিশ্চিত করতে পারবেন।</div>
+          <button id="cleanScanBtn" type="button">🔍 খুঁজে দেখুন</button>
+          <div id="cleanStatus"></div>
+        </div>
       </div>
     </main>
     </div>
@@ -216,6 +236,13 @@ input:checked + .slider:before{transform:translateX(20px)}
       </div>
       <div id="threadMessages"></div>
     </div>
+  </div>
+
+  <div id="cleanOverlay">
+    <div id="clOvHeader"><button id="clOvBack" type="button">← ফিরুন</button><div id="clOvTitle">🧹 অপ্রয়োজনীয় ফাইল</div></div>
+    <div id="clOvSummary"></div>
+    <div id="clOvList"></div>
+    <div id="clOvFooter"><button id="clDeleteAllBtn" type="button">🗑 সব ডিলিট করুন</button></div>
   </div>
 
   <div id="stOverlay">
@@ -637,6 +664,7 @@ input:checked + .slider:before{transform:translateX(20px)}
   document.getElementById('stLogout').addEventListener('click', async () => {
     try { const sb = await getSb(); await sb.auth.signOut(); } catch (e) {}
     stLoaded = false;
+    cleanResult = null; hideCleanUi(); setCleanStatus('');
     stMain.style.display = 'none';
     stLoginCard.style.display = 'block';
   });
@@ -687,6 +715,160 @@ input:checked + .slider:before{transform:translateX(20px)}
     }
   }
 
+
+  // ================= অপ্রয়োজনীয় ফাইল পরিষ্কার =================
+  // শুধু হোম/প্রোফাইল পোস্টের জায়গার ফাইল (posts/ ফোল্ডার) দেখা হয়; কোনো পোস্টের imageUrl/audioUrl-এ যার লিংক নেই এবং
+  // যেটা ১ ঘণ্টার চেয়ে পুরনো — শুধু সেটাই "অপ্রয়োজনীয়"। মেসেজের ফাইল কখনো ছোঁয়া হয় না।
+  const CLEAN_GRACE_MS = 60 * 60 * 1000;
+  let cleanResult = null, cleanBusy = false;
+  const cleanOverlay = document.getElementById('cleanOverlay');
+  const clOvSummary = document.getElementById('clOvSummary');
+  const clOvList = document.getElementById('clOvList');
+  const cleanStatus = document.getElementById('cleanStatus');
+  const cleanScanBtn = document.getElementById('cleanScanBtn');
+  const clDeleteAllBtn = document.getElementById('clDeleteAllBtn');
+
+  function isPostAreaPath(path) { return /(^|\/)posts\//.test(path); }
+  function refKeyFromUrl(url) {
+    if (!url) return null;
+    const m = String(url).split('?')[0].match(/\/object\/(?:public|sign|authenticated)\/([^/]+)\/(.+)$/);
+    if (!m) return null;
+    let p = m[2];
+    try { p = decodeURIComponent(p); } catch (e) {}
+    return m[1] + '/' + p;
+  }
+  function setCleanStatus(msg, color) { cleanStatus.style.color = color || '#9ca3af'; cleanStatus.textContent = msg; }
+
+  async function scanOrphans() {
+    if (cleanBusy) return;
+    cleanBusy = true; cleanScanBtn.disabled = true;
+    try {
+      setCleanStatus('ফাইলের সর্বশেষ তালিকা আনা হচ্ছে...');
+      const [p, v, au] = await Promise.all([collectFiles('photos'), collectFiles('voice'), collectFiles('audio')]);
+      stData.photos = p; stData.voice = v; stData.audio = au;
+      paintSummary();
+
+      setCleanStatus('সব পোস্ট পড়ে মিলিয়ে দেখা হচ্ছে...');
+      const snap = await getDocs(collection(db, 'posts'));
+      const refs = new Set();
+      let postCount = 0;
+      snap.forEach(d => {
+        postCount++;
+        const x = d.data() || {};
+        const k1 = refKeyFromUrl(x.imageUrl), k2 = refKeyFromUrl(x.audioUrl);
+        if (k1) refs.add(k1);
+        if (k2) refs.add(k2);
+      });
+      // নিরাপত্তা: পোস্টই পড়া না গেলে (০টি) কিছু মোছার প্রস্তাব দেওয়া হবে না
+      if (postCount === 0) {
+        setCleanStatus('⚠️ কোনো পোস্ট পাওয়া যায়নি — ভুলে সব ফাইল মুছে যাওয়া ঠেকাতে পরিষ্কার করা থামানো হলো।', '#f59e0b');
+        return;
+      }
+
+      const now = Date.now();
+      const orphans = [];
+      let recent = 0, inUse = 0;
+      Object.keys(stData).forEach(kind => {
+        stData[kind].forEach(f => {
+          if (!isPostAreaPath(f.path)) return;                       // মেসেজের ফাইল — ছোঁয়া হবে না
+          if (refs.has(f.bucket + '/' + f.path)) { inUse++; return; }
+          const t = new Date(f.created).getTime();
+          if (!t || now - t < CLEAN_GRACE_MS) { recent++; return; }    // নতুন বা তারিখ অজানা — নিরাপদে বাদ
+          orphans.push(Object.assign({ kind }, f));
+        });
+      });
+      orphans.sort((x, y) => (new Date(x.created).getTime() || 0) - (new Date(y.created).getTime() || 0));
+      cleanResult = { orphans, postCount, inUse, recent };
+
+      if (!orphans.length) {
+        setCleanStatus('✅ কোনো অপ্রয়োজনীয় ফাইল নেই। (' + postCount + 'টি পোস্ট মিলিয়ে দেখা হয়েছে, ' + inUse + 'টি ফাইল ব্যবহার হচ্ছে' + (recent ? ', ' + recent + 'টি একদম নতুন বলে বাদ' : '') + ')', '#22c55e');
+        return;
+      }
+      setCleanStatus('');
+      try { history.pushState({ p: 2, c: 1 }, '', location.href); } catch (e) {}
+      showCleanUi();
+    } catch (e) {
+      setCleanStatus('এরর: ' + (e && e.message ? e.message : e), '#f87171');
+    } finally { cleanBusy = false; cleanScanBtn.disabled = false; }
+  }
+
+  function renderClean() {
+    const list = cleanResult ? cleanResult.orphans : [];
+    const total = list.reduce((s, f) => s + f.size, 0);
+    clOvSummary.textContent = list.length + ' টি অপ্রয়োজনীয় ফাইল · মোট ' + fmtBytes(total) + ' খালি হবে · ' +
+      (cleanResult ? cleanResult.postCount + 'টি পোস্ট মিলিয়ে দেখা হয়েছে' : '');
+    clOvList.innerHTML = '';
+    clDeleteAllBtn.style.display = list.length ? 'block' : 'none';
+    if (!list.length) {
+      const e = document.createElement('div');
+      e.style.cssText = 'text-align:center;color:#6b7280;font-size:13px;padding:30px 0';
+      e.textContent = 'আর কোনো অপ্রয়োজনীয় ফাইল নেই';
+      clOvList.appendChild(e);
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    list.forEach((f, i) => {
+      const row = document.createElement('div'); row.className = 'stRow';
+      const no = document.createElement('span'); no.className = 'stNo'; no.textContent = (i + 1) + '.';
+      const info = document.createElement('div'); info.className = 'stInfo';
+      const nm = document.createElement('div'); nm.className = 'stName'; nm.textContent = f.name;
+      const tag = document.createElement('span'); tag.className = 'clKind'; tag.textContent = KINDS[f.kind].icon + ' ' + KINDS[f.kind].label;
+      nm.appendChild(tag);
+      const mt = document.createElement('div'); mt.className = 'stMeta'; mt.textContent = fmtBytes(f.size) + (f.created ? ' · ' + fmtDate(f.created) : '');
+      info.appendChild(nm); info.appendChild(mt);
+      row.appendChild(no); row.appendChild(info);
+      frag.appendChild(row);
+    });
+    clOvList.appendChild(frag);
+  }
+  function showCleanUi() { renderClean(); cleanOverlay.classList.add('open'); clOvList.scrollTop = 0; }
+  function hideCleanUi() { cleanOverlay.classList.remove('open'); }
+
+  async function deleteOrphans() {
+    if (!cleanResult || !cleanResult.orphans.length || cleanBusy) return;
+    const list = cleanResult.orphans.slice();
+    const total = list.reduce((s, f) => s + f.size, 0);
+    if (!confirm(list.length + ' টি অপ্রয়োজনীয় ফাইল (' + fmtBytes(total) + ') স্থায়ীভাবে মুছে ফেলবেন? এটা ফেরানো যাবে না।')) return;
+    cleanBusy = true; clDeleteAllBtn.disabled = true;
+    let done = 0;
+    try {
+      const sb = await getSb();
+      const byBucket = {};
+      list.forEach(f => { (byBucket[f.bucket] = byBucket[f.bucket] || []).push(f); });
+      for (const bucket of Object.keys(byBucket)) {
+        const files = byBucket[bucket];
+        for (let i = 0; i < files.length; i += 50) {
+          const chunk = files.slice(i, i + 50);
+          clDeleteAllBtn.textContent = 'মোছা হচ্ছে... ' + done + '/' + list.length;
+          const { data, error } = await sb.storage.from(bucket).remove(chunk.map(f => f.path));
+          if (error) throw error;
+          if (!data || !data.length) throw new Error('মোছা যায়নি — সুপাবেজে লগইন আছে কিনা দেখুন (লগআউট করে আবার ঢুকুন)।');
+          const names = new Set((data || []).map(x => x.name));
+          let removed = chunk.filter(f => names.has(f.path) || names.has(f.name));
+          if (!removed.length) removed = chunk.slice(0, data.length);
+          done += removed.length;
+          const gonePaths = new Set(removed.map(f => bucket + '/' + f.path));
+          cleanResult.orphans = cleanResult.orphans.filter(o => !gonePaths.has(o.bucket + '/' + o.path));
+        }
+      }
+      renderClean();
+      setCleanStatus('✅ ' + done + ' টি ফাইল মুছে ফেলা হয়েছে (' + fmtBytes(total) + ' খালি)।', '#22c55e');
+      loadStorage();
+    } catch (e) {
+      renderClean();
+      alert('এরর: ' + (e && e.message ? e.message : e) + '\n(' + done + ' টি মোছা হয়েছে)');
+    } finally {
+      cleanBusy = false; clDeleteAllBtn.disabled = false; clDeleteAllBtn.textContent = '🗑 সব ডিলিট করুন';
+      loadStorage();
+    }
+  }
+  cleanScanBtn.addEventListener('click', scanOrphans);
+  clDeleteAllBtn.addEventListener('click', deleteOrphans);
+  document.getElementById('clOvBack').addEventListener('click', () => {
+    if (cleanBusy) return;
+    if (history.state && history.state.c) history.back(); else hideCleanUi();
+  });
+
   // ---------- পেজ বদল + ব্যাক বাটন (ইতিহাস) ----------
   function showListUi(kind) { curList = kind; renderList(kind); stOverlay.classList.add('open'); stOvList.scrollTop = 0; }
   function hideListUi() { curList = null; stOverlay.classList.remove('open'); }
@@ -704,6 +886,7 @@ input:checked + .slider:before{transform:translateX(20px)}
     const p = (st && st.p) || 1, l = (st && st.l) || null;
     setPage(p === 2 ? 2 : 1);
     if (p === 2 && l && KINDS[l]) showListUi(l); else hideListUi();
+    if (p === 2 && st && st.c && cleanResult) showCleanUi(); else hideCleanUi();
   }
   function navPage(n) {
     if (n === curPage) return;
@@ -731,12 +914,12 @@ input:checked + .slider:before{transform:translateX(20px)}
     if (e.touches.length !== 1) { swOk = false; return; }
     const t = e.touches[0]; swX = t.clientX; swY = t.clientY;
     const tg = e.target;
-    swOk = !(tg.closest && tg.closest('input,textarea,select,#threadOverlay,#stOverlay'));
+    swOk = !(tg.closest && tg.closest('input,textarea,select,#threadOverlay,#stOverlay,#cleanOverlay'));
   }, { passive: true });
   document.addEventListener('touchend', e => {
     if (!swOk) return; swOk = false;
     if (appScreen.style.display !== 'block') return;
-    if (threadOverlay.classList.contains('open') || stOverlay.classList.contains('open')) return;
+    if (threadOverlay.classList.contains('open') || stOverlay.classList.contains('open') || cleanOverlay.classList.contains('open')) return;
     const t = e.changedTouches[0];
     const dx = t.clientX - swX, dy = t.clientY - swY;
     if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.8) navPage(dx < 0 ? 2 : 1);
