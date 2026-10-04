@@ -161,26 +161,54 @@ html[data-theme="light"]{--ash-btn:#c2c6ca}
 .postPhoto{display:block;width:100%;height:auto;max-height:75vh;object-fit:cover;margin:0;border-radius:0;cursor:pointer}
 .mpGoneBox{padding:22px 12px;text-align:center;font-size:13px}
 
-/* ===== অডিও প্লেয়ার (ভয়েস ও অডিও পোস্ট) ===== */
-.mp{display:flex;align-items:center;gap:12px;background:var(--ash-bg);border:1px solid var(--line);border-radius:16px;padding:12px;margin:6px 0 8px;position:relative}
-.mpBtn{width:48px;height:48px;border-radius:50%;border:none;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0;position:relative;-webkit-tap-highlight-color:transparent;transition:transform .12s ease}
-.mpBtn:active{transform:scale(.92)}
-.mpBtn svg{width:22px;height:22px;fill:currentColor}
-.mp.playing .mpBtn::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid #16a34a;animation:mpPulse 1.4s ease-out infinite;pointer-events:none}
-@keyframes mpPulse{0%{transform:scale(.92);opacity:.75}100%{transform:scale(1.35);opacity:0}}
-.mpMain{flex:1;min-width:0}
-.mpTop{display:flex;align-items:center;gap:6px;margin-bottom:6px}
-.mpTitle{flex:1;min-width:0;font-size:13px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mpSpeed,.mpDl{background:var(--ash-btn);color:var(--text-color);border:none;border-radius:10px;font-size:11px;font-weight:bold;padding:4px 9px;cursor:pointer;flex-shrink:0;font-family:inherit}
-.mpWave{display:flex;align-items:center;gap:2px;height:36px;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}
-.mpWave i{display:block;flex:1;min-width:2px;height:var(--h);border-radius:2px;background:var(--ash-btn);transition:background .15s ease}
-.mpWave i.on{background:#16a34a}
-.mp.playing .mpWave i.cur{animation:mpBeat .45s ease-in-out infinite alternate}
-@keyframes mpBeat{from{transform:scaleY(1)}to{transform:scaleY(1.45)}}
-.mpTime{display:flex;justify-content:space-between;font-size:11px;margin-top:4px;font-variant-numeric:tabular-nums;opacity:.85}
-.mpGone{display:none;flex:1;text-align:center;font-size:13px;padding:6px 0}
-.mp.broken .mpMain,.mp.broken .mpBtn{display:none}
-.mp.broken .mpGone{display:block}
+/* ===== মিউজিক প্লেয়ার (বর্গাকার — ভয়েস ও অডিও পোস্ট) ===== */
+.mp{position:relative;width:100%;max-width:380px;aspect-ratio:1/1;margin:8px auto 10px;border-radius:22px;background:linear-gradient(180deg,#0a0e19 0%,#0b1020 100%);color:#fff;display:flex;flex-direction:column;padding:14px 14px 10px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);-webkit-user-select:none;user-select:none}
+.mpViz{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.mpGlow{position:absolute;inset:-12% -20%;background:radial-gradient(38% 55% at 20% 50%,rgba(255,70,50,.42),transparent 70%),radial-gradient(38% 55% at 80% 50%,rgba(40,150,255,.42),transparent 70%),radial-gradient(34% 45% at 50% 50%,rgba(220,60,240,.30),transparent 70%);opacity:.45;transition:opacity .5s ease;filter:blur(8px);pointer-events:none}
+.mp.playing .mpGlow{opacity:1}
+.mpBars{position:relative;display:flex;align-items:center;justify-content:space-between;gap:3px;width:100%;height:100%}
+.mpBars i{display:block;flex:1;max-width:7px;height:var(--h);border-radius:4px;background:var(--c);box-shadow:0 0 9px var(--c);transform-origin:center;animation:mpViz var(--t) ease-in-out infinite alternate;animation-delay:var(--d);animation-play-state:paused;will-change:transform}
+.mp.playing .mpBars i{animation-play-state:running}
+@keyframes mpViz{from{transform:scaleY(.2)}to{transform:scaleY(1)}}
+.mpInfo{text-align:center;margin-top:6px;min-width:0}
+.mpTitle{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpSub{font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.mpSeek{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:11px;font-variant-numeric:tabular-nums}
+.mpSeek span{min-width:32px;opacity:.9}
+.mpSeek .mpTot{text-align:right}
+.mpLine{position:relative;flex:1;height:26px;cursor:pointer;touch-action:none}
+.mpLine::before{content:'';position:absolute;left:0;right:0;top:50%;height:3px;margin-top:-1.5px;border-radius:2px;background:rgba(255,255,255,.22)}
+.mpFill{position:absolute;left:0;top:50%;height:3px;margin-top:-1.5px;border-radius:2px;background:#fff;width:0}
+.mpThumb{position:absolute;top:50%;left:0;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#fff;box-shadow:0 0 10px 3px rgba(80,200,255,.75)}
+.mpCtl{display:flex;align-items:center;justify-content:space-between;margin-top:2px}
+.mpCtl button{background:none;border:none;color:#fff;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:50%;-webkit-tap-highlight-color:transparent;font-family:inherit}
+.mpCtl button:active{background:rgba(255,255,255,.14)}
+.mpCtl svg{width:24px;height:24px}
+.mpSpeed{font-size:13px;font-weight:bold}
+.mpLoop svg{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.65}
+.mpLoop.on svg{opacity:1;stroke:#3fe0ff}
+.mpLoop.on{color:#3fe0ff}
+.mpCtl .mpBtn{width:58px;height:58px;border:2px solid #fff;background:transparent;position:relative}
+.mpCtl .mpBtn svg{width:26px;height:26px;fill:#fff}
+.mp.playing .mpBtn::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(63,224,255,.7);animation:mpPulse 1.5s ease-out infinite;pointer-events:none}
+@keyframes mpPulse{0%{transform:scale(.9);opacity:.8}100%{transform:scale(1.3);opacity:0}}
+.mpGone{display:none;flex:1;align-items:center;justify-content:center;text-align:center;font-size:14px}
+.mp.broken > :not(.mpGone){display:none}
+.mp.broken .mpGone{display:flex}
+@media (prefers-reduced-motion:reduce){.mpBars i,.mp.playing .mpBtn::after{animation:none}}
+
+/* ===== সাব-অপশন: পোস্ট (টেক্সট|পোস্টার|ব্লগ) ও অডিও (রেকর্ড|মিউজিক) ===== */
+#subTabs{display:none;align-items:center;gap:8px;margin:-4px 0 16px}
+#subBtns{display:flex;gap:8px;flex:1;min-width:0}
+#subBtns button{flex:1;background:var(--surface);color:var(--text-muted);border:none;padding:9px 4px;border-radius:14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:inherit;box-shadow:inset 0 0 0 1px var(--line);-webkit-tap-highlight-color:transparent}
+#subBtns button.active{background:var(--primary-color);color:var(--bg-color)}
+body.commentFocus #subTabs,body.aboutUsOpen #subTabs{display:none!important}
+
+/* ===== টেক্সট সিলেক্ট / কপি মেনু বন্ধ (ইনপুট বক্স বাদে) ===== */
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img{-webkit-user-drag:none;-webkit-touch-callout:none}
+#postToast{z-index:950}
 
 /* ===== ভয়েস রেকর্ড পেজ ===== */
 #voicePage{display:none;position:fixed;inset:0;z-index:260;background:var(--bg-color);color:var(--text-color);flex-direction:column}
@@ -309,6 +337,10 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
         <button type="button" data-filter="post">পোস্ট</button>
         <button type="button" data-filter="photo">ফটো</button>
         <button type="button" data-filter="audio">অডিও</button>
+      </div>
+      <div id="subTabs">
+        <button type="button" class="modalBackBtn" id="subBackBtn" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+        <div id="subBtns"></div>
       </div>
 
       <div id="composerModalOverlay">
@@ -612,11 +644,11 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     composerModalOverlay.classList.remove('open');
     document.body.classList.remove('composerOpen');
   }
-  function showPostToast(msg) {
+  function showPostToast(msg, ms) {
     postToast.textContent = msg;
     postToast.style.display = 'block';
     clearTimeout(postToastTimer);
-    postToastTimer = setTimeout(() => { postToast.style.display = 'none'; }, 2200);
+    if (ms !== 0) postToastTimer = setTimeout(() => { postToast.style.display = 'none'; }, ms || 2200);
   }
   function requireLogin() {
     if (currentUser) return true;
@@ -1110,7 +1142,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     t = Math.max(0, Math.round(t || 0));
     return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
   }
-  function fmtMB(b) { return b < 1048576 ? Math.max(1, Math.round(b / 1024)) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+  function fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
   function escAttr(str) { return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
   function paintMediaHints() {
     const set = (k, v) => document.querySelectorAll('.cmHint[data-hint="' + k + '"]').forEach(el => { el.textContent = v; });
@@ -1132,15 +1164,46 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     paintMediaHints();
   }
 
-  function downloadMedia(url, name) {
-    if (!url) return;
+  // ডাউনলোড: শুরুতে "ডাউনলোড হচ্ছে...", শেষে "ডাউনলোড সম্পূর্ণ হয়েছে" — স্ক্রিনে ছোট বার্তা (টোস্ট)
+  let dlBusy = false;
+  function saveBlobAs(blob, name) {
+    const objUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url + (url.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(name || 'file');
-    a.download = name || 'file';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    a.href = objUrl; a.download = name; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => { try { URL.revokeObjectURL(objUrl); } catch (e) {} }, 20000);
+  }
+  async function downloadMedia(url, name) {
+    if (!url || dlBusy) return;
+    dlBusy = true;
+    name = name || ('file-' + Date.now());
+    showPostToast('⬇️ ডাউনলোড হচ্ছে...', 0);
+    try {
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      saveBlobAs(blob, name);
+      showPostToast('✅ ডাউনলোড সম্পূর্ণ হয়েছে', 2500);
+    } catch (e) {
+      // সরাসরি ফেচ না হলে ব্রাউজারের নিজস্ব ডাউনলোডে ছেড়ে দেওয়া হয়
+      try {
+        const a = document.createElement('a');
+        a.href = url + (url.includes('?') ? '&' : '?') + 'download=' + encodeURIComponent(name);
+        a.download = name; a.rel = 'noopener';
+        document.body.appendChild(a); a.click(); a.remove();
+        showPostToast('⬇️ ডাউনলোড শুরু হয়েছে', 2500);
+      } catch (e2) { showPostToast('❌ ডাউনলোড করা যায়নি', 2500); }
+    } finally { dlBusy = false; }
+  }
+  function isMediaPost(d) { return d.type === 'photo' || d.type === 'voice' || d.type === 'audio'; }
+  function mediaUrlOf(d) { return d.type === 'photo' ? d.imageUrl : d.audioUrl; }
+  // ফটো/ভয়েস/অডিও পোস্টে নিচের সারির "টেক্সট কপি" বাটনের জায়গায় "ডাউনলোড"
+  function bottomOrderFor(d) {
+    const o = (buttonOrder.bottom || []).slice();
+    if (!isMediaPost(d)) return o;
+    const i = o.indexOf('copyText');
+    if (i >= 0) o[i] = 'download'; else o.push('download');
+    return o;
   }
 
   async function compressImage(file) {
@@ -1259,38 +1322,52 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     return { type: 'audio', audioUrl, duration: a.duration || 0, fileName: a.name };
   }
 
-  // ---------- প্রফেশনাল অডিও প্লেয়ার (ভয়েস ও অডিও — একসাথে একটাই বাজে) ----------
+  // ---------- মিউজিক প্লেয়ার (বর্গাকার; চলার সময় রঙিন স্পেকট্রাম ঝিলমিল করে, থামালে থেমে যায়) ----------
   const MP_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
   const MP_PAUSE = '<svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>';
-  const MP_BARS = 40;
+  const MP_BACK10 = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor">10</text></svg>';
+  const MP_FWD10 = '<svg viewBox="0 0 24 24"><path fill="currentColor" transform="translate(24,0) scale(-1,1)" d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor">10</text></svg>';
+  const MP_LOOP = '<svg viewBox="0 0 24 24"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/></svg>';
+  const MP_BARS = 34;
   const MP_RATES = [1, 1.5, 2];
+  const MP_STOPS = [[255, 90, 60], [255, 61, 119], [214, 61, 240], [106, 92, 255], [47, 184, 255], [63, 240, 255]];
   let mpAudio = null, mpUrl = null, mpUi = null, mpRate = 1;
   function mpRateLabel() { return mpRate + 'x'; }
-  function mpHeights(seedStr, n) {
+  function mpColor(t) {
+    const p = t * (MP_STOPS.length - 1), i = Math.min(MP_STOPS.length - 2, Math.floor(p)), f = p - i;
+    const a = MP_STOPS[i], b = MP_STOPS[i + 1];
+    return 'rgb(' + a.map((v, k) => Math.round(v + (b[k] - v) * f)).join(',') + ')';
+  }
+  function mpBarsHtml(seedStr) {
     let h = 2166136261;
     for (let i = 0; i < seedStr.length; i++) { h ^= seedStr.charCodeAt(i); h = Math.imul(h, 16777619); }
-    let s = h >>> 0, prev = 50;
-    const out = [];
-    for (let i = 0; i < n; i++) {
-      s = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-      const r = (s >>> 8) / 16777216;
-      const v = Math.max(18, Math.min(100, 28 + r * 72));
-      prev = Math.round(prev * 0.35 + v * 0.65);
-      out.push(prev);
+    let s = h >>> 0;
+    const rnd = () => { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return (s >>> 8) / 16777216; };
+    let out = '';
+    for (let i = 0; i < MP_BARS; i++) {
+      const mid = 1 - Math.abs(i - (MP_BARS - 1) / 2) / ((MP_BARS - 1) / 2);     // মাঝের বার একটু উঁচু
+      const height = Math.round(34 + (0.45 * mid + 0.55 * rnd()) * 66);
+      const dur = (0.42 + rnd() * 0.7).toFixed(2);
+      const delay = (-(rnd() * dur)).toFixed(2);
+      out += '<i style="--h:' + height + '%;--c:' + mpColor(i / (MP_BARS - 1)) + ';--t:' + dur + 's;--d:' + delay + 's"></i>';
     }
     return out;
   }
   function mediaPlayerHtml(o) {
     const dur = Math.max(0, Number(o.dur) || 0);
-    const bars = mpHeights(String(o.url), MP_BARS).map(h => '<i style="--h:' + h + '%"></i>').join('');
-    return '<div class="mp" data-url="' + escAttr(o.url) + '" data-dur="' + dur + '" data-name="' + escAttr(o.name || '') + '">' +
-      '<button class="mpBtn" type="button" aria-label="চালান">' + MP_PLAY + '</button>' +
-      '<div class="mpMain">' +
-        '<div class="mpTop"><span class="mpTitle">' + escAttr(o.title || '') + '</span>' +
+    return '<div class="mp" data-url="' + escAttr(o.url) + '" data-dur="' + dur + '">' +
+      '<div class="mpViz"><div class="mpGlow"></div><div class="mpBars">' + mpBarsHtml(String(o.url)) + '</div></div>' +
+      '<div class="mpInfo"><div class="mpTitle">' + escAttr(o.title || '') + '</div>' +
+        (o.sub ? '<div class="mpSub">' + escAttr(o.sub) + '</div>' : '') + '</div>' +
+      '<div class="mpSeek"><span class="mpCur">0:00</span>' +
+        '<div class="mpLine"><div class="mpFill"></div><div class="mpThumb"></div></div>' +
+        '<span class="mpTot">' + fmtSec(dur) + '</span></div>' +
+      '<div class="mpCtl">' +
         '<button class="mpSpeed" type="button" aria-label="গতি">1x</button>' +
-        (o.noDl ? '' : '<button class="mpDl" type="button" aria-label="ডাউনলোড">⬇</button>') + '</div>' +
-        '<div class="mpWave">' + bars + '</div>' +
-        '<div class="mpTime"><span class="mpCur">0:00</span><span class="mpTot">' + fmtSec(dur) + '</span></div>' +
+        '<button class="mpSkip" data-skip="-10" type="button" aria-label="১০ সেকেন্ড পিছনে">' + MP_BACK10 + '</button>' +
+        '<button class="mpBtn" type="button" aria-label="চালান">' + MP_PLAY + '</button>' +
+        '<button class="mpSkip" data-skip="10" type="button" aria-label="১০ সেকেন্ড সামনে">' + MP_FWD10 + '</button>' +
+        '<button class="mpLoop" type="button" aria-label="বারবার চালান">' + MP_LOOP + '</button>' +
       '</div>' +
       '<div class="mpGone">⚠️ ফাইলটি মুছে ফেলা হয়েছে</div></div>';
   }
@@ -1304,14 +1381,11 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     ui.btn.setAttribute('aria-label', playing ? 'থামান' : 'চালান');
     ui.root.classList.toggle('playing', playing);
     const p = total ? Math.min(1, curT / total) : 0;
-    const n = ui.bars.length;
-    const k = Math.floor(p * n);
-    for (let i = 0; i < n; i++) {
-      ui.bars[i].classList.toggle('on', i < k);
-      ui.bars[i].classList.toggle('cur', playing && i === Math.min(k, n - 1));
-    }
+    ui.fill.style.width = (p * 100) + '%';
+    ui.thumb.style.left = (p * 100) + '%';
     ui.cur.textContent = fmtSec(curT);
     ui.tot.textContent = fmtSec(total);
+    ui.loopBtn.classList.toggle('on', !!ui.loop);
   }
   function mpStart(ui, ratio) {
     const old = mpUi;
@@ -1319,6 +1393,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     const a = new Audio(ui.url);
     a.preload = 'auto';
     a.playbackRate = mpRate;
+    a.loop = !!ui.loop;
     mpAudio = a; mpUrl = ui.url; mpUi = ui;
     const repaint = () => { if (mpAudio === a && mpUi) mpPaint(mpUi); };
     a.addEventListener('timeupdate', repaint);
@@ -1348,14 +1423,14 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     if (!root || root._mpBound) return;
     root._mpBound = true;
     const ui = {
-      root, url: root.dataset.url, dur: Number(root.dataset.dur) || 0,
-      btn: root.querySelector('.mpBtn'), wave: root.querySelector('.mpWave'),
-      bars: Array.prototype.slice.call(root.querySelectorAll('.mpWave i')),
+      root, url: root.dataset.url, dur: Number(root.dataset.dur) || 0, loop: false,
+      btn: root.querySelector('.mpBtn'), line: root.querySelector('.mpLine'),
+      fill: root.querySelector('.mpFill'), thumb: root.querySelector('.mpThumb'),
       cur: root.querySelector('.mpCur'), tot: root.querySelector('.mpTot'),
-      speed: root.querySelector('.mpSpeed')
+      speed: root.querySelector('.mpSpeed'), loopBtn: root.querySelector('.mpLoop')
     };
     ui.speed.textContent = mpRateLabel();
-    if (mpAudio && mpUrl === ui.url) mpUi = ui;     // ফিড রিফ্রেশ হলেও চালু প্লেয়ার ঠিক থাকে
+    if (mpAudio && mpUrl === ui.url) { mpUi = ui; ui.loop = !!mpAudio.loop; }     // ফিড রিফ্রেশ হলেও চালু প্লেয়ার ঠিক থাকে
     mpPaint(ui);
 
     ui.btn.addEventListener('click', ev => {
@@ -1368,9 +1443,10 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
       } else mpStart(ui, 0);
     });
 
+    // সোজা, সমান লাইনে টেনে বা ট্যাপ করে সময় বদলানো
     let dragging = false;
     const ratioOf = ev => {
-      const r = ui.wave.getBoundingClientRect();
+      const r = ui.line.getBoundingClientRect();
       return r.width ? Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) : 0;
     };
     const seekTo = (ratio, allowPlay) => {
@@ -1382,25 +1458,43 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
       if (allowPlay && mpAudio.paused) mpAudio.play().catch(() => {});
       mpPaint(ui);
     };
-    ui.wave.addEventListener('pointerdown', ev => {
+    ui.line.addEventListener('pointerdown', ev => {
       ev.stopPropagation();
       dragging = true;
-      try { ui.wave.setPointerCapture(ev.pointerId); } catch (e) {}
+      try { ui.line.setPointerCapture(ev.pointerId); } catch (e) {}
       seekTo(ratioOf(ev), true);
     });
-    ui.wave.addEventListener('pointermove', ev => { if (dragging) seekTo(ratioOf(ev), false); });
+    ui.line.addEventListener('pointermove', ev => { if (dragging) seekTo(ratioOf(ev), false); });
     const endDrag = () => { dragging = false; };
-    ui.wave.addEventListener('pointerup', endDrag);
-    ui.wave.addEventListener('pointercancel', endDrag);
+    ui.line.addEventListener('pointerup', endDrag);
+    ui.line.addEventListener('pointercancel', endDrag);
 
+    root.querySelectorAll('.mpSkip').forEach(sb => sb.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (root.classList.contains('broken')) return;
+      const delta = Number(sb.dataset.skip) || 0;
+      const total = ui.dur || (mpAudio && mpUrl === ui.url && isFinite(mpAudio.duration) ? mpAudio.duration : 0);
+      if (mpAudio && mpUrl === ui.url) {
+        mpUi = ui;
+        const t = total || Infinity;
+        try { mpAudio.currentTime = Math.max(0, Math.min(t, mpAudio.currentTime + delta)); } catch (e) {}
+        mpPaint(ui);
+      } else if (total) {
+        mpStart(ui, Math.max(0, Math.min(1, delta / total)));
+      } else mpStart(ui, 0);
+    }));
     ui.speed.addEventListener('click', ev => {
       ev.stopPropagation();
       mpRate = MP_RATES[(MP_RATES.indexOf(mpRate) + 1) % MP_RATES.length];
       if (mpAudio) mpAudio.playbackRate = mpRate;
       document.querySelectorAll('.mpSpeed').forEach(b => { b.textContent = mpRateLabel(); });
     });
-    const dl = root.querySelector('.mpDl');
-    if (dl) dl.addEventListener('click', ev => { ev.stopPropagation(); downloadMedia(ui.url, root.dataset.name); });
+    ui.loopBtn.addEventListener('click', ev => {
+      ev.stopPropagation();
+      ui.loop = !ui.loop;
+      if (mpAudio && mpUrl === ui.url) mpAudio.loop = ui.loop;
+      mpPaint(ui);
+    });
   }
 
   // ---------- পোস্ট কার্ডে ফটো / ভয়েস / অডিও ----------
@@ -1410,8 +1504,9 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     }
     if ((d.type === 'voice' || d.type === 'audio') && d.audioUrl) {
       return mediaPlayerHtml({
-        url: d.audioUrl, dur: d.duration, name: d.fileName,
-        title: d.type === 'voice' ? '🎤 ভয়েস মেসেজ' : '🎵 ' + (d.fileName || 'অডিও')
+        url: d.audioUrl, dur: d.duration,
+        title: d.type === 'voice' ? '🎤 ভয়েস মেসেজ' : '🎵 ' + ((d.fileName || 'অডিও').replace(/\.[A-Za-z0-9]{2,5}$/, '')),
+        sub: d.authorName || ''
       });
     }
     return '';
@@ -1600,7 +1695,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
       if (duration < 1 || !blob.size) { vrMsg.textContent = 'রেকর্ডিং খুব ছোট হয়েছে — আবার চেষ্টা করুন।'; vrSetState('idle'); return; }
       const url = URL.createObjectURL(blob);
       vrDone = { blob, duration, url, mime: r.mime };
-      vrReview.innerHTML = mediaPlayerHtml({ url, dur: duration, title: '🎤 আপনার ভয়েস', noDl: true });
+      vrReview.innerHTML = mediaPlayerHtml({ url, dur: duration, title: '🎤 আপনার ভয়েস', sub: 'শুনে দেখুন' });
       bindMediaPlayer(vrReview.querySelector('.mp'));
       vrTimer.textContent = fmtSec(duration);
       vrSetState('done');
@@ -1668,6 +1763,15 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   // শুরুর অবস্থা
   syncMediaUi();
   paintMediaHints();
+
+  // ---------- চেপে ধরলে টেক্সট সিলেক্ট / কপি-সব-সিলেক্ট মেনু আসবে না (লেখার বক্স বাদে) ----------
+  const isTextField = el => !!(el && el.closest && el.closest('input, textarea, [contenteditable="true"]'));
+  document.addEventListener('selectstart', e => {
+    const t = e.target && (e.target.nodeType === 1 ? e.target : e.target.parentElement);
+    if (!isTextField(t)) e.preventDefault();
+  });
+  document.addEventListener('contextmenu', e => { if (!isTextField(e.target)) e.preventDefault(); });
+  document.addEventListener('dragstart', e => { if (e.target && e.target.tagName === 'IMG') e.preventDefault(); });
 
 
   function timeAgo(ts) {
@@ -1793,6 +1897,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 
   async function goToPost(postId) {
     if (!postId) return;
+    if (activeFilter !== 'all') setFilter('all');
     try {
       if (!allLoadedPosts.some(p => p.id === postId)) {
         const snap = await getDoc(doc(db, "posts", postId));
@@ -1957,18 +2062,64 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
   }
 
   let activeFilter = 'all';
+  // ফিল্টার: সবগুলো | পোস্ট (টেক্সট|পোস্টার|ব্লগ) | ফটো | অডিও (রেকর্ড|মিউজিক)
+  const KIND_GROUP = { text: 'post', poster: 'post', blog: 'post', photo: 'photo', record: 'audio', music: 'audio' };
+  const SUB_DEFS = {
+    post:  [['text', 'টেক্সট'], ['poster', 'পোস্টার'], ['blog', 'ব্লগ']],
+    audio: [['record', 'রেকর্ড'], ['music', 'মিউজিক']]
+  };
+  const subFilter = { post: 'text', audio: 'record' };
   function postKind(d) {
     if (d.type === 'photo') return 'photo';
-    if (d.type === 'voice' || d.type === 'audio') return 'audio';
-    return 'post';   // টেক্সট + পোস্টার + ব্লগ
+    if (d.type === 'voice') return 'record';     // সরাসরি রেকর্ড করা ভয়েস
+    if (d.type === 'audio') return 'music';      // ফোন থেকে আপলোড করা অডিও
+    if (d.type === 'poster') return 'poster';
+    if (d.type === 'blog') return 'blog';
+    return 'text';
   }
+  function kindMatches(k) {
+    if (activeFilter === 'all') return true;
+    if (KIND_GROUP[k] !== activeFilter) return false;
+    return !SUB_DEFS[activeFilter] || k === subFilter[activeFilter];
+  }
+  const subTabsEl = document.getElementById('subTabs');
+  const subBtnsEl = document.getElementById('subBtns');
+  function buildSubTabs() {
+    const defs = SUB_DEFS[activeFilter];
+    if (!defs) { subTabsEl.style.display = 'none'; subBtnsEl.innerHTML = ''; return; }
+    subTabsEl.style.display = 'flex';
+    subBtnsEl.innerHTML = '';
+    defs.forEach(([k, label]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.dataset.sub = k;
+      if (subFilter[activeFilter] === k) b.classList.add('active');
+      b.addEventListener('click', () => {
+        subFilter[activeFilter] = k;
+        subBtnsEl.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+        renderPosts();
+      });
+      subBtnsEl.appendChild(b);
+    });
+  }
+  function setFilter(f) {
+    const wasAll = activeFilter === 'all';
+    activeFilter = f;
+    document.querySelectorAll('#filterTabs button').forEach(b => b.classList.toggle('active', b.getAttribute('data-filter') === f));
+    buildSubTabs();
+    if (wasAll && f !== 'all') rearmGuard();     // ফোনের ব্যাক চাপলে "সবগুলো"-তে ফিরবে
+    renderPosts();
+  }
+  document.getElementById('subBackBtn').addEventListener('click', () => setFilter('all'));
+
   let autoLoadingMore = false;
   function renderPosts() {
     const searchTerm = searchBar.value.trim().toLowerCase();
     postsList.innerHTML = '';
 
     const shown = allLoadedPosts
-      .filter(p => activeFilter === 'all' || postKind(p.data) === activeFilter)
+      .filter(p => kindMatches(postKind(p.data)))
       .filter(p => !searchTerm || (p.data.text || '').toLowerCase().includes(searchTerm));
     shown.forEach((p, i) => {
       postsList.appendChild(buildPostCard(p.id, p.data));
@@ -1989,11 +2140,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
     }
   }
   document.querySelectorAll('#filterTabs button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      activeFilter = btn.getAttribute('data-filter');
-      document.querySelectorAll('#filterTabs button').forEach(b => b.classList.toggle('active', b === btn));
-      renderPosts();
-    });
+    btn.addEventListener('click', () => setFilter(btn.getAttribute('data-filter')));
   });
 
 
@@ -2378,6 +2525,15 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
         });
         return b;
       },
+      download: () => {
+        const url = mediaUrlOf(d);
+        if (!url) return null;
+        const b = document.createElement('button');
+        b.className = 'downloadBtn';
+        b.textContent = '⬇️ ডাউনলোড';
+        b.addEventListener('click', () => downloadMedia(url, d.fileName));
+        return b;
+      },
       copyLink: () => {
         const b = document.createElement('button');
         b.className = 'copyLinkBtn';
@@ -2473,7 +2629,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
       });
     }
 
-    placeButtons(buttonOrder.bottom, bottomContainer);
+    placeButtons(bottomOrderFor(d), bottomContainer);
     placeButtons(buttonOrder.menu, menuContainer);
 
     menuBtn0.addEventListener('click', (e) => {
@@ -2962,6 +3118,12 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
       const wrapCard = wrap.closest('.postCard');
       if (wrapCard && wrapCard._clearReplyTarget) wrapCard._clearReplyTarget();
       exitCommentFocus();
+      rearmGuard();
+      return;
+    }
+
+    if (activeFilter !== 'all') {
+      setFilter('all');
       rearmGuard();
       return;
     }
