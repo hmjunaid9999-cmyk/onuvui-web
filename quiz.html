@@ -14,6 +14,7 @@
     <div id="globalGadgetBox"></div>
     <button id="sideMenuBtn" onclick="window.openSideMenu()" style="display:none">☰</button>
     <span id="headerTitle">🧠 কুইজ</span>
+    <a href="notifications.html" class="onuBell abs" id="onuBell" aria-label="নোটিফিকেশন" title="নোটিফিকেশন"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="onuBadge"></span></a>
   </header>
   <div class="noticeBar"><span id="noticeText">লোড হচ্ছে...</span></div>
   <div class="topBannerAdBox" id="topBannerAd"></div>
@@ -671,6 +672,7 @@ async function finishQuestion(isCorrect) {
         questionId: activeQuestion.id,
         score: isCorrect ? 1 : 0, total: 1, coinsEarned: coinsToAward, createdAt: serverTimestamp()
       });
+      try { window.OnuNotify && window.OnuNotify.quizReward(coinsToAward); } catch (_) {}
     } catch (e) {}
   }
 
@@ -792,5 +794,6 @@ window.addEventListener('popstate', handleBack);
   }, true);
 })();
 </script>
+<script type="module" src="notify.js"></script>
 </body>
 </html>

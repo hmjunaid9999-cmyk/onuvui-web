@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>নোটিফিকেশন অ্যাডমিন প্যানেল — Onuvuti</title>
+<script>
+try { document.documentElement.setAttribute('data-theme', localStorage.getItem('onuvutiTheme') === 'light' ? 'light' : 'dark'); } catch (e) {}
+</script>
+<style>
+:root{--bg-color:#000;--card-color:#000;--text-color:#fff;--line:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);color-scheme:dark}
+[data-theme="light"]{color-scheme:light;--bg-color:#fff;--card-color:#fff;--text-color:#000;--line:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg-color);color:var(--text-color);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali","Kalpurush",sans-serif}
+body{min-height:100vh;min-height:100dvh}
+button,input,select,textarea{font-family:inherit;color:inherit;font-size:14px}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px;background:var(--card-color);border-bottom:1px solid var(--line)}
+header h1{flex:1;font-size:16px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hBtn{width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid var(--line);color:var(--text-color);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex:0 0 auto}
+.hBtn:active{background:var(--surface-active)}
+.hSpacer{width:36px;flex:0 0 auto}
+main{max-width:760px;margin:0 auto;padding-bottom:50px}
+.view{display:none}.view.active{display:block}
+.secBar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.secBack{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:18px;padding:7px 14px 7px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.secBack:active{background:var(--surface-active)}
+.secTitle{font-size:15px;font-weight:700}
+.pad{padding:14px}
+.btn{background:transparent;border:1px solid var(--text-color);border-radius:18px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer}
+.btn:active{background:var(--surface-active)}
+.btn.fill{background:var(--text-color);color:var(--bg-color)}
+.btn:disabled{opacity:.4}
+.btn.sm{padding:5px 11px;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:16px 14px;border:1px solid var(--line);border-radius:14px;background:transparent;cursor:pointer;text-align:left;position:relative}
+.tile:active{background:var(--surface-active)}
+.tile .ti{font-size:24px}.tile .tn{font-size:14px;font-weight:700}.tile .td{font-size:11.5px;opacity:.7;line-height:1.4}
+.tile .bd{position:absolute;top:10px;right:10px;min-width:20px;height:20px;border-radius:10px;padding:0 6px;background:var(--text-color);color:var(--bg-color);font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px}
+.stat b{font-size:24px;display:block}.stat span{font-size:12px;opacity:.75}
+label.f{display:block;font-size:12.5px;font-weight:600;margin:12px 0 5px}
+input[type=text],input[type=number],select,textarea{width:100%;background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--text-color)}
+select option{background:var(--bg-color);color:var(--text-color)}
+textarea{min-height:90px;resize:vertical}
+.hint{font-size:11.5px;opacity:.65;margin-top:4px;line-height:1.5}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1}
+.sub{padding:14px 14px 6px;font-size:12.5px;font-weight:700;opacity:.8;border-top:1px solid var(--line)}
+.tcard{padding:12px 14px;border-bottom:1px solid var(--line)}
+.tcard .tt{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tcard .tt .nm{flex:1;font-size:13.5px;font-weight:600}
+.tcard input[type=text]{margin-top:6px;font-size:13px;padding:8px 10px}
+.sw{position:relative;width:44px;height:25px;flex:0 0 auto;display:inline-block}
+.sw input{opacity:0;width:100%;height:100%;position:absolute;inset:0;margin:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;border-radius:13px;border:1.5px solid var(--text-color);background:transparent;transition:.15s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--text-color);transition:.15s}
+.sw input:checked + i{background:var(--text-color)}
+.sw input:checked + i::after{left:22px;background:var(--bg-color)}
+.litem{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--line)}
+.litem .ic{font-size:20px;width:30px;text-align:center;flex:0 0 auto}
+.litem .lb{flex:1;min-width:0}
+.litem .l1{font-size:13.5px;font-weight:600;word-break:break-word}
+.litem .l2{font-size:12.5px;opacity:.8;margin-top:2px;word-break:break-word}
+.litem .l3{font-size:11px;opacity:.6;margin-top:3px;word-break:break-all}
+.empty{padding:36px 20px;text-align:center;font-size:14px;opacity:.7;line-height:1.7}
+.msg{font-size:13px;padding:10px 14px;line-height:1.6}
+.preview{margin:12px 14px;border:1px solid var(--text-color);border-radius:14px;padding:11px 12px;display:flex;gap:10px;align-items:center}
+.preview .pi{font-size:22px}.preview b{font-size:13px;display:block}.preview i{font-style:normal;font-size:12px;opacity:.85}
+.gate{padding:60px 20px;text-align:center;line-height:1.8}
+.gate p{margin-bottom:14px;font-size:14px}
+.stickySave{position:sticky;bottom:0;background:var(--card-color);border-top:1px solid var(--line);padding:10px 14px;display:flex;gap:10px;align-items:center}
+</style>
+</head>
+<body>
+<header>
+  <button class="hBtn" id="hdrBack" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+  <h1 id="hdrTitle">🔔 নোটিফিকেশন অ্যাডমিন</h1>
+  <span class="hSpacer"></span>
+</header>
+
+<main>
+  <!-- লোড -->
+  <section id="vLoad" class="view active"><div class="empty">লোড হচ্ছে...</div></section>
+
+  <!-- লগইন / অনুমতি -->
+  <section id="vGate" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">অ্যাডমিন প্রবেশ</span></div>
+    <div class="gate" id="gateBox"></div>
+  </section>
+
+  <!-- হোম -->
+  <section id="vHome" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">নোটিফিকেশন অ্যাডমিন প্যানেল</span></div>
+    <div class="grid">
+      <button class="tile" data-go="dash"><span class="ti">📊</span><span class="tn">সারসংক্ষেপ</span><span class="td">মোট, অপঠিত, সেকশন-ভিত্তিক হিসাব</span></button>
+      <button class="tile" data-go="types"><span class="ti">🧩</span><span class="tn">ধরন ও বার্তা</span><span class="td">কোন ঘটনায় নোটিফিকেশন যাবে ও কী লেখা থাকবে</span></button>
+      <button class="tile" data-go="send"><span class="ti">📤</span><span class="tn">নোটিফিকেশন পাঠান</span><span class="td">সবাইকে / একজনকে / সাবস্ক্রাইবারদের</span></button>
+      <button class="tile" data-go="inbox"><span class="ti">📥</span><span class="tn">অ্যাডমিন ইনবক্স</span><span class="td">নতুন রিপোর্ট ও কয়েন রিকোয়েস্ট</span><span class="bd" id="inboxBadge"></span></button>
+      <button class="tile" data-go="log"><span class="ti">🗂️</span><span class="tn">সব নোটিফিকেশন লগ</span><span class="td">দেখুন, খুঁজুন, মুছুন</span></button>
+      <button class="tile" data-go="settings"><span class="ti">⚙️</span><span class="tn">সাধারণ সেটিংস</span><span class="td">চালু/বন্ধ, সংরক্ষণের দিন, অ্যাডমিন ইমেইল</span></button>
+    </div>
+  </section>
+
+  <!-- সারসংক্ষেপ -->
+  <section id="vDash" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">📊 সারসংক্ষেপ</span></div>
+    <div class="stats" id="statBox"></div>
+    <div class="sub">সাম্প্রতিক ৩০০টির সেকশন-ভিত্তিক হিসাব</div>
+    <div id="grpStats"></div>
+  </section>
+
+  <!-- ধরন ও বার্তা -->
+  <section id="vTypes" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">🧩 ধরন ও বার্তা</span></div>
+    <div class="msg">সুইচ বন্ধ করলে ওই ঘটনায় আর কোনো নোটিফিকেশন তৈরি হবে না। লেখা ফাঁকা রাখলে ডিফল্ট লেখা ব্যবহার হবে। ব্যবহারযোগ্য চিহ্ন: <b>{name}</b> (যিনি কাজটা করেছেন), <b>{text}</b>, <b>{title}</b>, <b>{coins}</b></div>
+    <div id="typeList"></div>
+    <div class="stickySave"><button class="btn fill" id="saveTypes" type="button">সংরক্ষণ করুন</button><span id="typesMsg" class="hint"></span></div>
+  </section>
+
+  <!-- পাঠান -->
+  <section id="vSend" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">📤 নোটিফিকেশন পাঠান</span></div>
+    <div class="pad">
+      <label class="f">ধরন</label><select id="sType"></select>
+      <label class="f">কাকে পাঠাবেন</label>
+      <select id="sAud">
+        <option value="all">সব ব্যবহারকারীকে</option>
+        <option value="one">একজনকে (UID বা ইমেইল)</option>
+        <option value="subs">কোনো ব্যবহারকারীর সাবস্ক্রাইবারদের</option>
+      </select>
+      <div id="sTargetWrap" style="display:none"><label class="f" id="sTargetLbl">UID বা ইমেইল</label><input type="text" id="sTarget" placeholder="উদাহরণ: user@gmail.com"></div>
+      <label class="f">শিরোনাম</label><input type="text" id="sTitle" maxlength="100" placeholder="যেমন: নতুন আপডেট এসেছে">
+      <label class="f">বিস্তারিত (ঐচ্ছিক)</label><textarea id="sText" maxlength="400" placeholder="বিস্তারিত লিখুন"></textarea>
+      <label class="f">লিংক (ঐচ্ছিক)</label><input type="text" id="sLink" placeholder="যেমন: video.html বা quiz.html বা index.html">
+      <div class="hint">ট্যাপ করলে ব্যবহারকারী এই পেজে যাবে। ফাঁকা রাখলে শুধু পড়া হবে।</div>
+    </div>
+    <div class="preview"><span class="pi" id="pvIcon">📢</span><div><b id="pvTitle">শিরোনাম এখানে দেখাবে</b><i id="pvText"></i></div></div>
+    <div class="pad"><button class="btn fill" id="sendBtn" type="button">পাঠান</button><div class="msg" id="sendMsg"></div></div>
+  </section>
+
+  <!-- অ্যাডমিন ইনবক্স -->
+  <section id="vInbox" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">📥 অ্যাডমিন ইনবক্স</span></div>
+    <div class="pad row"><button class="btn sm" id="inboxClear" type="button">সব মুছুন</button><span class="hint">রিপোর্ট ও কয়েন রিকোয়েস্ট আসলে এখানে জমা হয়</span></div>
+    <div id="inboxList"></div>
+  </section>
+
+  <!-- লগ -->
+  <section id="vLog" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">🗂️ সব নোটিফিকেশন লগ</span></div>
+    <div class="pad">
+      <div class="row"><select id="lGroup" class="grow"></select><select id="lLimit" style="width:110px"><option value="100">১০০টি</option><option value="300">৩০০টি</option><option value="600">৬০০টি</option></select></div>
+      <input type="text" id="lSearch" placeholder="লেখা বা নাম দিয়ে খুঁজুন" style="margin-top:8px">
+      <div class="row" style="margin-top:10px;flex-wrap:wrap"><button class="btn sm" id="lReload" type="button">রিলোড</button><button class="btn sm" id="lPrune" type="button">পুরোনো মুছুন</button><span class="hint" id="lCount"></span></div>
+    </div>
+    <div id="logList"></div>
+  </section>
+
+  <!-- সাধারণ সেটিংস -->
+  <section id="vSettings" class="view">
+    <div class="secBar"><button class="secBack" type="button" data-back>← অ্যাডমিন হোম</button><span class="secTitle">⚙️ সাধারণ সেটিংস</span></div>
+    <div class="tcard"><div class="tt"><span class="nm">নোটিফিকেশন সিস্টেম চালু</span><label class="sw"><input type="checkbox" id="cEnabled"><i></i></label></div><div class="hint">বন্ধ করলে সব পেজে নতুন নোটিফিকেশন তৈরি হওয়া বন্ধ থাকবে।</div></div>
+    <div class="tcard"><div class="tt"><span class="nm">পেজ খোলা থাকলে পপআপ দেখান</span><label class="sw"><input type="checkbox" id="cToast"><i></i></label></div></div>
+    <div class="tcard"><div class="tt"><span class="nm">ব্রাউজার নোটিফিকেশন (ট্যাব লুকানো থাকলে)</span><label class="sw"><input type="checkbox" id="cBrowser"><i></i></label></div></div>
+    <div class="tcard"><span class="nm" style="font-size:13.5px;font-weight:600">কত দিন নোটিফিকেশন রাখা হবে</span><input type="number" id="cDays" min="1" max="365"><div class="hint">ব্যবহারকারী পেজ খুললে এর চেয়ে পুরোনোগুলো নিজে থেকে মুছে যায়।</div></div>
+    <div class="tcard"><span class="nm" style="font-size:13.5px;font-weight:600">একটি পোস্ট/ভিডিও/লাইভে সর্বোচ্চ কতজন সাবস্ক্রাইবারকে জানানো হবে</span><input type="number" id="cFan" min="1" max="2000"></div>
+    <div class="tcard"><span class="nm" style="font-size:13.5px;font-weight:600">অ্যাডমিন ইমেইল (প্রতি লাইনে একটি)</span><textarea id="cAdmins" placeholder="admin@gmail.com"></textarea><div class="hint">শুধু এই ইমেইলগুলো দিয়ে এই প্যানেলে ঢোকা যাবে।</div></div>
+    <div class="stickySave"><button class="btn fill" id="saveSettings" type="button">সংরক্ষণ করুন</button><span id="setMsg" class="hint"></span></div>
+  </section>
+</main>
+
+<script type="module">
+import { GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import {
+  doc, getDoc, setDoc, addDoc, deleteDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot,
+  writeBatch, serverTimestamp, getCountFromServer, Timestamp
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { GROUPS, TYPES, DEFAULT_SETTINGS, ADMIN_BOX, auth, db, timeAgo, tsMs, fillTemplate } from "./notify.js";
+
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const GMAP = {}; GROUPS.forEach(g => GMAP[g.k] = g);
+let S = Object.assign({}, DEFAULT_SETTINGS);
+let me = null, isAdmin = false;
+
+// থিম
+onSnapshot(doc(db, "settings", "site"), snap => {
+  if (!snap.exists()) return;
+  const t = snap.data().theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('onuvutiTheme', t); } catch (e) {}
+}, () => {});
+
+// ---------------- ভিউ ও ব্যাক ----------------
+const VIEWS = { load: 'vLoad', gate: 'vGate', home: 'vHome', dash: 'vDash', types: 'vTypes', send: 'vSend', inbox: 'vInbox', log: 'vLog', settings: 'vSettings' };
+const TITLES = { home: '🔔 নোটিফিকেশন অ্যাডমিন', dash: '📊 সারসংক্ষেপ', types: '🧩 ধরন ও বার্তা', send: '📤 পাঠান', inbox: '📥 অ্যাডমিন ইনবক্স', log: '🗂️ লগ', settings: '⚙️ সেটিংস', gate: '🔐 প্রবেশ', load: '🔔 নোটিফিকেশন অ্যাডমিন' };
+let view = 'load';
+function show(v) {
+  view = v;
+  Object.values(VIEWS).forEach(id => $(id).classList.remove('active'));
+  $(VIEWS[v]).classList.add('active');
+  $('hdrTitle').textContent = TITLES[v];
+  window.scrollTo(0, 0);
+  if (v === 'dash') loadDash();
+  if (v === 'types') renderTypes();
+  if (v === 'send') initSend();
+  if (v === 'inbox') loadInbox();
+  if (v === 'log') loadLog();
+  if (v === 'settings') fillSettings();
+}
+function push(v) { history.pushState({ na: v }, '', location.pathname + location.search); show(v); }
+window.addEventListener('popstate', e => {
+  const v = e.state && e.state.na;
+  if (!isAdmin) { show(me ? 'gate' : 'gate'); return; }
+  show(v || 'home');
+});
+function leavePage() {
+  if (history.length > 1) history.back(); else location.href = 'index.html';
+}
+function goBack() { if (view !== 'home' && view !== 'gate' && view !== 'load') history.back(); else leavePage(); }
+$('hdrBack').addEventListener('click', goBack);
+document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', goBack));
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => push(b.dataset.go)));
+
+// ---------------- লগইন ও অনুমতি ----------------
+function gate(html, btns) {
+  const box = $('gateBox'); box.innerHTML = '';
+  const p = document.createElement('p'); p.innerHTML = html; box.appendChild(p);
+  (btns || []).forEach(b => { const e = document.createElement('button'); e.className = 'btn' + (b.fill ? ' fill' : ''); e.style.margin = '4px'; e.textContent = b.t; e.addEventListener('click', b.fn); box.appendChild(e); });
+  show('gate');
+}
+onAuthStateChanged(auth, async u => {
+  me = u; isAdmin = false;
+  if (!u) { gate('নোটিফিকেশন অ্যাডমিন প্যানেলে ঢুকতে অ্যাডমিন ইমেইল দিয়ে লগইন করুন।', [{ t: '🔵 Google দিয়ে লগইন', fill: true, fn: async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { alert('লগইন করা যায়নি: ' + e.message); } } }]); return; }
+  try {
+    const snap = await getDoc(doc(db, 'settings', 'notifications'));
+    S = Object.assign({}, DEFAULT_SETTINGS, snap.exists() ? snap.data() : {});
+  } catch (e) { gate('সেটিং পড়া যায়নি: ' + e.message + '<br>Firestore rules ঠিক আছে কিনা দেখুন।', [{ t: 'আবার চেষ্টা', fn: () => location.reload() }]); return; }
+  const admins = (S.adminEmails || []).map(x => String(x).toLowerCase().trim()).filter(Boolean);
+  const email = (u.email || '').toLowerCase();
+  if (!admins.length) {
+    gate('এখনো কোনো অ্যাডমিন ইমেইল ঠিক করা নেই।<br><b>' + email + '</b> কে প্রথম অ্যাডমিন বানাবেন?', [
+      { t: 'হ্যাঁ, অ্যাডমিন বানান', fill: true, fn: async () => { await setDoc(doc(db, 'settings', 'notifications'), { adminEmails: [email] }, { merge: true }); location.reload(); } },
+      { t: 'লগ আউট', fn: () => signOut(auth) }]);
+    return;
+  }
+  if (!admins.includes(email)) {
+    gate('<b>' + email + '</b> এই প্যানেলের অ্যাডমিন নন।', [{ t: 'অন্য একাউন্টে লগইন', fn: () => signOut(auth) }]);
+    return;
+  }
+  isAdmin = true;
+  history.replaceState({ na: 'home' }, '', location.pathname + location.search);
+  show('home');
+  refreshInboxBadge();
+});
+
+// ---------------- সারসংক্ষেপ ----------------
+async function cnt(q) { try { return (await getCountFromServer(q)).data().count; } catch (e) { return '—'; } }
+async function loadDash() {
+  const col = collection(db, 'notifications');
+  $('statBox').innerHTML = '<div class="empty" style="grid-column:1/3">লোড হচ্ছে...</div>';
+  const [total, unread, adm, bc] = await Promise.all([
+    cnt(query(col)), cnt(query(col, where('read', '==', false))), cnt(query(col, where('toUid', '==', ADMIN_BOX))), cnt(query(col, where('toUid', '==', 'all')))
+  ]);
+  const cells = [['মোট নোটিফিকেশন', total], ['অপঠিত', unread], ['অ্যাডমিন ইনবক্সে', adm], ['সবাইকে পাঠানো ঘোষণা', bc]];
+  $('statBox').innerHTML = '';
+  cells.forEach(c => { const d = document.createElement('div'); d.className = 'stat'; d.innerHTML = '<b></b><span></span>'; d.querySelector('b').textContent = typeof c[1] === 'number' ? bn(c[1]) : c[1]; d.querySelector('span').textContent = c[0]; $('statBox').appendChild(d); });
+  try {
+    const snap = await getDocs(query(col, orderBy('createdAt', 'desc'), limit(300)));
+    const m = {}; snap.docs.forEach(d => { const g = d.data().group || 'system'; m[g] = (m[g] || 0) + 1; });
+    const box = $('grpStats'); box.innerHTML = '';
+    GROUPS.forEach(g => { const r = document.createElement('div'); r.className = 'litem'; r.innerHTML = '<span class="ic"></span><div class="lb"><div class="l1"></div></div>'; r.querySelector('.ic').textContent = g.icon; r.querySelector('.l1').textContent = g.label + ' — ' + bn(m[g.k] || 0) + 'টি'; box.appendChild(r); });
+  } catch (e) { $('grpStats').innerHTML = '<div class="empty">হিসাব আনা যায়নি: ' + e.message + '</div>'; }
+}
+
+// ---------------- ধরন ও বার্তা ----------------
+function renderTypes() {
+  const box = $('typeList'); box.innerHTML = '';
+  GROUPS.forEach(g => {
+    const keys = Object.keys(TYPES).filter(k => TYPES[k].group === g.k);
+    if (!keys.length) return;
+    const h = document.createElement('div'); h.className = 'sub'; h.textContent = g.icon + ' ' + g.label; box.appendChild(h);
+    keys.forEach(k => {
+      const T = TYPES[k], cur = (S.types || {})[k] || {};
+      const c = document.createElement('div'); c.className = 'tcard'; c.dataset.k = k;
+      c.innerHTML = '<div class="tt"><span class="nm"></span><label class="sw"><input type="checkbox" class="en"><i></i></label></div><input type="text" class="ti" maxlength="120"><input type="text" class="bd" maxlength="200">';
+      c.querySelector('.nm').textContent = T.icon + ' ' + T.label;
+      c.querySelector('.en').checked = cur.enabled !== false;
+      const ti = c.querySelector('.ti'), bd = c.querySelector('.bd');
+      ti.placeholder = 'শিরোনাম (ডিফল্ট: ' + T.title + ')'; ti.value = cur.title || '';
+      bd.placeholder = 'বিস্তারিত (ডিফল্ট: ' + (T.body || 'ফাঁকা') + ')'; bd.value = cur.body != null ? cur.body : '';
+      box.appendChild(c);
+    });
+  });
+}
+$('saveTypes').addEventListener('click', async () => {
+  const types = {};
+  document.querySelectorAll('#typeList .tcard').forEach(c => {
+    types[c.dataset.k] = { enabled: c.querySelector('.en').checked, title: c.querySelector('.ti').value.trim(), body: c.querySelector('.bd').value.trim() };
+  });
+  try { await setDoc(doc(db, 'settings', 'notifications'), { types }, { merge: true }); S.types = types; $('typesMsg').textContent = '✓ সংরক্ষিত হয়েছে'; }
+  catch (e) { $('typesMsg').textContent = 'সংরক্ষণ হয়নি: ' + e.message; }
+});
+
+// ---------------- পাঠান ----------------
+function initSend() {
+  const sel = $('sType'); if (sel.options.length) { updatePreview(); return; }
+  Object.keys(TYPES).filter(k => TYPES[k].adminSend).forEach(k => { const o = document.createElement('option'); o.value = k; o.textContent = TYPES[k].icon + ' ' + TYPES[k].label; sel.appendChild(o); });
+  updatePreview();
+}
+function updatePreview() {
+  const k = $('sType').value; if (!k) return;
+  $('pvIcon').textContent = TYPES[k].icon;
+  $('pvTitle').textContent = $('sTitle').value.trim() || 'শিরোনাম এখানে দেখাবে';
+  $('pvText').textContent = $('sText').value.trim();
+}
+['sType', 'sTitle', 'sText'].forEach(id => $(id).addEventListener('input', updatePreview));
+$('sType').addEventListener('change', updatePreview);
+$('sAud').addEventListener('change', () => {
+  const v = $('sAud').value;
+  $('sTargetWrap').style.display = v === 'all' ? 'none' : 'block';
+  $('sTargetLbl').textContent = v === 'one' ? 'ব্যবহারকারীর UID বা ইমেইল' : 'যার সাবস্ক্রাইবারদের জানাবেন তার UID বা ইমেইল';
+});
+async function resolveUid(v) {
+  v = (v || '').trim(); if (!v) return null;
+  if (!v.includes('@')) return v;
+  const s = await getDocs(query(collection(db, 'users'), where('email', '==', v), limit(1)));
+  return s.empty ? null : s.docs[0].id;
+}
+$('sendBtn').addEventListener('click', async () => {
+  const msg = $('sendMsg'); msg.textContent = '';
+  const type = $('sType').value, title = $('sTitle').value.trim(), text = $('sText').value.trim(), link = $('sLink').value.trim(), aud = $('sAud').value;
+  if (!title) { msg.textContent = 'শিরোনাম লিখুন।'; return; }
+  const T = TYPES[type];
+  const base = { fromUid: me.uid, fromName: 'অ্যাডমিন', fromPhoto: '', type, group: T.group, icon: T.icon, title, body: text, link, ref: '', read: false, createdAt: serverTimestamp() };
+  $('sendBtn').disabled = true;
+  try {
+    if (aud === 'all') {
+      if (!confirm('সব ব্যবহারকারীকে এই নোটিফিকেশন পাঠাবেন?')) { $('sendBtn').disabled = false; return; }
+      await addDoc(collection(db, 'notifications'), Object.assign({}, base, { toUid: 'all' }));
+      msg.textContent = '✓ সবাইকে পাঠানো হয়েছে';
+    } else {
+      const uid = await resolveUid($('sTarget').value);
+      if (!uid) { msg.textContent = 'ব্যবহারকারী পাওয়া যায়নি।'; $('sendBtn').disabled = false; return; }
+      if (aud === 'one') {
+        await addDoc(collection(db, 'notifications'), Object.assign({}, base, { toUid: uid }));
+        msg.textContent = '✓ পাঠানো হয়েছে';
+      } else {
+        const p = await getDoc(doc(db, 'publicProfiles', uid));
+        const subs = ((p.exists() && p.data().subscribers) || []).filter(Boolean);
+        if (!subs.length) { msg.textContent = 'এই ব্যবহারকারীর কোনো সাবস্ক্রাইবার নেই।'; $('sendBtn').disabled = false; return; }
+        for (let i = 0; i < subs.length; i += 400) {
+          const b = writeBatch(db);
+          subs.slice(i, i + 400).forEach(t => b.set(doc(collection(db, 'notifications')), Object.assign({}, base, { toUid: t })));
+          await b.commit();
+        }
+        msg.textContent = '✓ ' + bn(subs.length) + ' জন সাবস্ক্রাইবারকে পাঠানো হয়েছে';
+      }
+    }
+    $('sTitle').value = ''; $('sText').value = ''; updatePreview();
+  } catch (e) { msg.textContent = 'পাঠানো যায়নি: ' + e.message; }
+  $('sendBtn').disabled = false;
+});
+
+// ---------------- সাধারণ আইটেম রো ----------------
+function logRow(d, onDel) {
+  const x = d.data();
+  const r = document.createElement('div'); r.className = 'litem';
+  r.innerHTML = '<span class="ic"></span><div class="lb"><div class="l1"></div><div class="l2"></div><div class="l3"></div></div><button class="btn sm" type="button">মুছুন</button>';
+  r.querySelector('.ic').textContent = x.icon || '🔔';
+  r.querySelector('.l1').textContent = x.title || '';
+  r.querySelector('.l2').textContent = x.body || '';
+  const to = x.toUid === 'all' ? 'সবাই' : x.toUid === ADMIN_BOX ? 'অ্যাডমিন' : x.toUid;
+  r.querySelector('.l3').textContent = (GMAP[x.group] ? GMAP[x.group].label : x.group) + ' · প্রাপক: ' + to + ' · ' + (x.fromName || '') + ' · ' + timeAgo(tsMs(x.createdAt)) + (x.read === true ? ' · পঠিত' : '');
+  r.querySelector('button').addEventListener('click', async () => { if (!confirm('মুছে ফেলবেন?')) return; try { await deleteDoc(d.ref); r.remove(); if (onDel) onDel(); } catch (e) { alert(e.message); } });
+  return r;
+}
+
+// ---------------- অ্যাডমিন ইনবক্স ----------------
+async function refreshInboxBadge() {
+  const n = await cnt(query(collection(db, 'notifications'), where('toUid', '==', ADMIN_BOX)));
+  const b = $('inboxBadge'); if (typeof n === 'number' && n > 0) { b.textContent = n > 99 ? '99+' : bn(n); b.style.display = 'flex'; } else b.style.display = 'none';
+}
+let inboxDocs = [];
+async function loadInbox() {
+  const box = $('inboxList'); box.innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(query(collection(db, 'notifications'), where('toUid', '==', ADMIN_BOX)));
+    inboxDocs = s.docs.slice().sort((a, b) => tsMs(b.data().createdAt) - tsMs(a.data().createdAt));
+    box.innerHTML = '';
+    if (!inboxDocs.length) { box.innerHTML = '<div class="empty">ইনবক্স খালি।</div>'; return; }
+    inboxDocs.forEach(d => box.appendChild(logRow(d, refreshInboxBadge)));
+  } catch (e) { box.innerHTML = '<div class="empty">আনা যায়নি: ' + e.message + '</div>'; }
+}
+$('inboxClear').addEventListener('click', async () => {
+  if (!inboxDocs.length || !confirm('ইনবক্সের সব মুছে ফেলবেন?')) return;
+  for (let i = 0; i < inboxDocs.length; i += 400) { const b = writeBatch(db); inboxDocs.slice(i, i + 400).forEach(d => b.delete(d.ref)); await b.commit(); }
+  loadInbox(); refreshInboxBadge();
+});
+
+// ---------------- লগ ----------------
+let logDocs = [];
+(function initLogFilter() {
+  const sel = $('lGroup'); sel.innerHTML = '<option value="">সব সেকশন</option>';
+  GROUPS.forEach(g => { const o = document.createElement('option'); o.value = g.k; o.textContent = g.icon + ' ' + g.label; sel.appendChild(o); });
+})();
+async function loadLog() {
+  $('logList').innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
+  try {
+    const s = await getDocs(query(collection(db, 'notifications'), orderBy('createdAt', 'desc'), limit(Number($('lLimit').value) || 100)));
+    logDocs = s.docs; drawLog();
+  } catch (e) { $('logList').innerHTML = '<div class="empty">আনা যায়নি: ' + e.message + '</div>'; }
+}
+function drawLog() {
+  const g = $('lGroup').value, q = $('lSearch').value.trim().toLowerCase();
+  const list = logDocs.filter(d => { const x = d.data(); if (g && x.group !== g) return false; if (q && !((x.title || '') + ' ' + (x.body || '') + ' ' + (x.fromName || '') + ' ' + (x.toUid || '')).toLowerCase().includes(q)) return false; return true; });
+  $('lCount').textContent = bn(list.length) + 'টি দেখানো হচ্ছে';
+  const box = $('logList'); box.innerHTML = '';
+  if (!list.length) { box.innerHTML = '<div class="empty">কিছু পাওয়া যায়নি।</div>'; return; }
+  list.forEach(d => box.appendChild(logRow(d)));
+}
+['lGroup'].forEach(id => $(id).addEventListener('change', drawLog));
+$('lSearch').addEventListener('input', drawLog);
+$('lLimit').addEventListener('change', loadLog);
+$('lReload').addEventListener('click', loadLog);
+$('lPrune').addEventListener('click', async () => {
+  const days = Number(prompt('কত দিনের পুরোনো নোটিফিকেশন মুছবেন? (দিন)', String(S.retentionDays || 30)));
+  if (!days || days < 1) return;
+  if (!confirm(bn(days) + ' দিনের আগের সব নোটিফিকেশন মুছে ফেলবেন?')) return;
+  const cutoff = Timestamp.fromMillis(Date.now() - days * 86400000);
+  let total = 0;
+  try {
+    for (let r = 0; r < 25; r++) {
+      const s = await getDocs(query(collection(db, 'notifications'), where('createdAt', '<', cutoff), limit(400)));
+      if (s.empty) break;
+      const b = writeBatch(db); s.docs.forEach(d => b.delete(d.ref)); await b.commit(); total += s.size;
+    }
+    alert(bn(total) + 'টি মুছে ফেলা হয়েছে'); loadLog();
+  } catch (e) { alert('মুছতে সমস্যা: ' + e.message); }
+});
+
+// ---------------- সাধারণ সেটিংস ----------------
+function fillSettings() {
+  $('cEnabled').checked = S.enabled !== false;
+  $('cToast').checked = S.toast !== false;
+  $('cBrowser').checked = S.browserNotif !== false;
+  $('cDays').value = S.retentionDays || 30;
+  $('cFan').value = S.maxFanout || 300;
+  $('cAdmins').value = (S.adminEmails || []).join('\n');
+}
+$('saveSettings').addEventListener('click', async () => {
+  const admins = $('cAdmins').value.split(/\s+/).map(x => x.toLowerCase().trim()).filter(Boolean);
+  if (!admins.includes((me.email || '').toLowerCase())) { if (!confirm('আপনার নিজের ইমেইল তালিকায় নেই — সংরক্ষণ করলে আপনি আর এই প্যানেলে ঢুকতে পারবেন না। তবুও সংরক্ষণ করবেন?')) return; }
+  const data = { enabled: $('cEnabled').checked, toast: $('cToast').checked, browserNotif: $('cBrowser').checked, retentionDays: Math.max(1, Number($('cDays').value) || 30), maxFanout: Math.max(1, Number($('cFan').value) || 300), adminEmails: admins };
+  try { await setDoc(doc(db, 'settings', 'notifications'), data, { merge: true }); Object.assign(S, data); $('setMsg').textContent = '✓ সংরক্ষিত হয়েছে'; }
+  catch (e) { $('setMsg').textContent = 'সংরক্ষণ হয়নি: ' + e.message; }
+});
+</script>
+</body>
+</html>

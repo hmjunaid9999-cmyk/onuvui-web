@@ -97,6 +97,7 @@
     <button id="playerBackBtn" title="তালিকায় ফিরে যান" style="display:none;">←</button>
     <h1 id="headerTitle">📻 রেডিও</h1>
     <div id="globalGadgetBox"></div>
+    <a href="notifications.html" class="onuBell abs" id="onuBell" aria-label="নোটিফিকেশন" title="নোটিফিকেশন"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="onuBadge"></span></a>
   </header>
 
   <main>
@@ -460,5 +461,6 @@
     log('❌ Firestore থেকে চ্যানেল লিস্ট আনতে সমস্যা: ' + err.message, 'err');
   });
 </script>
+<script type="module" src="notify.js"></script>
 </body>
 </html>

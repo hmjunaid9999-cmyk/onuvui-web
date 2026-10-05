@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>নোটিফিকেশন — Onuvuti</title>
+<script>
+// থিম: আগের সেশনের থিম সঙ্গে সঙ্গে বসানো (ঝলক এড়াতে); পরে settings/site থেকে লাইভ আপডেট হবে
+try { document.documentElement.setAttribute('data-theme', localStorage.getItem('onuvutiTheme') === 'light' ? 'light' : 'dark'); } catch (e) {}
+</script>
+<style>
+:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);color-scheme:dark}
+[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg-color);color:var(--text-color);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali","Kalpurush",sans-serif}
+body{min-height:100vh;min-height:100dvh}
+button{font-family:inherit;color:inherit}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px;background:var(--card-color);border-bottom:1px solid var(--line)}
+header h1{flex:1;font-size:17px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hBtn{width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid var(--line);color:var(--text-color);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex:0 0 auto}
+.hBtn:active{background:var(--surface-active)}
+.hSpacer{width:36px;flex:0 0 auto}
+main{max-width:640px;margin:0 auto;padding-bottom:40px}
+.view{display:none}
+.view.active{display:block}
+.secBar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.secBack{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:18px;padding:7px 14px 7px 10px;font-size:13px;font-weight:600;cursor:pointer}
+.secBack:active{background:var(--surface-active)}
+.secTitle{font-size:15px;font-weight:700}
+.sum{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 14px;border-bottom:1px solid var(--line)}
+.sum b{font-size:22px}
+.sum span{font-size:12px;opacity:.8;display:block;margin-top:2px}
+.btnRow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:transparent;border:1px solid var(--text-color);color:var(--text-color);border-radius:18px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn:active{background:var(--surface-active)}
+.btn.fill{background:var(--text-color);color:var(--bg-color)}
+.btn:disabled{opacity:.4}
+.gRow{display:flex;align-items:center;gap:12px;width:100%;padding:14px;background:transparent;border:0;border-bottom:1px solid var(--line);cursor:pointer;text-align:left}
+.gRow:active{background:var(--surface-active)}
+.gIcon{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+.gName{flex:1;font-size:15px;font-weight:600}
+.gCount{min-width:22px;height:22px;padding:0 7px;border-radius:11px;background:var(--text-color);color:var(--bg-color);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.gArrow{opacity:.6;font-size:18px}
+.sub{padding:12px 14px 6px;font-size:12px;font-weight:700;letter-spacing:.3px;opacity:.75}
+.item{display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);cursor:pointer;position:relative}
+.item:active{background:var(--surface-active)}
+.item.unread{background:var(--surface-active)}
+.av{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto;position:relative}
+.av img{width:100%;height:100%;object-fit:cover}
+.av .tag{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--bg-color);border:1px solid var(--line);font-size:11px;display:flex;align-items:center;justify-content:center}
+.iBody{flex:1;min-width:0}
+.iTitle{font-size:14px;line-height:1.4;word-break:break-word}
+.item.unread .iTitle{font-weight:700}
+.iText{font-size:13px;opacity:.8;margin-top:2px;line-height:1.4;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.iTime{font-size:11.5px;opacity:.65;margin-top:4px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--text-color);flex:0 0 auto;margin-top:6px}
+.iDel{background:transparent;border:0;font-size:15px;cursor:pointer;opacity:.6;padding:4px 6px;flex:0 0 auto}
+.empty,.note{padding:36px 20px;text-align:center;font-size:14px;opacity:.75;line-height:1.7}
+.note{padding:12px 14px;text-align:left;font-size:12.5px;opacity:.7}
+.loginBox{padding:60px 20px;text-align:center}
+.loginBox p{margin-bottom:16px;font-size:14px;line-height:1.7}
+.setRow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.setRow .lbl{flex:1;font-size:14px}
+.setRow.small{padding:10px 14px 10px 36px}
+.setRow.small .lbl{font-size:13px;opacity:.85}
+.sw{position:relative;width:44px;height:25px;flex:0 0 auto}
+.sw input{opacity:0;width:100%;height:100%;position:absolute;inset:0;margin:0;cursor:pointer;z-index:2}
+.sw i{position:absolute;inset:0;border-radius:13px;border:1.5px solid var(--text-color);background:transparent;transition:.15s}
+.sw i::after{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:var(--text-color);transition:.15s}
+.sw input:checked + i{background:var(--text-color)}
+.sw input:checked + i::after{left:22px;background:var(--bg-color)}
+.loadMore{display:block;margin:14px auto;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="hBtn" id="hdrBack" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <h1 id="hdrTitle">🔔 নোটিফিকেশন</h1>
+    <button class="hBtn" id="hdrSettings" type="button" aria-label="সেটিংস"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </header>
+
+  <main>
+    <!-- লোড হচ্ছে (লগইন যাচাই শেষ হওয়া পর্যন্ত) -->
+    <section id="vLoad" class="view active">
+      <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">নোটিফিকেশন</span></div>
+      <div class="empty">লোড হচ্ছে...</div>
+    </section>
+
+    <!-- লগইন নেই -->
+    <section id="vLogin" class="view">
+      <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">নোটিফিকেশন</span></div>
+      <div class="loginBox">
+        <p>নোটিফিকেশন দেখতে Google দিয়ে লগইন করুন</p>
+        <button class="btn fill" id="loginBtn" type="button">🔵 Google দিয়ে লগইন করুন</button>
+        <div id="loginMsg" class="note"></div>
+      </div>
+    </section>
+
+    <!-- সেকশন ১: হোম (সব সেকশনের তালিকা) -->
+    <section id="vHome" class="view">
+      <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">সব সেকশন</span></div>
+      <div class="sum">
+        <div><b id="sumUnread">০</b><span>অপঠিত নোটিফিকেশন</span></div>
+        <div class="btnRow"><button class="btn" id="homeMarkAll" type="button">সব পড়া হয়েছে</button></div>
+      </div>
+      <div id="groupList"></div>
+      <div class="sub">সাম্প্রতিক</div>
+      <div id="recentList"></div>
+    </section>
+
+    <!-- সেকশন ২: নির্দিষ্ট সেকশনের তালিকা (পোস্ট/মেসেজ/ভিডিও ইত্যাদি) -->
+    <section id="vGroup" class="view">
+      <div class="secBar"><button class="secBack" type="button" data-back>← সব সেকশন</button><span class="secTitle" id="groupTitle"></span></div>
+      <div class="sum">
+        <div class="btnRow">
+          <button class="btn" id="grpMarkAll" type="button">এই সেকশনের সব পড়া হয়েছে</button>
+          <button class="btn" id="grpClear" type="button">সব মুছুন</button>
+        </div>
+      </div>
+      <div id="groupItems"></div>
+      <button class="btn loadMore" id="grpMore" type="button" style="display:none">আরও দেখুন</button>
+    </section>
+
+    <!-- সেকশন ৩: সেটিংস -->
+    <section id="vSettings" class="view">
+      <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">নোটিফিকেশন সেটিংস</span></div>
+      <div class="setRow"><div class="lbl">ব্রাউজার নোটিফিকেশন<br><small id="permState" style="opacity:.7"></small></div><button class="btn" id="permBtn" type="button">চালু করুন</button></div>
+      <div class="sub">কোন সেকশনের নোটিফিকেশন দেখতে চান</div>
+      <div id="muteList"></div>
+      <div class="note">এই পছন্দ শুধু এই ডিভাইসে প্রযোজ্য। বন্ধ করা সেকশনের নোটিফিকেশন জমা হবে, কিন্তু গণনা ও পপআপে আসবে না।</div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import { OnuNotify, GROUPS, TYPES, auth, db, getMuted, setMuted, timeAgo } from "./notify.js";
+
+const $ = id => document.getElementById(id);
+const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+const GMAP = {}; GROUPS.forEach(g => GMAP[g.k] = g);
+
+// থিম লাইভ
+onSnapshot(doc(db, "settings", "site"), snap => {
+  if (!snap.exists()) return;
+  const t = snap.data().theme === 'light' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('onuvutiTheme', t); } catch (e) {}
+}, () => {});
+
+// ---------------- ভিউ ও ব্যাক বাটন ----------------
+let view = 'home', curGroup = null, shown = 30;
+const VIEWS = { load: 'vLoad', login: 'vLogin', home: 'vHome', group: 'vGroup', settings: 'vSettings' };
+function show(v) {
+  view = v;
+  Object.values(VIEWS).forEach(id => $(id).classList.remove('active'));
+  $(VIEWS[v]).classList.add('active');
+  $('hdrSettings').style.visibility = (v === 'load' || v === 'login' || v === 'settings') ? 'hidden' : 'visible';
+  $('hdrTitle').textContent = v === 'settings' ? '⚙️ সেটিংস' : v === 'group' ? ((curGroup === 'all' ? '🔔 সব' : (GMAP[curGroup].icon + ' ' + GMAP[curGroup].label))) : '🔔 নোটিফিকেশন';
+  window.scrollTo(0, 0);
+  render();
+}
+function push(v, g) {
+  curGroup = g || curGroup;
+  history.pushState({ nf: v, g: curGroup }, '', location.pathname + location.search);
+  show(v);
+}
+window.addEventListener('popstate', e => {
+  const st = e.state;
+  if (st && st.nf) { curGroup = st.g || null; show(auth.currentUser ? st.nf : 'login'); }
+  else show(auth.currentUser ? 'home' : 'login');
+});
+// আগের পেজে ফেরা: ব্রাউজারের হিস্টরি থাকলে সেটাই, নইলে যে পেজ থেকে এসেছিল সেখানে (না থাকলে হোম)
+function leavePage() {
+  let from = ''; try { from = sessionStorage.getItem('onuNfFrom') || ''; } catch (e) {}
+  if (history.length > 1) history.back();
+  else location.href = from || 'index.html';
+}
+function goBack() { if (view === 'group' || view === 'settings') history.back(); else leavePage(); }
+$('hdrBack').addEventListener('click', goBack);
+document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', goBack));
+$('hdrSettings').addEventListener('click', () => push('settings'));
+
+// ---------------- রেন্ডার ----------------
+function visible(items) {
+  const m = getMuted();
+  return items.filter(it => !((m.groups || {})[it.group] || (m.types || {})[it.type]));
+}
+function itemEl(it) {
+  const el = document.createElement('div');
+  el.className = 'item' + (it.unread ? ' unread' : '');
+  const av = document.createElement('div'); av.className = 'av';
+  if (it.fromPhoto) { const im = document.createElement('img'); im.src = it.fromPhoto; im.alt = ''; im.referrerPolicy = 'no-referrer'; im.onerror = () => { im.remove(); av.textContent = it.icon || '🔔'; }; av.appendChild(im); const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = it.icon || '🔔'; av.appendChild(tg); }
+  else av.textContent = it.icon || '🔔';
+  const body = document.createElement('div'); body.className = 'iBody';
+  const t = document.createElement('div'); t.className = 'iTitle'; t.textContent = it.title || '';
+  body.appendChild(t);
+  let txt = it.body || '';
+  if (it.count > 1) txt = (txt ? txt + ' · ' : '') + bn(it.count) + 'টি নতুন';
+  if (txt) { const x = document.createElement('div'); x.className = 'iText'; x.textContent = txt; body.appendChild(x); }
+  const tm = document.createElement('div'); tm.className = 'iTime'; tm.textContent = timeAgo(it.ms); body.appendChild(tm);
+  el.appendChild(av); el.appendChild(body);
+  if (it.unread) { const d = document.createElement('div'); d.className = 'dot'; el.appendChild(d); }
+  const del = document.createElement('button'); del.className = 'iDel'; del.type = 'button'; del.setAttribute('aria-label', 'মুছুন'); del.textContent = '✕';
+  del.addEventListener('click', ev => { ev.stopPropagation(); OnuNotify.remove(it); });
+  el.appendChild(del);
+  el.addEventListener('click', async () => {
+    if (it.unread) { try { await OnuNotify.markRead(it); } catch (e) {} }
+    if (it.link) { try { sessionStorage.setItem('onuNfFrom', location.href); } catch (e) {} location.href = it.link; }
+  });
+  return el;
+}
+function fillList(box, items, emptyMsg) {
+  box.innerHTML = '';
+  if (!items.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = emptyMsg; box.appendChild(e); return; }
+  items.forEach(it => box.appendChild(itemEl(it)));
+}
+function render() {
+  const st = OnuNotify.state;
+  if (!st.user) return;
+  const items = visible(st.items);
+  if (view === 'home') {
+    $('sumUnread').textContent = bn(st.unread);
+    $('homeMarkAll').disabled = st.unread === 0;
+    const gl = $('groupList'); gl.innerHTML = '';
+    const rows = [{ k: 'all', icon: '🔔', label: 'সব নোটিফিকেশন' }].concat(GROUPS);
+    rows.forEach(g => {
+      const n = g.k === 'all' ? st.unread : (st.byGroup[g.k] || 0);
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'gRow';
+      b.innerHTML = '<span class="gIcon"></span><span class="gName"></span><span class="gCount" style="display:none"></span><span class="gArrow">›</span>';
+      b.querySelector('.gIcon').textContent = g.icon; b.querySelector('.gName').textContent = g.label;
+      const c = b.querySelector('.gCount'); if (n > 0) { c.textContent = bn(n > 99 ? '99+' : n); c.style.display = 'flex'; }
+      b.addEventListener('click', () => { shown = 30; push('group', g.k); });
+      gl.appendChild(b);
+    });
+    if (st.loading) $('recentList').innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
+    else fillList($('recentList'), items.slice(0, 8), 'এখনো কোনো নোটিফিকেশন নেই।');
+  } else if (view === 'group') {
+    const list = curGroup === 'all' ? items : items.filter(it => it.group === curGroup);
+    $('groupTitle').textContent = curGroup === 'all' ? 'সব নোটিফিকেশন' : GMAP[curGroup].label;
+    $('grpMarkAll').disabled = !list.some(i => i.unread);
+    $('grpClear').disabled = !list.length;
+    fillList($('groupItems'), list.slice(0, shown), 'এই সেকশনে এখনো কোনো নোটিফিকেশন নেই।');
+    $('grpMore').style.display = list.length > shown ? 'block' : 'none';
+  } else if (view === 'settings') {
+    renderSettings();
+  }
+}
+$('homeMarkAll').addEventListener('click', () => OnuNotify.markAllRead(visible(OnuNotify.state.items)));
+$('grpMarkAll').addEventListener('click', () => {
+  const l = visible(OnuNotify.state.items).filter(it => curGroup === 'all' || it.group === curGroup);
+  OnuNotify.markAllRead(l);
+});
+$('grpClear').addEventListener('click', () => {
+  const l = visible(OnuNotify.state.items).filter(it => curGroup === 'all' || it.group === curGroup);
+  if (l.length && confirm(l.length + 'টি নোটিফিকেশন মুছে ফেলবেন?')) OnuNotify.removeMany(l);
+});
+$('grpMore').addEventListener('click', () => { shown += 30; render(); });
+
+// ---------------- সেটিংস ----------------
+function swRow(label, checked, onChange, small) {
+  const r = document.createElement('div'); r.className = 'setRow' + (small ? ' small' : '');
+  const l = document.createElement('div'); l.className = 'lbl'; l.textContent = label;
+  const s = document.createElement('label'); s.className = 'sw';
+  const i = document.createElement('input'); i.type = 'checkbox'; i.checked = checked;
+  i.addEventListener('change', () => onChange(i.checked));
+  s.appendChild(i); s.appendChild(document.createElement('i'));
+  r.appendChild(l); r.appendChild(s); return r;
+}
+function renderSettings() {
+  const box = $('muteList'); box.innerHTML = '';
+  const m = getMuted(); m.groups = m.groups || {}; m.types = m.types || {};
+  GROUPS.forEach(g => {
+    box.appendChild(swRow(g.icon + ' ' + g.label, !m.groups[g.k], on => { const mm = getMuted(); mm.groups = mm.groups || {}; if (on) delete mm.groups[g.k]; else mm.groups[g.k] = true; setMuted(mm); }));
+    Object.keys(TYPES).filter(k => TYPES[k].group === g.k && !TYPES[k].admin && !TYPES[k].adminSend).forEach(k => {
+      box.appendChild(swRow(TYPES[k].icon + ' ' + TYPES[k].label, !m.types[k], on => { const mm = getMuted(); mm.types = mm.types || {}; if (on) delete mm.types[k]; else mm.types[k] = true; setMuted(mm); }, true));
+    });
+  });
+  const p = ('Notification' in window) ? Notification.permission : 'unsupported';
+  $('permState').textContent = p === 'granted' ? 'চালু আছে (ট্যাব লুকানো থাকলে পপআপ আসবে)' : p === 'denied' ? 'ব্রাউজার সেটিংসে বন্ধ করা আছে' : p === 'unsupported' ? 'এই ব্রাউজারে সাপোর্ট নেই' : 'এখনো চালু হয়নি';
+  $('permBtn').style.display = p === 'default' ? '' : 'none';
+}
+$('permBtn').addEventListener('click', async () => { await OnuNotify.requestBrowserPermission(); renderSettings(); });
+
+// ---------------- লগইন ----------------
+$('loginBtn').addEventListener('click', async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { $('loginMsg').textContent = 'লগইন করা যায়নি: ' + (e.message || e); }
+});
+
+// ---------------- শুরু ----------------
+let started = false;
+OnuNotify.subscribe(st => {
+  if (!st.user) { if (auth.currentUser === null && !st.loading) { show('login'); } return; }
+  if (!started) {
+    started = true;
+    const q = new URLSearchParams(location.search).get('g');
+    history.replaceState({ nf: 'home' }, '', location.pathname + location.search);
+    if (q && (q === 'all' || GMAP[q])) { curGroup = q; history.pushState({ nf: 'group', g: q }, '', location.pathname + location.search); show('group'); }
+    else show('home');
+    setTimeout(() => OnuNotify.pruneMine(), 3000);
+  } else render();
+});
+setInterval(() => { if (document.visibilityState === 'visible') render(); }, 60000);
+$('hdrSettings').style.visibility = 'hidden';
+</script>
+</body>
+</html>

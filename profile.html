@@ -516,6 +516,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       <button id="headerPlusBtn" type="button" aria-label="নতুন পোস্ট"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
       <button id="headerSearchBtn" type="button" aria-label="সার্চ"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
       <h1>প্রোফাইল</h1>
+      <a href="notifications.html" class="onuBell" id="onuBell" aria-label="নোটিফিকেশন" title="নোটিফিকেশন"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg><span class="onuBadge"></span></a>
       <button id="logoutBtn">লগ আউট</button>
       <div id="headerSearchRow">
         <button id="searchBackBtn" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
@@ -1665,6 +1666,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       upd['reactions.' + uid] = { type: type, name: currentUser.displayName || 'ব্যবহারকারী', photo: currentUser.photoURL || '' };
     }
     await updateDoc(doc(db, "posts", postId), upd);
+    try { window.OnuNotify && window.OnuNotify.postReact(postId, type); } catch (_) {}
     d.reactions = Object.assign({}, d.reactions || {});
     if (type === null) {
       d.likedBy = (d.likedBy || []).filter(u => u !== uid);
@@ -2107,6 +2109,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
               createdAt: serverTimestamp()
             });
             showStatus('রিপোর্ট পাঠানো হয়েছে ✓');
+            try { window.OnuNotify && window.OnuNotify.toAdmin('report_received', { text: reason, link: 'profile.html' }); } catch (_) {}
           } catch (e) { alert('এরর: ' + e.message); }
         });
         return b;
@@ -2237,7 +2240,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       createdAt: serverTimestamp()
     };
     if (replyToId) payload.replyToId = replyToId;
-    try { await addDoc(collection(db, "posts", postId, "comments"), payload); }
+    try { await addDoc(collection(db, "posts", postId, "comments"), payload); try { window.OnuNotify && window.OnuNotify.postComment(postId, t, replyToId); } catch (_) {} }
     catch (e) { alert('কমেন্ট এরর: ' + e.message); }
   }
 
@@ -2320,7 +2323,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
           if (!currentUser) return;
           const ref2 = doc(db, "posts", postId, "comments", commentId);
           const nowLiked = (d.likedBy || []).includes(currentUser.uid);
-          try { await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) }); }
+          try { await updateDoc(ref2, { likedBy: nowLiked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid) }); try { window.OnuNotify && window.OnuNotify.commentLike(postId, commentId, nowLiked); } catch (_) {} }
           catch (e) { console.error(e); alert('লাইক দেওয়া যায়নি: ' + e.message); }
         });
         return b;
@@ -2396,6 +2399,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
               reporterEmail: currentUser.email || '',
               createdAt: serverTimestamp()
             });
+            try { window.OnuNotify && window.OnuNotify.toAdmin('report_received', { text: reason, link: 'profile.html' }); } catch (_) {}
           } catch (e) { alert('এরর: ' + e.message); }
         });
         return b;
@@ -2443,6 +2447,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
         subscribers: nowSubscribed ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid)
       }, { merge: true });
       currentIsSubscribed = !nowSubscribed;
+      if (!nowSubscribed) { try { window.OnuNotify && window.OnuNotify.subscribed(currentTargetUid); } catch (_) {} }
       if (currentProfileData) {
         const subs = currentProfileData.subscribers || [];
         currentProfileData.subscribers = nowSubscribed
@@ -3370,7 +3375,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       const up = await sb.storage.from(VOICE_BUCKET).upload(path, rec.blob, { contentType: baseType, upsert: false });
       if (up.error) throw up.error;
       const audioUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(path).data.publicUrl;
-      await addDoc(collection(db, "posts"), {
+      const __vref = await addDoc(collection(db, "posts"), {
         authorUid: currentUser.uid,
         authorName: currentUser.displayName || 'User',
         authorEmail: currentUser.email || '',
@@ -3385,6 +3390,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
         commentCount: 0,
         createdAt: serverTimestamp()
       });
+      try { window.OnuNotify && window.OnuNotify.newPost(__vref.id, vrCaption.value.trim()); } catch (_) {}
       closeVoicePage(false);
       resetComposerAfterPost();
       closeComposerModal();
@@ -3539,7 +3545,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
         composerStatus.textContent = 'আপলোড হচ্ছে...';
         Object.assign(postData, await uploadPostAttachment(attachNow));
       }
-      await addDoc(collection(db, "posts"), postData);
+      { const __nref = await addDoc(collection(db, "posts"), postData); try { window.OnuNotify && window.OnuNotify.newPost(__nref.id, postData.text); } catch (_) {} }
 
       resetComposerAfterPost();
       closeComposerModal();
@@ -3909,5 +3915,6 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   }, { passive: true });
 })();
 </script>
+<script type="module" src="notify.js"></script>
 </body>
 </html>
