@@ -235,14 +235,14 @@ function currentList() {
   const items = visible(OnuNotify.state.items);
   return curGroup === 'all' ? items : items.filter(it => it.group === curGroup);
 }
-// দেখানো নতুন নোটিফিকেশন কিছুক্ষণ পর পড়া হয়ে যায় (তাই হোমের সবুজ বেল আবার স্বাভাবিক হয়)
-function scheduleRead(part) {
+// এই পেজে ঢুকলেই (মেসেজ ছাড়া) সব নতুন নোটিফিকেশন সাথে সাথে পড়া হয়ে যায়, তাই হোমের সবুজ বেল সাদা হয়
+// (মেসেজ-সেকশনের নতুন নোটিফিকেশন পড়া হয় মেসেজ পেজে ঢুকলে)
+function scheduleRead() {
   clearTimeout(readTimer);
-  const fresh = part.filter(i => i.unread);
-  if (!fresh.length) return;
   readTimer = setTimeout(() => {
-    if (view === 'group' && document.visibilityState === 'visible') OnuNotify.markAllRead(fresh);
-  }, 2500);
+    const fresh = OnuNotify.state.items.filter(i => i.unread && i.group !== 'message');
+    if (fresh.length) OnuNotify.markAllRead(fresh);
+  }, 150);
 }
 function render() {
   const st = OnuNotify.state;
@@ -254,7 +254,7 @@ function render() {
     const part = list.slice(0, shown);
     fillList($('groupItems'), part, curGroup === 'all' ? 'এখনো কোনো নোটিফিকেশন নেই।' : 'এই সেকশনে এখনো কোনো নোটিফিকেশন নেই।');
     $('grpMore').style.display = list.length > shown ? 'block' : 'none';
-    scheduleRead(part);
+    scheduleRead();
   } else {
     clearTimeout(readTimer);
     if (view === 'settings') renderSettings();

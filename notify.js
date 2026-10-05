@@ -398,8 +398,9 @@ const OnuNotify = {
 // ---------------------------------------------------------------------------
 // লাইভ শোনা: আমার নোটিফিকেশন + সবার জন্য ঘোষণা
 // ---------------------------------------------------------------------------
-const state = { user: null, items: [], unread: 0, byGroup: {}, loading: true };
+const state = { user: null, items: [], unread: 0, unreadMsg: 0, byGroup: {}, loading: true };
 const listeners = new Set();
+const ON_MESSAGES_PAGE = /\/messages(\.html)?\/?$/i.test(location.pathname);
 let mineDocs = [], allDocs = [], unsubMine = null, unsubAll = null, firstMine = true, firstAll = true;
 
 function emit() { listeners.forEach(fn => { try { fn(state); } catch (e) {} }); paintBadges(); }
@@ -420,12 +421,19 @@ function rebuild() {
   items.sort((a, b) => b.ms - a.ms);
   state.items = items;
   const vis = items.filter(it => !isMuted(it));
-  state.unread = vis.filter(it => it.unread).length;
+  // বেলের সংখ্যা: মেসেজ ছাড়া বাকি নোটিফিকেশন; মেসেজের সংখ্যা আলাদা (হোমের মেসেজ বাটনের জন্য)
+  state.unread = vis.filter(it => it.unread && it.group !== 'message').length;
   const bg = {};
   vis.forEach(it => { if (it.unread) bg[it.group] = (bg[it.group] || 0) + 1; });
   state.byGroup = bg;
+  state.unreadMsg = bg.message || 0;
   state.loading = false;
   emit();
+  // মেসেজ পেজে ঢুকলেই মেসেজের নতুন নোটিফিকেশন সাথে সাথে পড়া হয়ে যায়
+  if (ON_MESSAGES_PAGE && state.unreadMsg > 0) {
+    const fresh = items.filter(it => it.unread && it.group === 'message');
+    setTimeout(() => { try { OnuNotify.markAllRead(fresh); } catch (e) {} }, 0);
+  }
 }
 
 function startListening(u) {
@@ -433,7 +441,7 @@ function startListening(u) {
   if (unsubAll) { unsubAll(); unsubAll = null; }
   mineDocs = []; allDocs = []; firstMine = true; firstAll = true;
   state.user = u || null;
-  if (!u) { state.items = []; state.unread = 0; state.byGroup = {}; state.loading = false; emit(); return; }
+  if (!u) { state.items = []; state.unread = 0; state.unreadMsg = 0; state.byGroup = {}; state.loading = false; emit(); return; }
   state.loading = true;
   unsubMine = onSnapshot(query(collection(db, 'notifications'), where('toUid', '==', u.uid)), snap => {
     mineDocs = snap.docs;
@@ -499,6 +507,9 @@ function injectCss() {
 .onuBell svg{display:block}
 a.onuBell.onuNew{background:#16a34a!important;border-color:#16a34a!important;color:#fff!important}
 a.onuBell.onuNew:active{background:#15803d!important}
+a.onuMsgNew{color:#22c55e!important;box-shadow:inset 0 0 0 1px #22c55e!important}
+a.onuMsgNew *{color:#22c55e!important}
+.onuMsgCnt{color:#22c55e!important;font-weight:700;margin-left:4px}
 .onuBadge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--text-color,#fff);color:var(--bg-color,#000);border:2px solid var(--bg-color,#000);font-size:10px;font-weight:700;line-height:13px;text-align:center;box-sizing:border-box;display:none}
 #headerCenter:not(.inbox) ~ .onuBell.absL{display:none}
 .onuToast{position:fixed;left:50%;top:10px;transform:translate(-50%,-160%);width:min(92vw,420px);box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:var(--bg-color,#000);color:var(--text-color,#fff);border:1px solid var(--text-color,#fff);box-shadow:0 6px 24px rgba(0,0,0,.35);z-index:2147483000;cursor:pointer;transition:transform .35s ease;font-family:inherit}
@@ -514,10 +525,30 @@ function paintBadges() {
   const n = state.unread;
   document.querySelectorAll('.onuBell').forEach(a => a.classList.toggle('onuNew', n > 0));
   document.querySelectorAll('.onuBadge').forEach(b => {
-    b.textContent = n > 99 ? '99+' : String(n);
+    const t = n > 99 ? '99+' : String(n);
+    if (b.textContent !== t) b.textContent = t;
     b.style.display = n > 0 ? 'block' : 'none';
   });
+  paintMsgButtons();
 }
+function bnDigits(x) { return String(x).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
+// হোমের "মেসেজ" বাটন (মেনুর লিংক যেটা messages.html-এ যায়): নতুন মেসেজ থাকলে সবুজ + (সংখ্যা), না থাকলে কিছুই না
+function paintMsgButtons() {
+  const n = state.unreadMsg || 0;
+  document.querySelectorAll('a[href], a[data-onu-msg]').forEach(a => {
+    const h = (a.getAttribute('href') || '').split('#')[0];
+    if (!a.hasAttribute('data-onu-msg') && !/^(\.\/|\/)?messages(\.html)?\/?$/i.test(h)) return;
+    a.classList.toggle('onuMsgNew', n > 0);
+    let c = null;
+    for (const k of a.children) if (k.classList && k.classList.contains('onuMsgCnt')) { c = k; break; }
+    if (n > 0) {
+      const t = '(' + bnDigits(n) + ')';
+      if (!c) { c = document.createElement('span'); c.className = 'onuMsgCnt'; a.appendChild(c); }
+      if (c.textContent !== t) c.textContent = t;
+    } else if (c) c.remove();
+  });
+}
+let paintTimer = null;
 function wireBells() {
   document.querySelectorAll('.onuBell').forEach(a => {
     if (a.dataset.onuWired) return;
@@ -527,6 +558,8 @@ function wireBells() {
   paintBadges();
 }
 injectCss();
+// মেনু আবার আঁকা হলে (index.html) বাটনের সংখ্যা ও রং ফিরিয়ে আনতে
+try { new MutationObserver(() => { clearTimeout(paintTimer); paintTimer = setTimeout(paintBadges, 120); }).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireBells); else wireBells();
 
 window.OnuNotify = OnuNotify;
