@@ -557,7 +557,7 @@ function paintMsgButtons() {
     let c = null;
     for (const k of a.children) if (k.classList && k.classList.contains('onuMsgCnt')) { c = k; break; }
     if (n > 0) {
-      const t = '(' + bnDigits(n) + ')';
+      const t = '(' + n + ')';
       if (!c) { c = document.createElement('span'); c.className = 'onuMsgCnt'; a.appendChild(c); }
       if (c.textContent !== t) c.textContent = t;
     } else if (c) c.remove();
