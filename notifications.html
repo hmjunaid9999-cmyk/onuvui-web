@@ -70,6 +70,11 @@ main{max-width:640px;margin:0 auto;padding-bottom:40px}
 .sw input:checked + i{background:var(--text-color)}
 .sw input:checked + i::after{left:22px;background:var(--bg-color)}
 .loadMore{display:block;margin:14px auto;}
+.tabs{position:sticky;top:var(--hdrH,57px);z-index:15;display:flex;gap:8px;overflow-x:auto;padding:10px 12px;background:var(--bg-color);border-bottom:1px solid var(--line);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--text-color);border-radius:14px;padding:9px 20px;font-size:15px;font-weight:700;cursor:pointer;white-space:nowrap}
+.tab.active{background:var(--surface-active);border-color:var(--text-color)}
+.clearRow{display:flex;justify-content:flex-end;padding:10px 14px;border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -97,27 +102,10 @@ main{max-width:640px;margin:0 auto;padding-bottom:40px}
       </div>
     </section>
 
-    <!-- সেকশন ১: হোম (সব সেকশনের তালিকা) -->
-    <section id="vHome" class="view">
-      <div class="secBar"><button class="secBack" type="button" data-back>← ফিরে যান</button><span class="secTitle">সব সেকশন</span></div>
-      <div class="sum">
-        <div><b id="sumUnread">০</b><span>অপঠিত নোটিফিকেশন</span></div>
-        <div class="btnRow"><button class="btn" id="homeMarkAll" type="button">সব পড়া হয়েছে</button></div>
-      </div>
-      <div id="groupList"></div>
-      <div class="sub">সাম্প্রতিক</div>
-      <div id="recentList"></div>
-    </section>
-
-    <!-- সেকশন ২: নির্দিষ্ট সেকশনের তালিকা (পোস্ট/মেসেজ/ভিডিও ইত্যাদি) -->
+    <!-- মূল পেজ: ওপরে সেকশনের বাটন (সব/পোস্ট/প্রোফাইল/...), নিচে সেই সেকশনের নোটিফিকেশন -->
     <section id="vGroup" class="view">
-      <div class="secBar"><button class="secBack" type="button" data-back>← সব সেকশন</button><span class="secTitle" id="groupTitle"></span></div>
-      <div class="sum">
-        <div class="btnRow">
-          <button class="btn" id="grpMarkAll" type="button">এই সেকশনের সব পড়া হয়েছে</button>
-          <button class="btn" id="grpClear" type="button">সব মুছুন</button>
-        </div>
-      </div>
+      <div class="tabs" id="tabs"></div>
+      <div class="clearRow"><button class="btn" id="grpClear" type="button">সব মুছুন</button></div>
       <div id="groupItems"></div>
       <button class="btn loadMore" id="grpMore" type="button" style="display:none">আরও দেখুন</button>
     </section>
@@ -151,14 +139,14 @@ onSnapshot(doc(db, "settings", "site"), snap => {
 }, () => {});
 
 // ---------------- ভিউ ও ব্যাক বাটন ----------------
-let view = 'home', curGroup = null, shown = 30;
-const VIEWS = { load: 'vLoad', login: 'vLogin', home: 'vHome', group: 'vGroup', settings: 'vSettings' };
+let view = 'group', curGroup = 'all', shown = 30, readTimer = null;
+const VIEWS = { load: 'vLoad', login: 'vLogin', group: 'vGroup', settings: 'vSettings' };
 function show(v) {
   view = v;
   Object.values(VIEWS).forEach(id => $(id).classList.remove('active'));
   $(VIEWS[v]).classList.add('active');
   $('hdrSettings').style.visibility = (v === 'load' || v === 'login' || v === 'settings') ? 'hidden' : 'visible';
-  $('hdrTitle').textContent = v === 'settings' ? '⚙️ সেটিংস' : v === 'group' ? ((curGroup === 'all' ? '🔔 সব' : (GMAP[curGroup].icon + ' ' + GMAP[curGroup].label))) : '🔔 নোটিফিকেশন';
+  $('hdrTitle').textContent = v === 'settings' ? '⚙️ সেটিংস' : '🔔 নোটিফিকেশন';
   window.scrollTo(0, 0);
   render();
 }
@@ -169,8 +157,9 @@ function push(v, g) {
 }
 window.addEventListener('popstate', e => {
   const st = e.state;
-  if (st && st.nf) { curGroup = st.g || null; show(auth.currentUser ? st.nf : 'login'); }
-  else show(auth.currentUser ? 'home' : 'login');
+  if (!auth.currentUser) { show('login'); return; }
+  if (st && st.nf === 'settings') show('settings');
+  else { if (st && st.g) curGroup = st.g; show('group'); }
 });
 // আগের পেজে ফেরা: ব্রাউজারের হিস্টরি থাকলে সেটাই, নইলে যে পেজ থেকে এসেছিল সেখানে (না থাকলে হোম)
 function leavePage() {
@@ -178,7 +167,7 @@ function leavePage() {
   if (history.length > 1) history.back();
   else location.href = from || 'index.html';
 }
-function goBack() { if (view === 'group' || view === 'settings') history.back(); else leavePage(); }
+function goBack() { if (view === 'settings') history.back(); else leavePage(); }
 $('hdrBack').addEventListener('click', goBack);
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', goBack));
 $('hdrSettings').addEventListener('click', () => push('settings'));
@@ -217,44 +206,62 @@ function fillList(box, items, emptyMsg) {
   if (!items.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = emptyMsg; box.appendChild(e); return; }
   items.forEach(it => box.appendChild(itemEl(it)));
 }
+// ---- ওপরের সেকশন বাটন ----
+const TAB_LABEL = { message: 'মেসেজ', system: 'অ্যাডমিন' };
+const TABS = [{ k: 'all', label: 'সব' }].concat(GROUPS.map(g => ({ k: g.k, label: TAB_LABEL[g.k] || g.label })));
+function buildTabs() {
+  const box = $('tabs'); box.innerHTML = '';
+  TABS.forEach(t => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'tab'; b.dataset.k = t.k; b.textContent = t.label;
+    b.addEventListener('click', () => selectTab(t.k));
+    box.appendChild(b);
+  });
+}
+function markTabs(scroll) {
+  document.querySelectorAll('#tabs .tab').forEach(b => {
+    const on = b.dataset.k === curGroup;
+    b.classList.toggle('active', on);
+    if (on && scroll) { try { b.scrollIntoView({ block: 'nearest', inline: 'center' }); } catch (e) {} }
+  });
+}
+function selectTab(k) {
+  curGroup = k; shown = 30;
+  history.replaceState({ nf: 'group', g: k }, '', location.pathname + location.search);
+  window.scrollTo(0, 0);
+  markTabs(true);
+  render();
+}
+function currentList() {
+  const items = visible(OnuNotify.state.items);
+  return curGroup === 'all' ? items : items.filter(it => it.group === curGroup);
+}
+// দেখানো নতুন নোটিফিকেশন কিছুক্ষণ পর পড়া হয়ে যায় (তাই হোমের সবুজ বেল আবার স্বাভাবিক হয়)
+function scheduleRead(part) {
+  clearTimeout(readTimer);
+  const fresh = part.filter(i => i.unread);
+  if (!fresh.length) return;
+  readTimer = setTimeout(() => {
+    if (view === 'group' && document.visibilityState === 'visible') OnuNotify.markAllRead(fresh);
+  }, 2500);
+}
 function render() {
   const st = OnuNotify.state;
   if (!st.user) return;
-  const items = visible(st.items);
-  if (view === 'home') {
-    $('sumUnread').textContent = bn(st.unread);
-    $('homeMarkAll').disabled = st.unread === 0;
-    const gl = $('groupList'); gl.innerHTML = '';
-    const rows = [{ k: 'all', icon: '🔔', label: 'সব নোটিফিকেশন' }].concat(GROUPS);
-    rows.forEach(g => {
-      const n = g.k === 'all' ? st.unread : (st.byGroup[g.k] || 0);
-      const b = document.createElement('button'); b.type = 'button'; b.className = 'gRow';
-      b.innerHTML = '<span class="gIcon"></span><span class="gName"></span><span class="gCount" style="display:none"></span><span class="gArrow">›</span>';
-      b.querySelector('.gIcon').textContent = g.icon; b.querySelector('.gName').textContent = g.label;
-      const c = b.querySelector('.gCount'); if (n > 0) { c.textContent = bn(n > 99 ? '99+' : n); c.style.display = 'flex'; }
-      b.addEventListener('click', () => { shown = 30; push('group', g.k); });
-      gl.appendChild(b);
-    });
-    if (st.loading) $('recentList').innerHTML = '<div class="empty">লোড হচ্ছে...</div>';
-    else fillList($('recentList'), items.slice(0, 8), 'এখনো কোনো নোটিফিকেশন নেই।');
-  } else if (view === 'group') {
-    const list = curGroup === 'all' ? items : items.filter(it => it.group === curGroup);
-    $('groupTitle').textContent = curGroup === 'all' ? 'সব নোটিফিকেশন' : GMAP[curGroup].label;
-    $('grpMarkAll').disabled = !list.some(i => i.unread);
+  if (view === 'group') {
+    markTabs(false);
+    const list = currentList();
     $('grpClear').disabled = !list.length;
-    fillList($('groupItems'), list.slice(0, shown), 'এই সেকশনে এখনো কোনো নোটিফিকেশন নেই।');
+    const part = list.slice(0, shown);
+    fillList($('groupItems'), part, curGroup === 'all' ? 'এখনো কোনো নোটিফিকেশন নেই।' : 'এই সেকশনে এখনো কোনো নোটিফিকেশন নেই।');
     $('grpMore').style.display = list.length > shown ? 'block' : 'none';
-  } else if (view === 'settings') {
-    renderSettings();
+    scheduleRead(part);
+  } else {
+    clearTimeout(readTimer);
+    if (view === 'settings') renderSettings();
   }
 }
-$('homeMarkAll').addEventListener('click', () => OnuNotify.markAllRead(visible(OnuNotify.state.items)));
-$('grpMarkAll').addEventListener('click', () => {
-  const l = visible(OnuNotify.state.items).filter(it => curGroup === 'all' || it.group === curGroup);
-  OnuNotify.markAllRead(l);
-});
 $('grpClear').addEventListener('click', () => {
-  const l = visible(OnuNotify.state.items).filter(it => curGroup === 'all' || it.group === curGroup);
+  const l = currentList();
   if (l.length && confirm(l.length + 'টি নোটিফিকেশন মুছে ফেলবেন?')) OnuNotify.removeMany(l);
 });
 $('grpMore').addEventListener('click', () => { shown += 30; render(); });
@@ -297,14 +304,18 @@ OnuNotify.subscribe(st => {
   if (!started) {
     started = true;
     const q = new URLSearchParams(location.search).get('g');
-    history.replaceState({ nf: 'home' }, '', location.pathname + location.search);
-    if (q && (q === 'all' || GMAP[q])) { curGroup = q; history.pushState({ nf: 'group', g: q }, '', location.pathname + location.search); show('group'); }
-    else show('home');
+    curGroup = (q && (q === 'all' || GMAP[q])) ? q : 'all';
+    history.replaceState({ nf: 'group', g: curGroup }, '', location.pathname + location.search);
+    buildTabs();
+    show('group');
+    markTabs(true);
     setTimeout(() => OnuNotify.pruneMine(), 3000);
   } else render();
 });
 setInterval(() => { if (document.visibilityState === 'visible') render(); }, 60000);
 $('hdrSettings').style.visibility = 'hidden';
+const setHdrH = () => { const h = document.querySelector('header'); if (h) document.documentElement.style.setProperty('--hdrH', h.offsetHeight + 'px'); };
+setHdrH(); window.addEventListener('resize', setHdrH);
 </script>
 </body>
 </html>

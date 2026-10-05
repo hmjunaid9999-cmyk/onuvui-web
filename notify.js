@@ -497,6 +497,8 @@ function injectCss() {
 .onuBell.abs{position:absolute;right:14px;top:50%;transform:translateY(-50%)}
 .onuBell.absL{position:absolute;left:58px;top:50%;transform:translateY(-50%)}
 .onuBell svg{display:block}
+a.onuBell.onuNew{background:#16a34a!important;border-color:#16a34a!important;color:#fff!important}
+a.onuBell.onuNew:active{background:#15803d!important}
 .onuBadge{position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--text-color,#fff);color:var(--bg-color,#000);border:2px solid var(--bg-color,#000);font-size:10px;font-weight:700;line-height:13px;text-align:center;box-sizing:border-box;display:none}
 #headerCenter:not(.inbox) ~ .onuBell.absL{display:none}
 .onuToast{position:fixed;left:50%;top:10px;transform:translate(-50%,-160%);width:min(92vw,420px);box-sizing:border-box;display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;background:var(--bg-color,#000);color:var(--text-color,#fff);border:1px solid var(--text-color,#fff);box-shadow:0 6px 24px rgba(0,0,0,.35);z-index:2147483000;cursor:pointer;transition:transform .35s ease;font-family:inherit}
@@ -510,6 +512,7 @@ function injectCss() {
 }
 function paintBadges() {
   const n = state.unread;
+  document.querySelectorAll('.onuBell').forEach(a => a.classList.toggle('onuNew', n > 0));
   document.querySelectorAll('.onuBadge').forEach(b => {
     b.textContent = n > 99 ? '99+' : String(n);
     b.style.display = n > 0 ? 'block' : 'none';

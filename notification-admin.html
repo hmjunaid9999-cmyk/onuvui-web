@@ -19,6 +19,8 @@ header h1{flex:1;font-size:16px;font-weight:700;text-align:center;overflow:hidde
 .hBtn{width:36px;height:36px;border-radius:50%;background:transparent;border:1px solid var(--line);color:var(--text-color);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex:0 0 auto}
 .hBtn:active{background:var(--surface-active)}
 .hSpacer{width:36px;flex:0 0 auto}
+.hOut{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:18px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text-color)}
+.hOut:active{background:var(--surface-active)}
 main{max-width:760px;margin:0 auto;padding-bottom:50px}
 .view{display:none}.view.active{display:block}
 .secBar{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
@@ -77,7 +79,7 @@ textarea{min-height:90px;resize:vertical}
 <header>
   <button class="hBtn" id="hdrBack" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
   <h1 id="hdrTitle">🔔 নোটিফিকেশন অ্যাডমিন</h1>
-  <span class="hSpacer"></span>
+  <button class="hOut" id="hdrLogout" type="button" style="visibility:hidden">লগ আউট</button>
 </header>
 
 <main>
@@ -232,23 +234,24 @@ function gate(html, btns) {
   (btns || []).forEach(b => { const e = document.createElement('button'); e.className = 'btn' + (b.fill ? ' fill' : ''); e.style.margin = '4px'; e.textContent = b.t; e.addEventListener('click', b.fn); box.appendChild(e); });
   show('gate');
 }
+const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
+$('hdrLogout').addEventListener('click', () => signOut(auth));
 onAuthStateChanged(auth, async u => {
   me = u; isAdmin = false;
-  if (!u) { gate('নোটিফিকেশন অ্যাডমিন প্যানেলে ঢুকতে অ্যাডমিন ইমেইল দিয়ে লগইন করুন।', [{ t: '🔵 Google দিয়ে লগইন', fill: true, fn: async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { alert('লগইন করা যায়নি: ' + e.message); } } }]); return; }
+  $('hdrLogout').style.visibility = u ? 'visible' : 'hidden';
+  if (!u) {
+    gate('<b style="font-size:18px">Onuvuti Notification Admin</b><br>এডমিন অ্যাক্সেসের জন্য লগইন করুন',
+      [{ t: '🔵 Google দিয়ে লগইন করুন', fill: true, fn: async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { alert('লগইন এরর: ' + e.message); } } }]);
+    return;
+  }
   try {
     const snap = await getDoc(doc(db, 'settings', 'notifications'));
     S = Object.assign({}, DEFAULT_SETTINGS, snap.exists() ? snap.data() : {});
-  } catch (e) { gate('সেটিং পড়া যায়নি: ' + e.message + '<br>Firestore rules ঠিক আছে কিনা দেখুন।', [{ t: 'আবার চেষ্টা', fn: () => location.reload() }]); return; }
-  const admins = (S.adminEmails || []).map(x => String(x).toLowerCase().trim()).filter(Boolean);
+  } catch (e) { gate('সেটিং পড়া যায়নি: ' + e.message + '<br>Firestore rules ঠিক আছে কিনা দেখুন।', [{ t: 'আবার চেষ্টা', fn: () => location.reload() }, { t: 'লগ আউট', fn: () => signOut(auth) }]); return; }
+  const admins = ADMIN_EMAILS;
   const email = (u.email || '').toLowerCase();
-  if (!admins.length) {
-    gate('এখনো কোনো অ্যাডমিন ইমেইল ঠিক করা নেই।<br><b>' + email + '</b> কে প্রথম অ্যাডমিন বানাবেন?', [
-      { t: 'হ্যাঁ, অ্যাডমিন বানান', fill: true, fn: async () => { await setDoc(doc(db, 'settings', 'notifications'), { adminEmails: [email] }, { merge: true }); location.reload(); } },
-      { t: 'লগ আউট', fn: () => signOut(auth) }]);
-    return;
-  }
   if (!admins.includes(email)) {
-    gate('<b>' + email + '</b> এই প্যানেলের অ্যাডমিন নন।', [{ t: 'অন্য একাউন্টে লগইন', fn: () => signOut(auth) }]);
+    gate('<b style="font-size:18px">⛔ প্রবেশাধিকার নেই</b><br>এই অ্যাকাউন্টটি (<b>' + email + '</b>) এডমিন হিসেবে অনুমোদিত নয়।', [{ t: 'লগ আউট', fn: () => signOut(auth) }]);
     return;
   }
   isAdmin = true;
