@@ -532,12 +532,27 @@ function paintBadges() {
   paintMsgButtons();
 }
 function bnDigits(x) { return String(x).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]); }
-// হোমের "মেসেজ" বাটন (মেনুর লিংক যেটা messages.html-এ যায়): নতুন মেসেজ থাকলে সবুজ + (সংখ্যা), না থাকলে কিছুই না
+// হোমের মেনুর "Messages" ও "Notifications" বাটন: নতুন কিছু থাকলে সবুজ + সবুজ (সংখ্যা), না থাকলে কিছুই না
+// বাটন চেনা হয় লিংক (messages / notifications) অথবা বাটনের লেখা দেখে
+const MSG_LABELS = ['messages', 'message', 'মেসেজ', 'মেসেজ ও কল'];
+const NF_LABELS = ['notifications', 'notification', 'নোটিফিকেশন', 'নোটিফিকেশনসমূহ', 'নোটিফিকেশন সমূহ'];
+function menuKind(a) {
+  if (a.classList.contains('onuBell') || a.closest('.item') || a.closest('.onuToast')) return null;
+  if (a.hasAttribute('data-onu-msg')) return 'msg';
+  if (a.hasAttribute('data-onu-nf')) return 'nf';
+  const h = (a.getAttribute('href') || '').split('#')[0].split('?')[0];
+  if (/^(\.\/|\/)?messages(\.html)?\/?$/i.test(h)) return 'msg';
+  if (/^(\.\/|\/)?notifications(\.html)?\/?$/i.test(h)) return 'nf';
+  const label = Array.from(a.childNodes).filter(x => x.nodeType === 3).map(x => x.textContent).join('').trim().toLowerCase();
+  if (MSG_LABELS.includes(label)) return 'msg';
+  if (NF_LABELS.includes(label)) return 'nf';
+  return null;
+}
 function paintMsgButtons() {
-  const n = state.unreadMsg || 0;
-  document.querySelectorAll('a[href], a[data-onu-msg]').forEach(a => {
-    const h = (a.getAttribute('href') || '').split('#')[0];
-    if (!a.hasAttribute('data-onu-msg') && !/^(\.\/|\/)?messages(\.html)?\/?$/i.test(h)) return;
+  document.querySelectorAll('a').forEach(a => {
+    const kind = menuKind(a);
+    if (!kind) return;
+    const n = kind === 'msg' ? (state.unreadMsg || 0) : (state.unread || 0);
     a.classList.toggle('onuMsgNew', n > 0);
     let c = null;
     for (const k of a.children) if (k.classList && k.classList.contains('onuMsgCnt')) { c = k; break; }
