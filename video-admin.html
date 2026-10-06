@@ -69,9 +69,8 @@
   /* একাউন্ট কার্ড (নতুন বিন্যাস): ক্রমিক + UID + কপি / নাম / ইমেইল + কপি / হিস্ট্রি-ব্যালেন্স / ডিলিট-সাসপেন্ড */
   .accCard.accountCard { padding: 14px; }
   .accIdRow { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-  .accDetails { display: none; margin-top: 12px; }
-  .accCard.open .accDetails { display: block; }
-  .accCard.open .accSerial { background: #4285F4; color: #fff; border-color: #4285F4; }
+  .accView { z-index: 190; }
+  .accView .accIdRow { cursor: default; margin-bottom: 12px; }
   .accSerial {
     flex-shrink: 0; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px;
     background: #0d1117; border: 1px solid #30363d; color: #4285F4;
@@ -155,12 +154,12 @@
 
   .swiperContainer { overflow: hidden; }
   .swiperTrack {
-    display: flex; width: 300%;
+    display: flex; width: 200%;
     transition: transform 0.3s ease;
     touch-action: pan-y;
   }
   .swiperTrack.dragging { transition: none; }
-  .swiperPage { width: 33.3333%; flex-shrink: 0; min-width: 0; }
+  .swiperPage { width: 50%; flex-shrink: 0; min-width: 0; }
   .swiperPage .section { margin-bottom: 12px; }
 </style>
 </head>
@@ -190,7 +189,6 @@
       <div class="swiperDots">
         <span class="dot active" data-page="0"></span>
         <span class="dot" data-page="1"></span>
-        <span class="dot" data-page="2"></span>
       </div>
 
       <div class="swiperContainer" id="swiperContainer">
@@ -228,23 +226,6 @@
             </div>
           </div>
 
-          <div class="swiperPage">
-            <div class="section">
-              <h2>📢 বিজ্ঞাপন (কোম্পানির এড)</h2>
-              <div class="hint">এখানে যা যোগ করবেন তা ভিডিও দেখার সময় প্রতি ৩ মিনিট পরপর মাঝখানে দেখানো হবে। এই বিজ্ঞাপনের জন্য ইউজাররা কোনো কয়েন পাবে না — কয়েন শুধু ভিডিও দেখলেই আসে (কয়েন সেটিংস পেজ দেখুন)।</div>
-              <label>বিজ্ঞাপনের Title</label>
-              <input type="text" id="newAdTitle" placeholder="যেমন: XYZ কোম্পানি">
-              <label>YouTube/Facebook Embed URL</label>
-              <input type="text" id="newAdUrl" placeholder="https://www.youtube.com/embed/...">
-              <button class="sectionSaveBtn" id="addAdBtn">➕ বিজ্ঞাপন যোগ করুন</button>
-              <div class="sectionStatus" id="addAdStatus"></div>
-            </div>
-            <div class="section">
-              <h2>📋 বিজ্ঞাপনের তালিকা</h2>
-              <div id="adsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
-            </div>
-          </div>
-
         </div>
       </div>
     </main>
@@ -264,6 +245,17 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="fullScreenView accView" id="accountView">
+    <div class="fsHeader">
+      <button class="fsBackBtn" id="accViewBackBtn">← ফিরে যান</button>
+      <div class="fsTitleWrap">
+        <span class="fsTitle" id="accViewTitle"></span>
+        <span class="fsSubtitle" id="accViewSub"></span>
+      </div>
+    </div>
+    <div class="fsBody" id="accViewBody"></div>
   </div>
 
   <div class="fullScreenView" id="accountDetailView">
@@ -317,6 +309,7 @@
   // ---- একাউন্ট ----
   let allAccountsCache = [];
   let accountsUnsub = null;
+  let currentAccId = null; // এখন যে একাউন্টের ফুলস্ক্রিন ভিউ খোলা
 
   // ---- প্রতিটি একাউন্টের দৈনিক/মাসিক আয়-ব্যয়ের যোগফল আলাদাভাবে জমা থাকে
   //      (users/{uid}/dailyStats ও users/{uid}/monthlyStats) — video.html-এর logHistory()
@@ -402,6 +395,7 @@
       return name.includes(term) || email.includes(term) || id.toLowerCase().includes(term);
     }) : sorted;
     renderAccounts(filtered);
+    if (currentAccId) renderAccountView();
   }
 
   function copyText(text, btnEl) {
@@ -425,34 +419,76 @@
     document.body.removeChild(ta);
   }
 
-  // কোন কোন একাউন্টের কার্ড খোলা আছে (লিস্ট রিফ্রেশ হলেও খোলা থাকবে)
-  const openAccountIds = new Set();
-
+  // তালিকায় প্রতিটা একাউন্টের সারিতে শুধু ক্রমিক সংখ্যা + UID + কপি বাটন; সারিতে ক্লিক করলে
+  // আলাদা ফুলস্ক্রিন ভিউয়ে শুধু সেই একাউন্টটাই (একদম উপর থেকে) খোলে
   function renderAccounts(accounts) {
     const listEl = document.getElementById('accountsList');
     if (!accounts.length) { listEl.innerHTML = '<div class="listEmpty">কোনো একাউন্ট পাওয়া যায়নি</div>'; return; }
     listEl.innerHTML = '';
-    accounts.forEach(({ id, data, serial }) => {
+    accounts.forEach(({ id, serial }) => {
       const card = document.createElement('div');
       card.className = 'accCard accountCard';
-      const emailText = data.email || 'ইমেইল নেই';
-      const nameText = data.name || 'নাম নেই';
-
-      // এখন সাসপেন্ড আছে কিনা (মেয়াদ শেষ না হয়ে থাকলে)
-      const susp = data.suspended;
-      let suspended = false;
-      if (susp && susp.active && susp.until) {
-        const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
-        suspended = untilDate.getTime() > Date.now();
-      }
-
       card.innerHTML = `
         <div class="accIdRow">
           <span class="accSerial">${toBnNum(serial)}</span>
           <span class="accUid">${id}</span>
           <button class="copyBtn copyUidBtn" type="button" title="ইউনিক আইডি কপি করুন">📋</button>
         </div>
-        <div class="accDetails">
+      `;
+      card.querySelector('.accIdRow').addEventListener('click', () => openAccountView(id));
+      const copyUidBtn = card.querySelector('.copyUidBtn');
+      copyUidBtn.addEventListener('click', (ev) => { ev.stopPropagation(); copyText(id, copyUidBtn); });
+      listEl.appendChild(card);
+    });
+  }
+
+  // ---- ফুলস্ক্রিন: একটা একাউন্টের পুরো বিবরণ (নাম, ইমেইল, হিস্ট্রি/ব্যালেন্স, ডিলিট/সাসপেন্ড) ----
+  const accView = document.getElementById('accountView');
+  const accViewTitle = document.getElementById('accViewTitle');
+  const accViewSub = document.getElementById('accViewSub');
+  const accViewBody = document.getElementById('accViewBody');
+  let accViewClosing = false;
+
+  function closeAccView() {
+    if (accViewClosing || overlayStack[overlayStack.length - 1] !== 'accountView') return;
+    accViewClosing = true;
+    closeTopOverlayUI();
+  }
+
+  function openAccountView(id) {
+    currentAccId = id;
+    accViewClosing = false;
+    accView.classList.add('show');
+    pushOverlay('accountView');
+    renderAccountView();
+    accViewBody.scrollTop = 0;
+  }
+  document.getElementById('accViewBackBtn').addEventListener('click', closeAccView);
+
+  function renderAccountView() {
+    const acc = allAccountsCache.find(a => a.id === currentAccId);
+    if (!acc) { closeAccView(); return; }
+    const { id, data, serial } = acc;
+    const emailText = data.email || 'ইমেইল নেই';
+    const nameText = data.name || 'নাম নেই';
+    accViewTitle.textContent = nameText;
+    accViewSub.textContent = 'UID: ' + id;
+
+    // এখন সাসপেন্ড আছে কিনা (মেয়াদ শেষ না হয়ে থাকলে)
+    const susp = data.suspended;
+    let suspended = false;
+    if (susp && susp.active && susp.until) {
+      const untilDate = susp.until.toDate ? susp.until.toDate() : new Date(susp.until);
+      suspended = untilDate.getTime() > Date.now();
+    }
+
+    accViewBody.innerHTML = `
+      <div class="accCard accountCard">
+        <div class="accIdRow">
+          <span class="accSerial">${toBnNum(serial)}</span>
+          <span class="accUid">${id}</span>
+          <button class="copyBtn copyUidBtn" type="button" title="ইউনিক আইডি কপি করুন">📋</button>
+        </div>
         <div class="accName">${nameText.replace(/</g, '&lt;')}</div>
         <div class="accCopyRow">
           <span class="accEmail">${emailText.replace(/</g, '&lt;')}</span>
@@ -466,62 +502,53 @@
           <button class="accActBtn accDelBtn2" type="button" title="একাউন্ট ডিলিট করুন">🗑️ ডিলিট</button>
           <button class="accActBtn accSuspendBtn${suspended ? ' on' : ''}" type="button" title="${suspended ? 'সাসপেনশন তুলে নিন' : 'একাউন্ট সাসপেন্ড করুন'}">${suspended ? '✅ সাসপেন্ড তুলুন' : '⛔ সাসপেন্ড'}</button>
         </div>
-        </div>
-      `;
+      </div>
+    `;
 
-      card.querySelector('.accDelBtn2').addEventListener('click', async () => {
-        const ok = confirm(`আপনি কি নিশ্চিত "${data.name || id}" একাউন্টটি ডিলিট করতে চান?\nএই কাজটি ফেরানো যাবে না।`);
-        if (!ok) return;
-        try {
-          await deleteDoc(doc(db, "users", id));
-        } catch (e) {
-          alert('ডিলিট করা যায়নি: ' + e.message);
-        }
-      });
-
-      // সাসপেন্ড: মূল অ্যাপ (profile/messages) যে suspended { active, until, message } ফিল্ড চেক করে সেটাই সেট হয়
-      card.querySelector('.accSuspendBtn').addEventListener('click', async () => {
-        const who = data.name || id;
-        if (suspended) {
-          if (!confirm(`"${who}" এর সাসপেনশন তুলে নিতে চান?`)) return;
-          try {
-            await setDoc(doc(db, "users", id), { suspended: { active: false } }, { merge: true });
-          } catch (e) {
-            alert('সাসপেনশন তোলা যায়নি: ' + e.message);
-          }
-          return;
-        }
-        const daysStr = prompt(`"${who}" কত দিনের জন্য সাসপেন্ড করবেন? (সংখ্যা লিখুন, যেমন: 7)`, '7');
-        if (daysStr === null) return;
-        const days = Number(daysStr);
-        if (!days || days <= 0) { alert('সঠিক দিনের সংখ্যা দিন'); return; }
-        const msg = prompt('ইউজারকে যে বার্তা দেখানো হবে (ঐচ্ছিক — ফাঁকা রাখলে সাধারণ বার্তা যাবে):', '');
-        if (msg === null) return;
-        const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-        try {
-          await setDoc(doc(db, "users", id), { suspended: { active: true, until, message: msg.trim() } }, { merge: true });
-        } catch (e) {
-          alert('সাসপেন্ড করা যায়নি: ' + e.message);
-        }
-      });
-
-      // ক্রমিক সংখ্যা বা UID-র সারিতে ক্লিক করলে ভিতরের অংশ খোলে/বন্ধ হয় (কপি বাটন বাদে)
-      if (openAccountIds.has(id)) card.classList.add('open');
-      card.querySelector('.accIdRow').addEventListener('click', () => {
-        const nowOpen = card.classList.toggle('open');
-        if (nowOpen) openAccountIds.add(id); else openAccountIds.delete(id);
-      });
-
-      const copyUidBtn = card.querySelector('.copyUidBtn');
-      copyUidBtn.addEventListener('click', (ev) => { ev.stopPropagation(); copyText(id, copyUidBtn); });
-      const copyEmailBtn = card.querySelector('.copyEmailBtn');
-      if (copyEmailBtn) copyEmailBtn.addEventListener('click', () => copyText(data.email, copyEmailBtn));
-
-      card.querySelector('.openBalanceBtn').addEventListener('click', () => openBalanceView(id, data));
-      card.querySelector('.openHistoryBtn').addEventListener('click', () => openHistoryView(id, data));
-
-      listEl.appendChild(card);
+    accViewBody.querySelector('.accDelBtn2').addEventListener('click', async () => {
+      const ok = confirm(`আপনি কি নিশ্চিত "${data.name || id}" একাউন্টটি ডিলিট করতে চান?\nএই কাজটি ফেরানো যাবে না।`);
+      if (!ok) return;
+      try {
+        await deleteDoc(doc(db, "users", id));
+        closeAccView();
+      } catch (e) {
+        alert('ডিলিট করা যায়নি: ' + e.message);
+      }
     });
+
+    // সাসপেন্ড: মূল অ্যাপ (profile/messages) যে suspended { active, until, message } ফিল্ড চেক করে সেটাই সেট হয়
+    accViewBody.querySelector('.accSuspendBtn').addEventListener('click', async () => {
+      const who = data.name || id;
+      if (suspended) {
+        if (!confirm(`"${who}" এর সাসপেনশন তুলে নিতে চান?`)) return;
+        try {
+          await setDoc(doc(db, "users", id), { suspended: { active: false } }, { merge: true });
+        } catch (e) {
+          alert('সাসপেনশন তোলা যায়নি: ' + e.message);
+        }
+        return;
+      }
+      const daysStr = prompt(`"${who}" কত দিনের জন্য সাসপেন্ড করবেন? (সংখ্যা লিখুন, যেমন: 7)`, '7');
+      if (daysStr === null) return;
+      const days = Number(daysStr);
+      if (!days || days <= 0) { alert('সঠিক দিনের সংখ্যা দিন'); return; }
+      const msg = prompt('ইউজারকে যে বার্তা দেখানো হবে (ঐচ্ছিক — ফাঁকা রাখলে সাধারণ বার্তা যাবে):', '');
+      if (msg === null) return;
+      const until = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      try {
+        await setDoc(doc(db, "users", id), { suspended: { active: true, until, message: msg.trim() } }, { merge: true });
+      } catch (e) {
+        alert('সাসপেন্ড করা যায়নি: ' + e.message);
+      }
+    });
+
+    const copyUidBtn = accViewBody.querySelector('.copyUidBtn');
+    copyUidBtn.addEventListener('click', () => copyText(id, copyUidBtn));
+    const copyEmailBtn = accViewBody.querySelector('.copyEmailBtn');
+    if (copyEmailBtn) copyEmailBtn.addEventListener('click', () => copyText(data.email, copyEmailBtn));
+
+    accViewBody.querySelector('.openBalanceBtn').addEventListener('click', () => openBalanceView(id, data));
+    accViewBody.querySelector('.openHistoryBtn').addEventListener('click', () => openHistoryView(id, data));
   }
 
   // ---- ফুলস্ক্রিন/মডাল ওভারলের জন্য ব্যাক বাটন হ্যান্ডলিং ----
@@ -558,6 +585,11 @@
       statTabGoto = null;
     } else if (name === 'addAccountModal') {
       addAccountModal.classList.remove('show');
+    } else if (name === 'accountView') {
+      accView.classList.remove('show');
+      accViewBody.innerHTML = '';
+      currentAccId = null;
+      accViewClosing = false;
     }
   });
 
@@ -747,72 +779,12 @@
     }
   });
 
-  // ---- বিজ্ঞাপন (কোম্পানির এড) ম্যানেজমেন্ট — শুধু এডমিন যোগ/ডিলিট করতে পারবে, ইউজারদের জন্য কোনো খরচ বা রিওয়ার্ড নেই ----
-  async function loadAdminAds() {
-    const listEl = document.getElementById('adsAdminList');
-    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
-    try {
-      const snap = await getDocs(query(collection(db, "advertisements"), orderBy("createdAt", "desc"), limit(50)));
-      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">এখনো কোনো বিজ্ঞাপন যোগ করা হয়নি</div>'; return; }
-      listEl.innerHTML = '';
-      snap.forEach(docSnap => {
-        const d = docSnap.data(), id = docSnap.id;
-        const card = document.createElement('div');
-        card.className = 'accCard';
-        card.innerHTML = `
-          <button class="accDeleteBtn" type="button" title="বিজ্ঞাপন ডিলিট করুন">🗑️</button>
-          <div class="accName">${(d.title || 'Untitled').replace(/</g, '&lt;')}</div>
-          <div class="accCopyRow"><span class="accEmail">👁 ${Number(d.viewCount || 0)} বার দেখানো হয়েছে</span></div>
-        `;
-        card.querySelector('.accDeleteBtn').addEventListener('click', async () => {
-          const ok = confirm(`আপনি কি নিশ্চিত "${d.title || id}" বিজ্ঞাপনটি ডিলিট করতে চান?`);
-          if (!ok) return;
-          try {
-            await deleteDoc(doc(db, "advertisements", id));
-            loadAdminAds();
-          } catch (e) {
-            alert('ডিলিট করা যায়নি: ' + e.message);
-          }
-        });
-        listEl.appendChild(card);
-      });
-    } catch (e) {
-      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
-    }
-  }
-
-  document.getElementById('addAdBtn').addEventListener('click', async () => {
-    const statusEl = document.getElementById('addAdStatus');
-    const title = document.getElementById('newAdTitle').value.trim();
-    const url = document.getElementById('newAdUrl').value.trim();
-    if (!title || !/^https?:\/\//i.test(url)) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'Title এবং সঠিক Embed URL দিন';
-      return;
-    }
-    try {
-      await addDoc(collection(db, "advertisements"), {
-        title, videoUrl: url, ownerUid: auth.currentUser.uid,
-        status: 'active', viewCount: 0, createdAt: serverTimestamp()
-      });
-      document.getElementById('newAdTitle').value = '';
-      document.getElementById('newAdUrl').value = '';
-      statusEl.style.color = '#4ade80';
-      statusEl.textContent = '✅ যোগ হয়েছে!';
-      setTimeout(() => { statusEl.textContent = ''; }, 2000);
-      loadAdminAds();
-    } catch (e) {
-      statusEl.style.color = '#f87171';
-      statusEl.textContent = 'এরর: ' + e.message;
-    }
-  });
-
-  // ---- সোয়াইপার (কয়েন সেটিংস <-> একাউন্ট <-> বিজ্ঞাপন), মোট পেজ: 3 ----
+  // ---- সোয়াইপার (কয়েন সেটিংস <-> একাউন্ট), মোট পেজ: 2 ----
   const swiperContainer = document.getElementById('swiperContainer');
   const swiperTrack = document.getElementById('swiperTrack');
   const dots = document.querySelectorAll('.dot');
-  const TOTAL_PAGES = 3;
-  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (৩ পেজে ৩৩.৩৩%)
+  const TOTAL_PAGES = 2;
+  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (২ পেজে ৫০%)
   let currentPage = 0;
   let startX = 0;
   let currentTranslate = 0;
@@ -902,7 +874,6 @@
       startAccountsListener();
       loadCoinSettings();
       loadTheme();
-      loadAdminAds();
     } else {
       deniedScreen.style.display = 'flex';
     }
