@@ -1979,6 +1979,30 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
       if (call === c) callStatus.textContent = bnDuration(Math.floor((Date.now() - c.startedAt) / 1000));
     }, 1000);
   }
+  // ওপাশের আওয়াজ চালু নিশ্চিত করা: কিছু ব্রাউজার (বিশেষ করে iPhone/Safari) নিজে নিজে আসা আওয়াজ বাজাতে দেয় না
+  function ensureRemotePlay(c) {
+    const tryPlay = () => {
+      if (!c || c.ended || call !== c) return;
+      try { const ac = getAudioCtx(); if (ac && ac.state === 'suspended') ac.resume().catch(() => {}); } catch (e) {}
+      if (remoteVideo.srcObject && remoteVideo.paused) remoteVideo.play().catch(() => {});
+    };
+    tryPlay();
+    // ট্যাপ করলেই আবার চেষ্টা (ব্রাউজার ইউজারের ট্যাপ ছাড়া অডিও বাজাতে না দিলে এটাই চালু করে)
+    const onTap = () => { tryPlay(); if (!remoteVideo.paused) cleanup(); };
+    const cleanup = () => {
+      ['pointerdown', 'touchstart', 'click'].forEach(ev => callScreen.removeEventListener(ev, onTap));
+      clearInterval(c.playInt);
+    };
+    ['pointerdown', 'touchstart', 'click'].forEach(ev => callScreen.addEventListener(ev, onTap, { passive: true }));
+    clearInterval(c.playInt);
+    let n = 0;
+    c.playInt = setInterval(() => {         // প্রথম ~২০ সেকেন্ড প্রতি ১ সেকেন্ডে চেক
+      n++;
+      if (c.ended || call !== c || n > 20) { cleanup(); return; }
+      tryPlay();
+      if (!remoteVideo.paused && n > 3) cleanup();
+    }, 1000);
+  }
   function createPeer(c) {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     c.pc = pc;
@@ -1990,7 +2014,9 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     };
     pc.ontrack = e => {
       if (e.streams && e.streams[0]) remoteVideo.srcObject = e.streams[0];
-      remoteVideo.play().catch(() => {});
+      remoteVideo.muted = !!(loudNodes);   // স্পিকার-বুস্ট চালু না থাকলে ওপাশের আওয়াজ কখনো মিউট থাকবে না
+      remoteVideo.volume = 1;
+      ensureRemotePlay(c);                 // ব্রাউজার আওয়াজ আটকে দিলে ট্যাপ/রিট্রাইয়ে জোর করে চালু করবে
       if (c.loud) applyLoud(c);
       if (e.track.kind === 'video') {
         const show = () => callScreen.classList.add('hasRemote');
@@ -2045,7 +2071,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     c.ended = true;
     c.unsubs.forEach(u => { try { u(); } catch (e) {} });
     c.unsubs = [];
-    clearTimeout(c.ringT); clearTimeout(c.discT); clearInterval(c.durInt);
+    clearTimeout(c.ringT); clearTimeout(c.discT); clearInterval(c.durInt); clearInterval(c.playInt);
     try { if (c.localStream) c.localStream.getTracks().forEach(t => t.stop()); } catch (e) {}
     try { if (c.pc) c.pc.close(); } catch (e) {}
     remoteVideo.srcObject = null; localVideo.srcObject = null;
