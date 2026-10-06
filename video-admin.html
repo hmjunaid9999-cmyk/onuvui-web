@@ -68,7 +68,10 @@
   .copyBtn.copied { color: #4ade80; border-color: #4ade80; }
   /* একাউন্ট কার্ড (নতুন বিন্যাস): ক্রমিক + UID + কপি / নাম / ইমেইল + কপি / হিস্ট্রি-ব্যালেন্স / ডিলিট-সাসপেন্ড */
   .accCard.accountCard { padding: 14px; }
-  .accIdRow { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .accIdRow { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .accDetails { display: none; margin-top: 12px; }
+  .accCard.open .accDetails { display: block; }
+  .accCard.open .accSerial { background: #4285F4; color: #fff; border-color: #4285F4; }
   .accSerial {
     flex-shrink: 0; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 14px;
     background: #0d1117; border: 1px solid #30363d; color: #4285F4;
@@ -422,6 +425,9 @@
     document.body.removeChild(ta);
   }
 
+  // কোন কোন একাউন্টের কার্ড খোলা আছে (লিস্ট রিফ্রেশ হলেও খোলা থাকবে)
+  const openAccountIds = new Set();
+
   function renderAccounts(accounts) {
     const listEl = document.getElementById('accountsList');
     if (!accounts.length) { listEl.innerHTML = '<div class="listEmpty">কোনো একাউন্ট পাওয়া যায়নি</div>'; return; }
@@ -446,6 +452,7 @@
           <span class="accUid">${id}</span>
           <button class="copyBtn copyUidBtn" type="button" title="ইউনিক আইডি কপি করুন">📋</button>
         </div>
+        <div class="accDetails">
         <div class="accName">${nameText.replace(/</g, '&lt;')}</div>
         <div class="accCopyRow">
           <span class="accEmail">${emailText.replace(/</g, '&lt;')}</span>
@@ -458,6 +465,7 @@
         <div class="accActRow">
           <button class="accActBtn accDelBtn2" type="button" title="একাউন্ট ডিলিট করুন">🗑️ ডিলিট</button>
           <button class="accActBtn accSuspendBtn${suspended ? ' on' : ''}" type="button" title="${suspended ? 'সাসপেনশন তুলে নিন' : 'একাউন্ট সাসপেন্ড করুন'}">${suspended ? '✅ সাসপেন্ড তুলুন' : '⛔ সাসপেন্ড'}</button>
+        </div>
         </div>
       `;
 
@@ -497,8 +505,15 @@
         }
       });
 
+      // ক্রমিক সংখ্যা বা UID-র সারিতে ক্লিক করলে ভিতরের অংশ খোলে/বন্ধ হয় (কপি বাটন বাদে)
+      if (openAccountIds.has(id)) card.classList.add('open');
+      card.querySelector('.accIdRow').addEventListener('click', () => {
+        const nowOpen = card.classList.toggle('open');
+        if (nowOpen) openAccountIds.add(id); else openAccountIds.delete(id);
+      });
+
       const copyUidBtn = card.querySelector('.copyUidBtn');
-      copyUidBtn.addEventListener('click', () => copyText(id, copyUidBtn));
+      copyUidBtn.addEventListener('click', (ev) => { ev.stopPropagation(); copyText(id, copyUidBtn); });
       const copyEmailBtn = card.querySelector('.copyEmailBtn');
       if (copyEmailBtn) copyEmailBtn.addEventListener('click', () => copyText(data.email, copyEmailBtn));
 
