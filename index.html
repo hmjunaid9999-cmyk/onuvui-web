@@ -162,7 +162,7 @@ html[data-theme="light"]{--ash-btn:#c2c6ca}
 .mpGoneBox{padding:22px 12px;text-align:center;font-size:13px}
 
 /* ===== মিউজিক প্লেয়ার (বর্গাকার — ভয়েস ও অডিও পোস্ট) ===== */
-.mp{position:relative;width:100%;max-width:380px;aspect-ratio:1/1;margin:8px auto 10px;border-radius:22px;background:linear-gradient(180deg,#0a0e19 0%,#0b1020 100%);color:#fff;display:flex;flex-direction:column;padding:14px 14px 10px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);-webkit-user-select:none;user-select:none}
+.mp{position:relative;width:100%;max-width:340px;aspect-ratio:20/17;margin:8px auto 10px;border-radius:22px;background:linear-gradient(180deg,#0a0e19 0%,#0b1020 100%);color:#fff;display:flex;flex-direction:column;padding:14px 14px 10px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.14);-webkit-user-select:none;user-select:none}
 .mpViz{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 .mpGlow{position:absolute;inset:-12% -20%;background:radial-gradient(38% 55% at 20% 50%,rgba(255,70,50,.42),transparent 70%),radial-gradient(38% 55% at 80% 50%,rgba(40,150,255,.42),transparent 70%),radial-gradient(34% 45% at 50% 50%,rgba(220,60,240,.30),transparent 70%);opacity:.45;transition:opacity .5s ease;filter:blur(8px);pointer-events:none}
 .mp.playing .mpGlow{opacity:1}
@@ -2337,16 +2337,17 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     if (t) {
       const r = REACT_MAP[t];
       b.className = 'likeBtn liked';
-      b.style.color = 'var(--text-color)';
-      b.style.background = 'var(--surface-active)';
+      b.style.color = '#1877f2';
+      b.style.background = '';
       b.style.fontWeight = 'bold';
-      b.innerHTML = `<span class="lkEmoji">${r.e}</span> ${r.l} (<span class="likeCount">${n}</span>)`;
+      const icon = (t === 'like') ? '<svg class="lkSvg" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.2em"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>' : r.e;
+      b.innerHTML = `<span class="lkEmoji">${icon}</span> ${r.l} (<span class="likeCount">${n}</span>)`;
     } else {
       b.className = 'likeBtn';
       b.style.color = '';
       b.style.background = '';
       b.style.fontWeight = '';
-      b.innerHTML = `<span class="lkEmoji lkOff">👍</span> লাইক (<span class="likeCount">${n}</span>)`;
+      b.innerHTML = `<span class="lkEmoji"><svg class="lkSvg" viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="currentColor" aria-hidden="true" style="vertical-align:-0.2em"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></span> লাইক (<span class="likeCount">${n}</span>)`;
     }
     if (animate && t) {
       const em = b.querySelector('.lkEmoji');
@@ -2561,7 +2562,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
           <div class="composerTargetLabel"></div>
           <div class="commentForm">
             <textarea class="commentInput" rows="1" placeholder="কমেন্ট লিখুন..."></textarea>
-            <button class="commentSubmitBtn">পেস্ট</button>
+            <button class="commentSubmitBtn">পাঠান</button>
           </div>
         </div>
         <div class="commentsListEl"></div>
