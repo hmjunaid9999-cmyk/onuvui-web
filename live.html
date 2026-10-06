@@ -7,11 +7,15 @@
 <title>লাইভ স্ট্রিম - Onuvuti</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg-color);color:var(--text-color);font-family:'Segoe UI',Arial,sans-serif}::-webkit-scrollbar{width:0;height:0}@keyframes floatUp{0%{transform:translateY(0) scale(0.5);opacity:0}15%{opacity:1;transform:translateY(-10px) scale(1)}100%{transform:translateY(-280px) scale(1.15);opacity:0}}.giftFloat{position:absolute;bottom:70px;font-size:34px;animation:floatUp 2.2s ease-out forwards;pointer-events:none}#chatMessages{scroll-behavior:smooth}#chatMessages > div{animation:fadeIn .25s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}.audioBar{width:5px;height:10px;background:var(--surface-active);border-radius:3px;animation:audioBounce 1s ease-in-out infinite}@keyframes audioBounce{0%,100%{height:8px}50%{height:28px}}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}</style>
+<style id="authLoadingCss">#authLoading{position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-family:inherit}</style>
 </head>
 <body>
+<div id="authLoading">লোড হচ্ছে...</div>
+<script>(function(){var need={};function hide(){var e=document.getElementById("authLoading");if(e)e.style.display="none";}window.hideAuthLoading=hide;window.bootDone=function(k){delete need[k];for(var x in need)return;hide();};setTimeout(function(){if(!window.__authDone){var g=document.getElementById("authGate");if(g)g.classList.remove("hidden");}hide();},10000);})();</script>
+
 
   
-  <div id="authGate" class="fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center gap-4 p-6 text-center">
+  <div id="authGate" class="hidden fixed inset-0 bg-black/95 z-50 flex flex-col items-center justify-center gap-4 p-6 text-center">
     <div class="text-5xl">🔴</div>
     <h2 class="text-lg font-bold">লাইভ দেখতে বা লাইভ করতে লগইন করুন</h2>
     <p class="text-sm text-gray-400 max-w-xs">আপনার Onuvuti অ্যাকাউন্ট দিয়ে লগইন করলেই লাইভ স্ট্রিম দেখা, চ্যাট করা এবং গিফট পাঠানো যাবে।</p>
@@ -342,6 +346,7 @@
   });
 
   onAuthStateChanged(auth, (user) => {
+    window.__authDone = true;
     if (user) {
       currentUser = user;
       authGate.classList.add('hidden');
@@ -350,10 +355,12 @@
       listenCoins(user.uid);
       showLobby();
       listenLobby();
+      if (window.hideAuthLoading) window.hideAuthLoading();
       askMediaPermissionsOnEnter();
     } else {
       currentUser = null;
       authGate.classList.remove('hidden');
+      if (window.hideAuthLoading) window.hideAuthLoading();
       cleanupSession();
     }
   });

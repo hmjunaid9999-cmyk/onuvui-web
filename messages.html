@@ -30,7 +30,7 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg-color);color:var(--te
 #siteHeader h1{font-size:16px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #backBtn{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-color);font-size:20px;cursor:pointer;padding:4px 8px}
 #logoutBtn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--surface);color:var(--text-color);border:none;padding:6px 14px;border-radius:14px;font-size:12px;cursor:pointer}
-#bootScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+#bootScreen{display:flex;align-items:center;justify-content:center;position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);font-size:15px}
 #bootScreen .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--primary-color);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 #headerCenter{display:flex;align-items:center;gap:10px;max-width:calc(100% - 190px);min-width:0}
@@ -255,7 +255,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 </head>
 <body>
 
-  <div id="bootScreen"><div class="spin"></div></div>
+  <div id="bootScreen">লোড হচ্ছে...</div>
 
   <div id="loginScreen">
     <img src="https://hmjunaid9999-cmyk.github.io/Onuvuti/icon-192.png" alt="Onuvuti">

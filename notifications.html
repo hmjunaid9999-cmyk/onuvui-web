@@ -76,8 +76,12 @@ main{max-width:640px;margin:0 auto;padding-bottom:40px}
 .tab.active{background:var(--surface-active);border-color:var(--text-color)}
 .clearRow{display:flex;justify-content:flex-end;padding:10px 14px;border-bottom:1px solid var(--line)}
 </style>
+<style id="authLoadingCss">#authLoading{position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-family:inherit}</style>
 </head>
 <body>
+<div id="authLoading">লোড হচ্ছে...</div>
+<script>(function(){var need={};function hide(){var e=document.getElementById("authLoading");if(e)e.style.display="none";}window.hideAuthLoading=hide;window.bootDone=function(k){delete need[k];for(var x in need)return;hide();};setTimeout(function(){hide();},10000);})();</script>
+
 <div id="app">
   <header>
     <button class="hBtn" id="hdrBack" type="button" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
@@ -143,6 +147,7 @@ let view = 'group', curGroup = 'all', shown = 30, readTimer = null;
 const VIEWS = { load: 'vLoad', login: 'vLogin', group: 'vGroup', settings: 'vSettings' };
 function show(v) {
   view = v;
+  if (v !== 'load' && window.hideAuthLoading) window.hideAuthLoading();
   Object.values(VIEWS).forEach(id => $(id).classList.remove('active'));
   $(VIEWS[v]).classList.add('active');
   $('hdrSettings').style.visibility = (v === 'load' || v === 'login' || v === 'settings') ? 'hidden' : 'visible';

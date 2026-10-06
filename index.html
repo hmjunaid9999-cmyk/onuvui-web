@@ -297,8 +297,12 @@ body.kbOpen .cmLabel{flex:none;font-size:13px}
 body.kbOpen .cmIcon{width:28px;height:28px}
 body.kbOpen .cmIcon svg{width:16px;height:16px}
 </style>
+<style id="authLoadingCss">#authLoading{position:fixed;inset:0;z-index:800;background:var(--bg-color,#000);color:var(--text-color,#fff);display:flex;align-items:center;justify-content:center;font-size:15px;font-family:inherit}</style>
 </head>
 <body>
+<div id="authLoading">লোড হচ্ছে...</div>
+<script>(function(){var need={};function hide(){var e=document.getElementById("authLoading");if(e)e.style.display="none";}window.hideAuthLoading=hide;window.bootDone=function(k){delete need[k];for(var x in need)return;hide();};setTimeout(function(){hide();},10000);})();</script>
+
 
   
   <div id="reportModalOverlay" class="reportModalOverlay" style="display:none;">
@@ -1997,7 +2001,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   async function loadPosts(isFirstLoad) {
     if (loadingPosts) return;
     loadingPosts = true;
-    try { await loadPostsInner(isFirstLoad); } finally { loadingPosts = false; }
+    try { await loadPostsInner(isFirstLoad); } finally { loadingPosts = false; if (window.hideAuthLoading) window.hideAuthLoading(); }
   }
   async function loadPostsInner(isFirstLoad) {
     loadMoreBtn.disabled = true;
