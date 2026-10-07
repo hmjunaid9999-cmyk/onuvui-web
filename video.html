@@ -368,7 +368,7 @@ async function openVideo(id){
     let savedSec=await getWatchProgress(id);
     if(reqId!==openReqId)return;
     const isYt=/youtube\.com\/embed\//i.test(data.videoUrl||"");
-    if(isYt){showYtCover(id,savedSec)}else{hideYtCover();$("frame").src=withResumeParam(data.videoUrl||"",savedSec)}
+    if(isYt){showYtCover(id,savedSec)}else{hideYtCover();getFrame().src=withResumeParam(data.videoUrl||"",savedSec)}
     $("title").textContent=data.title||"";
     $("caption").textContent=data.caption||"";
     await Promise.all([setDoc(doc(db,"videos",id,"stats","counts"),{viewCount:increment(1)},{merge:true}),setDoc(doc(db,"videos",id),{viewCount:increment(1)},{merge:true})]);
@@ -380,22 +380,24 @@ async function openVideo(id){
 let watchStartTs=null,watchBaseSeconds=0,watchSaveIv=null,ytPlayer=null,ytApiReady=false;
 window.onYouTubeIframeAPIReady=()=>{ytApiReady=true};(function(){var go=function(){var t=document.createElement("script");t.src="https://www.youtube.com/iframe_api";t.async=true;document.head.appendChild(t)};document.readyState==="complete"?go():window.addEventListener("load",go)})();
 function attachYtPlayer(){
-  try{if(ytPlayer&&ytPlayer.destroy)ytPlayer.destroy()}catch(e){}
+  destroyYt();
   ytPlayer=null;
   if(!/youtube\.com\/embed\//i.test(data?.videoUrl||""))return; 
   if(!(ytApiReady&&window.YT&&YT.Player)){setTimeout(attachYtPlayer,300);return}
   try{ytPlayer=new YT.Player("frame",{events:{onStateChange:e=>{if(e.data===YT.PlayerState.PAUSED||e.data===YT.PlayerState.ENDED){saveWatchProgress(vid);ytIsPlaying=false}else if(e.data===YT.PlayerState.PLAYING){ytIsPlaying=true}}}})}catch(e){ytPlayer=null}
 }
 function startWatchTracking(videoId,baseSeconds){watchStartTs=Date.now();watchBaseSeconds=baseSeconds||0;ytIsPlaying=true;clearInterval(watchSaveIv);let tickMs=Math.max(1,Number(settings.rewardIntervalSeconds||5))*1000;watchSaveIv=setInterval(()=>{saveWatchProgress(videoId);creditWatchCoins()},tickMs)}
-function stopWatchTracking(videoId){if(videoId)saveWatchProgress(videoId);clearInterval(watchSaveIv);watchSaveIv=null;watchStartTs=null;try{if(ytPlayer&&ytPlayer.destroy)ytPlayer.destroy()}catch(e){}ytPlayer=null}
+function stopWatchTracking(videoId){if(videoId)saveWatchProgress(videoId);clearInterval(watchSaveIv);watchSaveIv=null;watchStartTs=null;destroyYt();ytPlayer=null}
 function currentWatchSeconds(){if(ytPlayer&&typeof ytPlayer.getCurrentTime==="function"){try{let t=ytPlayer.getCurrentTime();if(typeof t==="number"&&t>=0)return Math.floor(t)}catch(e){}}if(!watchStartTs)return watchBaseSeconds;return watchBaseSeconds+Math.floor((Date.now()-watchStartTs)/1000)}
 async function saveWatchProgress(videoId){let sec=currentWatchSeconds();try{localStorage.setItem("wp_"+videoId,String(sec))}catch(e){}}
 async function getWatchProgress(videoId){try{return Number(localStorage.getItem("wp_"+videoId)||0)}catch(e){return 0}}
+function getFrame(){let f=document.getElementById("frame");if(!f){f=document.createElement("iframe");f.id="frame";f.setAttribute("allow","autoplay;encrypted-media;picture-in-picture");f.setAttribute("allowfullscreen","");const box=document.querySelector("#player .video");if(box)box.appendChild(f)}return f}
+function destroyYt(){try{if(ytPlayer&&ytPlayer.destroy)ytPlayer.destroy()}catch(e){}ytPlayer=null;getFrame()}
 let pendingYt=null;
 function showYtCover(id,sec){
   clearInterval(watchSaveIv);watchSaveIv=null;watchStartTs=null;watchBaseSeconds=sec||0;ytIsPlaying=false;
-  try{if(ytPlayer&&ytPlayer.destroy)ytPlayer.destroy()}catch(e){}ytPlayer=null;
-  $("frame").src="about:blank";
+  destroyYt();ytPlayer=null;
+  getFrame().src="about:blank";
   $("ytCoverImg").src=thumbFor(data);
   $("ytCover").style.display="block";
   pendingYt={id:id,sec:sec||0};
@@ -404,7 +406,7 @@ function hideYtCover(){$("ytCover").style.display="none";pendingYt=null}
 function playYtFromCover(){
   const p=pendingYt;if(!p||p.id!==vid)return;
   hideYtCover();
-  $("frame").src=withResumeParam(data.videoUrl||"",p.sec,true);
+  getFrame().src=withResumeParam(data.videoUrl||"",p.sec,true);
   startWatchTracking(p.id,p.sec);
   setTimeout(attachYtPlayer,1500);
 }
@@ -734,17 +736,17 @@ function leavePlayerIfActive(){
     if(commentsUnsub){commentsUnsub();commentsUnsub=null}
     if(vidLikesUnsub){vidLikesUnsub();vidLikesUnsub=null}
     closeReactionUi();closeCommentsUI();
-    $("frame").src="";
+    getFrame().src="";
   }
 }
 window.panel=(id,b)=>{let current=document.querySelector(".panel.active");panelBeforeSub=current?current.id:"home";leavePlayerIfActive();document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="my")loadMine();balance();if(id==="coin"||id==="my"||id==="add"){history.pushState({subPanel:id,returnTo:panelBeforeSub},"",location.pathname+location.search)}};
-window.goBackFromPlayer=()=>{stopWatchTracking(vid);return history.length>1?history.back():( $("player").classList.remove("active"),$("home").classList.add("active"),$("frame").src="",restoreHomeScroll())};
+window.goBackFromPlayer=()=>{stopWatchTracking(vid);return history.length>1?history.back():( $("player").classList.remove("active"),$("home").classList.add("active"),getFrame().src="",restoreHomeScroll())};
 window.addEventListener("popstate",(e)=>{
 if(suppressPops){suppressPops=0;return}
 if(reactPickerEl||reactSheetEl){closeReactionUi();return}
 if(reportOpen){closeReport();return}
 if(document.querySelector(".commentMenuDropdown.open")){closeCommentMenus();history.pushState(e.state,"",location.pathname+location.search);return}
-if(logoutOpen){logoutOpen=false;$("logoutConfirmOverlay").classList.remove("open");return}if(searchOpen){closeSearchUI();return}if(historyOpen){if(e.state&&e.state.historyOverlay){renderHistoryTab(e.state.tab||"daily");return}historyOpen=false;$("historyOverlay").classList.remove("show");return}if(replyLayerOn){closeReplyUI();return}if($("commentBox").style.display==="block"){closeCommentsUI();return}let activeSub=["coin","my","add"].find(id=>$(id).classList.contains("active"));if(activeSub){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let target=(e.state&&e.state.returnTo)||panelBeforeSub||"home";$(target).classList.add("active");return}let p=new URLSearchParams(location.search).get("v");if(p&&p!==vid){openVideo(p);return}stopWatchTracking(vid);$("frame").src="";$("player").classList.remove("active");$("home").classList.add("active");restoreHomeScroll()});
+if(logoutOpen){logoutOpen=false;$("logoutConfirmOverlay").classList.remove("open");return}if(searchOpen){closeSearchUI();return}if(historyOpen){if(e.state&&e.state.historyOverlay){renderHistoryTab(e.state.tab||"daily");return}historyOpen=false;$("historyOverlay").classList.remove("show");return}if(replyLayerOn){closeReplyUI();return}if($("commentBox").style.display==="block"){closeCommentsUI();return}let activeSub=["coin","my","add"].find(id=>$(id).classList.contains("active"));if(activeSub){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let target=(e.state&&e.state.returnTo)||panelBeforeSub||"home";$(target).classList.add("active");return}let p=new URLSearchParams(location.search).get("v");if(p&&p!==vid){openVideo(p);return}try{stopWatchTracking(vid)}catch(e){}getFrame().src="";$("player").classList.remove("active");$("home").classList.add("active");restoreHomeScroll()});
 async function balance(){let bal=0;if(user)try{let s=await getDoc(doc(db,"users",user.uid));if(s.exists()){let d=s.data(),legacy=Number(d.points??d.coins??d.balance??0);bal=Number(d.videoBalance??legacy)}}catch(e){}$("coinPoints").textContent=money(bal);$("addPoints").textContent=money(bal);$("myPoints").textContent=money(bal)}
 async function loadMine(){if(!user){$("myVideos").innerHTML='<div class="empty">নিজের ভিডিও দেখতে লগইন করুন।</div>';return}try{let vs=await getDocs(query(collection(db,"videos"),orderBy("createdAt","desc"),limit(100)));myVideos=vs.docs.map(x=>({id:x.id,d:x.data()})).filter(x=>x.d.ownerUid===user.uid);renderMine()}catch(e){$("myVideos").innerHTML='<div class="error">My Video লোড করা যায়নি: '+esc(e.message)+'</div>'}}
 function renderMine(){$("myVideos").innerHTML=myVideos.length?myVideos.map(x=>{let d=x.d,im=thumbFor(d);return`<div class="item"><div class="item-row"><div class="item-thumb">${im?`<img src="${esc(im)}" loading="lazy" decoding="async">`:""}</div><div class="item-info"><div class="item-title">${esc(d.title||"Untitled")}</div><div class="stats"><span>👁 ${Number(d.viewCount||0)}</span><span>🪙 ${Number(d.pointsSpent||0)}</span></div></div></div><div class="item-actions"><button class="danger" onclick="deleteMyVideo('${x.id}')">ডিলিট</button></div></div>`}).join(""):'<div class="empty">আপনার কোনো ভিডিও নেই।</div>';document.querySelectorAll("#myVideos .item-thumb img").forEach((img,i)=>enhanceThumb(img,myVideos[i].id,myVideos[i].d))}
