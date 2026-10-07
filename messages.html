@@ -272,9 +272,24 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 .msgBubble.stickerMsg{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;border-radius:24px;white-space:normal}
 .msgBubble.stickerMsg .stkE{font-size:56px;line-height:1.1}
 .msgBubble.stickerMsg .stkT{font-size:14px}
+
+/* ---------- লাইক বাটনে লং-প্রেসে ৬টা রিয়াকশন ---------- */
+#sendBtn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#reactPop{display:none;position:fixed;z-index:1200;background:var(--card-color);border:1px solid var(--line);border-radius:32px;padding:6px 10px;gap:4px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+#reactPop.open{display:flex}
+#reactPop button{background:none;border:none;font-size:34px;line-height:1;padding:4px 6px;cursor:pointer;border-radius:50%}
+#reactPop button:active{background:var(--surface-active)}
+
+/* ---------- পুল-টু-রিফ্রেশ (উপর থেকে নিচে টানলে গোল রিফ্রেশ বাটন) ---------- */
+#ptr{position:fixed;top:0;left:50%;z-index:3000;width:44px;height:44px;border-radius:50%;background:var(--card-color);border:1px solid var(--line);color:var(--text-color);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.45);transform:translate(-50%,-70px);opacity:0;pointer-events:none}
+#ptr svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#ptr.spin svg{animation:ptrSpin .8s linear infinite}
+@keyframes ptrSpin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
+<div id="ptr" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 3 21 9 15 9"/></svg></div>
+<div id="reactPop"></div>
 
   <div id="bootScreen">লোড হচ্ছে...</div>
 
@@ -1099,7 +1114,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
         : '<div class="avSpacer"></div>';
 
       // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
-      const isLike = m.text === '👍' && !m.replyTo && !m.sticker;
+      const isLike = (m.text === '👍' || m.bigEmoji === true) && !m.replyTo && !m.sticker;
       const isSticker = m.sticker === true && !m.replyTo;
       const isVoice = (m.type === 'voice' || m.type === 'audio') && !!m.audioUrl;
       const isImage = m.type === 'image' && !!m.imageUrl;
@@ -1115,7 +1130,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : isSticker ? stickerHtml(m.text) : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? escapeHtml(m.text) : isSticker ? stickerHtml(m.text) : escapeHtml(m.text))}${reactHtml}</div>
           <div class="msgMeta${showTime ? '' : ' noTime'}"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
@@ -1276,7 +1291,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
     }
   }
 
-  async function sendCurrentMessage(forceLike, stickerText) {
+  async function sendCurrentMessage(forceLike, stickerText, isBigEmoji) {
     if (!stickerText) {
       if (editingId) { await submitEdit(); return; }
       if (pendingAttach) { await sendAttachment(); return; }
@@ -1320,7 +1335,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
         createdAt: serverTimestamp()
       };
       if (replySnapshot) payload.replyTo = { id: replySnapshot.id, text: replySnapshot.text };
-      if (stickerText) payload.sticker = true;
+      if (stickerText) { if (isBigEmoji) payload.bigEmoji = true; else payload.sticker = true; }
       await addDoc(collection(convRef, "messages"), payload);
       try { window.OnuNotify && window.OnuNotify.message(otherUid, 'text', text); } catch (_) {}
 
@@ -1889,6 +1904,109 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
     messageInput.style.height = Math.min(messageInput.scrollHeight, 100) + 'px';
     updateSendBtn();
   });
+
+  // ================= লাইক বাটনে লং-প্রেস: ৬টা রিয়াকশন =================
+  const reactPop = document.getElementById('reactPop');
+  const BIG_REACTS = ['👍', '❤️', '😆', '😢', '😠', '😮'];
+  let rpTimer = null, rpFired = false, rpOpen = false;
+  BIG_REACTS.forEach(e => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = e;
+    b.addEventListener('click', ev => { ev.stopPropagation(); closeReactPop(); sendCurrentMessage(false, e, true); });
+    reactPop.appendChild(b);
+  });
+  function openReactPop() {
+    const r = sendBtn.getBoundingClientRect();
+    reactPop.classList.add('open');
+    const w = reactPop.offsetWidth, h = reactPop.offsetHeight;
+    let left = r.right - w; if (left < 8) left = 8;
+    reactPop.style.left = left + 'px';
+    reactPop.style.top = Math.max(8, r.top - h - 10) + 'px';
+    rpOpen = true;
+  }
+  function closeReactPop() { reactPop.classList.remove('open'); rpOpen = false; }
+  function likeModeNow() {
+    return !sendBtn.classList.contains('isSend') && messagingEnabled && !!convId && !editingId && !pendingAttach;
+  }
+  function rpStart() {
+    rpFired = false;
+    clearTimeout(rpTimer);
+    if (!likeModeNow()) return;
+    rpTimer = setTimeout(() => { rpFired = true; openReactPop(); }, 420);
+  }
+  function rpCancel() { clearTimeout(rpTimer); }
+  sendBtn.addEventListener('touchstart', rpStart, { passive: true });
+  sendBtn.addEventListener('touchend', rpCancel);
+  sendBtn.addEventListener('touchmove', rpCancel, { passive: true });
+  sendBtn.addEventListener('touchcancel', rpCancel);
+  sendBtn.addEventListener('mousedown', rpStart);
+  sendBtn.addEventListener('mouseup', rpCancel);
+  sendBtn.addEventListener('mouseleave', rpCancel);
+  sendBtn.addEventListener('contextmenu', ev => ev.preventDefault());
+  // লং-প্রেসের পর আঙুল ছাড়লে যেন সাধারণ লাইক চলে না যায়
+  sendBtn.addEventListener('click', ev => {
+    if (rpFired) { rpFired = false; ev.stopImmediatePropagation(); ev.preventDefault(); }
+  }, true);
+  document.addEventListener('touchstart', ev => { if (rpOpen && !reactPop.contains(ev.target) && ev.target !== sendBtn) closeReactPop(); }, { passive: true });
+  document.addEventListener('mousedown', ev => { if (rpOpen && !reactPop.contains(ev.target) && ev.target !== sendBtn) closeReactPop(); });
+
+  // ================= পুল-টু-রিফ্রেশ =================
+  (function () {
+    const ptr = document.getElementById('ptr');
+    const SKIP = '#callScreen,#incomingCall,#imgViewer,#ctxBackdrop,#stickerPanel,#permSheet,#reactPop,textarea,input,select';
+    const TRIGGER = 64, MAXPULL = 110;
+    let startY = 0, startX = 0, pulling = false, armed = false, busy = false, pull = 0;
+    function visible(id) { const e = document.getElementById(id); return !!e && getComputedStyle(e).display !== 'none'; }
+    function canStart(t) {
+      if (busy || !t || !t.closest) return false;
+      if (t.closest(SKIP)) return false;
+      if (visible('callScreen') || visible('incomingCall') || visible('permSheet')) return false;   // কল চলাকালীন রিফ্রেশ নয়
+      for (let el = t; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+        const cs = getComputedStyle(el);
+        if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 1 && el.scrollTop > 0) return false;
+      }
+      return (window.scrollY || 0) <= 0;
+    }
+    function paint(y) {
+      ptr.style.transition = 'none';
+      ptr.style.opacity = Math.min(1, y / 40);
+      ptr.style.transform = 'translate(-50%,' + (y - 56) + 'px) rotate(' + (y * 4) + 'deg)';
+    }
+    document.addEventListener('touchstart', ev => {
+      armed = false; pulling = false;
+      if (ev.touches.length !== 1 || !canStart(ev.target)) return;
+      startY = ev.touches[0].clientY; startX = ev.touches[0].clientX; armed = true; pull = 0;
+    }, { passive: true });
+    document.addEventListener('touchmove', ev => {
+      if (!armed) return;
+      const dy = ev.touches[0].clientY - startY, dx = Math.abs(ev.touches[0].clientX - startX);
+      if (!pulling) {
+        if (dy < -6 || dx > dy) { if (dy < -6) armed = false; return; }   // উপরে স্ক্রল / পাশে সোয়াইপ — বাতিল
+        if (dy < 10) return;
+        pulling = true;
+      }
+      pull = Math.min(MAXPULL, dy * 0.5);
+      paint(pull);
+    }, { passive: true });
+    function end() {
+      if (!pulling) { armed = false; return; }
+      pulling = false; armed = false;
+      if (pull >= TRIGGER * 0.5 && !busy) {
+        busy = true;
+        ptr.classList.add('spin');
+        ptr.style.transition = 'transform .15s';
+        ptr.style.opacity = 1;
+        ptr.style.transform = 'translate(-50%,24px)';
+        setTimeout(() => { location.reload(); }, 450);
+      } else {
+        ptr.style.transition = 'transform .2s, opacity .2s';
+        ptr.style.opacity = 0;
+        ptr.style.transform = 'translate(-50%,-70px)';
+      }
+    }
+    document.addEventListener('touchend', end);
+    document.addEventListener('touchcancel', end);
+  })();
 
   // ================= WebRTC অডিও/ভিডিও কল =================
   // সিগন্যালিং: Firestore `calls/{callId}` (offer/answer) + সাবকালেকশন callerCandidates / calleeCandidates (ICE)
