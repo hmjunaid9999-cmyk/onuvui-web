@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>নোটিফিকেশন — Onuvuti</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><link rel="modulepreload" href="notify.js"><title>নোটিফিকেশন — Onuvuti</title>
 <script>
 // থিম: আগের সেশনের থিম সঙ্গে সঙ্গে বসানো (ঝলক এড়াতে); পরে settings/site থেকে লাইভ আপডেট হবে
 try { document.documentElement.setAttribute('data-theme', localStorage.getItem('onuvutiTheme') === 'light' ? 'light' : 'dark'); } catch (e) {}
@@ -129,6 +129,8 @@ main{max-width:640px;margin:0 auto;padding-bottom:40px}
 import { GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 import { OnuNotify, GROUPS, TYPES, auth, db, getMuted, setMuted, timeAgo } from "./notify.js";
+import { getApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+(function(){var go=function(){setTimeout(function(){import("https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js").then(function(m){m.getAnalytics(getApp())}).catch(function(){})},2500)};document.readyState==="complete"?go():window.addEventListener("load",go)})();
 
 const $ = id => document.getElementById(id);
 const bn = n => String(n).replace(/\d/g, d => '০১২৩৪৫৬৭৮৯'[d]);

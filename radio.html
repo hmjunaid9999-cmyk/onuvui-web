@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>রেডিও — Onuvuti</title>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><link rel="modulepreload" href="notify.js"><title>রেডিও — Onuvuti</title>
 <style>
   :root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -132,7 +132,6 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
   import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
   // মূল সাইটের (index.html) মতোই ফায়ারবেজ কনফিগ — একই প্রজেক্ট, একই ডাটা
@@ -147,7 +146,7 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
+  (function(a){var go=function(){setTimeout(function(){import("https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js").then(function(m){m.getAnalytics(a)}).catch(function(){})},2500)};document.readyState==="complete"?go():window.addEventListener("load",go)})(app);
   const db = getFirestore(app);
 
   // রং ও সাইট-ওয়াইড গ্যাজেট (যেমন ভাষা পরিবর্তন উইজেট) — ইনডেক্স পেজে (settings/site)
