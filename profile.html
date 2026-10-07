@@ -202,6 +202,13 @@ html[data-theme="light"]{--ash-bg:#d4d7da;--ash-btn:#c2c6ca}
 .postCard .postStatus:empty{display:none}
 .postButtons button{background:var(--ash-btn)}
 .postButtons button.liked{background:var(--ash-btn)}
+/* নাম ও সময়ের মাঝে একটু বাড়তি ফাঁক */
+.postHeader .pName{line-height:1.35}
+.postHeader .pTime{margin-top:5px;line-height:1.3}
+/* বাটনের সারির ধূসর ব্যাকগ্রাউন্ড বাদ — শুধু তিনটা বাটন ধূসর থাকবে */
+.postButtons{background:transparent;padding-left:0;padding-right:0}
+/* ভয়েসের শিরোনাম লেখা না থাকলে শিরোনামের জায়গা ফাঁকা থাকবে না */
+.mpTitle.mpTitleEmpty{display:none}
 body.commentFocus #filterTabs,body.commentFocus #subTabs{display:none!important}
 
 /* ===== কম্পোজারে ফটো / ভয়েস / অডিও অপশন (টেক্সট বক্স আর পোস্ট বাটনের মাঝে) ===== */
@@ -283,6 +290,10 @@ input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:tex
 img{-webkit-user-drag:none;-webkit-touch-callout:none}
 #postToast{z-index:950}
 
+/* ===== পোস্ট/কমেন্টের তিন-ডট মেনু খোলা থাকলে নিচের পেজ স্থির থাকবে ===== */
+html:has(.postMenuDropdown.open),html:has(.commentMenuDropdown.open),body:has(.postMenuDropdown.open),body:has(.commentMenuDropdown.open){overflow:hidden!important;overscroll-behavior:none}
+body:has(.postMenuDropdown.open) #postMenuBackdrop,body:has(.commentMenuDropdown.open) #postMenuBackdrop,.postMenuDropdown,.commentMenuDropdown{touch-action:none}
+
 /* ===== ভয়েস রেকর্ড পেজ ===== */
 #voicePage{display:none;position:fixed;inset:0;z-index:260;background:var(--bg-color);color:var(--text-color);flex-direction:column}
 #voicePage.open{display:flex}
@@ -300,7 +311,31 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 #vrMeter.fake i:nth-child(3n+1){animation-delay:.25s}
 @keyframes vrFake{from{height:12%}to{height:70%}}
 #voicePage[data-state="rec"] #vrMeter i{background:#dc2626}
-#voicePage[data-state="done"] #vrMeter,#voicePage[data-state="upload"] #vrMeter{display:none}
+#voicePage[data-state="fixed"] #vrMeter,#voicePage[data-state="upload"] #vrMeter{display:none}
+#vrCtlRow{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:4px}
+.vrSide{width:54px;height:54px;border-radius:50%;border:none;background:var(--ash-btn);color:var(--text-color);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+.vrSide svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vrSide .icPause{display:none;fill:currentColor;stroke:none}
+.vrSide.on .icPlay{display:none}
+.vrSide.on .icPause{display:block}
+#voicePage[data-state="idle"] .vrSide,#voicePage[data-state="rec"] .vrSide,#voicePage[data-state="upload"] .vrSide{opacity:.35;pointer-events:none}
+#vrEditPanel{display:none;position:absolute;inset:0;z-index:5;background:var(--bg-color);color:var(--text-color);flex-direction:column}
+#vrEditPanel.open{display:flex}
+#vrEdHead{display:flex;align-items:center;gap:10px;padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;border-bottom:1px solid var(--line);font-size:17px;font-weight:bold}
+#vrEdBody{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:16px;padding:20px 18px;width:100%;max-width:var(--max-width);margin:0 auto}
+#edCanvas{width:100%;height:90px;border-radius:12px;background:var(--ash-bg)}
+.edRow{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.edRow label{display:flex;justify-content:space-between}
+.edRow input[type=range]{width:100%;accent-color:var(--text-color)}
+#edNoise{display:flex;gap:8px}
+#edNoise button{flex:1;padding:10px 4px;border:none;border-radius:10px;background:var(--ash-btn);color:var(--text-color);font-size:13px;font-family:inherit;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line)}
+#edNoise button.on{background:var(--text-color);color:var(--bg-color);font-weight:bold}
+#edMsg{font-size:13px;min-height:16px;text-align:center}
+#edNote{font-size:12px;opacity:.7;line-height:1.6}
+#vrEdFooter{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+#vrEdFooter button{flex:1;padding:13px 6px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;font-family:inherit;background:var(--ash-btn);color:var(--text-color)}
+#vrEdFooter #edApply{background:#16a34a;color:#fff}
+#vrEdFooter button:disabled{opacity:.5}
 #vrRecBtn{width:86px;height:86px;border-radius:50%;border:none;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;margin-top:4px;-webkit-tap-highlight-color:transparent}
 #vrRecBtn svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #vrRecBtn .icStop{display:none;fill:currentColor;stroke:none}
@@ -309,9 +344,9 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 #voicePage[data-state="rec"] #vrRecBtn .icStop{display:block}
 #voicePage[data-state="rec"] #vrRecBtn::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:3px solid #dc2626;animation:vrPulse 1.3s ease-out infinite;pointer-events:none}
 @keyframes vrPulse{0%{transform:scale(.9);opacity:.65}100%{transform:scale(1.32);opacity:0}}
-#voicePage[data-state="done"] #vrRecBtn,#voicePage[data-state="upload"] #vrRecBtn{display:none}
+#voicePage[data-state="fixed"] #vrRecBtn,#voicePage[data-state="upload"] #vrRecBtn{opacity:.35;pointer-events:none}
 #vrReview{display:none;width:100%}
-#voicePage[data-state="done"] #vrReview,#voicePage[data-state="upload"] #vrReview{display:block}
+#voicePage[data-state="upload"] #vrReview{display:block}
 #vrCaption{width:100%;background:var(--ash-bg);color:var(--text-color);border:1px solid var(--line2);border-radius:12px;padding:10px;font-size:14px;font-family:inherit;resize:none}
 #vrCaption::placeholder{color:var(--text-color);opacity:.7}
 #voicePage[data-state="rec"] #vrCaption{display:none}
@@ -319,7 +354,7 @@ body.voiceOpen,body.viewerOpen{overflow:hidden}
 #vrFooter{display:flex;gap:10px;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
 #vrFooter button{flex:1;padding:13px 6px;border:none;border-radius:12px;font-size:15px;font-weight:bold;cursor:pointer;font-family:inherit;background:var(--ash-btn);color:var(--text-color)}
 #vrFooter #vrAgainBtn,#vrFooter #vrPostBtn{display:none}
-#voicePage[data-state="done"] #vrAgainBtn,#voicePage[data-state="done"] #vrPostBtn,#voicePage[data-state="upload"] #vrAgainBtn,#voicePage[data-state="upload"] #vrPostBtn{display:block}
+#voicePage[data-state="paused"] #vrAgainBtn,#voicePage[data-state="fixed"] #vrAgainBtn,#voicePage[data-state="rec"] #vrPostBtn,#voicePage[data-state="paused"] #vrPostBtn,#voicePage[data-state="fixed"] #vrPostBtn,#voicePage[data-state="upload"] #vrAgainBtn,#voicePage[data-state="upload"] #vrPostBtn{display:block}
 #vrFooter #vrPostBtn{background:#16a34a;color:#fff}
 #voicePage[data-state="upload"] #vrFooter button,#voicePage[data-state="upload"] #vrBackBtn{opacity:.5;pointer-events:none}
 
@@ -459,18 +494,31 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       <div id="vrTimer">0:00</div>
       <div id="vrLimit"></div>
       <div id="vrMeter"></div>
-      <button type="button" id="vrRecBtn" aria-label="রেকর্ড শুরু করুন">
+      <div id="vrCtlRow"><button type="button" class="vrSide" id="vrEditBtn" aria-label="ভয়েস এডিট"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button><button type="button" id="vrRecBtn" aria-label="রেকর্ড শুরু করুন">
         <svg class="icMic" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        <svg class="icStop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-      </button>
+        <svg class="icStop" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
+      </button><button type="button" class="vrSide" id="vrListenBtn" aria-label="শুনুন"><svg class="icPlay" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg><svg class="icPause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg></button></div>
       <div id="vrReview"></div>
       <textarea id="vrCaption" rows="2" maxlength="2000" placeholder="ভয়েসের সাথে কিছু লিখুন (ঐচ্ছিক)..."></textarea>
       <div id="vrMsg"></div>
     </div>
+    <div id="vrEditPanel">
+      <div id="vrEdHead"><button type="button" class="modalBackBtn" id="vrEdBack" aria-label="ফিরে যান"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><span>ভয়েস এডিট</span></div>
+      <div id="vrEdBody">
+        <canvas id="edCanvas" width="600" height="180"></canvas>
+        <div class="edRow"><label><span>শুরু (আগের অংশ কেটে ফেলুন)</span><b id="edStartLbl">0:00.0</b></label><input type="range" id="edStart" min="0" max="0" step="0.1" value="0"></div>
+        <div class="edRow"><label><span>শেষ (পরের অংশ কেটে ফেলুন)</span><b id="edEndLbl">0:00.0</b></label><input type="range" id="edEnd" min="0" max="0" step="0.1" value="0"></div>
+        <div class="edRow"><label><span>ব্যাকগ্রাউন্ডের অপ্রয়োজনীয় আওয়াজ কমান</span></label>
+          <div id="edNoise"><button type="button" data-lv="0" class="on">বন্ধ</button><button type="button" data-lv="1">হালকা</button><button type="button" data-lv="2">মাঝারি</button><button type="button" data-lv="3">জোরালো</button></div></div>
+        <div id="edMsg"></div>
+        <div id="edNote">কথার ফাঁকের আওয়াজ ও গুনগুন শব্দ কমে। কথার সাথে মিশে থাকা অন্য মানুষের কণ্ঠ আলাদা করা যায় না। জোরালো করলে কথার শেষের দিক একটু চাপা হতে পারে — আগে "শুনে দেখুন" দিয়ে শুনে নিন।</div>
+      </div>
+      <div id="vrEdFooter"><button type="button" id="edPreview">▶ শুনে দেখুন</button><button type="button" id="edApply">প্রয়োগ করুন</button></div>
+    </div>
     <div id="vrFooter">
       <button type="button" id="vrCancelBtn">বাতিল</button>
       <button type="button" id="vrAgainBtn">আবার রেকর্ড</button>
-      <button type="button" id="vrPostBtn">পোস্ট করুন</button>
+      <button type="button" id="vrPostBtn" aria-label="পোস্ট বক্সে যান"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
     </div>
   </div>
 
@@ -1914,7 +1962,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
           <div class="postMenuDropdown"></div>
         </div>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${postTextHtml}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
+      ${d.type !== 'poster' && d.type !== 'voice' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${postTextHtml}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
       <div class="postButtons"></div>
       <div class="postStatus"></div>
@@ -2897,7 +2945,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     if (!a) { postAttachPreview.classList.remove('has'); return; }
     postAttachPreview.classList.add('has');
     paName.textContent = a.name;
-    paSize.textContent = fmtMB(a.size) + (a.kind === 'audio' && a.duration ? ' · ' + fmtSec(a.duration) : '');
+    paSize.textContent = fmtMB(a.size) + ((a.kind === 'audio' || a.kind === 'voice') && a.duration ? ' · ' + fmtSec(a.duration) : '');
     if (a.kind === 'photo') { paThumb.src = a.previewUrl; paThumb.style.display = 'block'; paIcon.style.display = 'none'; }
     else { paThumb.style.display = 'none'; paIcon.style.display = 'flex'; }
   }
@@ -2953,6 +3001,14 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       const imageUrl = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
       return { type: 'photo', imageUrl, fileName: 'photo-' + Date.now() + '.' + ext };
     }
+    if (a.kind === 'voice') {
+      const vt = (a.blob.type || a.mime || 'audio/webm').split(';')[0];
+      const vpath = 'posts/' + uid + '_' + Date.now() + '.' + a.ext;
+      const vup = await sb.storage.from(VOICE_BUCKET).upload(vpath, a.blob, { contentType: vt, upsert: false });
+      if (vup.error) throw vup.error;
+      const vUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(vpath).data.publicUrl;
+      return { type: 'voice', audioUrl: vUrl, duration: a.duration || 0, fileName: a.name };
+    }
     const ext = ((a.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3').slice(0, 5);
     const path = 'files/posts/' + uid + '_' + Date.now() + '.' + ext;
     const up = await sb.storage.from(VOICE_BUCKET).upload(path, a.file, { contentType: a.file.type || 'audio/mpeg', upsert: false });
@@ -2996,7 +3052,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     const dur = Math.max(0, Number(o.dur) || 0);
     return '<div class="mp" data-url="' + escAttr(o.url) + '" data-dur="' + dur + '">' +
       '<div class="mpViz"><div class="mpGlow"></div><div class="mpBars">' + mpBarsHtml(String(o.url)) + '</div></div>' +
-      '<div class="mpInfo"><div class="mpTitle"><span class="mpTitleIn">' + escAttr(o.title || '') + '</span></div>' +
+      '<div class="mpInfo"><div class="mpTitle' + (o.title ? '' : ' mpTitleEmpty') + '"><span class="mpTitleIn">' + escAttr(o.title || '') + '</span></div>' +
         (o.sub ? '<div class="mpSub">' + escAttr(o.sub) + '</div>' : '') + '</div>' +
       '<div class="mpSeek"><span class="mpCur">0:00</span>' +
         '<div class="mpLine"><svg class="mpSvg" width="100%" height="26" aria-hidden="true">' +
@@ -3180,7 +3236,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     if ((d.type === 'voice' || d.type === 'audio') && d.audioUrl) {
       return mediaPlayerHtml({
         url: d.audioUrl, dur: d.duration,
-        title: d.type === 'voice' ? '🎤 ভয়েস মেসেজ' : '🎵 ' + ((d.fileName || 'অডিও').replace(/\.[A-Za-z0-9]{2,5}$/, '')),
+        title: d.type === 'voice' ? (d.text || '').trim() : '🎵 ' + ((d.fileName || 'অডিও').replace(/\.[A-Za-z0-9]{2,5}$/, '')),
         sub: d.authorName || ''
       });
     }
@@ -3234,10 +3290,14 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   const vrPostBtn = document.getElementById('vrPostBtn');
   const VR_HINTS = {
     idle: 'রেকর্ড শুরু করতে মাইক বাটনে চাপুন',
-    rec: 'রেকর্ড হচ্ছে... থামাতে বাটনে চাপুন',
-    done: 'রেকর্ড শেষ — শুনে দেখুন, তারপর পোস্ট করুন',
+    rec: 'রেকর্ড হচ্ছে... বিরতি দিতে মাইক বাটনে চাপুন',
+    paused: 'বিরতি — মাইকে চাপলে আবার রেকর্ড চলবে। ডানের বাটনে শুনুন, বামে এডিট, নিচের → তে এগিয়ে যান',
+    fixed: 'রেকর্ড প্রস্তুত — শুনুন বা এডিট করুন, তারপর নিচের → তে এগিয়ে যান',
     upload: 'আপলোড হচ্ছে...'
   };
+  const vrEditBtn = document.getElementById('vrEditBtn');
+  const vrListenBtn = document.getElementById('vrListenBtn');
+  let vrBusy = false;
   let vr = null;          // চলমান রেকর্ডিং
   let vrDone = null;      // শেষ হওয়া রেকর্ডিং { blob, duration, url, mime }
   let vrToken = 0;
@@ -3252,12 +3312,14 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   function vrSetState(s) {
     voicePage.dataset.state = s;
     vrHint.textContent = VR_HINTS[s] || '';
-    vrRecBtn.setAttribute('aria-label', s === 'rec' ? 'রেকর্ড থামান' : 'রেকর্ড শুরু করুন');
+    vrRecBtn.setAttribute('aria-label', s === 'rec' ? 'বিরতি দিন' : 'রেকর্ড শুরু/চালু করুন');
     if (s === 'idle') {
       vrTimer.textContent = '0:00';
       Array.prototype.forEach.call(vrMeter.children, b => { b.style.height = ''; });
     }
+    if (s !== 'rec') vrMeter.classList.remove('fake');
   }
+  function vrElapsed(r) { return (r.accum + (r.running ? Date.now() - r.segStart : 0)) / 1000; }
   function vrStopTimers(r) {
     clearInterval(r.timer);
     cancelAnimationFrame(r.raf);
@@ -3279,8 +3341,41 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     document.body.classList.add('voiceOpen');
     rearmGuard();
   }
+  // ---------- রেকর্ড করা অংশ শোনা (ছোট বাটন) ----------
+  let vrAud = null, vrAudUrl = '';
+  function vrStopListen() {
+    if (vrAud) { try { vrAud.pause(); } catch (e) {} vrAud = null; }
+    if (vrAudUrl) { try { URL.revokeObjectURL(vrAudUrl); } catch (e) {} vrAudUrl = ''; }
+    vrListenBtn.classList.remove('on');
+  }
+  async function vrListen() {
+    if (vrAud) { vrStopListen(); return; }
+    const st = voicePage.dataset.state;
+    let blob = null;
+    if (st === 'paused' && vr) {
+      const r = vr;
+      await new Promise(res => { r.onChunk = res; try { r.recorder.requestData(); } catch (e) { res(); } setTimeout(res, 600); });
+      r.onChunk = null;
+      if (vr !== r || voicePage.dataset.state !== 'paused') return;
+      blob = new Blob(r.chunks, { type: r.mime });
+    } else if (st === 'fixed' && vrDone) {
+      blob = vrDone.blob;
+    }
+    if (!blob || !blob.size) return;
+    if (mpAudio && !mpAudio.paused) { try { mpAudio.pause(); } catch (e) {} }
+    vrAudUrl = URL.createObjectURL(blob);
+    const a = new Audio(vrAudUrl);
+    vrAud = a;
+    a.onended = () => { if (vrAud === a) vrStopListen(); };
+    a.onerror = () => { if (vrAud === a) vrStopListen(); };
+    vrListenBtn.classList.add('on');
+    try { await a.play(); } catch (e) { if (vrAud === a) vrStopListen(); }
+  }
+
   function vrDiscard() {
     vrToken++;
+    vrStopListen();
+    if (typeof edClose === 'function') edClose();
     if (vr) {
       const r = vr; vr = null;
       vrStopTimers(r);
@@ -3302,13 +3397,30 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     vrSetState('idle');
   }
   function cancelVoicePage() {
-    if (voicePage.dataset.state === 'upload') return;
+    if (voicePage.dataset.state === 'upload' || vrBusy) return;
+    if (vrEditPanel.classList.contains('open')) { edClose(); return; }     // এডিট খোলা থাকলে আগে সেটা বন্ধ
     closeVoicePage(true);
   }
 
+  function vrMeterLoop(r) {
+    if (!r.analyser) return;
+    const data = new Uint8Array(r.analyser.frequencyBinCount);
+    const bars = vrMeter.children;
+    const loop = () => {
+      if (vr !== r || !r.running) return;
+      r.analyser.getByteFrequencyData(data);
+      for (let i = 0; i < bars.length; i++) {
+        const v = data[Math.min(data.length - 1, Math.floor(i * data.length / bars.length))] / 255;
+        bars[i].style.height = (8 + v * 92) + '%';
+      }
+      r.raf = requestAnimationFrame(loop);
+    };
+    loop();
+  }
   async function vrStart() {
     if (vr || voicePage.dataset.state !== 'idle') return;
     vrMsg.textContent = '';
+    vrStopListen();
     if (mpAudio && !mpAudio.paused) { try { mpAudio.pause(); } catch (e) {} }
     let stream;
     try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
@@ -3319,8 +3431,8 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     let recorder;
     try { recorder = new MediaRecorder(stream, Object.assign({ audioBitsPerSecond: 32000 }, mime ? { mimeType: mime } : {})); }
     catch (e) { stream.getTracks().forEach(t => t.stop()); vrMsg.textContent = 'রেকর্ড শুরু করা যায়নি।'; return; }
-    recorder.ondataavailable = ev => { if (ev.data && ev.data.size) chunks.push(ev.data); };
-    const r = { recorder, stream, chunks, startedAt: Date.now(), timer: null, raf: 0, ctx: null, analyser: null, mime: recorder.mimeType || mime || 'audio/webm' };
+    const r = { recorder, stream, chunks, accum: 0, segStart: Date.now(), running: true, onChunk: null, timer: null, raf: 0, ctx: null, analyser: null, mime: recorder.mimeType || mime || 'audio/webm' };
+    recorder.ondataavailable = ev => { if (ev.data && ev.data.size) chunks.push(ev.data); if (r.onChunk) { const f = r.onChunk; r.onChunk = null; f(); } };
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (AC) {
@@ -3336,45 +3448,60 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     vrSetState('rec');
     vrMeter.classList.toggle('fake', !r.analyser);
     r.timer = setInterval(() => {
-      if (vr !== r) return;
-      const sec = (Date.now() - r.startedAt) / 1000;
+      if (vr !== r || !r.running) return;
+      const sec = vrElapsed(r);
       vrTimer.textContent = fmtSec(sec);
-      if (sec >= VOICE_MAX_SEC) vrStop();
+      if (sec >= VOICE_MAX_SEC) vrFinalize();
     }, 200);
-    if (r.analyser) {
-      const data = new Uint8Array(r.analyser.frequencyBinCount);
-      const bars = vrMeter.children;
-      const loop = () => {
-        if (vr !== r) return;
-        r.analyser.getByteFrequencyData(data);
-        for (let i = 0; i < bars.length; i++) {
-          const v = data[Math.min(data.length - 1, Math.floor(i * data.length / bars.length))] / 255;
-          bars[i].style.height = (8 + v * 92) + '%';
-        }
-        r.raf = requestAnimationFrame(loop);
-      };
-      loop();
-    }
+    vrMeterLoop(r);
   }
-  function vrStop() {
-    if (!vr) return;
-    const r = vr; vr = null;
-    const token = vrToken;
-    const duration = Math.min(VOICE_MAX_SEC, Math.max(0, Math.round((Date.now() - r.startedAt) / 1000)));
-    vrStopTimers(r);
-    r.recorder.onstop = () => {
-      vrStopTracks(r);
-      if (token !== vrToken || !voicePage.classList.contains('open')) return;     // মাঝে বাতিল হয়ে গেছে
-      const blob = new Blob(r.chunks, { type: r.mime });
-      if (duration < 1 || !blob.size) { vrMsg.textContent = 'রেকর্ডিং খুব ছোট হয়েছে — আবার চেষ্টা করুন।'; vrSetState('idle'); return; }
-      const url = URL.createObjectURL(blob);
-      vrDone = { blob, duration, url, mime: r.mime };
-      vrReview.innerHTML = mediaPlayerHtml({ url, dur: duration, title: '🎤 আপনার ভয়েস', sub: 'শুনে দেখুন' });
-      bindMediaPlayer(vrReview.querySelector('.mp'));
-      vrTimer.textContent = fmtSec(duration);
-      vrSetState('done');
-    };
-    try { r.recorder.stop(); } catch (e) { vrStopTracks(r); vrSetState('idle'); }
+  // বিরতি — রেকর্ড বন্ধ হয় না, আবার চাপলে সেখান থেকেই চলে
+  function vrPause() {
+    if (!vr || !vr.running) return;
+    const r = vr;
+    r.accum += Date.now() - r.segStart;
+    r.running = false;
+    cancelAnimationFrame(r.raf);
+    try { r.recorder.pause(); } catch (e) {}
+    vrTimer.textContent = fmtSec(r.accum / 1000);
+    Array.prototype.forEach.call(vrMeter.children, b => { b.style.height = ''; });
+    vrSetState('paused');
+  }
+  function vrResume() {
+    if (!vr || vr.running) return;
+    const r = vr;
+    vrStopListen();
+    try { r.recorder.resume(); } catch (e) {}
+    r.segStart = Date.now();
+    r.running = true;
+    vrSetState('rec');
+    vrMeter.classList.toggle('fake', !r.analyser);
+    vrMeterLoop(r);
+  }
+  // রেকর্ড চূড়ান্তভাবে শেষ করে ফাইল বানায় (শুধু → বাটন, এডিট বা সর্বোচ্চ সময় পেরোলে)
+  function vrFinalize() {
+    return new Promise(resolve => {
+      if (vrDone) { resolve(true); return; }
+      if (!vr) { resolve(false); return; }
+      const r = vr; vr = null;
+      const token = vrToken;
+      const duration = Math.min(VOICE_MAX_SEC, Math.max(0, Math.round((r.accum + (r.running ? Date.now() - r.segStart : 0)) / 1000)));
+      r.running = false;
+      vrStopTimers(r);
+      vrStopListen();
+      r.recorder.onstop = () => {
+        vrStopTracks(r);
+        if (token !== vrToken || !voicePage.classList.contains('open')) { resolve(false); return; }     // মাঝে বাতিল হয়ে গেছে
+        const blob = new Blob(r.chunks, { type: r.mime });
+        if (duration < 1 || !blob.size) { vrMsg.textContent = 'রেকর্ডিং খুব ছোট হয়েছে — আবার চেষ্টা করুন।'; vrSetState('idle'); resolve(false); return; }
+        const url = URL.createObjectURL(blob);
+        vrDone = { blob, duration, url, mime: r.mime };
+        vrTimer.textContent = fmtSec(duration);
+        vrSetState('fixed');
+        resolve(true);
+      };
+      try { r.recorder.stop(); } catch (e) { vrStopTracks(r); vrSetState('idle'); resolve(false); }
+    });
   }
 
   async function vrPost() {
@@ -3423,17 +3550,217 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
 
   vrRecBtn.addEventListener('click', () => {
     const st = voicePage.dataset.state;
-    if (st === 'rec') vrStop(); else if (st === 'idle') vrStart();
+    if (st === 'rec') vrPause(); else if (st === 'paused') vrResume(); else if (st === 'idle') vrStart();
   });
+  vrListenBtn.addEventListener('click', vrListen);
   vrBackBtn.addEventListener('click', cancelVoicePage);
   vrCancelBtn.addEventListener('click', cancelVoicePage);
   vrAgainBtn.addEventListener('click', () => {
-    if (voicePage.dataset.state !== 'done') return;
+    const st = voicePage.dataset.state;
+    if (vrBusy || (st !== 'paused' && st !== 'fixed')) return;
     vrDiscard();
     vrSetState('idle');
     vrStart();
   });
-  vrPostBtn.addEventListener('click', vrPost);
+  // লেখা বক্সে যা লিখবেন তা-ই ভয়েসের শিরোনাম (প্লেয়ারের উপরের লেখা) — লিখতে লিখতেই বদলায়
+  vrCaption.addEventListener('input', () => {
+    const root = vrReview.querySelector('.mp');
+    if (!root) return;
+    const t = root.querySelector('.mpTitle'), inner = root.querySelector('.mpTitleIn');
+    if (!t || !inner) return;
+    const v = vrCaption.value.trim();
+    inner.textContent = v || '🎤 আপনার ভয়েস';
+    t.classList.remove('mpTitleEmpty');
+    mpFitTitle(root);
+  });
+
+  // তীর বাটন: রেকর্ড শেষ করে ভয়েস ও লেখা নিয়ে সরাসরি পোস্ট বক্সে (কম্পোজারে) চলে যায়
+  async function vrToComposer() {
+    if (vrBusy) return;
+    const st0 = voicePage.dataset.state;
+    if (st0 !== 'rec' && st0 !== 'paused' && st0 !== 'fixed') return;
+    vrBusy = true;
+    try {
+      const ok = await vrFinalize();
+      if (!ok || !vrDone) return;
+      const rec = vrDone;
+      vrDone = null;                                   // ফাইল কম্পোজারে হস্তান্তর — এখানে আর মুছবে না
+      if (mpUrl === rec.url) mpStopAll();
+      const text = vrCaption.value;
+      const baseType = (rec.blob.type || rec.mime || 'audio/webm').split(';')[0];
+      const ext = baseType.includes('wav') ? 'wav' : baseType.includes('mp4') ? 'm4a' : baseType.includes('ogg') ? 'ogg' : 'webm';
+      closeVoicePage(false);
+      composerText.value = text;
+      setPostAttach({ kind: 'voice', blob: rec.blob, mime: rec.mime, ext, name: 'voice-' + Date.now() + '.' + ext, size: rec.blob.size, duration: rec.duration, previewUrl: rec.url });
+      try { composerText.focus(); } catch (e) {}
+    } finally { vrBusy = false; }
+  }
+  vrPostBtn.addEventListener('click', vrToComposer);
+
+  // ================= ভয়েস এডিট: কাটা (ট্রিম) + ব্যাকগ্রাউন্ড আওয়াজ কমানো =================
+  const vrEditPanel = document.getElementById('vrEditPanel');
+  const edCanvas = document.getElementById('edCanvas');
+  const edStart = document.getElementById('edStart'), edEnd = document.getElementById('edEnd');
+  const edStartLbl = document.getElementById('edStartLbl'), edEndLbl = document.getElementById('edEndLbl');
+  const edNoise = document.getElementById('edNoise');
+  const edMsg = document.getElementById('edMsg');
+  const edPreviewBtn = document.getElementById('edPreview'), edApplyBtn = document.getElementById('edApply');
+  let edBuf = null, edPeaks = null, edLevel = 0, edAud = null, edAudUrl = '', edBusy = false;
+
+  function edFmt(t) { t = Math.max(0, t); return Math.floor(t / 60) + ':' + (t % 60).toFixed(1).padStart(4, '0'); }
+  function edStopPreview() {
+    if (edAud) { try { edAud.pause(); } catch (e) {} edAud = null; }
+    if (edAudUrl) { try { URL.revokeObjectURL(edAudUrl); } catch (e) {} edAudUrl = ''; }
+    edPreviewBtn.textContent = '▶ শুনে দেখুন';
+  }
+  function edClose() {
+    edStopPreview();
+    vrEditPanel.classList.remove('open');
+    edBuf = null; edPeaks = null; edBusy = false;
+    edPreviewBtn.disabled = false; edApplyBtn.disabled = false;
+  }
+  function edDraw() {
+    if (!edBuf || !edPeaks) return;
+    const c = edCanvas, g = c.getContext('2d'), W = c.width, H = c.height;
+    g.clearRect(0, 0, W, H);
+    const col = getComputedStyle(document.body).color || '#fff';
+    const dur = edBuf.duration, a = +edStart.value / dur * W, b = +edEnd.value / dur * W;
+    const n = edPeaks.length, bw = W / n;
+    g.fillStyle = col;
+    for (let i = 0; i < n; i++) {
+      const x = i * bw, h = Math.max(3, edPeaks[i] * (H - 10));
+      g.globalAlpha = (x + bw >= a && x <= b) ? 1 : 0.22;
+      g.fillRect(x + 1, (H - h) / 2, Math.max(1, bw - 2), h);
+    }
+    g.globalAlpha = 1;
+    g.fillRect(Math.max(0, a - 1), 0, 3, H);
+    g.fillRect(Math.min(W - 3, b - 1), 0, 3, H);
+  }
+  function edLabels() { edStartLbl.textContent = edFmt(+edStart.value); edEndLbl.textContent = edFmt(+edEnd.value); }
+  edStart.addEventListener('input', () => { if (+edStart.value > +edEnd.value - 0.5) edStart.value = Math.max(0, +edEnd.value - 0.5); edStopPreview(); edLabels(); edDraw(); });
+  edEnd.addEventListener('input', () => { if (+edEnd.value < +edStart.value + 0.5) edEnd.value = Math.min(+edEnd.max, +edStart.value + 0.5); edStopPreview(); edLabels(); edDraw(); });
+  edNoise.addEventListener('click', ev => {
+    const b = ev.target.closest('button[data-lv]'); if (!b) return;
+    edLevel = +b.dataset.lv;
+    edNoise.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b));
+    edStopPreview();
+  });
+
+  async function vrOpenEdit() {
+    if (edBusy || vrBusy) return;
+    const st = voicePage.dataset.state;
+    if (st !== 'paused' && st !== 'fixed') return;
+    edBusy = true; vrBusy = true; vrMsg.textContent = '';
+    try {
+      vrStopListen();
+      const ok = await vrFinalize();           // এডিটের জন্য রেকর্ড এখানেই চূড়ান্ত হয়
+      if (!ok || !vrDone) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) throw new Error('এই ব্রাউজারে এডিট সাপোর্ট করে না');
+      const ctx = new AC();
+      const ab = await vrDone.blob.arrayBuffer();
+      const buf = await new Promise((res, rej) => { const p = ctx.decodeAudioData(ab, res, rej); if (p && p.catch) p.catch(rej); });
+      try { ctx.close(); } catch (e) {}
+      edBuf = buf;
+      const ch = buf.getChannelData(0), N = 150, step = Math.max(1, Math.floor(ch.length / N));
+      const pk = new Float32Array(N); let mx = 0.0001;
+      for (let i = 0; i < N; i++) { let m = 0; for (let k = i * step; k < Math.min(ch.length, (i + 1) * step); k += 7) { const v = Math.abs(ch[k]); if (v > m) m = v; } pk[i] = m; if (m > mx) mx = m; }
+      edPeaks = pk.map(v => v / mx);
+      const dmax = Math.floor(buf.duration * 10) / 10;
+      edStart.max = edEnd.max = dmax; edStart.value = 0; edEnd.value = dmax;
+      edLevel = 0; edNoise.querySelectorAll('button').forEach(x => x.classList.toggle('on', x.dataset.lv === '0'));
+      edMsg.textContent = '';
+      edLabels();
+      vrEditPanel.classList.add('open');
+      edDraw();
+    } catch (e) {
+      console.error(e);
+      vrMsg.textContent = 'এডিট চালু করা যায়নি — ' + (e && e.message ? e.message : e);
+    } finally { edBusy = false; vrBusy = false; }
+  }
+
+  // আওয়াজ কমানোর ফিল্টার: কথার ফাঁকের নিচু আওয়াজ ধীরে ধীরে চেপে দেয়, কথার আশপাশ খোলা রাখে
+  function edGate(d, sr, lv) {
+    const win = Math.round(sr * 0.02), n = Math.floor(d.length / win);
+    if (n < 5) return;
+    const rms = new Float32Array(n);
+    for (let i = 0; i < n; i++) { let s2 = 0; for (let k = 0; k < win; k++) { const v = d[i * win + k]; s2 += v * v; } rms[i] = Math.sqrt(s2 / win); }
+    const sorted = Array.from(rms).sort((a, b) => a - b);
+    const floor = sorted[Math.floor(n * 0.15)], median = sorted[Math.floor(n * 0.5)];
+    const factor = [0, 2.0, 3.0, 4.5][lv], red = [1, 0.4, 0.15, 0.03][lv];
+    const thr = Math.min(Math.max(floor * factor, 0.004), Math.max(median * 0.6, 0.004));
+    const open = new Uint8Array(n);
+    for (let i = 0; i < n; i++) if (rms[i] >= thr) { for (let j = Math.max(0, i - 4); j <= Math.min(n - 1, i + 10); j++) open[j] = 1; }
+    let prev = 1;
+    for (let i = 0; i < n; i++) {
+      const target = open[i] ? 1 : red;
+      const g = target > prev ? prev + (target - prev) * 0.7 : prev + (target - prev) * 0.3;
+      for (let k = 0; k < win; k++) d[i * win + k] *= prev + (g - prev) * (k / win);
+      prev = g;
+    }
+    for (let k = n * win; k < d.length; k++) d[k] *= prev;
+  }
+  function edWav(d, sr) {
+    const buf = new ArrayBuffer(44 + d.length * 2), v = new DataView(buf);
+    const w = (o, str) => { for (let i = 0; i < str.length; i++) v.setUint8(o + i, str.charCodeAt(i)); };
+    w(0, 'RIFF'); v.setUint32(4, 36 + d.length * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    w(36, 'data'); v.setUint32(40, d.length * 2, true);
+    for (let i = 0; i < d.length; i++) { const x = Math.max(-1, Math.min(1, d[i])); v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true); }
+    return new Blob([buf], { type: 'audio/wav' });
+  }
+  async function edProcess() {
+    const start = +edStart.value, end = +edEnd.value, len = Math.max(0.5, end - start);
+    const sr = len > 150 ? 12000 : 16000;
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const off = new OAC(1, Math.max(1, Math.ceil(len * sr)), sr);
+    const src = off.createBufferSource(); src.buffer = edBuf;
+    let node = src;
+    if (edLevel > 0) { const hp = off.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = [0, 80, 110, 140][edLevel]; src.connect(hp); node = hp; }
+    node.connect(off.destination);
+    src.start(0, start, len);
+    const out = await off.startRendering();
+    const data = new Float32Array(out.getChannelData(0));
+    if (edLevel > 0) edGate(data, sr, edLevel);
+    return { data, sr, blob: edWav(data, sr) };
+  }
+  function edSetBusy(b) { edBusy = b; edPreviewBtn.disabled = b; edApplyBtn.disabled = b; }
+  edPreviewBtn.addEventListener('click', async () => {
+    if (edAud) { edStopPreview(); return; }
+    if (edBusy || !edBuf) return;
+    edSetBusy(true); edMsg.textContent = 'প্রস্তুত হচ্ছে...';
+    try {
+      const r = await edProcess();
+      edAudUrl = URL.createObjectURL(r.blob);
+      const a = new Audio(edAudUrl); edAud = a;
+      a.onended = () => { if (edAud === a) edStopPreview(); };
+      edPreviewBtn.textContent = '⏹ থামান'; edMsg.textContent = '';
+      await a.play();
+    } catch (e) { console.error(e); edStopPreview(); edMsg.textContent = 'শোনানো যায়নি — ' + (e && e.message ? e.message : e); }
+    edSetBusy(false);
+  });
+  edApplyBtn.addEventListener('click', async () => {
+    if (edBusy || !edBuf || !vrDone) return;
+    edStopPreview(); edSetBusy(true); edMsg.textContent = 'প্রয়োগ হচ্ছে...';
+    try {
+      const r = await edProcess();
+      if (mpUrl === vrDone.url) mpStopAll();
+      try { URL.revokeObjectURL(vrDone.url); } catch (e) {}
+      const url = URL.createObjectURL(r.blob);
+      vrDone = { blob: r.blob, duration: Math.max(1, Math.round(r.data.length / r.sr)), url, mime: 'audio/wav' };
+      vrTimer.textContent = fmtSec(vrDone.duration);
+      edClose();
+      vrMsg.textContent = '✅ এডিট প্রয়োগ হয়েছে';
+    } catch (e) { console.error(e); edMsg.textContent = 'এডিট করা যায়নি — ' + (e && e.message ? e.message : e); edSetBusy(false); }
+  });
+  document.getElementById('vrEdBack').addEventListener('click', edClose);
+  vrEditBtn.addEventListener('click', vrOpenEdit);
+
+  // তিন-ডট মেনু খোলা থাকলে নিচের পেজ আঙুলে টেনে নড়ানো যাবে না
+  document.addEventListener('touchmove', ev => {
+    if (document.querySelector('.postMenuDropdown.open, .commentMenuDropdown.open')) ev.preventDefault();
+  }, { passive: false });
 
   // শুরুর অবস্থা
   syncMediaUi();
