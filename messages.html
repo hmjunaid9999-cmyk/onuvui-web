@@ -88,7 +88,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .msgRow.mine .msgMeta{justify-content:flex-end}
 #messageBar{flex-shrink:0;display:flex;gap:8px;align-items:flex-end;padding:10px 12px;border-top:1px solid var(--line);background:var(--card-color);box-shadow:0 -2px 10px rgba(0,0,0,0.35)}
 #messageInput{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--text-color);padding:10px 12px;border-radius:18px;font-size:14px;font-family:inherit;resize:none;max-height:100px;min-height:40px}
-#sendBtn{background:var(--surface);color:#22c55e;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0}
+#sendBtn{background:none;color:var(--text-color);border:none;min-width:56px;width:auto;height:52px;border-radius:12px;font-size:48px;line-height:1;padding:0;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+#sendBtn.isSend{background:#2563eb;color:#ffffff;min-width:40px;width:40px;height:40px;border-radius:50%;font-size:16px}
 #sendBtn:disabled{opacity:0.5;cursor:default}
 #chatLoading{text-align:center;color:var(--text-color);font-size:13px;padding:30px 0}
 
@@ -157,7 +158,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 .clBtn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
 /* ---------- লাইক স্টিকার (শুধু 👍 হলে বড় সাইজে, বাবল ছাড়া) ---------- */
-.msgBubble.likeSticker{background:none!important;border:none!important;padding:0!important;font-size:42px;line-height:1}
+.msgBubble.likeSticker{background:none!important;border:none!important;padding:0!important;font-size:126px;line-height:1}
 
 /* ---------- রিপ্লাই/এডিট প্রিভিউ বার (মেসেজ ইনপুটের ঠিক উপরে) ---------- */
 #composePreview{display:none;align-items:center;gap:8px;padding:8px 12px;background:var(--surface);border-top:1px solid var(--line);flex-shrink:0}
@@ -251,6 +252,22 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 #ctxMenu .ctxItem.danger{color:var(--text-color)}
 
 #callScreen,#incomingCall{color:#ffffff}.ctlBtn{background:rgba(255,255,255,0.2)}.ctlBtn.off,.ctlBtn.on{background:#ffffff;color:#000000}.ctlBtn.end{background:#000000;border:2px solid #ffffff}.ctlBtn.accept{background:#ffffff;color:#000000}
+
+/* ---------- ধূসর মেসেজ বক্স + স্টিকার ---------- */
+:root{--gray-box:#4a4a4a}
+html[data-theme="light"]{--gray-box:#d0d0d0}
+#textBtn{background:var(--gray-box)}
+#messageBar #messageInput{background:var(--gray-box)}
+#messageBar{padding:10px 8px}
+#mediaRow{gap:6px}
+#mediaRow #voiceBtn,#mediaRow #audioFileBtn,#mediaRow #photoBtn{width:36px;height:36px}
+#textBtn{padding:0 10px}
+#mediaRow #stickerBtn{width:34px;height:34px;border-radius:50%;background:var(--gray-box)}
+#stickerPanel{display:none;flex-shrink:0;border-top:1px solid var(--line);background:var(--card-color);padding:10px;max-height:42vh;overflow-y:auto;gap:8px;flex-wrap:wrap}
+#stickerPanel.open{display:flex}
+.stkItem{background:var(--gray-box);color:var(--text-color);border:none;border-radius:18px;padding:12px 18px;font-size:24px;font-weight:bold;font-family:inherit;line-height:1.2;cursor:pointer}
+.stkItem:active{background:var(--surface-active)}
+.msgBubble.stickerMsg{font-size:30px;font-weight:bold;line-height:1.25;padding:14px 22px;border-radius:24px}
 </style>
 </head>
 <body>
@@ -316,12 +333,14 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
           <button class="cpClose" id="cpClose">✕</button>
         </div>
         <div id="attachPreview"><img id="apThumb" alt=""><span id="apIcon"></span><div id="apInfo"><div id="apName"></div><div id="apSize"></div></div><button id="apClose" type="button" aria-label="বাতিল">✕</button></div>
+        <div id="stickerPanel"></div>
         <div id="messageBar">
           <div id="mediaRow">
           <button id="voiceBtn" type="button" aria-label="ভয়েস মেসেজ"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
           <button id="audioFileBtn" class="barBtn" type="button" aria-label="ফোনের অডিও"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></button>
           <button id="photoBtn" class="barBtn" type="button" aria-label="ফটো"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></button>
           <button id="textBtn" type="button" aria-label="মেসেজ লিখুন"><span>মেসেজ লিখুন...</span></button>
+          <button id="stickerBtn" class="barBtn" type="button" aria-label="স্টিকার"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></button>
           </div>
           <div id="voiceRec"><button id="recCancel" type="button" aria-label="বাতিল">✕</button><span class="recDot"></span><span id="recTime">0:00</span><button id="recSend" type="button" aria-label="পাঠান">➤</button></div>
           <button id="textBack" class="barBtn" type="button" aria-label="পিছনে"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
@@ -1074,7 +1093,8 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
         : '<div class="avSpacer"></div>';
 
       // 👍 একাই (কোনো রিপ্লাই ছাড়া) হলে বড় স্টিকার হিসেবে দেখানো হয় (Messenger-এর মতো)
-      const isLike = m.text === '👍' && !m.replyTo;
+      const isLike = m.text === '👍' && !m.replyTo && !m.sticker;
+      const isSticker = m.sticker === true && !m.replyTo;
       const isVoice = (m.type === 'voice' || m.type === 'audio') && !!m.audioUrl;
       const isImage = m.type === 'image' && !!m.imageUrl;
       const quoteHtml = m.replyTo
@@ -1089,7 +1109,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
           <div class="msgMeta${showTime ? '' : ' noTime'}"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
@@ -1250,11 +1270,13 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     }
   }
 
-  async function sendCurrentMessage(forceLike) {
-    if (editingId) { await submitEdit(); return; }
-    if (pendingAttach) { await sendAttachment(); return; }
-    const raw = messageInput.value.trim();
-    const text = raw || (forceLike ? '👍' : '');   // ইনপুট খালি থাকলে সেন্ড বাটনে 👍 দেখায়, চাপলে লাইক পাঠানো হয়
+  async function sendCurrentMessage(forceLike, stickerText) {
+    if (!stickerText) {
+      if (editingId) { await submitEdit(); return; }
+      if (pendingAttach) { await sendAttachment(); return; }
+    }
+    const raw = stickerText ? '' : messageInput.value.trim();
+    const text = stickerText || raw || (forceLike ? '👍' : '');   // ইনপুট খালি থাকলে সেন্ড বাটনে 👍 দেখায়, চাপলে লাইক পাঠানো হয়
     if (!text || !messagingEnabled || !convId) return;
     const replySnapshot = replyingTo;
     sendBtn.disabled = true;
@@ -1292,11 +1314,14 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
         createdAt: serverTimestamp()
       };
       if (replySnapshot) payload.replyTo = { id: replySnapshot.id, text: replySnapshot.text };
+      if (stickerText) payload.sticker = true;
       await addDoc(collection(convRef, "messages"), payload);
       try { window.OnuNotify && window.OnuNotify.message(otherUid, 'text', text); } catch (_) {}
 
-      messageInput.value = '';
-      messageInput.style.height = 'auto';
+      if (!stickerText) {
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+      }
       replyingTo = null;
       updateComposePreview();
     } catch (e) {
@@ -1309,12 +1334,15 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
   // সেন্ড বাটন: ইনপুট খালি থাকলে 👍, লেখা থাকলে ➤, এডিট চলাকালীন ✔ (Messenger-এর মতো)
   function updateSendBtn() {
+    const typingNow = document.getElementById('messageBar').classList.contains('typing');
+    // মেসেজ বক্স খোলা থাকলে (ইনপুট থাকুক বা না থাকুক) সবসময় সেন্ড আইকন — লাইক শুধু বক্স বন্ধ থাকলে
+    const asSend = typingNow || !!editingId || !!pendingAttach;
+    sendBtn.classList.toggle('isSend', asSend);
     if (editingId) { sendBtn.textContent = '✔'; return; }
-    if (pendingAttach) { sendBtn.textContent = '➤'; return; }
-    sendBtn.textContent = messageInput.value.trim() === '' ? '👍' : '➤';
+    sendBtn.textContent = asSend ? '➤' : '👍';
   }
 
-  sendBtn.addEventListener('click', () => sendCurrentMessage(true));
+  sendBtn.addEventListener('click', () => sendCurrentMessage(!document.getElementById('messageBar').classList.contains('typing') && !editingId && !pendingAttach));
 
   // ================= ভয়েস মেসেজ (অডিও Supabase Storage-এ, মেসেজ Firestore-এ) =================
   const SUPABASE_URL = 'https://hrcaywasntwrcwkdzjuu.supabase.co';
@@ -1485,11 +1513,15 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
 
   function setTyping(on) {
     messageBarEl.classList.toggle('typing', !!on);
+    closeStickers();
+    updateSendBtn();
     if (on) { messageInput.focus(); }
   }
   function resetComposerMode() {
     clearAttach();
     messageBarEl.classList.remove('typing');
+    closeStickers();
+    updateSendBtn();
   }
   function fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
   function isMediaMsg(m) { return m.type === 'voice' || m.type === 'audio' || m.type === 'image'; }
@@ -1606,7 +1638,27 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
   photoBtn.addEventListener('click', () => { if (canAttach()) photoInput.click(); });
   audioFileBtn.addEventListener('click', () => { if (canAttach()) audioFileInput.click(); });
   textBtn.addEventListener('click', () => { if (messagingEnabled) setTyping(true); });
-  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); });
+  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); updateSendBtn(); });
+
+  // ---------- স্টিকার ----------
+  const STICKERS = ['Hi', 'Hello', 'How are you', 'Good morning', 'Good night', 'কেমন আছেন', 'ভালো আছি',
+    'আসসালামু আলাইকুম', 'ওয়ালাইকুম আসসালাম', 'শুভ সকাল', 'শুভ রাত্রি', 'ধন্যবাদ', 'Thank you', 'স্বাগতম', 'Welcome',
+    'ঠিক আছে', 'OK', 'হ্যাঁ', 'না', 'দুঃখিত', 'Sorry', 'অভিনন্দন', 'Congratulations', 'শুভ জন্মদিন', 'Happy Birthday',
+    'ঈদ মুবারক', 'Eid Mubarak', 'আলহামদুলিল্লাহ', 'মাশাআল্লাহ', 'ইনশাআল্লাহ', 'দোয়া করবেন', 'কী খবর?', 'কল দিন',
+    'পরে কথা হবে', 'একটু অপেক্ষা করুন', 'Bye', 'খোদা হাফেজ'];
+  const stickerBtn = document.getElementById('stickerBtn');
+  const stickerPanel = document.getElementById('stickerPanel');
+  STICKERS.forEach(t => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'stkItem'; b.textContent = t;
+    b.addEventListener('click', () => { closeStickers(); sendCurrentMessage(false, t); });
+    stickerPanel.appendChild(b);
+  });
+  function closeStickers() { stickerPanel.classList.remove('open'); }
+  stickerBtn.addEventListener('click', () => {
+    if (!canAttach()) return;
+    stickerPanel.classList.toggle('open');
+  });
 
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files && photoInput.files[0];
@@ -1978,6 +2030,43 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     c.durInt = setInterval(() => {
       if (call === c) callStatus.textContent = bnDuration(Math.floor((Date.now() - c.startedAt) / 1000));
     }, 1000);
+    startCallDiag(c);
+  }
+  // কলের স্ক্রিনে ছোট ডায়াগনস্টিক লাইন: আপনার মাইকের আওয়াজ ধরা পড়ছে কি, পাঠানো/আসা ডেটা চলছে কি
+  function startCallDiag(c) {
+    let el = document.getElementById('callDiag');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'callDiag';
+      el.style.cssText = 'font-size:12px;color:#ffffff;opacity:.85;margin-top:6px;max-width:92%;line-height:1.6';
+      callStatus.parentNode.appendChild(el);
+    }
+    el.textContent = '';
+    let lastOut = 0, lastIn = 0;
+    const lv = [];
+    clearInterval(c.diagInt);
+    c.diagInt = setInterval(async () => {
+      if (c.ended || call !== c || !c.pc) { clearInterval(c.diagInt); el.textContent = ''; return; }
+      try {
+        const rep = await c.pc.getStats();
+        let out = 0, inn = 0, lvl = -1;
+        rep.forEach(r => {
+          if (r.type === 'outbound-rtp' && r.kind === 'audio') out = r.bytesSent || 0;
+          else if (r.type === 'inbound-rtp' && r.kind === 'audio') inn = r.bytesReceived || 0;
+          else if (r.type === 'media-source' && r.kind === 'audio' && typeof r.audioLevel === 'number') lvl = r.audioLevel;
+        });
+        const sendOk = out > lastOut, recvOk = inn > lastIn;
+        lastOut = out; lastIn = inn;
+        if (lvl >= 0) { lv.push(lvl); if (lv.length > 6) lv.shift(); }
+        const heard = lv.length && Math.max.apply(null, lv) > 0.01;
+        const t = c.localStream && c.localStream.getAudioTracks()[0];
+        let line = '🎤 আপনার আওয়াজ: ' + (heard ? '✓ ধরা পড়ছে' : '— নেই (কথা বললে ✓ আসবে)')
+          + '  |  📤 যাচ্ছে: ' + (sendOk ? '✓' : '✗') + '  |  🔊 আসছে: ' + (recvOk ? '✓' : '✗');
+        if (t && (t.muted || t.readyState !== 'live')) line += '\n⚠ আপনার মাইক ব্লক হয়ে আছে — অন্য অ্যাপ (Messenger ইত্যাদি) মাইক ধরে রাখলে এমন হয়, সেগুলো বন্ধ করুন';
+        el.style.whiteSpace = 'pre-line';
+        el.textContent = line;
+      } catch (e) {}
+    }, 1000);
   }
   // ওপাশের আওয়াজ চালু নিশ্চিত করা: কিছু ব্রাউজার (বিশেষ করে iPhone/Safari) নিজে নিজে আসা আওয়াজ বাজাতে দেয় না
   function ensureRemotePlay(c) {
@@ -2071,7 +2160,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     c.ended = true;
     c.unsubs.forEach(u => { try { u(); } catch (e) {} });
     c.unsubs = [];
-    clearTimeout(c.ringT); clearTimeout(c.discT); clearInterval(c.durInt); clearInterval(c.playInt);
+    clearTimeout(c.ringT); clearTimeout(c.discT); clearInterval(c.durInt); clearInterval(c.playInt); clearInterval(c.diagInt);
     try { if (c.localStream) c.localStream.getTracks().forEach(t => t.stop()); } catch (e) {}
     try { if (c.pc) c.pc.close(); } catch (e) {}
     remoteVideo.srcObject = null; localVideo.srcObject = null;
@@ -2079,6 +2168,7 @@ main{flex:1;overflow:hidden;display:flex;flex-direction:column;max-width:var(--m
     stopRing();
     stopLoudBoost(); resetOutput();
     callStatus.textContent = msg || 'কল শেষ হয়েছে';
+    { const dg = document.getElementById('callDiag'); if (dg) dg.textContent = ''; }
     setTimeout(() => { if (!call) hideCallScreen(); }, 1200);
   }
   function hangup(msg) {
