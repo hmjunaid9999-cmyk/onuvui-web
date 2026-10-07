@@ -135,6 +135,13 @@ html[data-theme="light"]{--ash-btn:#c2c6ca}
 #loadMoreBtn{background:var(--ash-bg)}
 .postButtons button{background:var(--ash-btn)}
 .postButtons button.liked{background:var(--ash-btn)}
+/* নাম ও সময়ের মাঝে একটু বাড়তি ফাঁক */
+.postHeader .pName{line-height:1.35}
+.postHeader .pTime{margin-top:5px;line-height:1.3}
+/* বাটনের সারির ধূসর ব্যাকগ্রাউন্ড বাদ — শুধু তিনটা বাটন ধূসর থাকবে */
+.postButtons{background:transparent;padding-left:0;padding-right:0}
+/* ভয়েসের শিরোনাম লেখা না থাকলে শিরোনামের জায়গা ফাঁকা থাকবে না */
+.mpTitle.mpTitleEmpty{display:none}
 
 /* ===== কম্পোজারে ফটো / ভয়েস / অডিও অপশন (টেক্সট বক্স আর পোস্ট বাটনের মাঝে) ===== */
 #composerMedia{display:none;margin-top:10px}
@@ -510,7 +517,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     <div id="vrFooter">
       <button type="button" id="vrCancelBtn">বাতিল</button>
       <button type="button" id="vrAgainBtn">আবার রেকর্ড</button>
-      <button type="button" id="vrPostBtn">পোস্ট করুন</button>
+      <button type="button" id="vrPostBtn" aria-label="পোস্ট বক্সে যান"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
     </div>
   </div>
 
@@ -1338,7 +1345,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     if (!a) { postAttachPreview.classList.remove('has'); return; }
     postAttachPreview.classList.add('has');
     paName.textContent = a.name;
-    paSize.textContent = fmtMB(a.size) + (a.kind === 'audio' && a.duration ? ' · ' + fmtSec(a.duration) : '');
+    paSize.textContent = fmtMB(a.size) + ((a.kind === 'audio' || a.kind === 'voice') && a.duration ? ' · ' + fmtSec(a.duration) : '');
     if (a.kind === 'photo') { paThumb.src = a.previewUrl; paThumb.style.display = 'block'; paIcon.style.display = 'none'; }
     else { paThumb.style.display = 'none'; paIcon.style.display = 'flex'; }
   }
@@ -1394,6 +1401,14 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       const imageUrl = sb.storage.from(PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
       return { type: 'photo', imageUrl, fileName: 'photo-' + Date.now() + '.' + ext };
     }
+    if (a.kind === 'voice') {
+      const vt = (a.blob.type || a.mime || 'audio/webm').split(';')[0];
+      const vpath = 'posts/' + uid + '_' + Date.now() + '.' + a.ext;
+      const vup = await sb.storage.from(VOICE_BUCKET).upload(vpath, a.blob, { contentType: vt, upsert: false });
+      if (vup.error) throw vup.error;
+      const vUrl = sb.storage.from(VOICE_BUCKET).getPublicUrl(vpath).data.publicUrl;
+      return { type: 'voice', audioUrl: vUrl, duration: a.duration || 0, fileName: a.name };
+    }
     const ext = ((a.name.split('.').pop() || 'mp3').toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp3').slice(0, 5);
     const path = 'files/posts/' + uid + '_' + Date.now() + '.' + ext;
     const up = await sb.storage.from(VOICE_BUCKET).upload(path, a.file, { contentType: a.file.type || 'audio/mpeg', upsert: false });
@@ -1437,7 +1452,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     const dur = Math.max(0, Number(o.dur) || 0);
     return '<div class="mp" data-url="' + escAttr(o.url) + '" data-dur="' + dur + '">' +
       '<div class="mpViz"><div class="mpGlow"></div><div class="mpBars">' + mpBarsHtml(String(o.url)) + '</div></div>' +
-      '<div class="mpInfo"><div class="mpTitle"><span class="mpTitleIn">' + escAttr(o.title || '') + '</span></div>' +
+      '<div class="mpInfo"><div class="mpTitle' + (o.title ? '' : ' mpTitleEmpty') + '"><span class="mpTitleIn">' + escAttr(o.title || '') + '</span></div>' +
         (o.sub ? '<div class="mpSub">' + escAttr(o.sub) + '</div>' : '') + '</div>' +
       '<div class="mpSeek"><span class="mpCur">0:00</span>' +
         '<div class="mpLine"><svg class="mpSvg" width="100%" height="26" aria-hidden="true">' +
@@ -1621,7 +1636,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     if ((d.type === 'voice' || d.type === 'audio') && d.audioUrl) {
       return mediaPlayerHtml({
         url: d.audioUrl, dur: d.duration,
-        title: d.type === 'voice' ? '🎤 ভয়েস মেসেজ' : '🎵 ' + ((d.fileName || 'অডিও').replace(/\.[A-Za-z0-9]{2,5}$/, '')),
+        title: d.type === 'voice' ? (d.text || '').trim() : '🎵 ' + ((d.fileName || 'অডিও').replace(/\.[A-Za-z0-9]{2,5}$/, '')),
         sub: d.authorName || ''
       });
     }
@@ -1810,7 +1825,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       if (duration < 1 || !blob.size) { vrMsg.textContent = 'রেকর্ডিং খুব ছোট হয়েছে — আবার চেষ্টা করুন।'; vrSetState('idle'); return; }
       const url = URL.createObjectURL(blob);
       vrDone = { blob, duration, url, mime: r.mime };
-      vrReview.innerHTML = mediaPlayerHtml({ url, dur: duration, title: '🎤 আপনার ভয়েস', sub: 'শুনে দেখুন' });
+      vrReview.innerHTML = mediaPlayerHtml({ url, dur: duration, title: vrCaption.value.trim() || '🎤 আপনার ভয়েস', sub: 'শুনে দেখুন' });
       bindMediaPlayer(vrReview.querySelector('.mp'));
       vrTimer.textContent = fmtSec(duration);
       vrSetState('done');
@@ -1874,7 +1889,33 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     vrSetState('idle');
     vrStart();
   });
-  vrPostBtn.addEventListener('click', vrPost);
+  // লেখা বক্সে যা লিখবেন তা-ই ভয়েসের শিরোনাম (প্লেয়ারের উপরের লেখা) — লিখতে লিখতেই বদলায়
+  vrCaption.addEventListener('input', () => {
+    const root = vrReview.querySelector('.mp');
+    if (!root) return;
+    const t = root.querySelector('.mpTitle'), inner = root.querySelector('.mpTitleIn');
+    if (!t || !inner) return;
+    const v = vrCaption.value.trim();
+    inner.textContent = v || '🎤 আপনার ভয়েস';
+    t.classList.remove('mpTitleEmpty');
+    mpFitTitle(root);
+  });
+
+  // তীর বাটন: রেকর্ড করা ভয়েস ও লেখা নিয়ে সরাসরি পোস্ট বক্সে (কম্পোজারে) চলে যায়
+  function vrToComposer() {
+    if (!vrDone || voicePage.dataset.state !== 'done') return;
+    const rec = vrDone;
+    vrDone = null;                                   // ফাইল কম্পোজারে হস্তান্তর — এখানে আর মুছবে না
+    if (mpUrl === rec.url) mpStopAll();
+    const text = vrCaption.value;
+    const baseType = (rec.blob.type || rec.mime || 'audio/webm').split(';')[0];
+    const ext = baseType.includes('mp4') ? 'm4a' : baseType.includes('ogg') ? 'ogg' : 'webm';
+    closeVoicePage(false);
+    composerText.value = text;
+    setPostAttach({ kind: 'voice', blob: rec.blob, mime: rec.mime, ext, name: 'voice-' + Date.now() + '.' + ext, size: rec.blob.size, duration: rec.duration, previewUrl: rec.url });
+    try { composerText.focus(); } catch (e) {}
+  }
+  vrPostBtn.addEventListener('click', vrToComposer);
 
   // শুরুর অবস্থা
   syncMediaUi();
@@ -2556,7 +2597,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
           <div class="postMenuDropdown"></div>
         </div>
       </div>
-      ${d.type !== 'poster' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${postTextHtml}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
+      ${d.type !== 'poster' && d.type !== 'voice' && d.text ? `<div class="postText clamped" style="--clamp-lines:${readMoreLines}">${postTextHtml}</div><button class="readMoreBtn">আরও পড়ুন</button>` : ''}
       ${mediaHtml}
       <div class="postButtons"></div>
       <div class="postStatus"></div>
