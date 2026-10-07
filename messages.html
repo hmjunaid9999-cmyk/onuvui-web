@@ -265,9 +265,13 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 #mediaRow #stickerBtn{width:34px;height:34px;border-radius:50%;background:var(--gray-box)}
 #stickerPanel{display:none;flex-shrink:0;border-top:1px solid var(--line);background:var(--card-color);padding:10px;max-height:42vh;overflow-y:auto;gap:8px;flex-wrap:wrap}
 #stickerPanel.open{display:flex}
-.stkItem{background:var(--gray-box);color:var(--text-color);border:none;border-radius:18px;padding:12px 18px;font-size:24px;font-weight:bold;font-family:inherit;line-height:1.2;cursor:pointer}
+.stkItem{background:var(--gray-box);color:var(--text-color);border:none;border-radius:18px;padding:8px 12px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:84px}
+.stkE{font-size:38px;line-height:1.1}
+.stkT{font-size:13px;font-weight:bold;line-height:1.2}
 .stkItem:active{background:var(--surface-active)}
-.msgBubble.stickerMsg{font-size:30px;font-weight:bold;line-height:1.25;padding:14px 22px;border-radius:24px}
+.msgBubble.stickerMsg{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 18px;border-radius:24px;white-space:normal}
+.msgBubble.stickerMsg .stkE{font-size:56px;line-height:1.1}
+.msgBubble.stickerMsg .stkT{font-size:14px}
 </style>
 </head>
 <body>
@@ -543,6 +547,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 
   backBtn.addEventListener('click', () => {
     if (ctxOpen) { closeCtxMenu(); return; }
+    if (window.__composerBackBtn && window.__composerBackBtn()) return;
     if (convId) {
       // চ্যাট থেকে ইনবক্সে — পেইজ রিলোড ছাড়াই
       if (history.state && history.state.inApp) history.back();
@@ -556,6 +561,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
   window.addEventListener('popstate', () => {
     if (imgViewer.classList.contains('open')) { closeImgViewer(true); return; }   // ছবি খোলা থাকলে ব্যাক = শুধু ছবি বন্ধ
     if (viewerIgnorePop) { viewerIgnorePop = false; return; }
+    if (window.__composerBack && window.__composerBack()) return;   // স্টিকার/মেসেজ বক্স খোলা থাকলে ব্যাক = শুধু সেটা বন্ধ
     if (ctxOpen) { closeCtxMenu(true); return; }      // মেনু খোলা থাকলে ব্যাক = শুধু মেনু বন্ধ
     if (ctxIgnorePop) { ctxIgnorePop = false; return; } // মেনু নিজে বন্ধ হওয়ার popstate — উপেক্ষা
     route();
@@ -1109,7 +1115,7 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 
       const content = `
         <div class="msgCol">
-          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : escapeHtml(m.text))}${reactHtml}</div>
+          <div class="msgBubble${isLike ? ' likeSticker' : ''}${isSticker ? ' stickerMsg' : ''}${isImage ? ' hasImg' : ''}${isVoice ? ' hasVp' : ''}">${quoteHtml}${isVoice ? voicePlayerHtml(m) + captionHtml(m) : isImage ? imageBubbleHtml(m) + captionHtml(m) : (isLike ? '👍' : isSticker ? stickerHtml(m.text) : escapeHtml(m.text))}${reactHtml}</div>
           <div class="msgMeta${showTime ? '' : ' noTime'}"><span>${timeAgo(m.createdAt)}${editedHtml}</span></div>
         </div>
       `;
@@ -1513,15 +1519,17 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
 
   function setTyping(on) {
     messageBarEl.classList.toggle('typing', !!on);
-    closeStickers();
+    stickerPanel.classList.remove('open');
     updateSendBtn();
+    syncComposerHistory();
     if (on) { messageInput.focus(); }
   }
   function resetComposerMode() {
     clearAttach();
     messageBarEl.classList.remove('typing');
-    closeStickers();
+    stickerPanel.classList.remove('open');
     updateSendBtn();
+    syncComposerHistory();
   }
   function fmtMB(b) { return (b / 1048576).toFixed(1) + ' MB'; }
   function isMediaMsg(m) { return m.type === 'voice' || m.type === 'audio' || m.type === 'image'; }
@@ -1638,27 +1646,79 @@ html[data-theme="light"]{--gray-box:#d0d0d0}
   photoBtn.addEventListener('click', () => { if (canAttach()) photoInput.click(); });
   audioFileBtn.addEventListener('click', () => { if (canAttach()) audioFileInput.click(); });
   textBtn.addEventListener('click', () => { if (messagingEnabled) setTyping(true); });
-  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); updateSendBtn(); });
+  textBack.addEventListener('click', () => { messageBarEl.classList.remove('typing'); updateSendBtn(); syncComposerHistory(); });
 
   // ---------- স্টিকার ----------
-  const STICKERS = ['Hi', 'Hello', 'How are you', 'Good morning', 'Good night', 'কেমন আছেন', 'ভালো আছি',
-    'আসসালামু আলাইকুম', 'ওয়ালাইকুম আসসালাম', 'শুভ সকাল', 'শুভ রাত্রি', 'ধন্যবাদ', 'Thank you', 'স্বাগতম', 'Welcome',
-    'ঠিক আছে', 'OK', 'হ্যাঁ', 'না', 'দুঃখিত', 'Sorry', 'অভিনন্দন', 'Congratulations', 'শুভ জন্মদিন', 'Happy Birthday',
-    'ঈদ মুবারক', 'Eid Mubarak', 'আলহামদুলিল্লাহ', 'মাশাআল্লাহ', 'ইনশাআল্লাহ', 'দোয়া করবেন', 'কী খবর?', 'কল দিন',
-    'পরে কথা হবে', 'একটু অপেক্ষা করুন', 'Bye', 'খোদা হাফেজ'];
+  const STICKERS = [
+    '👋 Hi', '🙋 Hello', '😊 How are you', '🌅 Good morning', '🌙 Good night', '🤗 কেমন আছেন', '😇 ভালো আছি',
+    '🤝 আসসালামু আলাইকুম', '🤲 ওয়ালাইকুম আসসালাম', '☀️ শুভ সকাল', '🌃 শুভ রাত্রি', '🙏 ধন্যবাদ', '😍 Thank you',
+    '🌹 স্বাগতম', '🤩 Welcome', '👌 ঠিক আছে', '👍 OK', '✅ হ্যাঁ', '❌ না', '😔 দুঃখিত', '🥺 Sorry', '🎉 অভিনন্দন',
+    '🥳 Congratulations', '🎂 শুভ জন্মদিন', '🎁 Happy Birthday', '🕌 ঈদ মুবারক', '⭐ Eid Mubarak', '🤲 আলহামদুলিল্লাহ',
+    '✨ মাশাআল্লাহ', '🤞 ইনশাআল্লাহ', '🤲 দোয়া করবেন', '😃 কী খবর?', '📞 কল দিন', '🕐 পরে কথা হবে',
+    '⏳ একটু অপেক্ষা করুন', '👋 Bye', '🙌 খোদা হাফেজ'];
+  // স্টিকার = "ইমোজি লেখা" — প্রথম স্পেসের আগে ইমোজি, পরে লেখা (কমেন্টেও একই ফরম্যাট ব্যবহার করা যাবে)
+  function stickerParts(t) {
+    const i = String(t).indexOf(' ');
+    return i < 0 ? { e: '', t: String(t) } : { e: t.slice(0, i), t: t.slice(i + 1) };
+  }
+  function stickerHtml(t) {
+    const p = stickerParts(t);
+    return '<span class="stkE">' + escapeHtml(p.e) + '</span><span class="stkT">' + escapeHtml(p.t) + '</span>';
+  }
   const stickerBtn = document.getElementById('stickerBtn');
   const stickerPanel = document.getElementById('stickerPanel');
   STICKERS.forEach(t => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'stkItem'; b.textContent = t;
+    b.type = 'button'; b.className = 'stkItem'; b.innerHTML = stickerHtml(t);
     b.addEventListener('click', () => { closeStickers(); sendCurrentMessage(false, t); });
     stickerPanel.appendChild(b);
   });
-  function closeStickers() { stickerPanel.classList.remove('open'); }
+  function closeStickers() { stickerPanel.classList.remove('open'); syncComposerHistory(); }
   stickerBtn.addEventListener('click', () => {
     if (!canAttach()) return;
     stickerPanel.classList.toggle('open');
+    syncComposerHistory();
   });
+
+  // ---------- ব্যাক বাটন: স্টিকার প্যানেল / মেসেজ বক্স খোলা থাকলে ব্যাক = শুধু সেটা বন্ধ, মেসেজিং থেকে বের হবে না ----------
+  let compPushed = false, compIgnorePop = false;
+  function composerLayerOpen() {
+    return stickerPanel.classList.contains('open') || messageBarEl.classList.contains('typing');
+  }
+  function syncComposerHistory() {
+    const open = composerLayerOpen();
+    if (open && !compPushed) {
+      try { history.pushState(Object.assign({}, history.state || {}, { composer: true }), '', location.href); compPushed = true; }
+      catch (e) { compPushed = false; }
+    } else if (!open && compPushed) {
+      compPushed = false;
+      compIgnorePop = true;
+      try { history.back(); } catch (e) { compIgnorePop = false; }
+      setTimeout(() => { compIgnorePop = false; }, 600);
+    }
+  }
+  // ব্রাউজার/ফোনের ব্যাক চাপলে — popstate থেকে ডাকা হয়
+  function closeComposerLayersFromPop() {
+    compPushed = false;
+    stickerPanel.classList.remove('open');
+    messageBarEl.classList.remove('typing');
+    updateSendBtn();
+  }
+  window.__composerBack = function () {
+    if (compIgnorePop) { compIgnorePop = false; return true; }
+    if (compPushed && composerLayerOpen()) { closeComposerLayersFromPop(); return true; }
+    if (compPushed) { compPushed = false; }
+    return false;
+  };
+  // অ্যাপের উপরের ব্যাক বাটন
+  window.__composerBackBtn = function () {
+    if (composerLayerOpen()) {
+      messageBarEl.classList.remove('typing'); stickerPanel.classList.remove('open');
+      updateSendBtn(); syncComposerHistory();
+      return true;
+    }
+    return false;
+  };
 
   photoInput.addEventListener('change', async () => {
     const file = photoInput.files && photoInput.files[0];
