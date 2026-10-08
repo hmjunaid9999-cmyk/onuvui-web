@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onuvuti.www.twa",
+        "sha256_cert_fingerprints": ["16:99:E4:28:65:FB:32:EE:ED:03:84:C0:B6:44:C7:A4:17:61:C3:C4:BF:F0:5F:E9:FA:E0:A9:4B:2B:DB:25:27"]
+      }
+    }]
