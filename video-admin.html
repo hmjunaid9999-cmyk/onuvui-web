@@ -154,29 +154,13 @@
 
   .swiperContainer { overflow: hidden; }
   .swiperTrack {
-    display: flex; width: 300%;
+    display: flex; width: 200%;
     transition: transform 0.3s ease;
     touch-action: pan-y;
   }
   .swiperTrack.dragging { transition: none; }
-  .swiperPage { width: 33.3333%; flex-shrink: 0; min-width: 0; }
+  .swiperPage { width: 50%; flex-shrink: 0; min-width: 0; }
   .swiperPage .section { margin-bottom: 12px; }
-  /* ---------- ভিডিও আপলোড পেজ (GitHub) ---------- */
-  .pickBtn { background: #262c36; width: 100%; padding: 10px; border-radius: 10px; font-size: 13px; margin-bottom: 10px; }
-  .upBar { height: 6px; background: #0d1117; border: 1px solid #262c36; border-radius: 4px; overflow: hidden; margin: 8px 0; display: none; }
-  .upBar.busy { display: block; }
-  .upBar i { display: block; height: 100%; width: 35%; background: #4285F4; animation: upSlide 1.1s ease-in-out infinite alternate; }
-  @keyframes upSlide { from { margin-left: 0; } to { margin-left: 65%; } }
-  #upPreview { width: 100%; max-height: 260px; background: #000; border-radius: 10px; display: block; }
-  details.ghBox summary { cursor: pointer; font-size: 15px; font-weight: bold; }
-  details.ghBox .row { margin-top: 10px; }
-  .vidCard { display: flex; gap: 10px; align-items: center; background: #161b22; border: 1px solid #262c36; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
-  .vidThumb { width: 84px; height: 56px; border-radius: 8px; background: #0d1117; object-fit: cover; flex-shrink: 0; }
-  .vidInfo { flex: 1; min-width: 0; }
-  .vidTitle { font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .vidMeta { font-size: 11px; color: #6b7280; margin-top: 3px; }
-  .vidDel { background: #35171c; color: #ff9da8; border: 1px solid #632b34; padding: 8px 12px; border-radius: 10px; font-size: 13px; flex-shrink: 0; }
-  .vidDel:disabled { opacity: .5; }
 </style>
 </head>
 <body>
@@ -205,7 +189,6 @@
       <div class="swiperDots">
         <span class="dot active" data-page="0"></span>
         <span class="dot" data-page="1"></span>
-        <span class="dot" data-page="2"></span>
       </div>
 
       <div class="swiperContainer" id="swiperContainer">
@@ -240,39 +223,6 @@
               <h2>👤 একাউন্ট</h2>
               <input type="text" id="accountSearch" placeholder="🔍 নাম, ইমেইল বা UID দিয়ে সার্চ করুন..." style="margin-bottom:12px;">
               <div id="accountsList"><div class="listEmpty">লোড হচ্ছে...</div></div>
-            </div>
-          </div>
-
-          <div class="swiperPage">
-            <div class="section">
-              <details class="ghBox" id="ghBox">
-                <summary>⚙️ GitHub সেটিংস</summary>
-                <div class="hint" style="margin-top:8px;">ভিডিও আপনার GitHub রিপোর <b>videos</b> ফোল্ডারে জমা হবে। এই তথ্য শুধু এই ব্রাউজারেই সংরক্ষিত থাকে, অন্য কোথাও যায় না।</div>
-                <div class="row"><label>রিপো</label><input type="text" id="ghRepo" placeholder="ইউজারনেম/রিপোর-নাম" autocapitalize="off" autocomplete="off"></div>
-                <div class="row"><label>ব্রাঞ্চ</label><input type="text" id="ghBranch" placeholder="main" autocapitalize="off" autocomplete="off"></div>
-                <div class="row"><label>টোকেন</label><input type="text" id="ghToken" placeholder="github_pat_..." autocapitalize="off" autocomplete="off" style="-webkit-text-security:disc;"></div>
-                <div class="hint">টোকেন বানাতে: GitHub → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate। Repository access: <b>Only select repositories</b> (শুধু এই রিপো)। Permissions → Repository permissions → <b>Contents: Read and write</b>। টোকেন কাউকে দেখাবেন না।</div>
-                <button class="sectionSaveBtn" id="ghSaveBtn">💾 সেভ ও যাচাই করুন</button>
-                <div class="sectionStatus" id="ghStatus"></div>
-              </details>
-            </div>
-            <div class="section">
-              <h2>⬆️ ভিডিও আপলোড</h2>
-              <div class="hint">ফোন বা কম্পিউটার থেকে ভিডিও বেছে আপলোড করুন। একটা ফাইল সর্বোচ্চ ২৫ এমবি (Cloudflare-এর সীমা)। আপলোড হলে সাইটে প্রকাশ হতে ১-২ মিনিট লাগে, তখন ভিডিও নিজে থেকেই "ভিডিও" তালিকায় যোগ হবে। এই সময় পেজ বন্ধ করবেন না।</div>
-              <div class="row"><label>শিরোনাম</label><input type="text" id="upTitle" maxlength="120" placeholder="ভিডিওর নাম"></div>
-              <input type="file" id="upFile" accept="video/*" style="display:none">
-              <button class="pickBtn" id="upPickBtn">📁 ভিডিও বেছে নিন</button>
-              <div id="upPreviewWrap" style="display:none;">
-                <video id="upPreview" controls playsinline muted></video>
-                <div class="hint" id="upInfo"></div>
-              </div>
-              <div class="upBar" id="upBar"><i></i></div>
-              <button class="sectionSaveBtn" id="upStartBtn" disabled>⬆️ আপলোড করুন</button>
-              <div class="sectionStatus" id="upStatus"></div>
-            </div>
-            <div class="section">
-              <h2>🗑️ আপলোড করা ভিডিও</h2>
-              <div id="upList"><div class="listEmpty">লোড হচ্ছে...</div></div>
             </div>
           </div>
 
@@ -829,12 +779,12 @@
     }
   });
 
-  // ---- সোয়াইপার (কয়েন সেটিংস <-> একাউন্ট <-> ভিডিও আপলোড), মোট পেজ: 3 ----
+  // ---- সোয়াইপার (কয়েন সেটিংস <-> একাউন্ট), মোট পেজ: 2 ----
   const swiperContainer = document.getElementById('swiperContainer');
   const swiperTrack = document.getElementById('swiperTrack');
   const dots = document.querySelectorAll('.dot');
-  const TOTAL_PAGES = 3;
-  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (৩ পেজে ৩৩.৩৩%)
+  const TOTAL_PAGES = 2;
+  const STEP = 100 / TOTAL_PAGES; // প্রতি পেজ ট্র্যাকের কত শতাংশ সরবে (২ পেজে ৫০%)
   let currentPage = 0;
   let startX = 0;
   let currentTranslate = 0;
@@ -911,299 +861,6 @@
     }
   });
 
-  // ================= ভিডিও আপলোড / ডিলিট (ফাইল GitHub রিপোর videos/ ফোল্ডারে, ভিডিওর তথ্য Firestore "videos"-এ) =================
-  const MAX_VIDEO_BYTES = 25 * 1024 * 1024; // Cloudflare Pages-এ একটা ফাইলের সর্বোচ্চ সীমা (25 MiB)
-  const GH_LS = { repo: 'onuvutiGhRepo', branch: 'onuvutiGhBranch', token: 'onuvutiGhToken' };
-
-  function ghCfg() {
-    try {
-      return {
-        repo: (localStorage.getItem(GH_LS.repo) || '').trim(),
-        branch: (localStorage.getItem(GH_LS.branch) || 'main').trim() || 'main',
-        token: (localStorage.getItem(GH_LS.token) || '').trim()
-      };
-    } catch (e) { return { repo: '', branch: 'main', token: '' }; }
-  }
-
-  async function gh(path, opts) {
-    opts = opts || {};
-    const c = ghCfg();
-    if (!c.repo || !c.token) throw new Error('আগে "GitHub সেটিংস" সেভ করুন।');
-    const headers = { 'Authorization': 'Bearer ' + c.token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
-    if (opts.body) headers['Content-Type'] = 'application/json';
-    const r = await fetch('https://api.github.com/repos/' + c.repo + path, { method: opts.method || 'GET', headers, body: opts.body });
-    const text = await r.text();
-    let j = null; try { j = text ? JSON.parse(text) : null; } catch (e) {}
-    if (!r.ok) { const err = new Error((j && j.message) || ('GitHub ' + r.status)); err.status = r.status; throw err; }
-    return j;
-  }
-
-  function friendlyGhErr(e) {
-    const m = String((e && e.message) || e || '');
-    const st = e && e.status;
-    if (st === 401) return 'টোকেন ভুল বা মেয়াদ শেষ। নতুন টোকেন বানিয়ে সেটিংসে বসান।';
-    if (st === 403) return 'টোকেনের অনুমতি নেই। টোকেনে "Contents: Read and write" দিন। (' + m + ')';
-    if (st === 404) return 'রিপো বা ব্রাঞ্চ পাওয়া যায়নি, অথবা টোকেন এই রিপোতে অনুমতিপ্রাপ্ত নয়। রিপোর নাম "ইউজারনেম/রিপো" আকারে লিখেছেন কি দেখুন।';
-    if (st === 409 || st === 422) return 'GitHub-এ একসাথে অন্য পরিবর্তন হয়েছে। একটু পরে আবার চেষ্টা করুন। (' + m + ')';
-    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return 'নেটওয়ার্ক সমস্যা, ইন্টারনেট দেখে আবার চেষ্টা করুন।';
-    return m;
-  }
-
-  // ---- সেটিংস সেভ ও যাচাই ----
-  const ghRepo = document.getElementById('ghRepo');
-  const ghBranch = document.getElementById('ghBranch');
-  const ghToken = document.getElementById('ghToken');
-  const ghStatus = document.getElementById('ghStatus');
-  const ghBox = document.getElementById('ghBox');
-  function setGhStatus(msg, ok) { ghStatus.style.color = ok === true ? '#34d399' : ok === false ? '#f87171' : '#9ca3af'; ghStatus.textContent = msg || ''; }
-  (function fillGh() {
-    const c = ghCfg();
-    ghRepo.value = c.repo; ghBranch.value = c.branch; ghToken.value = c.token;
-    if (!c.repo || !c.token) ghBox.open = true;
-  })();
-  document.getElementById('ghSaveBtn').addEventListener('click', async () => {
-    const repo = ghRepo.value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '').replace(/\/+$/, '');
-    const branch = ghBranch.value.trim() || 'main';
-    const token = ghToken.value.trim();
-    if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { setGhStatus('রিপোর নাম "ইউজারনেম/রিপো" আকারে লিখুন।', false); return; }
-    if (!token) { setGhStatus('টোকেন বসান।', false); return; }
-    try {
-      localStorage.setItem(GH_LS.repo, repo); localStorage.setItem(GH_LS.branch, branch); localStorage.setItem(GH_LS.token, token);
-    } catch (e) { setGhStatus('এই ব্রাউজারে সেভ করা যাচ্ছে না (প্রাইভেট মোড?)।', false); return; }
-    ghRepo.value = repo; ghBranch.value = branch;
-    setGhStatus('যাচাই হচ্ছে...');
-    try {
-      const info = await gh('');
-      await gh('/git/ref/heads/' + branch);
-      const mb = info && info.size ? (info.size / 1024).toFixed(0) : '?';
-      setGhStatus('✅ ঠিক আছে। রিপোর বর্তমান আকার প্রায় ' + mb + ' এমবি (১ জিবির নিচে রাখুন)।', true);
-    } catch (e) { setGhStatus('এরর: ' + friendlyGhErr(e), false); }
-  });
-
-  // ---- এক কমিটে একাধিক ফাইল যোগ/মোছা ----
-  async function ghCommit(changes, message) {
-    const c = ghCfg();
-    const ref = await gh('/git/ref/heads/' + c.branch);
-    const headSha = ref.object.sha;
-    const head = await gh('/git/commits/' + headSha);
-    const entries = [];
-    for (const ch of changes) {
-      if (ch.b64 !== undefined) {
-        const blob = await gh('/git/blobs', { method: 'POST', body: JSON.stringify({ content: ch.b64, encoding: 'base64' }) });
-        entries.push({ path: ch.path, mode: '100644', type: 'blob', sha: blob.sha });
-      } else {
-        entries.push({ path: ch.path, mode: '100644', type: 'blob', sha: null });
-      }
-    }
-    const tree = await gh('/git/trees', { method: 'POST', body: JSON.stringify({ base_tree: head.tree.sha, tree: entries }) });
-    const commit = await gh('/git/commits', { method: 'POST', body: JSON.stringify({ message, tree: tree.sha, parents: [headSha] }) });
-    await gh('/git/refs/heads/' + c.branch, { method: 'PATCH', body: JSON.stringify({ sha: commit.sha, force: false }) });
-  }
-
-  function toB64(blob) {
-    return new Promise((resolve, reject) => {
-      const fr = new FileReader();
-      fr.onload = () => { const r = String(fr.result); resolve(r.slice(r.indexOf(',') + 1)); };
-      fr.onerror = () => reject(fr.error || new Error('ফাইল পড়া যায়নি'));
-      fr.readAsDataURL(blob);
-    });
-  }
-
-  const upTitle = document.getElementById('upTitle');
-  const upFile = document.getElementById('upFile');
-  const upPickBtn = document.getElementById('upPickBtn');
-  const upPreviewWrap = document.getElementById('upPreviewWrap');
-  const upPreview = document.getElementById('upPreview');
-  const upInfo = document.getElementById('upInfo');
-  const upBar = document.getElementById('upBar');
-  const upStartBtn = document.getElementById('upStartBtn');
-  const upStatus = document.getElementById('upStatus');
-  const upList = document.getElementById('upList');
-  let pickedFile = null, pickedDuration = 0, pickedUrl = null, uploading = false;
-
-  function fmtMB(b) { return (b / 1048576).toFixed(1) + ' এমবি'; }
-  function fmtDur(sec) { sec = Math.round(sec || 0); const m = Math.floor(sec / 60), s = sec % 60; return m + ':' + String(s).padStart(2, '0'); }
-  function setUpStatus(msg, ok) { upStatus.style.color = ok === true ? '#34d399' : ok === false ? '#f87171' : '#9ca3af'; upStatus.textContent = msg || ''; }
-
-  function resetPicker() {
-    if (pickedUrl) { URL.revokeObjectURL(pickedUrl); pickedUrl = null; }
-    pickedFile = null; pickedDuration = 0;
-    upFile.value = '';
-    upPreview.removeAttribute('src'); upPreview.load();
-    upPreviewWrap.style.display = 'none';
-    upInfo.textContent = '';
-    upStartBtn.disabled = true;
-  }
-
-  // প্রিভিউ ভিডিওর স্লাইডার টানলে যেন পেজ সোয়াইপ না হয়
-  ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mousemove', 'mouseup'].forEach(ev => upPreview.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
-
-  upPickBtn.addEventListener('click', () => { if (!uploading) upFile.click(); });
-  upFile.addEventListener('change', () => {
-    const f = upFile.files && upFile.files[0];
-    if (!f) return;
-    if (!/^video\//.test(f.type || '') && !/\.(mp4|webm|mov|m4v)$/i.test(f.name)) { resetPicker(); setUpStatus('এটা ভিডিও ফাইল নয়।', false); return; }
-    if (f.size > MAX_VIDEO_BYTES) { resetPicker(); setUpStatus('ফাইল ' + fmtMB(f.size) + ' — ২৫ এমবির বেশি হলে Cloudflare নেবে না। ভিডিও ছোট করে (৭২০p বা ৪৮০p) আবার দিন।', false); return; }
-    resetPicker();
-    pickedFile = f;
-    pickedUrl = URL.createObjectURL(f);
-    upPreview.src = pickedUrl;
-    upPreviewWrap.style.display = 'block';
-    upInfo.textContent = f.name + ' • ' + fmtMB(f.size);
-    upPreview.onloadedmetadata = () => {
-      pickedDuration = isFinite(upPreview.duration) ? upPreview.duration : 0;
-      upInfo.textContent = f.name + ' • ' + fmtMB(f.size) + (pickedDuration ? ' • ' + fmtDur(pickedDuration) : '');
-    };
-    if (!upTitle.value.trim()) upTitle.value = f.name.replace(/\.[^.]+$/, '').slice(0, 120);
-    upStartBtn.disabled = false;
-    setUpStatus('');
-  });
-
-  // ভিডিওর একটা ফ্রেম থেকে থাম্বনেইল (ব্যর্থ হলে null — তাতে আপলোড আটকাবে না)
-  function makeThumb(file) {
-    return new Promise((resolve) => {
-      const v = document.createElement('video');
-      v.muted = true; v.playsInline = true; v.preload = 'metadata';
-      const u = URL.createObjectURL(file);
-      let done = false;
-      const fin = (b) => { if (done) return; done = true; try { URL.revokeObjectURL(u); } catch (e) {} resolve(b); };
-      v.onloadedmetadata = () => { try { v.currentTime = Math.min(1, (v.duration || 2) / 2); } catch (e) { fin(null); } };
-      v.onseeked = () => {
-        try {
-          const w = 480, h = Math.round(w * (v.videoHeight || 270) / (v.videoWidth || 480));
-          const c = document.createElement('canvas'); c.width = w; c.height = h;
-          c.getContext('2d').drawImage(v, 0, 0, w, h);
-          c.toBlob((b) => fin(b), 'image/jpeg', 0.75);
-        } catch (e) { fin(null); }
-      };
-      v.onerror = () => fin(null);
-      setTimeout(() => fin(null), 8000);
-      v.src = u;
-    });
-  }
-
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-  // ফাইল সাইটে সত্যিই চালু হয়েছে কি না দেখা (Cloudflare নতুন ফাইল না পেলে হোমপেজ ফেরত দেয়, তাই content-type দেখি)
-  async function waitUntilLive(url, maxMs, onTick) {
-    const t0 = Date.now();
-    while (Date.now() - t0 < maxMs) {
-      try {
-        const r = await fetch(url + '?t=' + Date.now(), { method: 'HEAD', cache: 'no-store' });
-        if (r.ok && /^video\//i.test(r.headers.get('content-type') || '')) return true;
-      } catch (e) {}
-      onTick && onTick(Math.round((Date.now() - t0) / 1000));
-      await sleep(5000);
-    }
-    return false;
-  }
-
-  upStartBtn.addEventListener('click', async () => {
-    if (uploading || !pickedFile) return;
-    const user = auth.currentUser;
-    if (!user || !ADMIN_EMAILS.includes(user.email)) { setUpStatus('এডমিন হিসেবে লগইন নেই।', false); return; }
-    const title = upTitle.value.trim();
-    if (!title) { setUpStatus('শিরোনাম লিখুন।', false); return; }
-    const c = ghCfg();
-    if (!c.repo || !c.token) { ghBox.open = true; setUpStatus('আগে "GitHub সেটিংস" ভরে সেভ করুন।', false); return; }
-
-    uploading = true;
-    upStartBtn.disabled = true; upPickBtn.disabled = true;
-    upBar.classList.add('busy');
-    try {
-      const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-      const extMatch = ((pickedFile.name.match(/\.([a-z0-9]+)$/i) || [])[1] || '').toLowerCase();
-      const ext = ['mp4', 'webm', 'mov', 'm4v'].includes(extMatch) ? extMatch : 'mp4';
-      const videoPath = 'videos/' + id + '.' + ext;
-
-      setUpStatus('ছবি/ফাইল প্রস্তুত হচ্ছে...');
-      const thumbBlob = await makeThumb(pickedFile);
-      const changes = [{ path: videoPath, b64: await toB64(pickedFile) }];
-      let thumbPath = null;
-      if (thumbBlob) { thumbPath = 'videos/thumbs/' + id + '.jpg'; changes.push({ path: thumbPath, b64: await toB64(thumbBlob) }); }
-
-      setUpStatus('GitHub-এ আপলোড হচ্ছে... (ফাইল বড় হলে সময় লাগবে, পেজ বন্ধ করবেন না)');
-      await ghCommit(changes, 'ভিডিও যোগ: ' + title.slice(0, 60));
-
-      const videoUrl = '/' + videoPath;
-      const live = await waitUntilLive(videoUrl, 5 * 60 * 1000, (s) => setUpStatus('GitHub-এ জমা হয়েছে। সাইটে প্রকাশ হচ্ছে... ' + s + ' সেকেন্ড (সাধারণত ১-২ মিনিট)'));
-
-      const docData = {
-        title, caption: '', videoUrl,
-        ownerUid: user.uid, createdAt: serverTimestamp(),
-        pointsSpent: 0, status: 'active',
-        source: 'github', ghPath: videoPath, fileSize: pickedFile.size, duration: Math.round(pickedDuration || 0)
-      };
-      if (thumbPath) { docData.thumbnail = '/' + thumbPath; docData.ghThumbPath = thumbPath; }
-      await addDoc(collection(db, 'videos'), docData);
-
-      setUpStatus(live ? '✅ ভিডিও সাইটে যোগ হয়েছে!' : '⚠️ ভিডিও যোগ হয়েছে, কিন্তু সাইটে প্রকাশ হতে একটু বেশি সময় লাগছে। কয়েক মিনিট পর খুলে দেখুন। (Cloudflare → Deployments-এ অবস্থা দেখা যায়)', live ? true : undefined);
-      upTitle.value = '';
-      resetPicker();
-    } catch (e) {
-      setUpStatus('এরর: ' + friendlyGhErr(e), false);
-      upStartBtn.disabled = !pickedFile;
-    } finally {
-      uploading = false;
-      upPickBtn.disabled = false;
-      upBar.classList.remove('busy');
-    }
-  });
-
-  // ---- আপলোড করা ভিডিওর তালিকা + ডিলিট ----
-  let upListUnsub = null;
-  function startUploadsListener() {
-    if (upListUnsub) return;
-    upListUnsub = onSnapshot(
-      query(collection(db, 'videos'), orderBy('createdAt', 'desc'), limit(100)),
-      (snap) => {
-        const items = snap.docs.map(d => ({ id: d.id, d: d.data() })).filter(x => x.d.source === 'github');
-        upList.textContent = '';
-        if (!items.length) { const e = document.createElement('div'); e.className = 'listEmpty'; e.textContent = 'এখনো কোনো ভিডিও আপলোড করা হয়নি।'; upList.appendChild(e); return; }
-        items.forEach(({ id, d }) => {
-          const card = document.createElement('div'); card.className = 'vidCard';
-          const img = document.createElement('img'); img.className = 'vidThumb'; img.loading = 'lazy'; img.alt = '';
-          if (d.thumbnail) img.src = d.thumbnail;
-          const info = document.createElement('div'); info.className = 'vidInfo';
-          const t = document.createElement('div'); t.className = 'vidTitle'; t.textContent = d.title || 'Untitled';
-          const meta = document.createElement('div'); meta.className = 'vidMeta';
-          const when = d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleDateString('bn-BD') : '';
-          meta.textContent = [d.fileSize ? fmtMB(d.fileSize) : '', d.duration ? fmtDur(d.duration) : '', when].filter(Boolean).join(' • ');
-          info.appendChild(t); info.appendChild(meta);
-          const del = document.createElement('button'); del.className = 'vidDel'; del.textContent = '🗑️ ডিলিট';
-          del.addEventListener('click', () => deleteUploadedVideo(id, d, del));
-          card.appendChild(img); card.appendChild(info); card.appendChild(del);
-          upList.appendChild(card);
-        });
-      },
-      (err) => { upList.textContent = ''; const e = document.createElement('div'); e.className = 'listEmpty'; e.textContent = 'তালিকা লোড হয়নি: ' + err.message; upList.appendChild(e); }
-    );
-  }
-
-  async function deleteUploadedVideo(id, d, btn) {
-    if (!confirm('"' + (d.title || 'ভিডিও') + '" মুছে ফেলবেন? এটা সাইট ও GitHub দুই জায়গা থেকেই যাবে।')) return;
-    btn.disabled = true;
-    try {
-      const paths = [d.ghPath, d.ghThumbPath].filter(Boolean);
-      if (paths.length) {
-        const c = ghCfg();
-        if (!c.repo || !c.token) { ghBox.open = true; throw new Error('আগে "GitHub সেটিংস" ভরে সেভ করুন।'); }
-        // কোন ফাইল সত্যিই রিপোতে আছে দেখি (না থাকলে মোছার চেষ্টা এরর দেয়)
-        const existing = [];
-        for (const pth of paths) {
-          try { await gh('/contents/' + pth.split('/').map(encodeURIComponent).join('/') + '?ref=' + encodeURIComponent(c.branch)); existing.push(pth); }
-          catch (e) { if (e.status !== 404) throw e; }
-        }
-        if (existing.length) {
-          await ghCommit(existing.map(p => ({ path: p })), 'ভিডিও মোছা: ' + (d.title || '').slice(0, 60));
-        } else if (!confirm('GitHub রিপোতে ফাইলটা পাওয়া যায়নি (আগেই মুছে গেছে বা ভুল রিপো/ব্রাঞ্চ)।\nতবুও সাইটের তালিকা থেকে ভিডিওটা সরাবেন?')) { btn.disabled = false; return; }
-      }
-      await deleteDoc(doc(db, 'videos', id));
-    } catch (e) {
-      btn.disabled = false;
-      alert('ডিলিট হয়নি: ' + friendlyGhErr(e));
-    }
-  }
-
   onAuthStateChanged(auth, (user) => {
     loginScreen.style.display = 'none';
     deniedScreen.style.display = 'none';
@@ -1211,14 +868,12 @@
 
     if (!user) {
       if (accountsUnsub) { accountsUnsub(); accountsUnsub = null; }
-      if (upListUnsub) { upListUnsub(); upListUnsub = null; }
       loginScreen.style.display = 'flex';
     } else if (ADMIN_EMAILS.includes(user.email)) {
       adminScreen.style.display = 'block';
       startAccountsListener();
       loadCoinSettings();
       loadTheme();
-      startUploadsListener();
     } else {
       deniedScreen.style.display = 'flex';
     }
