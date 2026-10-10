@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head>
+<head><script>(function(){
+if(window.parent!==window){return}
+function parse(u){try{var a=new URL(String(u),location.href);if(a.origin!==location.origin)return null;var m=/(?:^|\/)(index|profile|messages|notifications|quiz|live|video|radio)\.html$/.exec(a.pathname);if(m)return{p:m[1],q:a.search+a.hash};if(a.pathname==="/"||a.pathname==="")return{p:"index",q:a.search+a.hash}}catch(e){}return null}
+var MAP={home:"index",profile:"profile",messages:"messages",notifications:"notifications",quiz:"quiz",live:"live",video:"video",radio:"radio"};
+function pillOf(t){var el=t,n=0;while(el&&el.nodeType===1&&n<5){var tx=(el.textContent||"").trim().replace(/\s*\(\d+\)\s*$/,"").toLowerCase(),c=el.parentElement;if(MAP[tx]&&c&&c.children.length>=4){var ct=(c.textContent||"").toLowerCase();if(ct.indexOf("home")>=0&&ct.indexOf("profile")>=0)return MAP[tx]}el=c;n++}return null}
+
+var S=[],F={},curKey="index",order=[];
+function C(){var c=document.getElementById("lite8Frames");if(!c){c=document.createElement("div");c.id="lite8Frames";c.style.cssText="position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;pointer-events:none;background:transparent";(document.body||document.documentElement).appendChild(c)}return c}
+function ensure(k){if(F[k])return F[k];var f=document.createElement("iframe");f.src=k;f.setAttribute("allow","microphone;camera;autoplay;clipboard-write;fullscreen");f.style.cssText="position:absolute;left:0;top:0;width:100%;height:100%;border:0;visibility:hidden;pointer-events:none;background:"+(getComputedStyle(document.body).backgroundColor||"#000");C().appendChild(f);F[k]=f;order.push(k);trim();return f}
+function trim(){var extra=order.filter(function(k){return k.indexOf("?")>=0&&k!==curKey});while(extra.length>3){var k=extra.shift();if(F[k]){F[k].remove();delete F[k]}order=order.filter(function(x){return x!==k})}}
+function render(k){curKey=k;if(k!=="index")ensure(k);Object.keys(F).forEach(function(x){var on=x===k;F[x].style.visibility=on?"visible":"hidden";F[x].style.pointerEvents=on?"auto":"none"})}
+function topView(){for(var i=S.length-1;i>=0;i--){if(S[i].t==="page")return S[i].k}return"index"}
+window.__vis=function(w){return curKey!=="index"&&F[curKey]&&F[curKey].contentWindow===w};
+window.__inPush=function(w){var k=null;for(var x in F){if(F[x].contentWindow===w)k=x}if(!k)return;history.pushState({lite8:1},"");S.push({t:"in",k:k})};
+window.__go8=function(p,q){q=q||"";if(p==="index"){if(q.charAt(0)==="?"){location.href="index.html"+q;return}if(curKey==="index"&&!q)return;history.pushState({lite8:1},"");S.push({t:"page",k:"index"});render("index");if(q)location.hash=q;return}
+ var k=p+".html"+q;if(k===curKey)return;history.pushState({lite8:1},"");S.push({t:"page",k:k});render(k)};
+window.__go=function(u){var r=parse(u);if(r)window.__go8(r.p,r.q);else location.href=String(u)};
+window.addEventListener("popstate",function(e){if(!S.length)return;var it=S.pop();e.stopImmediatePropagation();if(it.t==="in"){var f=F[it.k];if(f&&f.contentWindow&&f.contentWindow.__innerBack)f.contentWindow.__innerBack();return}render(topView())},true);
+document.addEventListener("click",function(e){if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;var t=e.target;if(!t||!t.closest)return;var a=t.closest("a[href]");if(a){var h=a.getAttribute("href")||"";if(h.charAt(0)==="#"||/^(mailto:|tel:|javascript:)/i.test(h)||a.target==="_blank"||a.hasAttribute("download"))return;var r=parse(h);if(r&&!(r.p==="index"&&!r.q)){e.preventDefault();e.stopPropagation();window.__go8(r.p,r.q)}return}var p=pillOf(t);if(p&&p!=="index"){e.preventDefault();e.stopPropagation();window.__go8(p,"")}else if(p==="index"){e.preventDefault();e.stopPropagation();window.__go8("index","")}},true);
+window.addEventListener("load",function(){["messages.html","notifications.html","profile.html"].forEach(function(k,i){setTimeout(function(){ensure(k)},2500+1500*i)})});
+})();</script>
 <meta charset="UTF-8">
 <script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
@@ -3639,7 +3659,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     e.preventDefault();
     document.body.classList.remove('pageReady');
     document.body.classList.add('pageLeaving');
-    setTimeout(function () { window.location.href = href; }, 120);
+    setTimeout(function () { __go(href); }, 120);
   }, true);
 })();
 </script>

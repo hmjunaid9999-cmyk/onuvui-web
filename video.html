@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head>
+<head><script>(function(){
+var W=window,P=parent;
+if(P===W){W.__loc=location;W.__go=function(u){location.href=u};return}
+function parse(u){try{var a=new URL(String(u),location.href);if(a.origin!==location.origin)return null;var m=/(?:^|\/)(index|profile|messages|notifications|quiz|live|video|radio)\.html$/.exec(a.pathname);if(m)return{p:m[1],q:a.search+a.hash};if(a.pathname==="/"||a.pathname==="")return{p:"index",q:a.search+a.hash}}catch(e){}return null}
+var MAP={home:"index",profile:"profile",messages:"messages",notifications:"notifications",quiz:"quiz",live:"live",video:"video",radio:"radio"};
+function pillOf(t){var el=t,n=0;while(el&&el.nodeType===1&&n<5){var tx=(el.textContent||"").trim().replace(/\s*\(\d+\)\s*$/,"").toLowerCase(),c=el.parentElement;if(MAP[tx]&&c&&c.children.length>=4){var ct=(c.textContent||"").toLowerCase();if(ct.indexOf("home")>=0&&ct.indexOf("profile")>=0)return MAP[tx]}el=c;n++}return null}
+
+var H=history,IS=[],cur=null,L={search:location.search,hash:location.hash,origin:location.origin,pathname:location.pathname,href:location.href};
+W.__loc=L;
+function up(u){if(u==null)return;u=String(u);if(u===location.href)return;var q=u.indexOf("?"),h=u.indexOf("#");L.search=q>=0?u.slice(q,h>q?h:undefined):"";L.hash=h>=0?u.slice(h):""}
+function vis(){try{return P.__vis(W)}catch(e){return false}}
+try{Object.defineProperty(H,"state",{get:function(){return cur},configurable:true})}catch(e){}
+try{Object.defineProperty(H,"length",{get:function(){return P.history.length},configurable:true})}catch(e){}
+H.pushState=function(s,t,u){IS.push({s:cur,q:L.search,h:L.hash});cur=s;up(u);if(vis()){try{P.__inPush(W)}catch(e){}}};
+H.replaceState=function(s,t,u){cur=s;up(u)};
+H.back=function(){if(vis()){try{P.history.back()}catch(e){}}};
+H.go=function(n){if(n<0)H.back()};
+W.__innerBack=function(){if(!IS.length)return;var p=IS.pop();cur=p.s;L.search=p.q;L.hash=p.h;W.dispatchEvent(new PopStateEvent("popstate",{state:cur}))};
+W.__go=function(u){var r=parse(u);if(r){P.__go8(r.p,r.q)}else{try{P.location.href=String(u)}catch(e){}}};
+document.addEventListener("click",function(e){if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;var t=e.target;if(!t||!t.closest)return;var a=t.closest("a[href]");if(a){var h=a.getAttribute("href")||"";if(h.charAt(0)==="#"||/^(mailto:|tel:|javascript:)/i.test(h)||a.target==="_blank"||a.hasAttribute("download"))return;var r=parse(h);if(r){e.preventDefault();e.stopPropagation();P.__go8(r.p,r.q)}return}var p=pillOf(t);if(p){e.preventDefault();e.stopPropagation();P.__go8(p,"")}},true);
+})();</script>
 <meta charset="UTF-8">
 <script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js" crossorigin><link rel="modulepreload" href="notify.js"><title>ভিডিও</title>
 <style>:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}html[data-theme="light"]{color-scheme:light;--primary-color:#000000;--bg-color:#ffffff;--card-color:#ffffff;--text-color:#000000;--surface:#ffffff;--line:rgba(0,0,0,0.3);--line2:rgba(0,0,0,0.3);--surface-active:rgba(0,0,0,0.12);--text-muted:#000000;--text-soft:#000000;--text-comment:#000000;--notice-bg:#ffffff;--reply-bg:#ffffff;--avatar-bg:#ffffff;--danger-color:#000000;--success-color:#000000;--notice-color:#000000}*{box-sizing:border-box}body{margin:0;background:var(--bg-color);color:var(--text-color);font-family:Arial,sans-serif}#app{max-width:980px;margin:auto;padding-bottom:80px}header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;padding:10px;background:var(--card-color);border-bottom:1px solid var(--line);font-weight:700}main{padding:15px}.panel{display:none}.panel.active{display:block}.search{display:flex;gap:8px;background:var(--card-color);border:1px solid var(--line);border-radius:24px;padding:9px 13px;margin-bottom:15px}.search input{width:100%;background:none;border:0;outline:0;color:var(--text-color)}.grid{display:grid;grid-template-columns:1fr;gap:16px}.card{background:var(--card-color);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer}.thumb{aspect-ratio:16/9;background:var(--surface);overflow:hidden}.thumb img{width:100%;height:100%;object-fit:cover}.body{padding:12px}.title{font-size:16px;font-weight:700;line-height:1.35}.muted{font-size:12px;color:var(--text-color);margin-top:6px}.empty,.loading,.error{padding:20px;text-align:center;color:var(--text-color);background:var(--surface);border:1px solid var(--line);border-radius:10px}.video{position:relative;background:var(--surface);aspect-ratio:16/9;border-radius:10px;overflow:hidden}.video iframe{position:absolute;width:100%;height:100%;border:0}.ytCover{position:absolute;top:0;left:0;right:0;bottom:0;z-index:2;background:#000;cursor:pointer}.ytCover img{width:100%;height:100%;object-fit:cover;display:block}.ytPlayBtn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:68px;height:68px;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.55);color:#fff;font-size:28px;padding:0 0 0 5px;cursor:pointer;display:flex;align-items:center;justify-content:center}.info{padding-top:12px}.info h2{font-size:18px;margin:0 0 7px}.caption{color:var(--text-color);white-space:pre-wrap;font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;border-block:1px solid var(--line);padding:10px 0;margin-top:10px}.actions button{background:none;border:0;color:var(--text-color);cursor:pointer;font-size:13px;padding:5px}.actions button:hover{color:var(--text-color)}.comments{display:none;margin-top:12px}.comments textarea{width:100%;background:var(--surface);color:var(--text-color);border:1px solid var(--line);padding:8px}.box,.balance{background:var(--card-color);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}.balance strong{display:block;font-size:25px;margin-top:5px}label{font-size:12px;color:var(--text-color)}input,textarea,select{width:100%;background:var(--bg-color);color:var(--text-color);border:1px solid var(--line);border-radius:7px;padding:9px;margin:6px 0 10px}.primary{width:100%;padding:10px;background:var(--surface);color:var(--text-color);border:0;border-radius:7px;cursor:pointer;font-weight:700}.danger{padding:7px 11px;background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:6px;cursor:pointer}.notice{font-size:12px;color:var(--text-color);line-height:1.5}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.tabs button{padding:10px;background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:7px;cursor:pointer}.tabs button.active{color:var(--bg-color);background:var(--text-color);border-color:var(--text-color)}.list{display:flex;flex-direction:column;gap:10px}.item{background:var(--card-color);border:1px solid var(--line);border-radius:10px;padding:10px}.item-row{display:flex;gap:10px;align-items:center}.item-thumb{width:120px;height:68px;flex:0 0 120px;border-radius:7px;overflow:hidden;background:var(--surface)}.item-thumb img{width:100%;height:100%;object-fit:cover}.item-info{min-width:0;flex:1}.item-title{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stats{display:flex;gap:12px;flex-wrap:wrap;color:var(--text-color);font-size:11px;margin-top:6px}.item-actions{margin-top:9px;display:flex;justify-content:flex-end}nav{position:fixed;bottom:0;left:0;right:0;background:var(--card-color);border-top:1px solid var(--line);z-index:30}nav div{max-width:980px;margin:auto;display:grid;grid-template-columns:repeat(3,1fr)}nav button{background:none;border:0;color:var(--text-color);padding:8px;font-size:12px;cursor:pointer}nav button b{display:block;font-size:18px;margin-bottom:2px}nav button.active{color:var(--text-color)}.top-back{margin-bottom:10px}.top-back button{background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer}.noticeBar{background:var(--surface);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;padding:9px 0}.noticeBar span{display:inline-block;padding-left:100%;color:var(--text-color);font-size:13px;animation:marqueeMove 16s linear infinite}@keyframes marqueeMove{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}.adOverlay{position:fixed;inset:0;background:var(--surface);z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px}.adOverlay.show{display:flex}.adOverlay .adBox{width:100%;max-width:640px}.adOverlay .adLabel{color:var(--text-color);font-size:12px;margin-bottom:8px;text-align:center;letter-spacing:.5px}.adOverlay .adVideoWrap{position:relative;background:var(--surface);aspect-ratio:16/9;border-radius:10px;overflow:hidden;border:1px solid var(--line)}.adOverlay .adVideoWrap video{position:absolute;width:100%;height:100%;object-fit:contain}.adSkipBtn{width:100%;margin-top:12px;padding:11px;background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:7px;font-weight:700;cursor:not-allowed;opacity:.6}.adSkipBtn.enabled{cursor:pointer;opacity:1;background:var(--surface);border-color:var(--line)}.historyOverlay{position:fixed;inset:0;background:var(--surface);z-index:400;display:none;flex-direction:column}.historyOverlay.show{display:flex}.historyOverlayHead{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--line);padding:14px;display:flex;align-items:center;gap:10px;font-weight:700;flex-shrink:0}.historyOverlayHead button{background:var(--surface);color:var(--text-color);border:1px solid var(--line);border-radius:7px;padding:7px 12px;cursor:pointer;font-size:13px}.historyOverlayBody{padding:15px;overflow-y:auto;flex:1;max-width:980px;margin:auto;width:100%;box-sizing:border-box}.historySummary{display:flex;justify-content:space-between;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}.historySummary div{text-align:left}.historySummary div+div{text-align:right}.historySummary strong{display:block;font-size:20px;margin-top:4px}.historyList{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 14px}.historyRow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}.historyRow:last-child{border-bottom:none}.historyType{color:var(--text-color)}.historyAmount{font-weight:bold;text-align:right}.historyAmount.pos{color:var(--text-color)}.historyAmount.neg{color:var(--text-color)}html,body{overscroll-behavior:none}body{opacity:0;animation:forcePageShow 0s .6s forwards}@keyframes forcePageShow{to{opacity:1}}body.pageReady{opacity:1;transition:opacity .18s ease}body.pageLeaving{opacity:0;transition:opacity .12s ease}
@@ -265,7 +285,7 @@ window.searchInput=()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>ren
 window.openSearch=()=>{
   if(searchOpen||!$("home").classList.contains("active"))return;
   searchOpen=true;document.body.classList.add("searchOpen");
-  history.pushState({search:true},"",location.pathname+location.search);
+  history.pushState({search:true},"",location.pathname+__loc.search);
   window.scrollTo(0,0);$("search").focus();
 };
 function closeSearchUI(){
@@ -277,8 +297,8 @@ $("search").addEventListener("keydown",e=>{if(e.key==="Enter")$("search").blur()
 // ---- হেডার: ব্যাক ----
 function navigateBack(){
   let same=false;
-  try{same=!!document.referrer&&new URL(document.referrer).origin===location.origin}catch(e){}
-  if(same||history.length>3)history.back();else location.replace("index.html");
+  try{same=!!document.referrer&&new URL(document.referrer).origin===__loc.origin}catch(e){}
+  if(same||history.length>3)history.back();else __go("index.html");
 }
 window.headerBack=()=>{
   if(["player","coin","my","add"].some(id=>$(id).classList.contains("active")))history.back();
@@ -296,7 +316,7 @@ $("authBtn").addEventListener("click",()=>{
   if(logoutOpen)return;
   logoutOpen=true;$("logoutYesBtn").disabled=false;
   $("logoutConfirmOverlay").classList.add("open");
-  history.pushState({logoutConfirm:true},"",location.pathname+location.search);
+  history.pushState({logoutConfirm:true},"",location.pathname+__loc.search);
 });
 $("logoutNoBtn").addEventListener("click",()=>history.back());
 $("logoutConfirmOverlay").addEventListener("click",e=>{if(e.target===$("logoutConfirmOverlay"))history.back()});
@@ -411,7 +431,7 @@ function playYtFromCover(){
   setTimeout(attachYtPlayer,1500);
 }
 $("ytCover").addEventListener("click",playYtFromCover);
-function withResumeParam(url,seconds,autoplay){if(/youtube\.com\/embed\//i.test(url)){let sep=url.includes("?")?"&":"?";let extra="enablejsapi=1&rel=0&playsinline=1&modestbranding=1&origin="+encodeURIComponent(location.origin);if(autoplay)extra+="&autoplay=1";if(seconds&&seconds>=3)extra+="&start="+Math.floor(seconds);return url+sep+extra}return url}
+function withResumeParam(url,seconds,autoplay){if(/youtube\.com\/embed\//i.test(url)){let sep=url.includes("?")?"&":"?";let extra="enablejsapi=1&rel=0&playsinline=1&modestbranding=1&origin="+encodeURIComponent(__loc.origin);if(autoplay)extra+="&autoplay=1";if(seconds&&seconds>=3)extra+="&start="+Math.floor(seconds);return url+sep+extra}return url}
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&vid)saveWatchProgress(vid)});
 window.addEventListener("beforeunload",()=>{if(vid)saveWatchProgress(vid)});
 
@@ -549,7 +569,7 @@ function openReactionList(){
   sheet.appendChild(head);sheet.appendChild(tabs);sheet.appendChild(list);ov.appendChild(sheet);
   ov.addEventListener("click",e=>{if(e.target===ov)closeReactionList()});
   document.body.appendChild(ov);reactSheetEl=ov;
-  history.pushState({layer:"react"},"",location.pathname+location.search);
+  history.pushState({layer:"react"},"",location.pathname+__loc.search);
   let activeTab="all";
   function renderList(){
     tabs.innerHTML="";const counts={};entries.forEach(en=>{counts[en.type]=(counts[en.type]||0)+1});
@@ -593,7 +613,7 @@ function setReplyTarget(topId,id,name){
   composerInput.placeholder="উত্তর লিখুন...";composerInput.focus();
 }
 // রিপ্লাই খুললে একটা আলাদা ব্যাক-স্তর বসে: ব্যাক চাপলে আগে রিপ্লাই বন্ধ হয়, তারপর কমেন্ট, তারপর আগের পেজ
-function pushReplyLayer(){if(!replyLayerOn){replyLayerOn=true;history.pushState({layer:"reply"},"",location.pathname+location.search)}}
+function pushReplyLayer(){if(!replyLayerOn){replyLayerOn=true;history.pushState({layer:"reply"},"",location.pathname+__loc.search)}}
 function syncReplyLayer(){if(replyLayerOn&&!replyTarget&&!openReplyBoxes.length){replyLayerOn=false;suppressPops=1;history.back();setTimeout(()=>{suppressPops=0},600)}}
 function closeReplyUI(){
   clearReplyTarget();
@@ -651,7 +671,7 @@ function askReportReason(){
   selectedReportReason=null;reportPending=null;
   document.querySelectorAll(".reportReasonBtn").forEach(b=>b.classList.remove("selected"));
   $("reportModalOverlay").style.display="flex";reportOpen=true;
-  history.pushState({layer:"report"},"",location.pathname+location.search);
+  history.pushState({layer:"report"},"",location.pathname+__loc.search);
   return new Promise(res=>{reportResolve=res});
 }
 // কমেন্টের মেনু (বটম শিট) বন্ধ করা
@@ -705,10 +725,10 @@ $("comment").onclick=()=>{
   const box=$("commentBox");
   if(box.style.display==="block"){history.back();return}
   box.style.display="block";document.body.classList.add("commentsOpen");
-  history.pushState({subPanel:"comment"},"",location.pathname+location.search);
+  history.pushState({subPanel:"comment"},"",location.pathname+__loc.search);
   box.scrollIntoView({block:"start"});
 };
-function permalink(id){return location.origin+location.pathname+"?v="+encodeURIComponent(id||vid||"")};
+function permalink(id){return __loc.origin+location.pathname+"?v="+encodeURIComponent(id||vid||"")};
 window.copyVideoLink=async(id)=>{try{await navigator.clipboard.writeText(permalink(id));alert("লিংক কপি হয়েছে ✓")}catch(e){alert("লিংক কপি করা যায়নি।")}};
 window.shareVideo=async(id,title)=>{let u=permalink(id);try{if(navigator.share)await navigator.share({title:title||"Video",url:u});else{await navigator.clipboard.writeText(u);alert("লিংক কপি হয়েছে ✓")}}catch(e){}};
 let panelBeforeSub="home";
@@ -739,14 +759,14 @@ function leavePlayerIfActive(){
     getFrame().src="";
   }
 }
-window.panel=(id,b)=>{let current=document.querySelector(".panel.active");panelBeforeSub=current?current.id:"home";leavePlayerIfActive();document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="my")loadMine();balance();if(id==="coin"||id==="my"||id==="add"){history.pushState({subPanel:id,returnTo:panelBeforeSub},"",location.pathname+location.search)}};
+window.panel=(id,b)=>{let current=document.querySelector(".panel.active");panelBeforeSub=current?current.id:"home";leavePlayerIfActive();document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");if(id==="my")loadMine();balance();if(id==="coin"||id==="my"||id==="add"){history.pushState({subPanel:id,returnTo:panelBeforeSub},"",location.pathname+__loc.search)}};
 window.goBackFromPlayer=()=>{stopWatchTracking(vid);return history.length>1?history.back():( $("player").classList.remove("active"),$("home").classList.add("active"),getFrame().src="",restoreHomeScroll())};
 window.addEventListener("popstate",(e)=>{
 if(suppressPops){suppressPops=0;return}
 if(reactPickerEl||reactSheetEl){closeReactionUi();return}
 if(reportOpen){closeReport();return}
-if(document.querySelector(".commentMenuDropdown.open")){closeCommentMenus();history.pushState(e.state,"",location.pathname+location.search);return}
-if(logoutOpen){logoutOpen=false;$("logoutConfirmOverlay").classList.remove("open");return}if(searchOpen){closeSearchUI();return}if(historyOpen){if(e.state&&e.state.historyOverlay){renderHistoryTab(e.state.tab||"daily");return}historyOpen=false;$("historyOverlay").classList.remove("show");return}if(replyLayerOn){closeReplyUI();return}if($("commentBox").style.display==="block"){closeCommentsUI();return}let activeSub=["coin","my","add"].find(id=>$(id).classList.contains("active"));if(activeSub){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let target=(e.state&&e.state.returnTo)||panelBeforeSub||"home";$(target).classList.add("active");return}let p=new URLSearchParams(location.search).get("v");if(p&&p!==vid){openVideo(p);return}try{stopWatchTracking(vid)}catch(e){}getFrame().src="";$("player").classList.remove("active");$("home").classList.add("active");restoreHomeScroll()});
+if(document.querySelector(".commentMenuDropdown.open")){closeCommentMenus();history.pushState(e.state,"",location.pathname+__loc.search);return}
+if(logoutOpen){logoutOpen=false;$("logoutConfirmOverlay").classList.remove("open");return}if(searchOpen){closeSearchUI();return}if(historyOpen){if(e.state&&e.state.historyOverlay){renderHistoryTab(e.state.tab||"daily");return}historyOpen=false;$("historyOverlay").classList.remove("show");return}if(replyLayerOn){closeReplyUI();return}if($("commentBox").style.display==="block"){closeCommentsUI();return}let activeSub=["coin","my","add"].find(id=>$(id).classList.contains("active"));if(activeSub){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));let target=(e.state&&e.state.returnTo)||panelBeforeSub||"home";$(target).classList.add("active");return}let p=new URLSearchParams(__loc.search).get("v");if(p&&p!==vid){openVideo(p);return}try{stopWatchTracking(vid)}catch(e){}getFrame().src="";$("player").classList.remove("active");$("home").classList.add("active");restoreHomeScroll()});
 async function balance(){let bal=0;if(user)try{let s=await getDoc(doc(db,"users",user.uid));if(s.exists()){let d=s.data(),legacy=Number(d.points??d.coins??d.balance??0);bal=Number(d.videoBalance??legacy)}}catch(e){}$("coinPoints").textContent=money(bal);$("addPoints").textContent=money(bal);$("myPoints").textContent=money(bal)}
 async function loadMine(){if(!user){$("myVideos").innerHTML='<div class="empty">নিজের ভিডিও দেখতে লগইন করুন।</div>';return}try{let vs=await getDocs(query(collection(db,"videos"),orderBy("createdAt","desc"),limit(100)));myVideos=vs.docs.map(x=>({id:x.id,d:x.data()})).filter(x=>x.d.ownerUid===user.uid);renderMine()}catch(e){$("myVideos").innerHTML='<div class="error">My Video লোড করা যায়নি: '+esc(e.message)+'</div>'}}
 function renderMine(){$("myVideos").innerHTML=myVideos.length?myVideos.map(x=>{let d=x.d,im=thumbFor(d);return`<div class="item"><div class="item-row"><div class="item-thumb">${im?`<img src="${esc(im)}" loading="lazy" decoding="async">`:""}</div><div class="item-info"><div class="item-title">${esc(d.title||"Untitled")}</div><div class="stats"><span>👁 ${Number(d.viewCount||0)}</span><span>🪙 ${Number(d.pointsSpent||0)}</span></div></div></div><div class="item-actions"><button class="danger" onclick="deleteMyVideo('${x.id}')">ডিলিট</button></div></div>`}).join(""):'<div class="empty">আপনার কোনো ভিডিও নেই।</div>';document.querySelectorAll("#myVideos .item-thumb img").forEach((img,i)=>enhanceThumb(img,myVideos[i].id,myVideos[i].d))}
@@ -775,7 +795,7 @@ function normalizeEmbedUrl(raw){
 }
 window.submitVideo=async()=>{if(!user)return alert("ভিডিও যুক্ত করতে লগইন করুন।");let title=$("newTitle").value.trim(),url=normalizeEmbedUrl($("newUrl").value),cost=settings.videoCost;if(!title||!validUrl(url))return alert("Title এবং সঠিক Embed URL/লিংক দিন।");try{await runTransaction(db,async tx=>{let uref=doc(db,"users",user.uid),us=await tx.get(uref);if(!us.exists())throw Error("User profile পাওয়া যায়নি।");let ud=us.data(),legacy=Number(ud.points??ud.coins??ud.balance??0);let bal=Number(ud.videoBalance??legacy);if(bal<cost)throw Error("পর্যাপ্ত "+unit()+" নেই।");let vref=doc(collection(db,"videos"));tx.set(vref,{title,caption:"",videoUrl:url,ownerUid:user.uid,createdAt:serverTimestamp(),pointsSpent:cost,status:"active"});tx.update(uref,{videoBalance:bal-cost})});$("newTitle").value="";$("newUrl").value="";$("videoStatus").textContent="ভিডিও সফলভাবে যুক্ত হয়েছে ✓";try{window.OnuNotify&&window.OnuNotify.videoPublished(title)}catch(_){}await logHistory("videoSpend",-cost);await balance();await load();await loadMine()}catch(e){$("videoStatus").textContent=e.message}};
 window.submitPaymentRequest=async()=>{if(!user)return alert("Payment Request করতে লগইন করুন।");let coins=Number($("requestCoins").value),note=$("paymentNote").value.trim();if(!coins||coins<1)return alert("কত Coin চান তা লিখুন।");try{await addDoc(collection(db,"paymentRequests"),{uid:user.uid,coins,note,status:"pending",createdAt:serverTimestamp()});$("requestCoins").value="";$("paymentNote").value="";try{window.OnuNotify&&window.OnuNotify.toAdmin('payment_request',{coins:coins,text:note,link:'video.html'})}catch(_){}$("paymentStatus").textContent="Payment Request পাঠানো হয়েছে ✓"}catch(e){$("paymentStatus").textContent="Request পাঠানো যায়নি: "+e.message}};
-load().finally(()=>{if(window.bootDone)window.bootDone("data")});let initial=new URLSearchParams(location.search).get("v");if(initial)setTimeout(()=>openVideo(initial),400);
+load().finally(()=>{if(window.bootDone)window.bootDone("data")});let initial=new URLSearchParams(__loc.search).get("v");if(initial)setTimeout(()=>openVideo(initial),400);
 </script>
 <script>
 (function () {
@@ -791,7 +811,7 @@ load().finally(()=>{if(window.bootDone)window.bootDone("data")});let initial=new
     e.preventDefault();
     document.body.classList.remove('pageReady');
     document.body.classList.add('pageLeaving');
-    setTimeout(function () { window.location.href = href; }, 120);
+    setTimeout(function () { __go(href); }, 120);
   }, true);
 })();
 </script>

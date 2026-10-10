@@ -1,6 +1,26 @@
 <!DOCTYPE html>
 <html lang="bn">
-<head>
+<head><script>(function(){
+var W=window,P=parent;
+if(P===W){W.__loc=location;W.__go=function(u){location.href=u};return}
+function parse(u){try{var a=new URL(String(u),location.href);if(a.origin!==location.origin)return null;var m=/(?:^|\/)(index|profile|messages|notifications|quiz|live|video|radio)\.html$/.exec(a.pathname);if(m)return{p:m[1],q:a.search+a.hash};if(a.pathname==="/"||a.pathname==="")return{p:"index",q:a.search+a.hash}}catch(e){}return null}
+var MAP={home:"index",profile:"profile",messages:"messages",notifications:"notifications",quiz:"quiz",live:"live",video:"video",radio:"radio"};
+function pillOf(t){var el=t,n=0;while(el&&el.nodeType===1&&n<5){var tx=(el.textContent||"").trim().replace(/\s*\(\d+\)\s*$/,"").toLowerCase(),c=el.parentElement;if(MAP[tx]&&c&&c.children.length>=4){var ct=(c.textContent||"").toLowerCase();if(ct.indexOf("home")>=0&&ct.indexOf("profile")>=0)return MAP[tx]}el=c;n++}return null}
+
+var H=history,IS=[],cur=null,L={search:location.search,hash:location.hash,origin:location.origin,pathname:location.pathname,href:location.href};
+W.__loc=L;
+function up(u){if(u==null)return;u=String(u);if(u===location.href)return;var q=u.indexOf("?"),h=u.indexOf("#");L.search=q>=0?u.slice(q,h>q?h:undefined):"";L.hash=h>=0?u.slice(h):""}
+function vis(){try{return P.__vis(W)}catch(e){return false}}
+try{Object.defineProperty(H,"state",{get:function(){return cur},configurable:true})}catch(e){}
+try{Object.defineProperty(H,"length",{get:function(){return P.history.length},configurable:true})}catch(e){}
+H.pushState=function(s,t,u){IS.push({s:cur,q:L.search,h:L.hash});cur=s;up(u);if(vis()){try{P.__inPush(W)}catch(e){}}};
+H.replaceState=function(s,t,u){cur=s;up(u)};
+H.back=function(){if(vis()){try{P.history.back()}catch(e){}}};
+H.go=function(n){if(n<0)H.back()};
+W.__innerBack=function(){if(!IS.length)return;var p=IS.pop();cur=p.s;L.search=p.q;L.hash=p.h;W.dispatchEvent(new PopStateEvent("popstate",{state:cur}))};
+W.__go=function(u){var r=parse(u);if(r){P.__go8(r.p,r.q)}else{try{P.location.href=String(u)}catch(e){}}};
+document.addEventListener("click",function(e){if(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey)return;var t=e.target;if(!t||!t.closest)return;var a=t.closest("a[href]");if(a){var h=a.getAttribute("href")||"";if(h.charAt(0)==="#"||/^(mailto:|tel:|javascript:)/i.test(h)||a.target==="_blank"||a.hasAttribute("download"))return;var r=parse(h);if(r){e.preventDefault();e.stopPropagation();P.__go8(r.p,r.q)}return}var p=pillOf(t);if(p){e.preventDefault();e.stopPropagation();P.__go8(p,"")}},true);
+})();</script>
 <meta charset="UTF-8">
 <script>try{var __t=localStorage.getItem("onuvutiTheme");if(__t==="light"||__t==="dark")document.documentElement.setAttribute("data-theme",__t);}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content"><link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://firestore.googleapis.com" crossorigin><link rel="preconnect" href="https://lh3.googleusercontent.com" crossorigin><link rel="dns-prefetch" href="https://www.gstatic.com">
@@ -778,7 +798,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   const COVER_COLORS = ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9'];
   let selectedCoverColor = '#4285F4';
 
-  const viewUid = new URLSearchParams(location.search).get('uid');
+  const viewUid = new URLSearchParams(__loc.search).get('uid');
 
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
@@ -1004,9 +1024,9 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   // পেজ থেকে বের হয়ে আগের পেজে (যেখান থেকে এসেছি) ফেরা; আগের পেজ না থাকলে হোমে
   function navigateBack() {
     let sameOrigin = false;
-    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === location.origin; } catch (e) {}
+    try { sameOrigin = !!document.referrer && new URL(document.referrer).origin === __loc.origin; } catch (e) {}
     if (sameOrigin || window.history.length > 3) window.history.back();
-    else window.location.replace('index.html');
+    else __go('index.html');
   }
   backBtn.addEventListener('click', () => {
     // ব্যাক-গার্ড চালু থাকলে ফোনের Back-এর মতোই চলে: আগে খোলা জিনিস (তালিকা/মেনু/মডাল) বন্ধ হবে, না থাকলে পেছনে যাবে
@@ -1052,9 +1072,9 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       el.addEventListener('click', () => {
         const raw = (el.getAttribute('data-blog-link') || '').trim();
         const m = raw.match(/#post-(.+)$/);
-        if (m) { window.location.href = 'index.html#post-' + encodeURIComponent(decodeURIComponent(m[1])); return; }
+        if (m) { __go('index.html#post-' + encodeURIComponent(decodeURIComponent(m[1]))); return; }
         if (/^https?:\/\//i.test(raw)) { window.open(raw, '_blank', 'noopener'); return; }
-        window.location.href = 'index.html#post-' + encodeURIComponent(raw);
+        __go('index.html#post-' + encodeURIComponent(raw));
       });
     });
   }
@@ -1384,7 +1404,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
       messageBtn.onclick = function (e) {
         e.preventDefault();
         if (!currentUser) { showLoginOverlay('মেসেজ করতে Google দিয়ে লগইন করুন'); return; }
-        window.location.href = messageBtnUrl;
+        __go(messageBtnUrl);
       };
       setOtherTab('posts');
     }
@@ -1934,7 +1954,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
   function buildPostCard(postId, d) {
     const isOwner = currentUser && d.authorUid === currentUser.uid;
     const liked = currentUser && (d.likedBy || []).includes(currentUser.uid);
-    const postUrl = location.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
+    const postUrl = __loc.href.split('#')[0].replace('profile.html', 'index.html') + '#post-' + postId;
 
     const card = document.createElement('div');
     card.className = 'postCard';
@@ -2120,7 +2140,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
           menuContainer.classList.remove('open');
           // পোস্ট এডিট করার সময় এখন সরাসরি হোম পেজের পোস্ট-বক্সে (কম্পোজার) নিয়ে যাওয়া হয়,
           // সেখানে গিয়ে এডিট মোড আপনা-আপনি চালু হয়ে যাবে — প্রম্পট বক্সে আর এডিট হবে না
-          window.location.href = 'index.html?editPost=' + encodeURIComponent(postId);
+          __go('index.html?editPost=' + encodeURIComponent(postId));
         });
         return b;
       },
@@ -3899,7 +3919,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
         await afterPostPublished();
       } else {
         // অন্যের প্রোফাইলে থাকলে: নিজের প্রোফাইলে গিয়ে নতুন পোস্ট দেখায়
-        setTimeout(() => { window.location.href = 'profile.html'; }, 700);
+        setTimeout(() => { __go('profile.html'); }, 700);
       }
     } catch (e) {
       console.error(e);
@@ -3910,7 +3930,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
 
   // নতুন পোস্টের পর: ফিল্টার/সার্চ সরিয়ে "মাই পোস্ট" খুলে নতুন পোস্টে (সবার উপরে) যাওয়া — টেক্সট/ফটো/ভয়েস/অডিও সবার জন্য
   async function afterPostPublished() {
-    if (!currentIsOwnProfile) { window.location.href = 'profile.html'; return; }
+    if (!currentIsOwnProfile) { __go('profile.html'); return; }
     if (activeFilter !== 'all') setFilter('all');
     closeSearch();
     setOwnTab('posts');
@@ -4192,7 +4212,7 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     e.preventDefault();
     document.body.classList.remove('pageReady');
     document.body.classList.add('pageLeaving');
-    setTimeout(function () { window.location.href = href; }, 120);
+    setTimeout(function () { __go(href); }, 120);
   }, true);
 })();
 </script>
