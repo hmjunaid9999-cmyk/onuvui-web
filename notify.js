@@ -344,6 +344,14 @@ const OnuNotify = {
     } catch (e) {}
   },
   async markAllRead(items) {
+    if (!pageVisible()) {
+      (items || state.items).forEach(it => { if (it.unread) deferredRead.add(it.id); });
+      startDefer();
+      return;
+    }
+    return OnuNotify._markAllReadNow(items);
+  },
+  async _markAllReadNow(items) {
     try {
       const seen = new Set(lsGet(LS_SEEN, []));
       const mine = [];
@@ -400,7 +408,33 @@ const OnuNotify = {
 // ---------------------------------------------------------------------------
 const state = { user: null, items: [], unread: 0, unreadMsg: 0, byGroup: {}, loading: true };
 const listeners = new Set();
-const ON_MESSAGES_PAGE = /\/messages(\.html)?\/?$/i.test(location.pathname);
+const ON_MESSAGES_PAGE = /\/messages(\.html)?\/?$/i.test(location.pathname) || window.__page === 'messages';
+
+// পেজটা এখন সত্যিই ইউজারের সামনে আছে কিনা (পিছনে আগে থেকে লোড করে রাখা iframe হলে false)।
+// মেইন সাইট: parent.__vis(window); লাইট: parent.liteVisible(window); আলাদা পেজ: ট্যাব দেখা যাচ্ছে কিনা।
+function pageVisible() {
+  if (document.hidden) return false;
+  try {
+    const P = window.parent;
+    if (P && P !== window) {
+      if (typeof P.__vis === 'function') return !!P.__vis(window);
+      if (typeof P.liteVisible === 'function') return !!P.liteVisible(window);
+    }
+  } catch (e) {}
+  return true;
+}
+// লুকানো অবস্থায় "পড়া হয়েছে" চাপা থাকে; পেজ সামনে এলে তবেই চিহ্নিত হয় — নইলে ক্লিকের আগেই সংখ্যা চলে যেত
+const deferredRead = new Set();
+let deferTimer = null, msgPending = false;
+function startDefer() { if (!deferTimer) deferTimer = setInterval(flushDeferred, 300); }
+function flushDeferred() {
+  if (!pageVisible()) return;
+  clearInterval(deferTimer); deferTimer = null;
+  const ids = new Set(deferredRead); deferredRead.clear();
+  const wantMsg = msgPending; msgPending = false;
+  const fresh = state.items.filter(it => it.unread && ((wantMsg && it.group === 'message') || ids.has(it.id)));
+  if (fresh.length) { try { OnuNotify._markAllReadNow(fresh); } catch (e) {} }
+}
 let mineDocs = [], allDocs = [], unsubMine = null, unsubAll = null, firstMine = true, firstAll = true;
 
 function emit() { listeners.forEach(fn => { try { fn(state); } catch (e) {} }); paintBadges(); }
@@ -431,8 +465,8 @@ function rebuild() {
   emit();
   // মেসেজ পেজে ঢুকলেই মেসেজের নতুন নোটিফিকেশন সাথে সাথে পড়া হয়ে যায়
   if (ON_MESSAGES_PAGE && state.unreadMsg > 0) {
-    const fresh = items.filter(it => it.unread && it.group === 'message');
-    setTimeout(() => { try { OnuNotify.markAllRead(fresh); } catch (e) {} }, 0);
+    msgPending = true;
+    if (pageVisible()) setTimeout(flushDeferred, 0); else startDefer();
   }
 }
 
