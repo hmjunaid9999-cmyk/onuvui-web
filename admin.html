@@ -1,436 +1,1524 @@
 <!DOCTYPE html>
-<html lang="bn" data-theme="dark">
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Onuvuti Lite Admin</title>
-<script>
-try { document.documentElement.setAttribute('data-theme', localStorage.getItem('onuvutiTheme') === 'light' ? 'light' : 'dark'); } catch (e) {}
-</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Onuvuti Admin</title>
 <style>
-:root{--bg:#000;--fg:#fff;--line:rgba(255,255,255,.3);--act:rgba(255,255,255,.18);color-scheme:dark}
-[data-theme="light"]{--bg:#fff;--fg:#000;--line:rgba(0,0,0,.3);--act:rgba(0,0,0,.12);color-scheme:light}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali","Kalpurush",sans-serif}
-button,input,select,textarea{font-family:inherit;color:inherit;font-size:14px}
-.gate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;min-height:100dvh;padding:24px;text-align:center}
-.gate h1{font-size:20px;margin-bottom:10px}.gate p{font-size:14px;opacity:.75;margin-bottom:24px}
-#deniedScreen{display:none}
-.btn{background:transparent;border:1px solid var(--fg);border-radius:20px;padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer}
-.btn:active{background:var(--act)}.btn.fill{background:var(--fg);color:var(--bg)}.btn:disabled{opacity:.4}
-.btn.sm{padding:6px 12px;font-size:12px}
-#adminScreen{display:none;flex-direction:column;height:100vh;height:100dvh}
-header{flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line)}
-header h1{flex:1;font-size:16px;font-weight:700;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hBtn{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;text-decoration:none;color:var(--fg);flex:0 0 auto}
-.hBtn:active{background:var(--act)}
-.hOut{border:1px solid var(--line);background:transparent;border-radius:18px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;flex:0 0 auto}
-#tabs{flex:0 0 auto;display:flex;gap:8px;padding:10px 8px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
-#tabs::-webkit-scrollbar{display:none}
-.tab{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px;padding:6px 6px;border-radius:10px;cursor:pointer;font-size:11px;flex:0 0 auto}
-.tab span:first-child{font-size:18px}.tab.on{background:var(--fg);color:var(--bg)}
-#swipe{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-#swipe::-webkit-scrollbar{display:none}
-.panel{flex:0 0 100%;min-width:100%;scroll-snap-align:start;height:100%;overflow-y:auto;overflow-x:hidden;padding:16px 14px 110px}
-.inner{max-width:640px;margin:0 auto}
-.title{font-size:17px;font-weight:700;margin-bottom:4px}
-.hint{font-size:12px;opacity:.65;line-height:1.6;margin:4px 0 12px}
-.card{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-bottom:14px}
-.rowSw{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
-.rowSw:last-child{border-bottom:none}
-.rowSw .ic{font-size:20px;width:28px;text-align:center}
-.rowSw .tx{flex:1;min-width:0}.rowSw .tx b{display:block;font-size:14px}.rowSw .tx small{display:block;font-size:11.5px;opacity:.65;margin-top:2px;line-height:1.4}
-.sw{position:relative;width:46px;height:26px;flex:0 0 auto}
-.sw input{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;z-index:2;cursor:pointer}
-.sw i{position:absolute;inset:0;border-radius:13px;border:1.5px solid var(--fg);transition:.15s}
-.sw i::after{content:"";position:absolute;left:3px;top:3px;width:17px;height:17px;border-radius:50%;background:var(--fg);transition:.15s}
-.sw input:checked+i{background:var(--fg)}.sw input:checked+i::after{left:22px;background:var(--bg)}
-label.f{display:block;font-size:12.5px;font-weight:600;margin:12px 0 5px}
-input[type=text],textarea,select{width:100%;background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 12px;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--fg)}
-select option{background:var(--bg);color:var(--fg)}
-textarea{min-height:80px;resize:vertical;line-height:1.6}
-.fields{padding:0 0 12px}
-.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:90px;padding:10px;border-radius:12px;border:1px solid var(--line);background:transparent;font-weight:600;cursor:pointer}
-.seg button.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-.pv{border:1px dashed var(--fg);border-radius:12px;padding:12px;margin:8px 0 14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.pvT{font-size:11px;opacity:.6;margin-top:10px}
-.warn{border:1px solid var(--fg);border-radius:12px;padding:10px 12px;font-size:12.5px;line-height:1.6;margin-bottom:14px}
-#saveBar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line)}
-#saveBar .st{flex:1;font-size:12.5px;opacity:.8;min-width:0}
-#saveBar .st.dirty{opacity:1;font-weight:700}
-#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:18px;font-size:13px;font-weight:600;z-index:60;display:none;max-width:90%;text-align:center}
-.ov{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:20px}
-.ov.on{display:flex}
-.box{background:var(--bg);border:1px solid var(--fg);border-radius:16px;padding:18px;width:100%;max-width:380px}
-.box h3{font-size:16px;margin-bottom:8px}.box p{font-size:13.5px;line-height:1.6;opacity:.85;margin-bottom:16px}
-.box .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.meta{font-size:11.5px;opacity:.6;margin:6px 0 14px;line-height:1.6}
+:root{--primary-color:#ffffff;--bg-color:#000000;--card-color:#000000;--text-color:#ffffff;--surface:#000000;--line:rgba(255,255,255,0.3);--line2:rgba(255,255,255,0.3);--surface-active:rgba(255,255,255,0.18);--text-muted:#ffffff;--text-soft:#ffffff;--text-comment:#ffffff;--notice-bg:#000000;--reply-bg:#000000;--avatar-bg:#000000;--danger-color:#ffffff;--success-color:#ffffff;--notice-color:#ffffff;}
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Segoe UI', sans-serif; background: var(--surface); color: var(--text-color); }
+  #loginScreen, #deniedScreen {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px; text-align: center;
+  }
+  #deniedScreen { display: none; }
+  h1 { font-size: 20px; margin-bottom: 10px; }
+  p { color: var(--text-color); font-size: 14px; margin-bottom: 24px; }
+  button {
+    background: var(--surface); color: var(--text-color); border: none;
+    padding: 12px 26px; border-radius: 24px; font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+  #adminScreen { display: none; flex-direction: column; height: 100vh; }
+
+  header {
+    position: relative; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 14px 18px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  #logoutBtn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: var(--surface); color: var(--text-color); padding: 6px 14px; border-radius: 14px; font-size: 12px;
+  }
+
+  /* ---- সোয়াইপ ইন্ডিকেটর (উপরের ট্যাব) ---- */
+  #swipeIndicator {
+    flex-shrink: 0; display: flex; justify-content: center; gap: 8px;
+    padding: 10px 8px; background: var(--surface); border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .swipeTab {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-width: 52px; padding: 6px 4px; border-radius: 10px; cursor: pointer;
+    color: var(--text-color); font-size: 10px; flex-shrink: 0;
+  }
+  .swipeTab .swipeTabIcon { font-size: 17px; }
+  .swipeTab.active { background: var(--text-color); color: var(--bg-color); }
+
+  /* ---- সোয়াইপ প্যানেল কন্টেইনার ---- */
+  #swipeContainer {
+    flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  #swipeContainer::-webkit-scrollbar { display: none; }
+  .swipePanel {
+    width: 100%; max-width: 100%; min-width: 100%; flex-shrink: 0; scroll-snap-align: start;
+    height: 100%; overflow-y: auto; overflow-x: hidden; padding: 20px 16px; box-sizing: border-box;
+  }
+  .swipePanelInner { max-width: 640px; margin: 0 auto; width: 100%; }
+  .folderTitle { font-size: 18px; font-weight: bold; margin-bottom: 16px; }
+
+  .section { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+  .section h2 { font-size: 15px; margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; min-width: 0; }
+  .row label { width: 110px; font-size: 13px; color: var(--text-color); flex-shrink: 0; }
+  .row input[type="color"] { width: 44px; height: 32px; border: none; border-radius: 6px; background: none; }
+  input[type="number"], input[type="text"], textarea {
+    flex: 1; width: 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); color: var(--text-color);
+    padding: 8px 10px; border-radius: 8px; font-size: 13px; font-family: inherit; box-sizing: border-box;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+  .hint { font-size: 11px; color: var(--text-color); margin-top: 4px; margin-bottom: 8px; }
+
+  /* ---- নাম+লিংক গ্রিড (টিক দিলে উপরে চলে যায়, ডিলিট করা যায়, আরও যোগ করা যায়) ---- */
+  .gridTable { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+  .gridRow2 {
+    display: flex; align-items: flex-start; gap: 8px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px;
+  }
+  .gridRow2.gridRowChecked { border-color: var(--line); }
+  .gridRow2 input[type="checkbox"] {
+    width: 18px; height: 18px; margin-top: 8px; flex-shrink: 0; accent-color: var(--text-color); cursor: pointer;
+  }
+  .gridRow2 .gridFields { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .gridTypeTag { font-size: 10px; font-weight: bold; color: var(--text-color); letter-spacing: 0.3px; }
+  .gridRow2 .gridDeleteBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; font-weight: normal; cursor: pointer; flex-shrink: 0;
+  }
+  .gridDeleteBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; font-weight: normal; cursor: pointer; flex-shrink: 0;
+  }
+  .addRowBtn {
+    width: 100%; background: var(--surface); color: var(--text-color); border: 1px dashed var(--line);
+    padding: 9px; border-radius: 10px; font-size: 13px; font-weight: normal; margin-bottom: 4px; cursor: pointer;
+  }
+  .gridRow2 .gridCode {
+    width: 100%; background: var(--surface); border: 1px solid var(--line); color: var(--text-color);
+    padding: 8px 10px; border-radius: 8px; font-size: 12px; font-family: monospace;
+    min-height: 220px; resize: vertical;
+  }
+  .accordionBtn {
+    display: block; width: 100%; text-align: left; background: var(--surface); color: var(--text-color);
+    border: 1px solid var(--line); padding: 10px 12px; border-radius: 10px; font-size: 14px;
+    font-weight: bold; cursor: pointer; margin-top: 10px;
+  }
+  .accordionBtn:first-of-type { margin-top: 0; }
+  .accordionBox { padding: 10px 2px 2px; }
+  .accordionBox.collapsed { display: none; }
+
+  /* ---- মেনু বার: টপ মেনু / ফুটার মেনু / সাইড বার মেনু — তিনটা বাটন একটার নিচে একটা ---- */
+  .menuTypeBox.collapsed { display: none; }
+  .menuTypeBox { padding: 10px 2px 2px; }
+
+  /* ---- এড পেজ (বামে) / এড গেজেট (ডানে) — পাশাপাশি দুইটা ছোট বাটন, স্ক্রিনের মধ্যেই আঁটবে ---- */
+  .addTypeRow { display: flex; gap: 6px; margin-bottom: 10px; }
+  .addTypeBtn {
+    flex: 1; min-width: 0; background: var(--surface); color: var(--text-color); border: 1px solid var(--line);
+    padding: 8px 2px; border-radius: 10px; font-size: 12px; font-weight: bold; cursor: pointer;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .addTypeBtn.active { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
+
+  /* ---- আইটেম তৈরির ফর্ম (সবসময় খালি থাকে, এখান থেকেই নতুন আইটেম তৈরি হয়) ---- */
+  .createForm {
+    background: var(--surface); border: 1px dashed var(--line); border-radius: 10px;
+    padding: 10px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .createForm .createBtn {
+    background: var(--surface); color: var(--text-color); border: none; padding: 9px; border-radius: 8px;
+    font-size: 13px; font-weight: bold; cursor: pointer; margin-top: 2px;
+  }
+  .createForm textarea.gridCode { min-height: 220px; }
+
+  /* ---- তৈরি হওয়া আইটেম: ডিফল্টে লকড (শুধু দেখা যাবে), এডিট বাটনে চাপলে পরিবর্তন করা যাবে ---- */
+  .gridRow2 input:disabled, .gridRow2 textarea:disabled { opacity: 0.65; background: var(--surface); cursor: default; }
+  .gridBtnCol { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .gridEditBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; cursor: pointer;
+  }
+  .gridCopyBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; cursor: pointer;
+  }
+
+  .sectionSaveBtn { width: 100%; padding: 9px; border-radius: 10px; font-size: 13px; margin-top: 6px; }
+  .sectionStatus { text-align: center; font-size: 12px; margin-top: 6px; min-height: 15px; }
+
+  /* ---- কন্টেন্ট সেটিংস: লিস্ট ভিউ (প্রতিটা সেটিংস একটা বাটনের আওতায়) ---- */
+  .csListView { display: flex; flex-direction: column; gap: 10px; }
+  .csListBtn {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+    padding: 14px 16px; color: var(--text-color); font-size: 14px; font-weight: normal; cursor: pointer;
+  }
+  .csListBtnIcon { font-size: 18px; flex-shrink: 0; }
+  .csListBtnText { flex: 1; min-width: 0; }
+  .csListBtnArrow { color: var(--text-color); font-size: 18px; flex-shrink: 0; }
+
+  /* ---- কন্টেন্ট সেটিংস: ডিটেইল ভিউ (বাটনে ঢোকার পর এইটা দেখাবে) ---- */
+  .csDetailView { display: none; }
+  .csDetailView.open { display: block; }
+  .csDetailHeader { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .csBackBtn {
+    background: var(--surface); border: 1px solid var(--line); color: var(--text-color);
+    width: 38px; height: 38px; border-radius: 50%; font-size: 17px; line-height: 1;
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .csDetailTitle { font-size: 16px; font-weight: bold; min-width: 0; }
+
+  /* ---- বাটন পিকার (চিপ) ---- */
+  .buttonPicker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .pickerChip {
+    display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line);
+    color: var(--text-color); padding: 8px 12px; border-radius: 16px; font-size: 12px; cursor: pointer;
+  }
+  .pickerChip.selected { background: var(--text-color); color: var(--bg-color); border-color: var(--text-color); }
+  .pickerChip .badge {
+    display: none; background: var(--surface); color: var(--text-color); width: 16px; height: 16px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .pickerChip.selected .badge { display: flex; }
+
+  /* ---- কালার পিকার ---- */
+  .colorSwatchPick {
+    position: relative; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+    border: 2px solid transparent; flex-shrink: 0;
+  }
+  .colorSwatchPick.selected { border-color: var(--text-color); }
+  .colorSwatchPick .badge {
+    display: none; position: absolute; top: -6px; right: -6px;
+    background: var(--surface); color: var(--text-color); width: 18px; height: 18px; border-radius: 50%;
+    align-items: center; justify-content: center; font-size: 10px; font-weight: bold;
+  }
+  .colorSwatchPick.selected .badge { display: flex; }
+
+  /* ---- কন্টেন্ট তালিকা কার্ড ---- */
+  .listCard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px; font-size: 13px; }
+  .listCard .metaRow { display: flex; justify-content: space-between; color: var(--text-color); font-size: 11px; margin-bottom: 6px; }
+  .listCard .bodyText { color: var(--text-color); white-space: pre-wrap; }
+  .listEmpty { text-align: center; color: var(--text-color); font-size: 13px; padding: 30px 0; }
+
+  /* ---- রিপোর্ট কার্ড: যার পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট হয়েছে তার নাম/ইমেইল/UID ---- */
+  .reportAuthorBox {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 8px 10px; margin: 10px 0; display: flex; flex-direction: column; gap: 6px;
+  }
+  .reportAuthorRow { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .reportAuthorLabel { color: var(--text-color); flex-shrink: 0; min-width: 44px; }
+  .reportAuthorVal { color: var(--text-color); flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .reportCopyBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 6px;
+    padding: 4px 8px; font-size: 12px; cursor: pointer; flex-shrink: 0;
+  }
+  .reportCopyBtn.copied { color: var(--text-color); }
+
+  /* ---- রিপোর্ট কার্ডের নিচে বাম দিকে: ডিলিট / সাসপেন্ড ---- */
+  .reportActionRow { display: flex; gap: 8px; margin-top: 10px; }
+  .reportDeleteBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 14px; font-size: 13px; font-weight: bold; cursor: pointer;
+  }
+  .reportSuspendBtn {
+    background: var(--surface); color: var(--text-color); border: none; border-radius: 8px;
+    padding: 8px 14px; font-size: 13px; font-weight: bold; cursor: pointer;
+  }
+
+  /* ---- সাসপেন্ড ওভারলে: এটা আলাদা "পেজ" এর মতো দেখায়, কিন্তু আসলে কোনো নেভিগেশন হয় না —
+         তাই ← বাটনে চাপলে শুধু এই স্ক্রিন বন্ধ হয়ে রিপোর্ট লিস্টে ফিরে যায়, সাইট থেকে কখনো বের হবে না ---- */
+  .suspendOverlay {
+    display: none; position: fixed; inset: 0; background: var(--surface); z-index: 500;
+    flex-direction: column;
+  }
+  .suspendOverlay.open { display: flex; }
+  .suspendHeader {
+    position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    padding: 14px 18px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .suspendBackBtn {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text-color); font-size: 20px; cursor: pointer; padding: 4px 8px;
+  }
+  .suspendHeaderTitle { font-size: 16px; font-weight: bold; }
+  .suspendBody { flex: 1; overflow-y: auto; padding: 20px 16px; max-width: 640px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+  .suspendBody label { display: block; font-size: 13px; color: var(--text-color); margin-bottom: 6px; }
+  .suspendBody select, .suspendBody input[type="number"], .suspendBody textarea {
+    width: 100%; background: var(--surface); border: 1px solid var(--line); color: var(--text-color);
+    padding: 10px 12px; border-radius: 10px; font-size: 14px; box-sizing: border-box;
+  }
+  .suspendBody textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+
+  #exitToast {
+    display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--surface); color: var(--text-color); padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300;
+  }
+
+button{box-shadow:inset 0 0 0 1px var(--line)}
 </style>
 </head>
 <body>
 
-<div class="gate" id="loginScreen">
-  <h1>Onuvuti Lite Admin</h1>
-  <p>এডমিন অ্যাক্সেসের জন্য লগইন করুন</p>
-  <button class="btn fill" id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
-  <p id="loginErr" style="margin-top:14px;font-size:12.5px"></p>
-</div>
-
-<div class="gate" id="deniedScreen">
-  <h1>⛔ প্রবেশাধিকার নেই</h1>
-  <p>এই অ্যাকাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
-  <button class="btn" id="logoutBtn2">লগ আউট</button>
-</div>
-
-<div id="adminScreen">
-  <header>
-    <a href="admin.html" class="hBtn" id="backBtn" title="এডমিন প্যানেলে ফিরে যান">←</a>
-    <h1>📱 লাইট এডমিন</h1>
-    <button class="hOut" id="logoutBtn">লগ আউট</button>
-  </header>
-  <div id="tabs"></div>
-
-  <div id="swipe">
-
-    <!-- ===== ফিচার ===== -->
-    <div class="panel" id="p-features"><div class="inner">
-      <div class="title">🎛️ ফিচার চালু/বন্ধ</div>
-      <div class="hint">বন্ধ করলে লাইটে সেই ফিচার আর দেখা যাবে না। সেভ করার পর লাইট পরের বার খুললে (বা অনলাইনে থাকলে সাথে সাথে) প্রযোজ্য হবে।</div>
-      <div class="card" id="featList"></div>
-    </div></div>
-
-    <!-- ===== অ্যাপ ===== -->
-    <div class="panel" id="p-app"><div class="inner">
-      <div class="title">📲 অ্যাপ ও আপডেট</div>
-      <div class="hint">লাইটের "অ্যাপ ডাউনলোড" পেজে এই লিংক ও ভার্সন দেখাবে।</div>
-      <div class="card"><div class="fields">
-        <label class="f" for="apkUrl">APK ডাউনলোড লিংক</label>
-        <input type="text" id="apkUrl" placeholder="https://.../onuvuti-lite.apk" inputmode="url">
-        <label class="f" for="apkVer">সর্বশেষ ভার্সন</label>
-        <input type="text" id="apkVer" placeholder="যেমন 1.0.0">
-        <label class="f" for="apkNotes">এই ভার্সনে নতুন কী (ঐচ্ছিক)</label>
-        <textarea id="apkNotes" placeholder="যেমন: মেসেজ ঠিক করা হয়েছে"></textarea>
-      </div></div>
-
-      <div class="title" style="margin-top:6px">⬆️ জোর করে আপডেট</div>
-      <div class="hint">চালু করলে যাদের লাইটের ভার্সন নিচের "সর্বনিম্ন ভার্সন"-এর চেয়ে পুরোনো, তারা আপডেট না করা পর্যন্ত লাইট ব্যবহার করতে পারবে না।</div>
-      <div class="card">
-        <div class="rowSw"><div class="ic">🔒</div><div class="tx"><b>জোর করে আপডেট চালু</b><small>পুরোনো ভার্সন আটকে দেবে</small></div><label class="sw"><input type="checkbox" id="fuOn"><i></i></label></div>
-        <div class="fields">
-          <label class="f" for="fuMin">সর্বনিম্ন ভার্সন</label>
-          <input type="text" id="fuMin" placeholder="যেমন 1.0.0">
-          <label class="f" for="fuMsgBn">বার্তা (বাংলা)</label>
-          <textarea id="fuMsgBn" placeholder="নতুন ভার্সন এসেছে। চালিয়ে যেতে আপডেট করুন।"></textarea>
-          <label class="f" for="fuMsgEn">Message (English)</label>
-          <textarea id="fuMsgEn" placeholder="A new version is available. Please update to continue."></textarea>
-        </div>
-      </div>
-    </div></div>
-
-    <!-- ===== নোটিশ ===== -->
-    <div class="panel" id="p-notice"><div class="inner">
-      <div class="title">📢 নোটিশ ব্যানার</div>
-      <div class="hint">লাইটের উপরে সবার জন্য একটা বার্তা দেখাবে। লেখা বদলে সেভ করলে যারা আগের নোটিশ বন্ধ করেছিল, তারা নতুনটা আবার দেখবে।</div>
-      <div class="card">
-        <div class="rowSw"><div class="ic">📢</div><div class="tx"><b>নোটিশ চালু</b></div><label class="sw"><input type="checkbox" id="ntOn"><i></i></label></div>
-        <div class="rowSw"><div class="ic">✖️</div><div class="tx"><b>ইউজার বন্ধ করতে পারবে</b><small>বন্ধ থাকলে নোটিশ সবসময় দেখা যাবে</small></div><label class="sw"><input type="checkbox" id="ntDis"><i></i></label></div>
-        <div class="fields">
-          <label class="f" for="ntText">নোটিশের লেখা</label>
-          <textarea id="ntText" placeholder="যে ভাষায় লিখবেন, সবার কাছে ঠিক সেই ভাষাতেই দেখাবে"></textarea>
-          <div class="hint">লেখা অনুবাদ হবে না — যেভাবে লিখবেন সেভাবেই দেখাবে।</div>
-          <label class="f" for="ntLink">লিংক (ঐচ্ছিক)</label>
-          <input type="text" id="ntLink" placeholder="https://..." inputmode="url">
-        </div>
-      </div>
-      <div class="pvT">প্রিভিউ</div>
-      <div class="pv" id="ntPv"></div>
-    </div></div>
-
-    <!-- ===== মেইনটেনেন্স ===== -->
-    <div class="panel" id="p-maint"><div class="inner">
-      <div class="title">🛠️ মেইনটেনেন্স মোড</div>
-      <div class="warn">⚠️ চালু করলে এডমিন (আপনি) ছাড়া সবার জন্য লাইট বন্ধ হয়ে নিচের বার্তা দেখাবে।</div>
-      <div class="card">
-        <div class="rowSw"><div class="ic">🛠️</div><div class="tx"><b>মেইনটেনেন্স চালু</b></div><label class="sw"><input type="checkbox" id="mtOn"><i></i></label></div>
-        <div class="fields">
-          <label class="f" for="mtBn">বার্তা (বাংলা)</label>
-          <textarea id="mtBn" placeholder="অনুভূতি লাইট কিছুক্ষণের জন্য বন্ধ আছে। একটু পরে আবার চেষ্টা করুন।"></textarea>
-          <label class="f" for="mtEn">Message (English)</label>
-          <textarea id="mtEn" placeholder="Onuvuti Lite is under maintenance. Please try again later."></textarea>
-        </div>
-      </div>
-    </div></div>
-
-    <!-- ===== ডিফল্ট ===== -->
-    <div class="panel" id="p-def"><div class="inner">
-      <div class="title">🎨 ডিফল্ট ভাষা ও থিম</div>
-      <div class="hint">যে ইউজার এখনো নিজে ভাষা বা থিম বেছে নেয়নি, শুধু তার জন্য প্রযোজ্য হবে। যে বেছে নিয়েছে তার পছন্দ বদলাবে না।</div>
-      <div class="card"><div class="fields">
-        <label class="f">ডিফল্ট ভাষা</label>
-        <div class="seg" id="segLang"><button type="button" data-v="bn">বাংলা</button><button type="button" data-v="en">English</button></div>
-        <label class="f" style="margin-top:16px">ডিফল্ট থিম</label>
-        <div class="seg" id="segTheme"><button type="button" data-v="dark">ডার্ক</button><button type="button" data-v="light">লাইট</button></div>
-      </div></div>
-      <div class="meta" id="metaLine"></div>
-    </div></div>
-
+  <div id="loginScreen">
+    <h1>Onuvuti Admin Panel</h1>
+    <p>এডমিন অ্যাক্সেসের জন্য লগইন করুন</p>
+    <button id="googleLoginBtn">🔵 Google দিয়ে লগইন করুন</button>
   </div>
 
-  <div id="saveBar">
-    <div class="st" id="saveSt">লোড হচ্ছে...</div>
-    <button class="btn" id="resetBtn">↺ বাতিল</button>
-    <button class="btn fill" id="saveBtn">💾 সেভ করুন</button>
+  <div id="deniedScreen">
+    <h1>⛔ প্রবেশাধিকার নেই</h1>
+    <p>এই অ্যাকাউন্টটি এডমিন হিসেবে অনুমোদিত নয়।</p>
+    <button id="logoutBtn2">লগ আউট</button>
   </div>
-</div>
 
-<div id="toast"></div>
+  <div id="adminScreen">
 
-<div class="ov" id="confirmOv"><div class="box">
-  <h3 id="cfT"></h3><p id="cfP"></p>
-  <div class="acts"><button class="btn" id="cfNo">← ফিরে যান</button><button class="btn fill" id="cfYes">নিশ্চিত</button></div>
-</div></div>
+    <header>
+      <span>🛠️ Admin Panel</span>
+      <button id="logoutBtn">লগ আউট</button>
+    </header>
+
+    <div id="swipeIndicator"></div>
+
+    <div id="swipeContainer">
+
+      <!-- ================= থিম ================= -->
+      <div class="swipePanel" id="panel-theme">
+        <div class="swipePanelInner">
+        <div class="folderTitle">🎨 থিম</div>
+
+        <div class="section">
+          <h2>🏷️ লোগো ও সাইট নাম</h2>
+          <div class="row"><label>লোগো URL</label><input type="text" id="logoUrl" placeholder="https://..."></div>
+          <div class="row"><label>সাইট নাম</label><input type="text" id="siteName" placeholder="Onuvuti"></div>
+          <button class="sectionSaveBtn" data-section="identity">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusIdentity"></div>
+        </div>
+
+        <div class="section">
+          <h2>📢 নোটিশ (স্ক্রলিং লেখা)</h2>
+          <input type="text" id="noticeText" placeholder="এখানে নোটিশ লিখুন...">
+          <div class="hint">এটা হোমপেজে ডান থেকে বামে ক্রমাগত চলতে থাকবে</div>
+          <button class="sectionSaveBtn" data-section="notice">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusNotice"></div>
+        </div>
+
+        <div class="section">
+          <h2>✍️ কম্পোজার লেখা</h2>
+          <div class="row"><label>টেক্সট বক্সের লেখা</label><input type="text" id="composerPlaceholder" placeholder="আপনার মনে কী চলছে?"></div>
+          <div class="row"><label>পোস্টারের লেখা</label><input type="text" id="posterPlaceholder" placeholder="পোস্টারের লেখা এখানে দেখাবে"></div>
+          <button class="sectionSaveBtn" data-section="composerLabels">💾 সেভ করুন</button>
+          <div class="sectionStatus" id="statusComposerLabels"></div>
+        </div>
+
+        <div class="section">
+          <h2>📋 মেনু বার</h2>
+
+          <!-- ================= ১) টপ মেনু ================= -->
+          <button type="button" class="accordionBtn" data-toggle="mtTop">১. টপ মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtTop">
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="menuPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="menuGadgetForm">🧩 এড গেজেট</button>
+            </div>
+
+            <div class="createForm" id="menuPageForm">
+              <input type="text" class="createLabel" id="menuPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="menuPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="page">➕ তৈরি করুন</button>
+            </div>
+            <div class="createForm" id="menuGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="menuGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="menuGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="menuCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+
+            <div class="gridTable itemList" id="menuCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একই লিস্টে, ধারাবাহিকভাবে)।</div>
+            <button class="sectionSaveBtn" data-section="menu" data-status="statusMenu">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusMenu"></div>
+          </div>
+
+          <!-- ================= ২) ফুটার মেনু ================= -->
+          <button type="button" class="accordionBtn" data-toggle="mtFooter">২. ফুটার মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtFooter">
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="footerPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="footerGadgetForm">🧩 এড গেজেট</button>
+            </div>
+
+            <div class="createForm" id="footerPageForm">
+              <input type="text" class="createLabel" id="footerPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="footerPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="page">➕ তৈরি করুন</button>
+            </div>
+            <div class="createForm" id="footerGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="footerGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="footerGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="footerCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+
+            <div class="gridTable itemList" id="footerCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একই লিস্টে, ধারাবাহিকভাবে)। ফুটারে বাটনগুলোর উপরে সাইট নামও দেখাবে।</div>
+            <button class="sectionSaveBtn" data-section="footer" data-status="statusFooter">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusFooter"></div>
+          </div>
+
+          <!-- ================= ৩) সাইড বার মেনু ================= -->
+          <button type="button" class="accordionBtn" data-toggle="mtSidebar">৩. সাইড বার মেনু</button>
+          <div class="menuTypeBox collapsed" id="mtSidebar">
+            <div class="addTypeRow">
+              <button type="button" class="addTypeBtn active" data-form="sidebarPageForm">📄 এড পেজ</button>
+              <button type="button" class="addTypeBtn" data-form="sidebarGadgetForm">🧩 এড গেজেট</button>
+            </div>
+
+            <div class="createForm" id="sidebarPageForm">
+              <input type="text" class="createLabel" id="sidebarPageCreateLabel" placeholder="নাম/আইকন">
+              <input type="text" class="createUrl" id="sidebarPageCreateUrl" placeholder="লিংক">
+              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="page">➕ তৈরি করুন</button>
+            </div>
+            <div class="createForm" id="sidebarGadgetForm" style="display:none">
+              <input type="text" class="createLabel" id="sidebarGadgetCreateLabel" placeholder="টাইটেল (ঐচ্ছিক)">
+              <textarea class="gridCode" id="sidebarGadgetCreateCode" placeholder="এখানে HTML/CSS/JS কোড বসান"></textarea>
+              <button type="button" class="createBtn" data-list="sidebarCombinedList" data-kind="gadget">➕ তৈরি করুন</button>
+            </div>
+
+            <div class="gridTable itemList" id="sidebarCombinedList"></div>
+            <div class="hint">✅ টিক দিলে সবার উপরে চলে যাবে — এটাই দেখানোর ক্রম (পেজ ও গেজেট একই লিস্টে, ধারাবাহিকভাবে)।</div>
+            <button class="sectionSaveBtn" data-section="sidebar" data-status="statusSidebar">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusSidebar"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ================= সেটিংস ================= -->
+      <div class="swipePanel" id="panel-content-settings">
+        <div class="swipePanelInner">
+        <div class="folderTitle">⚙️ কন্টেন্ট সেটিংস</div>
+
+        <!-- ================= লিস্ট ভিউ: প্রতিটা সেটিংস একটা বাটনের আওতায়, ধারাবাহিকভাবে ================= -->
+        <div class="csListView" id="csListView">
+          <button type="button" class="csListBtn" data-cs-open="csDetail-contentSettings">
+            <span class="csListBtnIcon">✂️</span><span class="csListBtnText">লেখা কাটা, পোস্ট সংখ্যা ও বক্স সাইজ</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-postButtonsLayout">
+            <span class="csListBtnIcon">🔘</span><span class="csListBtnText">পোস্ট বাটন লেআউট</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-bottomButtons">
+            <span class="csListBtnIcon">👇</span><span class="csListBtnText">নিচের বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-menuButtons">
+            <span class="csListBtnIcon">⋮</span><span class="csListBtnText">থ্রি-ডট মেনু বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-commentBottomButtons">
+            <span class="csListBtnIcon">💬</span><span class="csListBtnText">কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-commentMenuButtons">
+            <span class="csListBtnIcon">💬⋮</span><span class="csListBtnText">কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-posterColors">
+            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">পোস্টার রং বাছাই করুন</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-colors">
+            <span class="csListBtnIcon">🎨</span><span class="csListBtnText">থিম</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-blog">
+            <span class="csListBtnIcon">📰</span><span class="csListBtnText">ব্লগ</span><span class="csListBtnArrow">›</span>
+          </button>
+          <button type="button" class="csListBtn" data-cs-open="csDetail-aboutUs">
+            <span class="csListBtnIcon">ℹ️</span><span class="csListBtnText">আমাদের সম্পর্কে (About Us)</span><span class="csListBtnArrow">›</span>
+          </button>
+        </div>
+
+        <!-- ================= ডিটেইল ভিউগুলো: বাটনে ঢুকলে এইগুলো দেখাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে ================= -->
+        <div class="csDetailView" id="csDetail-contentSettings">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">✂️ লেখা কাটা, পোস্ট সংখ্যা ও বক্স সাইজ</div>
+          </div>
+          <div class="section">
+            <h2>✂️ কত লাইন পর "আরও পড়ুন" আসবে</h2>
+            <input type="number" id="readMoreLines" placeholder="৬" min="1">
+            <div class="hint">পোস্টের লেখা এতগুলো লাইনের পর কেটে "আরও পড়ুন" বাটন দেখাবে, চাপলে পুরো লেখা খুলবে</div>
+
+            <h2 style="margin-top:16px;">প্রতি পেজে কয়টা পোস্ট দেখাবে</h2>
+            <input type="number" id="postsPerPage" placeholder="৫">
+            <div class="hint">এতগুলো পোস্টের পর ফুটার আসবে, এবং "আরও পোস্ট দেখুন" বাটনে চাপলে পরের ব্যাচ লোড হবে</div>
+
+            <h2 style="margin-top:16px;">📏 কনটেন্টের প্রস্থ (px)</h2>
+            <input type="number" id="maxWidth" placeholder="640">
+
+            <h2 style="margin-top:16px;">📐 পোস্ট বক্সের সাইজ</h2>
+            <div class="row"><label>টেক্সট বক্স (px)</label><input type="number" id="composerHeight" placeholder="100"></div>
+            <div class="row"><label>পোস্টার বক্স (px)</label><input type="number" id="posterHeight" placeholder="180"></div>
+
+            <button class="sectionSaveBtn" data-section="contentSettings">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusContentSettings"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-postButtonsLayout">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🔘 পোস্ট বাটন লেআউট</div>
+          </div>
+          <div class="section">
+            <h2>🔘 পোস্ট বাটন লেআউট</h2>
+            <select id="postButtonsJustify" style="width:100%; background:var(--surface); border:1px solid var(--line); color:var(--text-color); padding:8px 10px; border-radius:8px; font-size:13px;">
+              <option value="space-evenly">সমান্তরাল</option>
+              <option value="flex-start">বামদিকে</option>
+              <option value="flex-end">ডান দিকে</option>
+            </select>
+            <div class="hint">প্রতিটা পোস্টের নিচের বাটনগুলো কীভাবে সাজানো থাকবে</div>
+            <button class="sectionSaveBtn" data-section="postButtonsLayout">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusPostButtonsLayout"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-bottomButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">👇 নিচের বাটন বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>👇 নিচের বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে</div>
+            <div class="buttonPicker" id="bottomButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="bottomButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusBottomButtons"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-menuButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>⋮ থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে</div>
+            <div class="buttonPicker" id="menuButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="menuButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusMenuButtons"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-commentBottomButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">💬 কমেন্ট/রিপ্লাই — নিচের বাটন</div>
+          </div>
+          <div class="section">
+            <h2>💬 কমেন্ট/রিপ্লাই — নিচের বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার বাম দিকে। প্রতিটা কমেন্ট ও রিপ্লাই এর নিচে এই বাটনগুলো দেখাবে</div>
+            <div class="buttonPicker" id="commentBottomButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="commentBottomButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusCommentBottomButtons"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-commentMenuButtons">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন</div>
+          </div>
+          <div class="section">
+            <h2>💬⋮ কমেন্ট/রিপ্লাই — থ্রি-ডট মেনু বাটন বাছাই করুন</h2>
+            <div class="hint">যে ক্রমে ট্যাপ করবেন, সেই ক্রমেই বাটন বসবে — প্রথমটা সবার উপরে। এডিট ও ডিলিট শুধু যিনি কমেন্ট/রিপ্লাই করেছেন তিনিই দেখতে পাবেন</div>
+            <div class="buttonPicker" id="commentMenuButtonPicker"></div>
+            <button class="sectionSaveBtn" data-section="commentMenuButtons">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusCommentMenuButtons"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-posterColors">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🎨 পোস্টার রং বাছাই করুন</div>
+          </div>
+          <div class="section">
+            <h2>🎨 পোস্টার রং বাছাই করুন (যত খুশি তত)</h2>
+            <div class="hint">নিচের প্যালেট থেকে যতগুলো ইচ্ছা রং বাছাই করুন (কমপক্ষে ১টা) — এগুলোই হোমপেজে পোস্টার বানানোর সময় দেখাবে</div>
+            <div class="buttonPicker" id="posterColorPicker"></div>
+            <button class="sectionSaveBtn" data-section="posterColors">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusPosterColors"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-colors">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">🎨 থিম</div>
+          </div>
+          <div class="section">
+            <h2>🎨 থিম</h2>
+            <div class="hint">থিম বাছাই করুন — সেভ করলে পুরো সাইটে বদলে যাবে।<br>🌙 ডার্ক মোড: সব কালো, লেখা ও বাটনের নাম সাদা।<br>☀️ লাইট মোড: সব সাদা, লেখা ও বাটনের নাম কালো।<br>দুই মোডে শুধু সাদা আর কালো রং থাকবে।</div>
+            <div class="addTypeRow" id="themeRow">
+              <button type="button" class="addTypeBtn" id="themeDarkBtn">🌙 ডার্ক মোড</button>
+              <button type="button" class="addTypeBtn" id="themeLightBtn">☀️ লাইট মোড</button>
+            </div>
+            <button class="sectionSaveBtn" data-section="colors">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusColors"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-blog">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">📰 ব্লগ</div>
+          </div>
+          <div class="section">
+            <h2>📐 ব্লগ লেখার বক্সের সাইজ (px)</h2>
+            <input type="number" id="blogComposerHeight" placeholder="৩০০" min="1">
+            <div class="hint">ব্লগ মোডে লেখার বক্স কত উঁচু হবে (স্বাভাবিক পোস্টের বক্সের সাইজ থেকে আলাদাভাবে ঠিক করা যায়)</div>
+
+            <h2 style="margin-top:16px;">🔠 বড় লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogBigOpen" placeholder="("></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogBigClose" placeholder=")"></div>
+
+            <h2 style="margin-top:16px;">🔡 মাঝারি লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogMedOpen" placeholder="{"></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogMedClose" placeholder="}"></div>
+
+            <h2 style="margin-top:16px;">🔡 ছোট লেখার জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogSmallOpen" placeholder="["></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogSmallClose" placeholder="]"></div>
+
+            <h2 style="margin-top:16px;">🔗 লিংকের জন্য চিহ্ন</h2>
+            <div class="row"><label>শুরুর চিহ্ন</label><input type="text" id="blogLinkOpen" placeholder="&lt;"></div>
+            <div class="row"><label>শেষের চিহ্ন</label><input type="text" id="blogLinkClose" placeholder="&gt;"></div>
+            <div class="hint">এই দুইটা চিহ্নের মাঝে লিংক বসালেই সেটা ক্লিক করার মতো লিংক হয়ে যাবে — যেমন ডিফল্ট চিহ্নে &lt;লিংক&gt; এভাবে লিখলে হবে। প্রতিটা চিহ্ন (বড়/মাঝারি/ছোট/লিংক) একে অপরের থেকে আলাদা রাখবেন, নাহলে গুলিয়ে যেতে পারে।</div>
+
+            <button class="sectionSaveBtn" data-section="blog">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusBlog"></div>
+          </div>
+        </div>
+
+        <div class="csDetailView" id="csDetail-aboutUs">
+          <div class="csDetailHeader">
+            <button type="button" class="csBackBtn" data-cs-back>←</button>
+            <div class="csDetailTitle">ℹ️ আমাদের সম্পর্কে</div>
+          </div>
+          <div class="section">
+            <h2>📝 আমাদের সম্পর্কে লেখা</h2>
+            <textarea id="aboutUsText" rows="10" placeholder="এখানে আপনার ওয়েবসাইট সম্পর্কে বিস্তারিত লিখুন..."></textarea>
+            <div class="hint">ওয়েবসাইটের পোস্ট বক্সের উপরে "আমাদের সম্পর্কে" বাটনে ঢুকলে এই লেখাটি সম্পূর্ণভাবে দেখানো হবে। Google বা AI থেকে কেউ আপনার ওয়েবসাইট সম্পর্কে জানতে চাইলে এই লেখা থেকেই উত্তর পাবে, তাই স্পষ্ট ও বিস্তারিতভাবে লিখুন।</div>
+
+            <button class="sectionSaveBtn" data-section="aboutUs">💾 সেভ করুন</button>
+            <div class="sectionStatus" id="statusAboutUs"></div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- ================= রিপোর্ট ================= -->
+      <div class="swipePanel" id="panel-reports">
+        <div class="swipePanelInner">
+        <div class="folderTitle">🚩 রিপোর্ট</div>
+        <div class="addTypeRow">
+          <button type="button" class="addTypeBtn active" data-report-type="post">📝 পোস্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="comment">💬 কমেন্ট</button>
+          <button type="button" class="addTypeBtn" data-report-type="reply">↩️ রিপ্লাই</button>
+        </div>
+        <div id="reportsAdminList"><div class="listEmpty">লোড হচ্ছে...</div></div>
+        </div>
+      </div>
+
+      <!-- ================= লাইট ================= -->
+      <div class="swipePanel" id="panel-lite">
+        <div class="swipePanelInner">
+        <div class="folderTitle">📱 লাইট</div>
+        <div class="section">
+          <h2>Onuvuti Lite নিয়ন্ত্রণ</h2>
+          <div class="hint">লাইটের ফিচার চালু/বন্ধ, APK লিংক ও ভার্সন, নোটিশ ব্যানার, মেইনটেনেন্স মোড, ডিফল্ট ভাষা/থিম ও জোর করে আপডেট এখান থেকে ঠিক করুন।</div>
+          <a href="lite-admin.html" style="display:block;text-align:center;text-decoration:none;color:var(--bg-color);background:var(--text-color);border-radius:24px;padding:12px 26px;font-size:15px;font-weight:bold;margin-top:10px;">📱 লাইট এডমিন খুলুন</a>
+        </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="exitToast">আবার Back চাপুন বের হওয়ার জন্য</div>
+
+  <!-- ================= সাসপেন্ড ওভারলে (আলাদা স্ক্রিনের মতো দেখায়, নেভিগেশন নয়) ================= -->
+  <div id="suspendOverlay" class="suspendOverlay">
+    <header class="suspendHeader">
+      <button type="button" id="suspendBackBtn" class="suspendBackBtn">←</button>
+      <div class="suspendHeaderTitle">🚫 সাসপেন্ড করুন</div>
+    </header>
+    <div class="suspendBody">
+      <div class="reportAuthorBox">
+        <div class="reportAuthorRow"><span class="reportAuthorLabel">নাম</span><span class="reportAuthorVal" id="suspendTargetName"></span></div>
+        <div class="reportAuthorRow"><span class="reportAuthorLabel">ইমেইল</span><span class="reportAuthorVal" id="suspendTargetEmail"></span></div>
+      </div>
+
+      <label>সময়ের ধরন</label>
+      <select id="suspendUnit">
+        <option value="minute">মিনিট</option>
+        <option value="hour">ঘণ্টা</option>
+        <option value="day" selected>দিন</option>
+        <option value="month">মাস</option>
+        <option value="year">বছর</option>
+      </select>
+
+      <label style="margin-top:14px;">সংখ্যা (কত মিনিট/ঘণ্টা/দিন/মাস/বছর)</label>
+      <input type="number" id="suspendAmount" min="1" placeholder="যেমনঃ ৩">
+
+      <label style="margin-top:14px;">ইমেইলে যে মেসেজ যাবে</label>
+      <textarea id="suspendMessage" placeholder="ইউজারকে যা বলতে চান লিখুন..."></textarea>
+
+      <button type="button" id="suspendSubmitBtn" class="sectionSaveBtn" style="margin-top:16px;">✅ সাসপেন্ড কার্যকর করুন</button>
+      <div class="sectionStatus" id="suspendStatus"></div>
+    </div>
+  </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, deleteDoc, addDoc, collection, collectionGroup,
+    query, orderBy, where, getDocs, serverTimestamp, Timestamp
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-const app = initializeApp({
-  apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
-  authDomain: "onuvuti-5c9e3.firebaseapp.com",
-  projectId: "onuvuti-5c9e3",
-  storageBucket: "onuvuti-5c9e3.firebasestorage.app",
-  messagingSenderId: "846713879232",
-  appId: "1:846713879232:web:d87ae40431210088df8b25",
-  measurementId: "G-WJ8N8XLPSZ"
-});
-const auth = getAuth(app), db = getFirestore(app);
-const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
-const REF = () => doc(db, "settings", "lite");
-const $ = id => document.getElementById(id);
+  const firebaseConfig = {
+    apiKey: "AIzaSyBi5nb_B_ymD5dR-jGh_RMYMWLrtnHTOCA",
+    authDomain: "onuvuti-5c9e3.firebaseapp.com",
+    projectId: "onuvuti-5c9e3",
+    storageBucket: "onuvuti-5c9e3.firebasestorage.app",
+    messagingSenderId: "846713879232",
+    appId: "1:846713879232:web:d87ae40431210088df8b25",
+    measurementId: "G-WJ8N8XLPSZ"
+  };
 
-// ---- ফিচার তালিকা (লাইট শুধু এগুলোই মানে) ----
-const FEATURES = [
-  { k: "messages",      ic: "💬", n: "মেসেজ",            d: "উপরের মেসেজ পিল ও পেজ" },
-  { k: "notifications", ic: "🔔", n: "নোটিফিকেশন",       d: "উপরের নোটিফিকেশন পিল ও পেজ" },
-  { k: "profile",       ic: "👤", n: "প্রোফাইল",          d: "উপরের প্রোফাইল পিল ও পেজ" },
-  { k: "download",      ic: "📲", n: "অ্যাপ ডাউনলোড",    d: "মেনুর ডাউনলোড বাটন" },
-  { k: "blocklist",     ic: "🚫", n: "ব্লক তালিকা",       d: "মেনু ও সেটিংসের ব্লক তালিকা" }
-];
-const DEFAULTS = {
-  features: { messages: true, notifications: true, profile: true, download: true, blocklist: true },
-  apk: { url: "", version: "", notes: "" },
-  forceUpdate: { enabled: false, minVersion: "", messageBn: "", messageEn: "" },
-  notice: { enabled: false, dismissible: true, text: "", link: "", id: "" },
-  maintenance: { enabled: false, messageBn: "", messageEn: "" },
-  defaults: { lang: "bn", theme: "dark" }
-};
+  const ADMIN_EMAILS = ["hmjunaid9999@gmail.com"];
 
-let saved = null;     // সার্ভারে থাকা শেষ অবস্থা (JSON স্ট্রিং)
-let state = null;     // বর্তমান ফর্মের অবস্থা
-let metaInfo = "";
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
 
-const clone = o => JSON.parse(JSON.stringify(o));
-function merge(base, extra) {
-  const out = clone(base);
-  if (!extra || typeof extra !== "object") return out;
-  Object.keys(out).forEach(k => {
-    if (out[k] && typeof out[k] === "object" && !Array.isArray(out[k])) {
-      Object.keys(out[k]).forEach(kk => { if (extra[k] && extra[k][kk] !== undefined) out[k][kk] = extra[k][kk]; });
+  const loginScreen = document.getElementById('loginScreen');
+  const deniedScreen = document.getElementById('deniedScreen');
+  const adminScreen = document.getElementById('adminScreen');
+
+  const logoUrl = document.getElementById('logoUrl');
+  const siteName = document.getElementById('siteName');
+  const noticeText = document.getElementById('noticeText');
+  const composerPlaceholder = document.getElementById('composerPlaceholder');
+  const posterPlaceholder = document.getElementById('posterPlaceholder');
+  let currentTheme = 'dark';
+  const themeDarkBtn = document.getElementById('themeDarkBtn');
+  const themeLightBtn = document.getElementById('themeLightBtn');
+  function setThemeChoice(t) {
+    currentTheme = (t === 'light') ? 'light' : 'dark';
+    themeDarkBtn.classList.toggle('active', currentTheme === 'dark');
+    themeLightBtn.classList.toggle('active', currentTheme === 'light');
+  }
+  themeDarkBtn.addEventListener('click', () => setThemeChoice('dark'));
+  themeLightBtn.addEventListener('click', () => setThemeChoice('light'));
+  setThemeChoice('dark');
+  const maxWidth = document.getElementById('maxWidth');
+  const composerHeight = document.getElementById('composerHeight');
+  const posterHeight = document.getElementById('posterHeight');
+  const postsPerPage = document.getElementById('postsPerPage');
+  const readMoreLines = document.getElementById('readMoreLines');
+  const postButtonsJustify = document.getElementById('postButtonsJustify');
+  const blogComposerHeight = document.getElementById('blogComposerHeight');
+  const blogBigOpen = document.getElementById('blogBigOpen');
+  const blogBigClose = document.getElementById('blogBigClose');
+  const blogMedOpen = document.getElementById('blogMedOpen');
+  const blogMedClose = document.getElementById('blogMedClose');
+  const blogSmallOpen = document.getElementById('blogSmallOpen');
+  const blogSmallClose = document.getElementById('blogSmallClose');
+  const blogLinkOpen = document.getElementById('blogLinkOpen');
+  const blogLinkClose = document.getElementById('blogLinkClose');
+  const aboutUsText = document.getElementById('aboutUsText');
+
+  // ---- বাটন পিকার (নিচের বাটন + থ্রি-ডট মেনু বাটন) ----
+  const BUTTON_LABELS = {
+    like: '❤️ লাইক', comment: '💬 কমেন্ট', copyText: '📋 টেক্সট কপি',
+    copyLink: '🔗 লিংক কপি', share: '📤 শেয়ার', edit: '✏️ এডিট', delete: '🗑️ ডিলিট', report: '🚩 রিপোর্ট'
+  };
+  const BUTTON_KEYS = Object.keys(BUTTON_LABELS);
+
+  // ---- কমেন্ট ও রিপ্লাই এর বাটন (নিচে লাইক+রিপ্লাই, থ্রি-ডট মেনুতে কপি+এডিট+ডিলিট+রিপোর্ট) ----
+  const COMMENT_BUTTON_LABELS = {
+    like: '❤️ লাইক', reply: '↩️ রিপ্লাই', copy: '📋 কপি', edit: '✏️ এডিট', delete: '🗑️ ডিলিট', report: '🚩 রিপোর্ট'
+  };
+  const COMMENT_BUTTON_KEYS = Object.keys(COMMENT_BUTTON_LABELS);
+
+  // keys, labels প্যারামিটার নিয়ে জেনারিক পিকার — পোস্ট ও কমেন্ট/রিপ্লাই দুই ধরনের বাটনের জন্যই ব্যবহার করা যায়
+  function createPicker(containerId, keys, labels) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    keys.forEach(key => {
+      const chip = document.createElement('div');
+      chip.className = 'pickerChip';
+      chip.dataset.key = key;
+      chip.innerHTML = `<span class="badge"></span><span>${labels[key]}</span>`;
+      chip.addEventListener('click', () => {
+        const idx = order.indexOf(key);
+        if (idx === -1) order.push(key);
+        else order.splice(idx, 1);
+        refresh();
+      });
+      container.appendChild(chip);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.pickerChip').forEach(chip => {
+        const key = chip.dataset.key;
+        const idx = order.indexOf(key);
+        if (idx === -1) {
+          chip.classList.remove('selected');
+        } else {
+          chip.classList.add('selected');
+          chip.querySelector('.badge').textContent = idx + 1;
+        }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).filter(k => keys.includes(k)); refresh(); }
+    };
+  }
+
+  const bottomPicker = createPicker('bottomButtonPicker', BUTTON_KEYS, BUTTON_LABELS);
+  const menuPicker = createPicker('menuButtonPicker', BUTTON_KEYS, BUTTON_LABELS);
+  // ---- কমেন্ট/রিপ্লাই এর নিচের বাটন (লাইক, রিপ্লাই) ও থ্রি-ডট মেনু বাটন (কপি, এডিট, ডিলিট) এর জন্য পিকার ----
+  const commentBottomPicker = createPicker('commentBottomButtonPicker', COMMENT_BUTTON_KEYS, COMMENT_BUTTON_LABELS);
+  const commentMenuPicker = createPicker('commentMenuButtonPicker', COMMENT_BUTTON_KEYS, COMMENT_BUTTON_LABELS);
+
+  // ---- পোস্টার রং পিকার (সর্বোচ্চ ৭টি) ----
+  const COLOR_PALETTE = [
+    '#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827', '#0EA5E9',
+    '#F97316', '#22C55E', '#EF4444', '#A855F7', '#06B6D4', '#F43F5E', '#84CC16', '#3B82F6',
+    '#D946EF', '#FACC15', '#10B981', '#6366F1', '#F472B6', '#0EA5E9', '#EAB308', '#DC2626',
+    '#7C3AED', '#059669', '#DB2777', '#2563EB', '#CA8A04', '#16A34A', '#9333EA', '#0891B2',
+    '#65A30D', '#E11D48', '#4F46E5', '#0D9488'
+  ];
+
+  function createColorPicker(containerId, maxCount) {
+    const container = document.getElementById(containerId);
+    let order = [];
+
+    COLOR_PALETTE.forEach(color => {
+      const sw = document.createElement('div');
+      sw.className = 'colorSwatchPick';
+      sw.style.background = color;
+      sw.dataset.color = color;
+      sw.innerHTML = `<span class="badge"></span>`;
+      sw.addEventListener('click', () => {
+        const idx = order.indexOf(color);
+        if (idx === -1) {
+          if (order.length >= maxCount) { alert('সর্বোচ্চ ' + maxCount + 'টি রং বাছাই করা যাবে'); return; }
+          order.push(color);
+        } else {
+          order.splice(idx, 1);
+        }
+        refresh();
+      });
+      container.appendChild(sw);
+    });
+
+    function refresh() {
+      container.querySelectorAll('.colorSwatchPick').forEach(sw => {
+        const idx = order.indexOf(sw.dataset.color);
+        if (idx === -1) { sw.classList.remove('selected'); }
+        else { sw.classList.add('selected'); sw.querySelector('.badge').textContent = idx + 1; }
+      });
+    }
+
+    return {
+      getOrder: () => order,
+      setOrder: (arr) => { order = (arr || []).slice(0, maxCount); refresh(); }
+    };
+  }
+
+  const posterColorPicker = createColorPicker('posterColorPicker', COLOR_PALETTE.length);
+  const menuCombinedList = document.getElementById('menuCombinedList');
+  const sidebarCombinedList = document.getElementById('sidebarCombinedList');
+  const footerCombinedList = document.getElementById('footerCombinedList');
+
+  // ---- নাম+লিংক ও গেজেট গ্রিড (একই সেকশনে দুই ট্যাব — টিক দিলে সারি নিজের ট্যাবে উপরে যায়,
+  //      এবং কোন ক্রমে টিক দেওয়া হয়েছে সেটাও মনে রাখা হয় (row.dataset.seq) — সেভ করার সময়
+  //      পেজ ও গেজেট দুটো ট্যাব মিলিয়ে সেই টিক-দেওয়ার-ক্রম অনুযায়ীই একটাই লিস্ট বানানো হয়) ----
+  function makeSeqCounter() {
+    let n = 0;
+    return () => ++n;
+  }
+  const sidebarSeq = makeSeqCounter();
+  const menuSeq = makeSeqCounter();
+  const footerSeq = makeSeqCounter();
+
+  function wireCheckReorder(row, getNextSeq) {
+    const check = row.querySelector('.gridCheck');
+    check.addEventListener('change', () => {
+      row.classList.toggle('gridRowChecked', check.checked);
+      if (check.checked) {
+        row.dataset.seq = String(getNextSeq());
+        const container = row.parentElement;
+        if (!container) return;
+        const checkedRows = Array.from(container.querySelectorAll('.gridRow2.gridRowChecked')).filter(r => r !== row);
+        const lastChecked = checkedRows[checkedRows.length - 1];
+        if (lastChecked && lastChecked.nextSibling) {
+          container.insertBefore(row, lastChecked.nextSibling);
+        } else if (lastChecked) {
+          container.appendChild(row);
+        } else {
+          container.insertBefore(row, container.firstChild);
+        }
+      } else {
+        delete row.dataset.seq;
+      }
+    });
+  }
+
+  // ---- ক্লিপবোর্ডে কপি করার সহায়ক ফাংশন (নতুন/পুরনো ব্রাউজার দুটোতেই কাজ করবে) ----
+  function fallbackCopyText(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) { /* কিছু না */ }
+    document.body.removeChild(ta);
+  }
+  function copyText(text) {
+    if (!text) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+    } else {
+      fallbackCopyText(text);
+    }
+  }
+
+  // ---- তৈরি হওয়া আইটেমের এডিট/কপি/ডিলিট বাটন — ডিফল্টে লকড থাকে, এডিটে চাপলে পরিবর্তনযোগ্য হয় ----
+  function wireEditDelete(row) {
+    const editBtn = row.querySelector('.gridEditBtn');
+    const copyBtn = row.querySelector('.gridCopyBtn');
+    const deleteBtn = row.querySelector('.gridDeleteBtn');
+    deleteBtn.addEventListener('click', () => {
+      if (confirm('আইটেমটি ডিলিট করবেন?')) row.remove();
+    });
+    editBtn.addEventListener('click', () => {
+      const fields = row.querySelectorAll('.gridLabel, .gridUrl, .gridCode');
+      const wasEditing = editBtn.dataset.editing === '1';
+      fields.forEach(f => { f.disabled = wasEditing; });
+      editBtn.dataset.editing = wasEditing ? '0' : '1';
+      editBtn.textContent = wasEditing ? '✏️' : '✅';
+      if (!wasEditing && fields[0]) fields[0].focus();
+    });
+    copyBtn.addEventListener('click', () => {
+      const source = row.dataset.type === 'gadget' ? row.querySelector('.gridCode') : row.querySelector('.gridUrl');
+      copyText(source.value);
+      const original = copyBtn.textContent;
+      copyBtn.textContent = '✅';
+      setTimeout(() => { copyBtn.textContent = original; }, 1200);
+    });
+  }
+
+  function createGridRow(label, url, getNextSeq) {
+    const row = document.createElement('div');
+    row.className = 'gridRow2';
+    row.dataset.type = 'page';
+    row.innerHTML = `
+      <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+      <div class="gridFields">
+        <div class="gridTypeTag">📄 পেজ</div>
+        <input type="text" class="gridLabel" placeholder="নাম/আইকন" value="${(label || '').replace(/"/g, '&quot;')}" disabled>
+        <input type="text" class="gridUrl" placeholder="লিংক" value="${(url || '').replace(/"/g, '&quot;')}" disabled>
+      </div>
+      <div class="gridBtnCol">
+        <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="লিংক কপি করুন">📋</button>
+        <button type="button" class="gridDeleteBtn">🗑️</button>
+      </div>
+    `;
+    wireCheckReorder(row, getNextSeq);
+    wireEditDelete(row);
+    return row;
+  }
+
+  function createGadgetRow(title, code, getNextSeq) {
+    const row = document.createElement('div');
+    row.className = 'gridRow2';
+    row.dataset.type = 'gadget';
+    row.innerHTML = `
+      <input type="checkbox" class="gridCheck" title="টিক দিলে সারিটা সবার উপরে চলে যাবে">
+      <div class="gridFields">
+        <div class="gridTypeTag">🧩 গেজেট</div>
+        <input type="text" class="gridLabel" placeholder="টাইটেল (ঐচ্ছিক)" value="${(title || '').replace(/"/g, '&quot;')}" disabled>
+        <textarea class="gridCode" placeholder="এখানে HTML/CSS/JS কোড বসান" disabled>${(code || '').replace(/</g, '&lt;')}</textarea>
+      </div>
+      <div class="gridBtnCol">
+        <button type="button" class="gridEditBtn">✏️</button>
+        <button type="button" class="gridCopyBtn" title="কোড কপি করুন">📋</button>
+        <button type="button" class="gridDeleteBtn">🗑️</button>
+      </div>
+    `;
+    wireCheckReorder(row, getNextSeq);
+    wireEditDelete(row);
+    return row;
+  }
+
+  // পুরনো ডেটা ফরম্যাট (আলাদা items[] + gadgets[]) থাকলে একটাই মিশ্রিত ধারাবাহিক লিস্টে রূপান্তর করে
+  function buildLegacyEntries(items, gadgets) {
+    const out = [];
+    (items || []).forEach(it => { if (it && it.label) out.push({ type: 'page', label: it.label, url: it.url }); });
+    (gadgets || []).forEach(g => { if (g && g.code) out.push({ type: 'gadget', title: g.title || '', code: g.code }); });
+    return out;
+  }
+
+  // মিশ্রিত entries[] থেকে একটাই লিস্টে পেজ ও গেজেট আইটেম একসাথে, আগের ক্রম অনুযায়ী বসায়
+  function fillCombinedList(container, entries, getNextSeq) {
+    container.innerHTML = '';
+    (entries || []).forEach((entry, idx) => {
+      let row = null;
+      if (entry && entry.type === 'gadget') {
+        row = createGadgetRow(entry.title, entry.code, getNextSeq);
+      } else if (entry) {
+        row = createGridRow(entry.label, entry.url, getNextSeq);
+      }
+      if (row) {
+        row.dataset.origIndex = String(idx);
+        container.appendChild(row);
+      }
+    });
+    if (container.children.length === 0) {
+      container.innerHTML = '<div class="listEmpty">এখনো কোনো আইটেম তৈরি হয়নি</div>';
+    }
+  }
+
+  function clearListEmpty(container) {
+    const empty = container.querySelector('.listEmpty');
+    if (empty) empty.remove();
+  }
+
+  // একই লিস্ট থেকে পড়ে, টিক-দেওয়ার-ক্রম (checked আগে, seq অনুযায়ী) তারপর
+  // বাকিগুলো তাদের আগের ক্রম (origIndex) অনুযায়ী সাজিয়ে একটাই মিশ্রিত লিস্ট বানায়
+  function readCombinedList(container) {
+    const rows = [];
+    container.querySelectorAll('.gridRow2').forEach(row => {
+      const seq = row.dataset.seq ? Number(row.dataset.seq) : null;
+      const orig = row.dataset.origIndex ? Number(row.dataset.origIndex) : 999999;
+      if (row.dataset.type === 'gadget') {
+        const title = row.querySelector('.gridLabel').value.trim();
+        const code = row.querySelector('.gridCode').value;
+        if (!code.trim()) return;
+        rows.push({ entry: { type: 'gadget', title, code }, seq, orig });
+      } else {
+        const label = row.querySelector('.gridLabel').value.trim();
+        const url = row.querySelector('.gridUrl').value.trim();
+        if (!label) return;
+        rows.push({ entry: { type: 'page', label, url: url || '#' }, seq, orig });
+      }
+    });
+    const checked = rows.filter(r => r.seq !== null).sort((a, b) => a.seq - b.seq);
+    const unchecked = rows.filter(r => r.seq === null).sort((a, b) => a.orig - b.orig);
+    return [...checked, ...unchecked].map(r => r.entry);
+  }
+
+  // শুরুতে খালি লিস্ট দেখাও (লগইনের পর loadSettings() আসল ডেটা দিয়ে আবার ভরে দেবে)
+  fillCombinedList(sidebarCombinedList, [], sidebarSeq);
+  fillCombinedList(menuCombinedList, [], menuSeq);
+  fillCombinedList(footerCombinedList, [], footerSeq);
+
+  // ---- আইটেম তৈরির ফর্ম: সবসময় খালি থাকে, "তৈরি করুন" চাপলে নতুন আইটেম নিচের কম্বাইন্ড লিস্টে জমা হয় ----
+  const SEQ_BY_LIST = {
+    sidebarCombinedList: sidebarSeq,
+    menuCombinedList: menuSeq,
+    footerCombinedList: footerSeq
+  };
+
+  document.querySelectorAll('.createBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const listId = btn.dataset.list;
+      const kind = btn.dataset.kind;
+      const container = document.getElementById(listId);
+      const seqFor = SEQ_BY_LIST[listId];
+      const form = btn.closest('.createForm');
+
+      if (kind === 'page') {
+        const labelInput = form.querySelector('.createLabel');
+        const urlInput = form.querySelector('.createUrl');
+        const label = labelInput.value.trim();
+        const url = urlInput.value.trim();
+        if (!label) { alert('নাম/আইকন লিখুন'); return; }
+        clearListEmpty(container);
+        const row = createGridRow(label, url, seqFor);
+        row.dataset.origIndex = '999999';
+        container.appendChild(row);
+        labelInput.value = '';
+        urlInput.value = '';
+      } else {
+        const titleInput = form.querySelector('.createLabel');
+        const codeInput = form.querySelector('.gridCode');
+        const title = titleInput.value.trim();
+        const code = codeInput.value;
+        if (!code.trim()) { alert('কোড লিখুন'); return; }
+        clearListEmpty(container);
+        const row = createGadgetRow(title, code, seqFor);
+        row.dataset.origIndex = '999999';
+        container.appendChild(row);
+        titleInput.value = '';
+        codeInput.value = '';
+      }
+    });
+  });
+
+  // ---- অ্যাকর্ডিয়ন (টপ মেনু/ফুটার মেনু/সাইড বার মেনু এবং তার ভিতরের এড পেজ/এড গেজেট — সবগুলো বাটনেই এই একই লজিকে খোলে-বন্ধ হয়) ----
+  document.querySelectorAll('.accordionBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.toggle).classList.toggle('collapsed');
+    });
+  });
+
+  // ---- এড পেজ (বামে) / এড গেজেট (ডানে) — কোনটার ফর্ম দেখাবে সেটা বাছাই করে, নিচের লিস্ট সবসময় একটাই থাকে ----
+  document.querySelectorAll('.addTypeBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const box = btn.closest('.menuTypeBox');
+      box.querySelectorAll('.addTypeBtn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      box.querySelectorAll('.createForm').forEach(f => { f.style.display = 'none'; });
+      document.getElementById(btn.dataset.form).style.display = 'flex';
+    });
+  });
+
+  // ---- নেভিগেশন: সোয়াইপ করে থিম → পোস্ট → কমেন্ট → রিপ্লাই → সেটিংস → রিপোর্ট ----
+  const SWIPE_PANELS = [
+    { key: 'theme', icon: '🎨', label: 'থিম', panel: 'panel-theme' },
+    { key: 'settings', icon: '⚙️', label: 'সেটিংস', panel: 'panel-content-settings' },
+    { key: 'reports', icon: '🚩', label: 'রিপোর্ট', panel: 'panel-reports', onShow: () => loadAdminReports(currentReportType) },
+    { key: 'lite', icon: '📱', label: 'লাইট', panel: 'panel-lite' }
+  ];
+
+  const swipeContainer = document.getElementById('swipeContainer');
+  const swipeIndicator = document.getElementById('swipeIndicator');
+  let currentPanelIndex = 0;
+
+  SWIPE_PANELS.forEach((node, idx) => {
+    const tab = document.createElement('div');
+    tab.className = 'swipeTab' + (idx === 0 ? ' active' : '');
+    tab.innerHTML = `<span class="swipeTabIcon">${node.icon}</span><span>${node.label}</span>`;
+    tab.addEventListener('click', () => scrollToPanel(idx));
+    swipeIndicator.appendChild(tab);
+  });
+
+  function updateIndicator(idx) {
+    swipeIndicator.querySelectorAll('.swipeTab').forEach((tab, i) => {
+      tab.classList.toggle('active', i === idx);
+    });
+  }
+
+  function scrollToPanel(idx) {
+    swipeContainer.scrollTo({ left: idx * swipeContainer.clientWidth, behavior: 'smooth' });
+  }
+
+  let scrollSettleTimer = null;
+  swipeContainer.addEventListener('scroll', () => {
+    clearTimeout(scrollSettleTimer);
+    scrollSettleTimer = setTimeout(onSwipeSettled, 120);
+  });
+
+  function onSwipeSettled() {
+    const idx = Math.round(swipeContainer.scrollLeft / swipeContainer.clientWidth);
+    updateIndicator(idx);
+    if (idx === currentPanelIndex) return;
+    currentPanelIndex = idx;
+    const node = SWIPE_PANELS[idx];
+    if (node && node.onShow) node.onShow();
+  }
+
+  // ---- কন্টেন্ট সেটিংস: বাটন লিস্ট → ডিটেইল ভিউ (একটা একটা করে ঢোকা যাবে, সেভ করলে বা ← চাপলে লিস্টে ফিরে যাবে) ----
+  let contentDetailOpen = null;
+  const csListView = document.getElementById('csListView');
+
+  function openContentDetail(id) {
+    document.querySelectorAll('.csDetailView').forEach(d => d.classList.remove('open'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+    csListView.style.display = 'none';
+    contentDetailOpen = id;
+  }
+
+  function closeContentDetail() {
+    document.querySelectorAll('.csDetailView').forEach(d => d.classList.remove('open'));
+    csListView.style.display = 'flex';
+    contentDetailOpen = null;
+  }
+
+  document.querySelectorAll('[data-cs-open]').forEach(btn => {
+    btn.addEventListener('click', () => openContentDetail(btn.getAttribute('data-cs-open')));
+  });
+  document.querySelectorAll('[data-cs-back]').forEach(btn => {
+    btn.addEventListener('click', closeContentDetail);
+  });
+
+  // ---- রিপোর্ট পেজের তিনটা টাইপ বাটন (পোস্ট/কমেন্ট/রিপ্লাই) ----
+  let currentReportType = 'post';
+  document.querySelectorAll('[data-report-type]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-report-type]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentReportType = btn.getAttribute('data-report-type');
+      loadAdminReports(currentReportType);
+    });
+  });
+
+  function timeAgo(ts) {
+    if (!ts || !ts.toDate) return '';
+    const diffMs = Date.now() - ts.toDate().getTime();
+    const mins = Math.floor(diffMs / 60000);
+    if (mins < 1) return 'এই মাত্র';
+    if (mins < 60) return mins + ' মিনিট আগে';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' ঘণ্টা আগে';
+    return Math.floor(hrs / 24) + ' দিন আগে';
+  }
+
+  const escHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+
+  // ---- ছোট কপি বাটন: চাপলে ক্লিপবোর্ডে কপি হবে ও কিছুক্ষণের জন্য ✅ দেখাবে ----
+  function wireReportCopyBtn(btn) {
+    btn.addEventListener('click', () => {
+      const text = btn.getAttribute('data-copy') || '';
+      if (!text) return;
+      copyText(text);
+      const original = btn.textContent;
+      btn.textContent = '✅';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1200);
+    });
+  }
+
+  // ---- রিপোর্ট: পোস্ট/কমেন্ট/রিপ্লাই রিপোর্ট লোড (টাইপ অনুযায়ী ফিল্টার) ----
+  async function loadAdminReports(type) {
+    const listEl = document.getElementById('reportsAdminList');
+    listEl.innerHTML = '<div class="listEmpty">লোড হচ্ছে...</div>';
+    try {
+      let snap;
+      try {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type), orderBy("createdAt", "desc")));
+      } catch (indexErr) {
+        snap = await getDocs(query(collection(db, "reports"), where("type", "==", type)));
+      }
+      if (snap.empty) { listEl.innerHTML = '<div class="listEmpty">কোনো রিপোর্ট নেই</div>'; return; }
+      const items = [];
+      snap.forEach(docSnap => items.push({ id: docSnap.id, d: docSnap.data() }));
+      items.sort((a, b) => {
+        const ta = a.d.createdAt && a.d.createdAt.toMillis ? a.d.createdAt.toMillis() : 0;
+        const tb = b.d.createdAt && b.d.createdAt.toMillis ? b.d.createdAt.toMillis() : 0;
+        return tb - ta;
+      });
+      listEl.innerHTML = '';
+      items.forEach(({ id, d }) => {
+        const card = document.createElement('div');
+        card.className = 'listCard';
+        card.innerHTML = `
+          <div class="metaRow"><span>রিপোর্টার: ${escHtml(d.reporterEmail || '')}</span><span>${timeAgo(d.createdAt)}</span></div>
+          ${d.reason ? `<div class="metaRow"><span>🚩 কারণ: ${escHtml(d.reason)}</span><span></span></div>` : ''}
+          <div class="bodyText">${escHtml(d.text || '(কোনো টেক্সট নেই)')}</div>
+
+          <div class="reportAuthorBox">
+            <div class="reportAuthorRow"><span class="reportAuthorLabel">নাম</span><span class="reportAuthorVal">${escHtml(d.authorName || '')}</span></div>
+            <div class="reportAuthorRow">
+              <span class="reportAuthorLabel">ইমেইল</span><span class="reportAuthorVal">${escHtml(d.authorEmail || '—')}</span>
+              ${d.authorEmail ? `<button type="button" class="reportCopyBtn" data-copy="${escHtml(d.authorEmail)}" title="ইমেইল কপি করুন">📋</button>` : ''}
+            </div>
+            <div class="reportAuthorRow">
+              <span class="reportAuthorLabel">UID</span><span class="reportAuthorVal">${escHtml(d.authorUid || '—')}</span>
+              ${d.authorUid ? `<button type="button" class="reportCopyBtn" data-copy="${escHtml(d.authorUid)}" title="UID কপি করুন">📋</button>` : ''}
+            </div>
+          </div>
+
+          <div class="reportActionRow">
+            <button type="button" class="reportDeleteBtn">🗑️ ডিলিট</button>
+            <button type="button" class="reportSuspendBtn">⏸️ সাসপেন্ড</button>
+          </div>
+        `;
+
+        card.querySelectorAll('.reportCopyBtn').forEach(wireReportCopyBtn);
+
+        // ---- ডিলিট: পোস্ট/কমেন্ট/রিপ্লাইটা যেখানেই থাকুক, পুরো সার্ভার থেকে মুছে দেবে (শুধু রিপোর্ট এন্ট্রি না) ----
+        card.querySelector('.reportDeleteBtn').addEventListener('click', async () => {
+          if (!confirm('এই পোস্ট/কমেন্ট/রিপ্লাইটা পুরোপুরি সার্ভার থেকে ডিলিট করতে চান? এটা আর ফেরানো যাবে না।')) return;
+          try {
+            if (d.type === 'post') {
+              await deleteDoc(doc(db, "posts", d.postId));
+            } else if (d.postId && d.targetId) {
+              await deleteDoc(doc(db, "posts", d.postId, "comments", d.targetId));
+            }
+            await deleteDoc(doc(db, "reports", id));
+            card.remove();
+          } catch (err) { alert('এরর: ' + err.message); }
+        });
+
+        // ---- সাসপেন্ড: আলাদা স্ক্রিন খুলবে (নেভিগেশন নয়, শুধু ওভারলে) ----
+        card.querySelector('.reportSuspendBtn').addEventListener('click', () => {
+          openSuspendOverlay({ uid: d.authorUid || '', name: d.authorName || '', email: d.authorEmail || '' });
+        });
+
+        listEl.appendChild(card);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="listEmpty">এরর: ' + e.message + '</div>';
+    }
+  }
+
+  // ================= সাসপেন্ড ওভারলে =================
+  const suspendOverlay = document.getElementById('suspendOverlay');
+  const suspendTargetName = document.getElementById('suspendTargetName');
+  const suspendTargetEmail = document.getElementById('suspendTargetEmail');
+  const suspendUnit = document.getElementById('suspendUnit');
+  const suspendAmount = document.getElementById('suspendAmount');
+  const suspendMessage = document.getElementById('suspendMessage');
+  const suspendStatus = document.getElementById('suspendStatus');
+  const SUSPEND_FROM_EMAIL = 'hmjunaid9999@gmail.com';
+  let suspendTargetUid = '';
+  let suspendTargetEmailVal = '';
+
+  function openSuspendOverlay(target) {
+    suspendTargetUid = target.uid || '';
+    suspendTargetEmailVal = target.email || '';
+    suspendTargetName.textContent = target.name || '(নাম নেই)';
+    suspendTargetEmail.textContent = target.email || '(ইমেইল নেই)';
+    suspendUnit.value = 'day';
+    suspendAmount.value = '';
+    suspendMessage.value = '';
+    suspendStatus.textContent = '';
+    suspendOverlay.classList.add('open');
+  }
+
+  // ---- ← বাটন: শুধু এই স্ক্রিন বন্ধ করে রিপোর্ট লিস্টে ফিরে যায়, কোনো নেভিগেশন হয় না, তাই সাইট থেকে কখনো বের হবে না ----
+  document.getElementById('suspendBackBtn').addEventListener('click', () => {
+    suspendOverlay.classList.remove('open');
+  });
+
+  const SUSPEND_UNIT_MS = { minute: 60000, hour: 3600000, day: 86400000, month: 30 * 86400000, year: 365 * 86400000 };
+  const SUSPEND_UNIT_LABEL = { minute: 'মিনিট', hour: 'ঘণ্টা', day: 'দিন', month: 'মাস', year: 'বছর' };
+
+  document.getElementById('suspendSubmitBtn').addEventListener('click', async () => {
+    if (!suspendTargetUid) { suspendStatus.textContent = 'এই ইউজারের UID পাওয়া যায়নি, সাসপেন্ড করা যাবে না।'; return; }
+    const amount = parseFloat(suspendAmount.value);
+    if (!amount || amount <= 0) { suspendStatus.textContent = 'সঠিক একটা সংখ্যা দিন।'; return; }
+    const unit = suspendUnit.value;
+    const durMs = amount * (SUSPEND_UNIT_MS[unit] || 0);
+    const untilDate = new Date(Date.now() + durMs);
+    const msgText = suspendMessage.value.trim();
+    const unitLabel = SUSPEND_UNIT_LABEL[unit] || unit;
+
+    suspendStatus.textContent = 'সাসপেন্ড করা হচ্ছে...';
+    try {
+      await setDoc(doc(db, "users", suspendTargetUid), {
+        suspendedUntil: Timestamp.fromDate(untilDate),
+        suspendDuration: amount + ' ' + unitLabel,
+        suspendMessage: msgText,
+        suspendedBy: (auth.currentUser && auth.currentUser.email) || '',
+        suspendedAt: serverTimestamp()
+      }, { merge: true });
+
+      if (suspendTargetEmailVal) {
+        try {
+          await addDoc(collection(db, "mail"), {
+            to: [suspendTargetEmailVal],
+            from: SUSPEND_FROM_EMAIL,
+            message: {
+              subject: 'আপনার অ্যাকাউন্ট সাময়িকভাবে স্থগিত (সাসপেন্ড) করা হয়েছে',
+              text: (msgText ? msgText + '\n\n' : '') + `আপনি ${amount} ${unitLabel}-এর জন্য পোস্ট, কমেন্ট বা রিপ্লাই করতে পারবেন না।`
+            }
+          });
+        } catch (mailErr) {
+          // মেইল কালেকশনে লেখা গেলেও Firebase-এর Trigger Email এক্সটেনশন ইনস্টল না থাকলে
+          // আসল ইমেইল যাবে না — সাসপেনশন তবু কার্যকর থাকবে, তাই এখানে থামছি না।
+        }
+      }
+
+      suspendStatus.textContent = '✅ সাসপেন্ড করা হয়েছে';
+      setTimeout(() => { suspendOverlay.classList.remove('open'); }, 900);
+    } catch (err) {
+      suspendStatus.textContent = 'এরর: ' + err.message;
     }
   });
-  return out;
-}
 
-function toast(m) {
-  const t = $("toast"); t.textContent = m; t.style.display = "block";
-  clearTimeout(toast._t); toast._t = setTimeout(() => { t.style.display = "none"; }, 2600);
-}
+  // ---- থিম গ্রিড তৈরি (আগে buildGridRows ছিল, এখন fillGrid([]) দিয়ে উপরেই করা হয়েছে) ----
 
-// ---- ব্যাক বাটন: ওভারলে খোলা থাকলে সেটা বন্ধ হবে, না হলে এডমিন প্যানেলে ফিরবে ----
-let ovOpen = false;
-function openConfirm(title, text, onYes) {
-  $("cfT").textContent = title; $("cfP").textContent = text;
-  $("confirmOv").classList.add("on"); ovOpen = true;
-  history.pushState({ ov: 1 }, "");
-  $("cfYes").onclick = () => { closeConfirm(true); onYes(); };
-  $("cfNo").onclick = () => closeConfirm(false);
-}
-function closeConfirm(viaButton) {
-  if (!ovOpen) return;
-  ovOpen = false; $("confirmOv").classList.remove("on");
-  if (viaButton !== "pop") history.back();
-}
-window.addEventListener("popstate", () => { if (ovOpen) closeConfirm("pop"); });
-$("confirmOv").addEventListener("click", e => { if (e.target === $("confirmOv")) closeConfirm(false); });
-
-$("backBtn").addEventListener("click", e => {
-  if (isDirty() && !confirm("সেভ না করা পরিবর্তন আছে। তবুও বেরিয়ে যাবেন?")) e.preventDefault();
-});
-window.addEventListener("beforeunload", e => { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
-
-// ---- ট্যাব ও সোয়াইপ ----
-const PANELS = [
-  { id: "p-features", ic: "🎛️", n: "ফিচার" },
-  { id: "p-app",      ic: "📲", n: "অ্যাপ" },
-  { id: "p-notice",   ic: "📢", n: "নোটিশ" },
-  { id: "p-maint",    ic: "🛠️", n: "মেইনটেনেন্স" },
-  { id: "p-def",      ic: "🎨", n: "ডিফল্ট" }
-];
-const swipe = $("swipe"), tabs = $("tabs");
-PANELS.forEach((p, i) => {
-  const t = document.createElement("div");
-  t.className = "tab" + (i === 0 ? " on" : "");
-  t.innerHTML = `<span>${p.ic}</span><span>${p.n}</span>`;
-  t.onclick = () => swipe.scrollTo({ left: i * swipe.clientWidth, behavior: "smooth" });
-  tabs.appendChild(t);
-});
-let settleT = null;
-swipe.addEventListener("scroll", () => {
-  clearTimeout(settleT);
-  settleT = setTimeout(() => {
-    const idx = Math.round(swipe.scrollLeft / swipe.clientWidth);
-    tabs.querySelectorAll(".tab").forEach((t, i) => t.classList.toggle("on", i === idx));
-    const on = tabs.children[idx]; if (on && on.scrollIntoView) on.scrollIntoView({ inline: "center", block: "nearest" });
-  }, 100);
-});
-
-// ---- ফিচার সুইচ রেন্ডার ----
-function renderFeatures() {
-  $("featList").innerHTML = FEATURES.map(f =>
-    `<div class="rowSw"><div class="ic">${f.ic}</div><div class="tx"><b>${f.n}</b><small>${f.d}</small></div>` +
-    `<label class="sw"><input type="checkbox" data-feat="${f.k}"><i></i></label></div>`).join("");
-  $("featList").querySelectorAll("[data-feat]").forEach(c => {
-    c.checked = state.features[c.dataset.feat] !== false;
-    c.onchange = () => { state.features[c.dataset.feat] = c.checked; refresh(); };
+  document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch (e) { console.error(e); alert('লগইন এরর: ' + e.message); }
   });
-}
+  document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+  document.getElementById('logoutBtn2').addEventListener('click', () => signOut(auth));
 
-// ---- ফর্ম ↔ state বাইন্ডিং ----
-const BIND = [
-  ["apkUrl", "apk", "url"], ["apkVer", "apk", "version"], ["apkNotes", "apk", "notes"],
-  ["fuMin", "forceUpdate", "minVersion"], ["fuMsgBn", "forceUpdate", "messageBn"], ["fuMsgEn", "forceUpdate", "messageEn"],
-  ["ntText", "notice", "text"], ["ntLink", "notice", "link"],
-  ["mtBn", "maintenance", "messageBn"], ["mtEn", "maintenance", "messageEn"]
-];
-const BIND_SW = [["fuOn", "forceUpdate", "enabled"], ["ntOn", "notice", "enabled"], ["ntDis", "notice", "dismissible"], ["mtOn", "maintenance", "enabled"]];
+  async function loadSettings() {
+    const snap = await getDoc(doc(db, "settings", "site"));
+    const s = snap.exists() ? snap.data() : {};
+    logoUrl.value = s.logoUrl || '';
+    siteName.value = s.siteName || 'Onuvuti';
+    noticeText.value = s.noticeText || '';
+    composerPlaceholder.value = s.composerPlaceholder || '';
+    posterPlaceholder.value = s.posterPlaceholder || '';
+    setThemeChoice(s.theme);
+    maxWidth.value = s.maxWidth || 640;
+    composerHeight.value = s.composerHeight || 100;
+    posterHeight.value = s.posterHeight || 180;
+    postsPerPage.value = s.postsPerPage || 5;
+    readMoreLines.value = s.readMoreLines || 6;
+    postButtonsJustify.value = s.postButtonsJustify || 'space-evenly';
+    blogComposerHeight.value = s.blogComposerHeight || 300;
+    blogBigOpen.value = s.blogBigOpen || '(';
+    blogBigClose.value = s.blogBigClose || ')';
+    blogMedOpen.value = s.blogMedOpen || '{';
+    blogMedClose.value = s.blogMedClose || '}';
+    blogSmallOpen.value = s.blogSmallOpen || '[';
+    blogSmallClose.value = s.blogSmallClose || ']';
+    blogLinkOpen.value = s.blogLinkOpen || '<';
+    blogLinkClose.value = s.blogLinkClose || '>';
+    aboutUsText.value = s.aboutUsText || '';
+    bottomPicker.setOrder(s.bottomButtons && s.bottomButtons.length ? s.bottomButtons : ['like', 'comment', 'copyText']);
+    menuPicker.setOrder(s.menuButtons && s.menuButtons.length ? s.menuButtons : ['copyLink', 'share', 'edit', 'delete', 'report']);
+    commentBottomPicker.setOrder(s.commentBottomButtons && s.commentBottomButtons.length ? s.commentBottomButtons : ['like', 'reply']);
+    commentMenuPicker.setOrder(s.commentMenuButtons && s.commentMenuButtons.length ? s.commentMenuButtons : ['copy', 'edit', 'delete', 'report']);
+    posterColorPicker.setOrder(s.posterColors && s.posterColors.length ? s.posterColors : ['#4285F4', '#EA4335', '#34A853', '#FBBC05', '#8B5CF6', '#EC4899', '#111827']);
+    fillCombinedList(menuCombinedList, s.menuEntries || buildLegacyEntries(s.menuItems, s.menuGadgets), menuSeq);
+    fillCombinedList(sidebarCombinedList, s.sidebarEntries || buildLegacyEntries(s.sidebarItems, s.sidebarGadgets), sidebarSeq);
+    fillCombinedList(footerCombinedList, s.footerEntries || buildLegacyEntries(s.footerItems, s.footerGadgets), footerSeq);
+    return s;
+  }
 
-BIND.forEach(([id, g, k]) => $(id).addEventListener("input", () => { state[g][k] = $(id).value; refresh(); }));
-BIND_SW.forEach(([id, g, k]) => $(id).addEventListener("change", () => { state[g][k] = $(id).checked; refresh(); }));
-[["segLang", "lang"], ["segTheme", "theme"]].forEach(([id, k]) => {
-  $(id).addEventListener("click", e => {
-    const b = e.target.closest("button[data-v]"); if (!b) return;
-    state.defaults[k] = b.dataset.v; refresh();
+  async function saveSection(section, statusEl) {
+    let data = {};
+    if (section === 'identity') data = { logoUrl: logoUrl.value.trim(), siteName: siteName.value.trim() || 'Onuvuti' };
+    else if (section === 'notice') data = { noticeText: noticeText.value.trim() };
+    else if (section === 'composerLabels') data = {
+      composerPlaceholder: composerPlaceholder.value.trim(),
+      posterPlaceholder: posterPlaceholder.value.trim()
+    };
+    else if (section === 'postButtonsLayout') data = { postButtonsJustify: postButtonsJustify.value };
+    else if (section === 'bottomButtons') data = { bottomButtons: bottomPicker.getOrder() };
+    else if (section === 'menuButtons') data = { menuButtons: menuPicker.getOrder() };
+    else if (section === 'commentBottomButtons') data = { commentBottomButtons: commentBottomPicker.getOrder() };
+    else if (section === 'commentMenuButtons') data = { commentMenuButtons: commentMenuPicker.getOrder() };
+    else if (section === 'posterColors') {
+      const colors = posterColorPicker.getOrder();
+      if (colors.length === 0) { alert('অন্তত ১টা রং বাছাই করুন'); return; }
+      data = { posterColors: colors };
+    }
+    else if (section === 'colors') data = { theme: currentTheme };
+    else if (section === 'blog') data = {
+      blogComposerHeight: Number(blogComposerHeight.value) || 300,
+      blogBigOpen: blogBigOpen.value || '(', blogBigClose: blogBigClose.value || ')',
+      blogMedOpen: blogMedOpen.value || '{', blogMedClose: blogMedClose.value || '}',
+      blogSmallOpen: blogSmallOpen.value || '[', blogSmallClose: blogSmallClose.value || ']',
+      blogLinkOpen: blogLinkOpen.value || '<', blogLinkClose: blogLinkClose.value || '>'
+    };
+    else if (section === 'aboutUs') data = { aboutUsText: aboutUsText.value.trim() };
+    else if (section === 'menu') data = { menuEntries: readCombinedList(menuCombinedList), menuItems: [], menuGadgets: [] };
+    else if (section === 'sidebar') data = { sidebarEntries: readCombinedList(sidebarCombinedList), sidebarItems: [], sidebarGadgets: [] };
+    else if (section === 'footer') data = { footerEntries: readCombinedList(footerCombinedList), footerItems: [], footerGadgets: [] };
+    else if (section === 'contentSettings') data = {
+      postsPerPage: Number(postsPerPage.value) || 5,
+      readMoreLines: Number(readMoreLines.value) || 6,
+      maxWidth: Number(maxWidth.value) || 640,
+      composerHeight: Number(composerHeight.value) || 100,
+      posterHeight: Number(posterHeight.value) || 180
+    };
+
+    try {
+      await setDoc(doc(db, "settings", "site"), data, { merge: true });
+      statusEl.style.color = 'var(--text-color)';
+      statusEl.textContent = '✅ সেভ হয়েছে!';
+      if (contentDetailOpen) {
+        setTimeout(() => { closeContentDetail(); }, 900);
+      } else {
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
+      }
+    } catch (e) {
+      console.error(e);
+      statusEl.style.color = 'var(--text-color)';
+      statusEl.textContent = 'এরর: ' + e.message;
+    }
+  }
+
+  document.querySelectorAll('.sectionSaveBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const section = btn.getAttribute('data-section');
+      const idMap = { contentSettings: 'ContentSettings', composerLabels: 'ComposerLabels', postButtonsLayout: 'PostButtonsLayout', bottomButtons: 'BottomButtons', menuButtons: 'MenuButtons', commentBottomButtons: 'CommentBottomButtons', commentMenuButtons: 'CommentMenuButtons' };
+      const statusId = btn.dataset.status || ('status' + (idMap[section] || (section.charAt(0).toUpperCase() + section.slice(1))));
+      saveSection(section, document.getElementById(statusId));
+    });
   });
-});
 
-function fillForm() {
-  BIND.forEach(([id, g, k]) => { $(id).value = state[g][k] || ""; });
-  BIND_SW.forEach(([id, g, k]) => { $(id).checked = !!state[g][k]; });
-  renderFeatures(); refresh();
-}
+  onAuthStateChanged(auth, (user) => {
+    loginScreen.style.display = 'none';
+    deniedScreen.style.display = 'none';
+    adminScreen.style.display = 'none';
 
-function clean() {
-  const s = clone(state);
-  ["url", "version", "notes"].forEach(k => s.apk[k] = String(s.apk[k] || "").trim());
-  ["minVersion", "messageBn", "messageEn"].forEach(k => s.forceUpdate[k] = String(s.forceUpdate[k] || "").trim());
-  ["text", "link"].forEach(k => s.notice[k] = String(s.notice[k] || "").trim());
-  ["messageBn", "messageEn"].forEach(k => s.maintenance[k] = String(s.maintenance[k] || "").trim());
-  return s;
-}
-const isDirty = () => !!state && saved !== null && JSON.stringify(clean()) !== saved;
+    if (!user) {
+      loginScreen.style.display = 'flex';
+    } else if (ADMIN_EMAILS.includes(user.email)) {
+      adminScreen.style.display = 'flex';
+      loadSettings();
+      initBackGuard();
+    } else {
+      deniedScreen.style.display = 'flex';
+    }
+  });
 
-function refresh() {
-  if (!state) return;
-  document.querySelectorAll("#segLang button").forEach(b => b.classList.toggle("on", b.dataset.v === state.defaults.lang));
-  document.querySelectorAll("#segTheme button").forEach(b => b.classList.toggle("on", b.dataset.v === state.defaults.theme));
-  $("ntPv").textContent = state.notice.enabled
-    ? (state.notice.text.trim() || "(নোটিশের লেখা এখনো দেওয়া হয়নি)")
-    : "নোটিশ বন্ধ আছে — লাইটে কিছু দেখাবে না।";
-  const d = isDirty();
-  $("saveSt").textContent = d ? "● সেভ না করা পরিবর্তন আছে" : "✓ সব সেভ করা আছে";
-  $("saveSt").classList.toggle("dirty", d);
-  $("saveBtn").disabled = !d; $("resetBtn").disabled = !d;
-  $("metaLine").textContent = metaInfo;
-}
+  // ---- Back বাটন গার্ড: প্রথম প্যানেলে না থাকলে আগের প্যানেলে ফিরে যায়, নাহলে দুইবার Back চাইলে বের হবে ----
+  let backGuardActive = false;
+  let backPressCount = 0;
+  let backPressTimer = null;
+  const exitToast = document.getElementById('exitToast');
 
-// ---- লোড ----
-async function load() {
-  $("saveSt").textContent = "লোড হচ্ছে...";
-  try {
-    const snap = await getDoc(REF());
-    const data = snap.exists() ? snap.data() : {};
-    state = merge(DEFAULTS, data);
-    if (!state.notice.text) state.notice.text = (data.notice && (data.notice.textBn || data.notice.textEn)) || "";
-    saved = JSON.stringify(clean());
-    const who = data.updatedBy || "", at = data.updatedAt && data.updatedAt.toDate ? data.updatedAt.toDate() : null;
-    metaInfo = at ? `শেষ সেভ: ${at.toLocaleString("bn-BD")}${who ? " — " + who : ""}` : "এখনো কোনো সেটিংস সেভ করা হয়নি (ডিফল্ট মান দেখাচ্ছে)।";
-    fillForm();
-  } catch (err) {
-    state = clone(DEFAULTS); saved = null;
-    fillForm(); $("saveSt").textContent = "⚠️ লোড হয়নি: " + (err.code || err.message);
-    $("saveBtn").disabled = true;
+  function rearmGuard() {
+    history.pushState({ guard: true }, '', location.href);
   }
-}
 
-// ---- সেভ ----
-async function doSave() {
-  const s = clean();
-  if (s.forceUpdate.enabled && !s.forceUpdate.minVersion) { toast("জোর করে আপডেটের জন্য সর্বনিম্ন ভার্সন দিন"); swipe.scrollTo({ left: 1 * swipe.clientWidth, behavior: "smooth" }); return; }
-  if (s.forceUpdate.enabled && !s.apk.url) { toast("জোর করে আপডেটের জন্য APK লিংক দিন"); swipe.scrollTo({ left: 1 * swipe.clientWidth, behavior: "smooth" }); return; }
-  if (s.apk.url && !/^https?:\/\//i.test(s.apk.url)) { toast("APK লিংক http:// বা https:// দিয়ে শুরু হতে হবে"); swipe.scrollTo({ left: 1 * swipe.clientWidth, behavior: "smooth" }); return; }
-  if (s.notice.link && !/^https?:\/\//i.test(s.notice.link)) { toast("নোটিশের লিংক http:// বা https:// দিয়ে শুরু হতে হবে"); swipe.scrollTo({ left: 2 * swipe.clientWidth, behavior: "smooth" }); return; }
-  if (s.notice.enabled && !s.notice.text) { toast("নোটিশ চালু আছে কিন্তু লেখা নেই"); swipe.scrollTo({ left: 2 * swipe.clientWidth, behavior: "smooth" }); return; }
-
-  // নোটিশের লেখা/লিংক বদলালে নতুন আইডি — আগে যারা বন্ধ করেছিল তারা আবার দেখবে
-  const old = saved ? JSON.parse(saved) : null;
-  const changed = !old || old.notice.text !== s.notice.text || old.notice.link !== s.notice.link;
-  s.notice.id = changed ? String(Date.now()) : (old && old.notice.id) || String(Date.now());
-
-  $("saveBtn").disabled = true; $("saveSt").textContent = "সেভ হচ্ছে...";
-  try {
-    await setDoc(REF(), {
-      features: s.features, apk: s.apk, forceUpdate: s.forceUpdate, notice: s.notice,
-      maintenance: s.maintenance, defaults: s.defaults,
-      updatedAt: serverTimestamp(), updatedBy: (auth.currentUser && auth.currentUser.email) || ""
-    }, { merge: true });
-    state.notice.id = s.notice.id;
-    saved = JSON.stringify(clean());
-    metaInfo = "শেষ সেভ: এই মাত্র";
-    toast("✅ সেভ হয়েছে"); refresh();
-  } catch (err) {
-    toast("❌ সেভ হয়নি: " + (err.code || err.message)); refresh();
+  function initBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
+    rearmGuard();
+    window.addEventListener('popstate', handleBack);
   }
-}
 
-$("saveBtn").onclick = () => {
-  const s = clean();
-  if (s.maintenance.enabled && !JSON.parse(saved || "{}").maintenance?.enabled) {
-    openConfirm("মেইনটেনেন্স চালু করবেন?", "সেভ করার পর আপনি ছাড়া সবার জন্য লাইট বন্ধ হয়ে যাবে।", doSave);
-  } else if (s.forceUpdate.enabled && !JSON.parse(saved || "{}").forceUpdate?.enabled) {
-    openConfirm("জোর করে আপডেট চালু করবেন?", `ভার্সন ${s.forceUpdate.minVersion}-এর চেয়ে পুরোনো সবাই আটকে যাবে যতক্ষণ না আপডেট করে।`, doSave);
-  } else doSave();
-};
-$("resetBtn").onclick = () => {
-  openConfirm("পরিবর্তন বাতিল করবেন?", "সেভ না করা সব পরিবর্তন মুছে সার্ভারের সেটিংসে ফিরে যাবে।", () => { state = merge(DEFAULTS, JSON.parse(saved)); fillForm(); toast("বাতিল করা হয়েছে"); });
-};
+  function handleBack() {
+    if (contentDetailOpen) {
+      closeContentDetail();
+      rearmGuard();
+      return;
+    }
 
-// ---- লগইন ----
-$("googleLoginBtn").onclick = async () => {
-  $("loginErr").textContent = "";
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (e) { $("loginErr").textContent = e.code || e.message; }
-};
-const doLogout = () => signOut(auth);
-$("logoutBtn").onclick = doLogout; $("logoutBtn2").onclick = doLogout;
+    if (currentPanelIndex > 0) {
+      scrollToPanel(currentPanelIndex - 1);
+      rearmGuard();
+      return;
+    }
 
-onAuthStateChanged(auth, user => {
-  const show = (a, b, c) => { $("loginScreen").style.display = a; $("deniedScreen").style.display = b; $("adminScreen").style.display = c; };
-  if (!user) { show("flex", "none", "none"); return; }
-  if (!ADMIN_EMAILS.includes((user.email || "").toLowerCase())) { show("none", "flex", "none"); return; }
-  show("none", "none", "flex"); load();
-});
+    if (backPressCount === 0) {
+      backPressCount = 1;
+      exitToast.style.display = 'block';
+      rearmGuard();
+      backPressTimer = setTimeout(() => {
+        backPressCount = 0;
+        exitToast.style.display = 'none';
+      }, 2000);
+    } else {
+      clearTimeout(backPressTimer);
+      exitToast.style.display = 'none';
+    }
+  }
 </script>
 </body>
 </html>
