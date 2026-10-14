@@ -1284,9 +1284,11 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     // ২) publicProfiles ডকুমেন্ট
     const pref = doc(db, "publicProfiles", user.uid);
     let pub = null;
+    let pubReadOk = false;
     try {
       const ps = await getDoc(pref);
       pub = ps.exists() ? ps.data() : null;
+      pubReadOk = true;
     } catch (e) { console.error('publicProfiles পড়তে এরর:', e); }
 
     const base = {
@@ -1302,12 +1304,12 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
 
     // ৩) publicProfiles-এ না থাকলে (বা নাম না থাকলে) একবার তৈরি/পূরণ — পুরনো তথ্য ও সাবস্ক্রাইবার সহ
     try {
-      if (!pub || !pub.name) {
+      if (pubReadOk && (!pub || !pub.name)) {
         const data = {};
         PUBLIC_FIELDS.forEach(k => { data[k] = merged[k] !== undefined ? merged[k] : ''; });
         data.createdAt = (old && old.createdAt) ? old.createdAt : serverTimestamp();
         const subs = Array.from(new Set([...(((pub && pub.subscribers) || [])), ...(((old && old.subscribers) || []))]));
-        data.subscribers = subs;
+        if (subs.length) data.subscribers = arrayUnion(...subs); // কখনো ওভাররাইট নয়, শুধু যোগ
         await setDoc(pref, data, { merge: true });
         if (!merged.createdAt || !merged.createdAt.toDate) {
           const again = await getDoc(pref);
@@ -2567,6 +2569,10 @@ body.kbOpen .cmIcon svg{width:16px;height:16px}
     let profileData = null;
     if (isOwn) {
       profileData = myProfile;
+      try {
+        const fresh = await getDoc(doc(db, "publicProfiles", targetUid));
+        if (fresh.exists()) profileData.subscribers = fresh.data().subscribers || [];
+      } catch (e) { console.error('সাবস্ক্রাইবার রিফ্রেশে এরর:', e); }
     } else {
       try {
         const snap = await getDoc(doc(db, "publicProfiles", targetUid));
